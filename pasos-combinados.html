@@ -1,5 +1,160 @@
-<!-- ===== 01-pavimento-interior.html ===== -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serena Breeze — Selector de materiales</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+<style>
 
+
+
+  :root {
+    --white: #FFFFFF;
+    --off-white: #F7F6F4;
+    --border: #E0DDD8;
+    --mid: #B0AA9F;
+    --slate-gray: #6B7280;
+    --text: #2A2520;
+    --black: #111111;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 14px; font-weight: 400; }
+
+  /* ── HEADER (solo preview) ── */
+  header { border-bottom: 1px solid var(--border); padding: 0 48px; height: 64px; display: flex; align-items: center; justify-content: space-between; background: var(--white); position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: 'Oswald', sans-serif; font-size: 20px; letter-spacing: 2px; text-transform: uppercase; color: var(--black); }
+  .logo span { color: #E87722; }
+  .header-meta { font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--slate-gray); letter-spacing: 1px; }
+  .header-meta strong { color: var(--black); }
+
+  /* ── HERO ── */
+  .hero { padding: 64px 48px 56px; border-bottom: 1px solid var(--border); }
+  .hero-eyebrow { font-family: 'Roboto', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 16px; }
+  .hero h1 { font-family: 'Oswald', sans-serif; font-size: clamp(36px, 5vw, 60px); font-weight: 400; text-transform: uppercase; color: var(--black); line-height: 1.05; margin-bottom: 20px; max-width: 700px; }
+  .hero-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.8; max-width: 480px; }
+
+  /* ── STEP NAV ── */
+  .step-nav-wrap { border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+  .step-nav-wrap::-webkit-scrollbar { display: none; }
+  .step-nav { display: flex; padding: 0 48px; min-width: max-content; }
+  .snav-item { padding: 14px 20px; font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .2s; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+  .snav-item:hover { color: var(--text); }
+  .snav-item.active { color: var(--black); border-bottom-color: var(--black); }
+  .snav-item.done { color: var(--text); }
+  .snav-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--black); display: none; }
+  .snav-item.done .snav-dot { display: block; }
+
+  /* ── MAIN ── */
+  main { max-width: 1080px; margin: 0 auto; padding: 56px 48px 80px; }
+  .sec-eyebrow { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 10px; }
+  .sec-title { font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 400; text-transform: uppercase; color: var(--black); margin-bottom: 12px; letter-spacing: 1px; }
+  .sec-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.7; max-width: 600px; margin-bottom: 40px; }
+  .sub-label { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 20px; margin-top: 40px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .note { background: var(--off-white); border-left: 3px solid var(--black); padding: 14px 16px; font-size: 13px; font-weight: 400; color: var(--text); margin-bottom: 32px; line-height: 1.6; }
+
+  /* ── CARDS ── */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; }
+  .grid.wide { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); }
+  .card { cursor: pointer; border: 1px solid var(--border); background: var(--white); transition: border-color .2s; position: relative; }
+  .card:hover { border-color: var(--black); }
+  .card.selected { border: 2px solid var(--black); }
+  .card.selected::after { content: ''; position: absolute; top: 10px; right: 10px; width: 22px; height: 22px; background: var(--black); border-radius: 50%; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpolyline points='2,6 5,9 10,3' stroke='white' stroke-width='1.8' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; background-size: 12px; }
+  .card-swatch { height: 130px; width: 100%; display: block; }
+  .card-info { padding: 12px 14px; border-top: 1px solid var(--border); }
+  .card-name { font-family: 'Oswald', sans-serif; font-size: 14px; font-weight: 400; text-transform: uppercase; letter-spacing: 1px; color: var(--black); margin-bottom: 3px; }
+  .card-dims { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--slate-gray); }
+
+  /* ── COLOR CARDS ── */
+  .cgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+  .ccard { cursor: pointer; border: 1px solid var(--border); background: var(--white); transition: border-color .2s; position: relative; }
+  .ccard:hover { border-color: var(--black); }
+  .ccard.selected { border: 2px solid var(--black); }
+  .ccard.selected::after { content: ''; position: absolute; top: 8px; right: 8px; width: 18px; height: 18px; background: var(--black); border-radius: 50%; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpolyline points='2,6 5,9 10,3' stroke='white' stroke-width='1.8' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; background-size: 10px; }
+  .cswatch { height: 64px; width: 100%; }
+  .clabel { padding: 9px 11px; font-family: 'Oswald', sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--black); border-top: 1px solid var(--border); line-height: 1.3; }
+
+  /* ── COCINA: imagen referencia + 2 zonas ── */
+  .cocina-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+  .cocina-ref { position: sticky; top: 80px; }
+  .cocina-ref-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border: 1px solid var(--border); background: var(--off-white); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+  .cocina-ref-caption { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--slate-gray); margin-top: 10px; line-height: 1.5; letter-spacing: 0.5px; }
+  .cocina-selectors { display: flex; flex-direction: column; gap: 40px; }
+  .cocina-zone-title { font-family: 'Oswald', sans-serif; font-size: 16px; font-weight: 400; text-transform: uppercase; letter-spacing: 2px; color: var(--black); margin-bottom: 16px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+
+  /* ── NAV BUTTONS ── */
+  .nav-btns { display: flex; justify-content: space-between; align-items: center; margin-top: 60px; padding-top: 28px; border-top: 1px solid var(--border); }
+  .btn { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; padding: 14px 32px; border: none; transition: all .2s; }
+  .btn-back { background: transparent; color: var(--slate-gray); border: 1px solid var(--border); }
+  .btn-back:hover { border-color: var(--black); color: var(--black); }
+  .btn-next { background: var(--black); color: white; }
+  .btn-next:hover { background: #333; }
+  .btn-submit { background: var(--black); color: white; padding: 14px 48px; }
+  .btn-submit:hover { background: #333; }
+
+  /* ── SUMMARY ── */
+  .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 48px; }
+  .sum-item { background: var(--white); padding: 18px 22px; }
+  .sum-label { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 6px; }
+  .sum-val { font-family: 'Oswald', sans-serif; font-size: 16px; text-transform: uppercase; color: var(--black); letter-spacing: 0.5px; }
+  .sum-empty { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--mid); font-style: italic; font-weight: 300; }
+
+  /* ── FORM ── */
+  .form-block { border: 1px solid var(--border); padding: 36px; margin-bottom: 32px; }
+  .form-title { font-family: 'Oswald', sans-serif; font-size: 22px; font-weight: 400; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 28px; color: var(--black); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 18px; }
+  .fgroup { display: flex; flex-direction: column; gap: 7px; }
+  .fgroup.full { grid-column: 1/-1; }
+  .flabel { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); }
+  .finput { border: 1px solid var(--border); padding: 11px 14px; font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--text); background: var(--white); outline: none; transition: border-color .2s; border-radius: 0; -webkit-appearance: none; }
+  .finput:focus { border-color: var(--black); }
+
+  /* ── SUCCESS ── */
+  .success { display: none; text-align: center; padding: 80px 48px; }
+  .success-line { width: 48px; height: 2px; background: var(--black); margin: 0 auto 40px; }
+  .success h2 { font-family: 'Oswald', sans-serif; font-size: 36px; font-weight: 400; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
+  .success p { font-family: 'Roboto', sans-serif; font-weight: 300; color: var(--slate-gray); line-height: 1.8; max-width: 440px; margin: 0 auto; }
+
+  .step { display: none; }
+  .step.active { display: block; }
+
+  @media (max-width: 900px) {
+    .cocina-layout { grid-template-columns: 1fr; }
+    .cocina-ref { position: static; }
+  }
+  @media (max-width: 768px) {
+    header, main { padding-left: 24px; padding-right: 24px; }
+    .hero { padding: 48px 24px; }
+    .step-nav { padding: 0 24px; }
+    .form-row { grid-template-columns: 1fr; }
+    .summary-grid { grid-template-columns: 1fr; }
+  }
+
+  .card-swatch { background-size: cover !important; background-position: center !important; }
+  .cswatch { background-size: cover !important; background-position: center !important; }
+
+  .card-swatch { background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; }
+  .cswatch { background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; }
+
+  .card-swatch { background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; }
+  .cswatch { background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; }
+  /* ── SELECT ── */
+  select.finput { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="step-nav-wrap">
+  <div class="step-nav">
+    <div class="snav-item active" onclick="goTo(1)" data-step="1"><div class="snav-dot"></div>01 · Pav. interior</div>
+    <div class="snav-item" onclick="goTo(2)" data-step="2"><div class="snav-dot"></div>02 · Pav. exterior</div>
+    <div class="snav-item" onclick="goTo(3)" data-step="3"><div class="snav-dot"></div>03 · Alicatado</div>
+    <div class="snav-item" onclick="goTo(4)" data-step="4"><div class="snav-dot"></div>04 · Baño 1 (Suite)</div>
+    <div class="snav-item" onclick="goTo(5)" data-step="5"><div class="snav-dot"></div>05 · Baño 2</div>
+    <div class="snav-item" onclick="goTo(6)" data-step="6"><div class="snav-dot"></div>06 · Muebles cocina</div>
+    <div class="snav-item" onclick="goTo(7)" data-step="7"><div class="snav-dot"></div>07 · Encimera</div>
+    <div class="snav-item" onclick="goTo(8)" data-step="8"><div class="snav-dot"></div>08 · Piscina</div>
+    <div class="snav-item" onclick="goTo(9)" data-step="9"><div class="snav-dot"></div>09 · Confirmar</div>
+  </div>
 <main>
 <div class="step active" id="step-1">
   <div class="sec-eyebrow">01 — Pavimentos</div>
@@ -12,12 +167,9 @@
   </div>
   <div class="nav-btns"><div></div><button class="btn btn-next" onclick="next(1)">Siguiente →</button></div>
 </div>
-</main>
 
-<!-- ===== 02-pavimento-exterior.html ===== -->
 
-<main>
-<div class="step active" id="step-2">
+<div class="step" id="step-2">
   <div class="sec-eyebrow">02 — Pavimentos</div>
   <h2 class="sec-title">Pavimento exterior</h2>
   <p class="sec-desc">Solado exterior de la vivienda.</p>
@@ -31,12 +183,9 @@
   </div>
   <div class="nav-btns"><button class="btn btn-back" onclick="prev(2)">← Anterior</button><button class="btn btn-next" onclick="next(2)">Siguiente →</button></div>
 </div>
-</main>
 
-<!-- ===== 03-alicatado.html ===== -->
 
-<main>
-<div class="step active" id="step-3">
+<div class="step" id="step-3">
   <div class="sec-eyebrow">03 — Alicatado</div>
   <h2 class="sec-title">Alicatado de baños y zona TV</h2>
   <p class="sec-desc">Gres porcelánico o pasta blanca rectificada 60×120 cm. Puede elegir una opción diferente para cada espacio.</p>
@@ -72,12 +221,9 @@
   </div>
   <div class="nav-btns"><button class="btn btn-back" onclick="prev(3)">← Anterior</button><button class="btn btn-next" onclick="next(3)">Siguiente →</button></div>
 </div>
-</main>
 
-<!-- ===== 04-bano1-encimera.html ===== -->
 
-<main>
-<div class="step active" id="step-4">
+<div class="step" id="step-4">
   <div class="sec-eyebrow">04 — Baño 1 (Suite)</div>
   <h2 class="sec-title">Encimera</h2>
   <div class="note">Le recomendamos que la encimera del baño principal sea del mismo material que el elegido para el alicatado de las paredes pero puede elegir cualquiera de las siguientes opciones.</div>
@@ -120,12 +266,9 @@
   </div>
   <div class="nav-btns"><button class="btn btn-back" onclick="prev(4)">← Anterior</button><button class="btn btn-next" onclick="next(4)">Siguiente →</button></div>
 </div>
-</main>
 
-<!-- ===== 05-bano2-mueble.html ===== -->
 
-<main>
-<div class="step active" id="step-5">
+<div class="step" id="step-5">
   <div class="sec-eyebrow">05 — Baño 2</div>
   <h2 class="sec-title">Mueble de baño — Oslo</h2>
   <p class="sec-desc">Mueble suspendido Oslo con cajón y lavabo cerámico Onix New. Elija el acabado.</p>
@@ -145,12 +288,9 @@
   </div>
   <div class="nav-btns"><button class="btn btn-back" onclick="prev(5)">← Anterior</button><button class="btn btn-next" onclick="next(5)">Siguiente →</button></div>
 </div>
-</main>
 
-<!-- ===== 06-muebles-cocina.html ===== -->
 
-<main>
-<div class="step active" id="step-6">
+<div class="step" id="step-6">
   <div class="sec-eyebrow">06 — Cocina</div>
   <h2 class="sec-title">Muebles de cocina</h2>
   <p class="sec-desc">Puede elegir acabados diferentes para los interiores, la Zona A (frentes de armario) y la Zona B (trasera de isla y vinoteca).</p>
@@ -239,12 +379,9 @@
 
   <div class="nav-btns"><button class="btn btn-back" onclick="prev(6)">← Anterior</button><button class="btn btn-next" onclick="next(6)">Siguiente →</button></div>
 </div>
-</main>
 
-<!-- ===== 07-encimera-cocina.html ===== -->
 
-<main>
-<div class="step active" id="step-7">
+<div class="step" id="step-7">
   <div class="sec-eyebrow">07 — Cocina</div>
   <h2 class="sec-title">Encimera de cocina</h2>
   <p class="sec-desc">Elija el material y acabado de la encimera.</p>
@@ -265,12 +402,9 @@
   </div>
   <div class="nav-btns"><button class="btn btn-back" onclick="prev(7)">← Anterior</button><button class="btn btn-next" onclick="next(7)">Siguiente →</button></div>
 </div>
-</main>
 
-<!-- ===== 08-piscina.html ===== -->
 
-<main>
-<div class="step active" id="step-8">
+<div class="step" id="step-8">
   <div class="sec-eyebrow">08 — Piscina</div>
   <h2 class="sec-title">Revestimiento de piscina</h2>
   <p class="sec-desc">Elija entre gresite o porcelánico esmaltado.</p>
@@ -290,12 +424,9 @@
   </div>
   <div class="nav-btns"><button class="btn btn-back" onclick="prev(8)">← Anterior</button><button class="btn btn-next" onclick="next(8)">Siguiente →</button></div>
 </div>
-</main>
 
-<!-- ===== 09-resumen.html ===== -->
 
-<main>
-<div class="step active" id="step-9">
+<div class="step" id="step-9">
   <div class="sec-eyebrow">09 — Confirmación</div>
   <h2 class="sec-title">Resumen de su elección</h2>
   <p class="sec-desc">Revise sus selecciones antes de confirmar. Recibirá una copia por email.</p>
@@ -337,12 +468,125 @@
   <h2>Elección confirmada</h2>
   <p>Hemos recibido su selección de materiales. En breve recibirá una copia por email. El equipo de Amal Inmobiliaria se pondrá en contacto con usted para validar su elección.</p>
 </div>
-</main>
 
-<!-- ===== success div from 09-resumen.html ===== -->
 
 <div class="success" id="success">
   <div class="success-line"></div>
   <h2>Elección confirmada</h2>
   <p>Hemos recibido su selección de materiales. En breve recibirá una copia por email. El equipo de Amal Inmobiliaria se pondrá en contacto con usted para validar su elección.</p>
 </div>
+</main>
+<script>
+
+  const S = {};
+
+  // Orden canónico de pasos para el resumen
+  const LABELS = [
+    ['pav_int',     'Pavimento interior'],
+    ['pav_ext',     'Pavimento exterior'],
+    ['alic_bano1',  'Alicatado Baño 1 (Suite)'],
+    ['alic_bano2',  'Alicatado Baño 2'],
+    ['alic_tv',     'Alicatado Zona TV'],
+    ['bano1_enc',   'Encimera Baño 1 (Suite)'],
+    ['mueble_bano2','Mueble Baño 2 (Oslo)'],
+    ['interior',    'Interiores cocina'],
+    ['mueble_a',    'Mueble cocina Zona A'],
+    ['mueble_b',    'Mueble cocina Zona B'],
+    ['encimera',    'Encimera cocina'],
+    ['piscina',     'Piscina']
+  ];
+
+  // Opciones de vivienda por promoción
+  const VIVIENDAS = {
+    'Serena Breeze 2': [
+      'Villa 1','Villa 2','Villa 3','Villa 4',
+      'Apartamento Planta 0 Puerta 1','Apartamento Planta 0 Puerta 2','Apartamento Planta 0 Puerta 3','Apartamento Planta 0 Puerta 4','Apartamento Planta 0 Puerta 5',
+      'Apartamento Planta 1 Puerta 1','Apartamento Planta 1 Puerta 2','Apartamento Planta 1 Puerta 3','Apartamento Planta 1 Puerta 4','Apartamento Planta 1 Puerta 5',
+      'Apartamento Planta 2 Puerta 1','Apartamento Planta 2 Puerta 2'
+    ],
+    'Serena Breeze 3': [
+      'Villa 1','Villa 2','Villa 3','Villa 4','Villa 5','Villa 6','Villa 7',
+      'Apartamento Bloque 1 Planta 0 Puerta 1','Apartamento Bloque 1 Planta 0 Puerta 2','Apartamento Bloque 1 Planta 0 Puerta 3','Apartamento Bloque 1 Planta 0 Puerta 4','Apartamento Bloque 1 Planta 0 Puerta 5','Apartamento Bloque 1 Planta 0 Puerta 6',
+      'Apartamento Bloque 1 Planta 1 Puerta 1','Apartamento Bloque 1 Planta 1 Puerta 2','Apartamento Bloque 1 Planta 1 Puerta 3','Apartamento Bloque 1 Planta 1 Puerta 4','Apartamento Bloque 1 Planta 1 Puerta 5','Apartamento Bloque 1 Planta 1 Puerta 6',
+      'Apartamento Bloque 1 Planta 2 Puerta 1','Apartamento Bloque 1 Planta 2 Puerta 2','Apartamento Bloque 1 Planta 2 Puerta 3','Apartamento Bloque 1 Planta 2 Puerta 4',
+      'Apartamento Bloque 2 Planta 0 Puerta 1','Apartamento Bloque 2 Planta 0 Puerta 2','Apartamento Bloque 2 Planta 0 Puerta 3','Apartamento Bloque 2 Planta 0 Puerta 4',
+      'Apartamento Bloque 2 Planta 1 Puerta 1','Apartamento Bloque 2 Planta 1 Puerta 2','Apartamento Bloque 2 Planta 1 Puerta 3','Apartamento Bloque 2 Planta 1 Puerta 4',
+      'Apartamento Bloque 2 Planta 2 Puerta 1','Apartamento Bloque 2 Planta 2 Puerta 2',
+      'Apartamento Bloque 3 Planta 0 Puerta 1','Apartamento Bloque 3 Planta 0 Puerta 2','Apartamento Bloque 3 Planta 0 Puerta 3','Apartamento Bloque 3 Planta 0 Puerta 4',
+      'Apartamento Bloque 3 Planta 1 Puerta 1','Apartamento Bloque 3 Planta 1 Puerta 2','Apartamento Bloque 3 Planta 1 Puerta 3','Apartamento Bloque 3 Planta 1 Puerta 4',
+      'Apartamento Bloque 3 Planta 2 Puerta 1','Apartamento Bloque 3 Planta 2 Puerta 2','Apartamento Bloque 3 Planta 2 Puerta 3'
+    ]
+  };
+
+  function updateViviendas() {
+    const promo = document.getElementById('cPromo').value;
+    const sel = document.getElementById('cUnit');
+    sel.innerHTML = '';
+    if (!promo) {
+      sel.innerHTML = '<option value="">Seleccione primero la promoción…</option>';
+      sel.disabled = true;
+      return;
+    }
+    sel.disabled = false;
+    sel.innerHTML = '<option value="">Seleccione vivienda…</option>' +
+      VIVIENDAS[promo].map(v => `<option value="${v}">${v}</option>`).join('');
+  }
+
+  function sel(key, val, el) {
+    S[key] = val;
+    el.closest('.grid').querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    tick();
+  }
+  function selG(key, val, el, gid) {
+    S[key] = val;
+    document.getElementById(gid).querySelectorAll('.card,.ccard').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    tick();
+  }
+  function tick() {
+    document.getElementById('progressCount').textContent = Object.keys(S).length + ' / 9';
+    document.querySelector('.header-meta').innerHTML = 'Elección de materiales &nbsp;·&nbsp; <strong>' + Object.keys(S).length + ' / 9</strong> completados';
+  }
+  function goTo(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    const t = document.getElementById('step-' + n);
+    if (t) t.classList.add('active');
+    document.querySelectorAll('.snav-item').forEach(i => { i.classList.remove('active'); if (parseInt(i.dataset.step) === n) i.classList.add('active'); });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (n === 9) buildSummary();
+  }
+  function next(cur) {
+    document.querySelector(`.snav-item[data-step="${cur}"]`).classList.add('done');
+    goTo(cur + 1);
+  }
+  function prev(cur) { goTo(cur - 1); }
+  function buildSummary() {
+    document.getElementById('summaryGrid').innerHTML = LABELS.map(([k, l]) => {
+      const v = S[k];
+      return `<div class="sum-item"><div class="sum-label">${l}</div><div class="${v ? 'sum-val' : 'sum-empty'}">${v || 'Sin elegir'}</div></div>`;
+    }).join('');
+  }
+  function submit() {
+    const name  = document.getElementById('cName').value.trim();
+    const email = document.getElementById('cEmail').value.trim();
+    const promo = document.getElementById('cPromo').value;
+    const unit  = document.getElementById('cUnit').value;
+    if (!name || !email) {
+      alert('Por favor, introduzca su nombre y email antes de confirmar.');
+      return;
+    }
+    if (!promo || !unit) {
+      alert('Por favor, seleccione la promoción y la vivienda antes de confirmar.');
+      return;
+    }
+    document.getElementById('step-9').style.display = 'none';
+    document.getElementById('success').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.addEventListener('DOMContentLoaded', buildSummary);
+
+</script>
+</body>
+</html>
