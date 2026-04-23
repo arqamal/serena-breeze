@@ -168,7 +168,6 @@
   <div class="nav-btns"><div></div><button class="btn btn-next" onclick="next(1)">Siguiente →</button></div>
 </div>
 
-
 <div class="step" id="step-2">
   <div class="sec-eyebrow">02 — Pavimentos</div>
   <h2 class="sec-title">Pavimento exterior</h2>
@@ -183,7 +182,6 @@
   </div>
   <div class="nav-btns"><button class="btn btn-back" onclick="prev(2)">← Anterior</button><button class="btn btn-next" onclick="next(2)">Siguiente →</button></div>
 </div>
-
 
 <div class="step" id="step-3">
   <div class="sec-eyebrow">03 — Alicatado</div>
@@ -221,7 +219,6 @@
   </div>
   <div class="nav-btns"><button class="btn btn-back" onclick="prev(3)">← Anterior</button><button class="btn btn-next" onclick="next(3)">Siguiente →</button></div>
 </div>
-
 
 <div class="step" id="step-4">
   <div class="sec-eyebrow">04 — Baño 1 (Suite)</div>
@@ -267,7 +264,6 @@
   <div class="nav-btns"><button class="btn btn-back" onclick="prev(4)">← Anterior</button><button class="btn btn-next" onclick="next(4)">Siguiente →</button></div>
 </div>
 
-
 <div class="step" id="step-5">
   <div class="sec-eyebrow">05 — Baño 2</div>
   <h2 class="sec-title">Mueble de baño — Oslo</h2>
@@ -288,7 +284,6 @@
   </div>
   <div class="nav-btns"><button class="btn btn-back" onclick="prev(5)">← Anterior</button><button class="btn btn-next" onclick="next(5)">Siguiente →</button></div>
 </div>
-
 
 <div class="step" id="step-6">
   <div class="sec-eyebrow">06 — Cocina</div>
@@ -380,7 +375,6 @@
   <div class="nav-btns"><button class="btn btn-back" onclick="prev(6)">← Anterior</button><button class="btn btn-next" onclick="next(6)">Siguiente →</button></div>
 </div>
 
-
 <div class="step" id="step-7">
   <div class="sec-eyebrow">07 — Cocina</div>
   <h2 class="sec-title">Encimera de cocina</h2>
@@ -403,7 +397,6 @@
   <div class="nav-btns"><button class="btn btn-back" onclick="prev(7)">← Anterior</button><button class="btn btn-next" onclick="next(7)">Siguiente →</button></div>
 </div>
 
-
 <div class="step" id="step-8">
   <div class="sec-eyebrow">08 — Piscina</div>
   <h2 class="sec-title">Revestimiento de piscina</h2>
@@ -424,7 +417,6 @@
   </div>
   <div class="nav-btns"><button class="btn btn-back" onclick="prev(8)">← Anterior</button><button class="btn btn-next" onclick="next(8)">Siguiente →</button></div>
 </div>
-
 
 <div class="step" id="step-9">
   <div class="sec-eyebrow">09 — Confirmación</div>
@@ -465,16 +457,6 @@
 </div>
 <div class="success" id="success">
   <div class="success-line"></div>
-  <h2>Elección confirmada</h2>
-  <p>Hemos recibido su selección de materiales. En breve recibirá una copia por email. El equipo de Amal Inmobiliaria se pondrá en contacto con usted para validar su elección.</p>
-</div>
-
-
-<div class="success" id="success">
-  <div class="success-line"></div>
-  <h2>Elección confirmada</h2>
-  <p>Hemos recibido su selección de materiales. En breve recibirá una copia por email. El equipo de Amal Inmobiliaria se pondrá en contacto con usted para validar su elección.</p>
-</div>
 </main>
 <script>
 
@@ -532,6 +514,20 @@
       VIVIENDAS[promo].map(v => `<option value="${v}">${v}</option>`).join('');
   }
 
+  function selEnc(key, val, el) {
+    S[key] = val;
+    document.getElementById('grid-compac').querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('grid-porc').querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    tick();
+  }
+  function selPool(val, el) {
+    S['piscina'] = val;
+    document.querySelectorAll('#pool-gresite .card, #pool-porcelanico .card')
+      .forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    tick();
+  }
   function sel(key, val, el) {
     S[key] = val;
     el.closest('.grid').querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
@@ -587,6 +583,13 @@
 
   document.addEventListener('DOMContentLoaded', buildSummary);
 
+
+  function sendHeight() {
+    window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, '*');
+  }
+  window.addEventListener('load', sendHeight);
+  const _goTo = goTo;
+  goTo = function(n) { _goTo(n); setTimeout(sendHeight, 150); };
 </script>
 </body>
 </html>
