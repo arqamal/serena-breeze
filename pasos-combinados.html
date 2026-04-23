@@ -528,6 +528,14 @@
     el.classList.add('selected');
     tick();
   }
+  function selAll(key, val, el, gids) {
+    S[key] = val;
+    gids.forEach(gid => {
+      document.getElementById(gid).querySelectorAll('.card,.ccard').forEach(c => c.classList.remove('selected'));
+    });
+    el.classList.add('selected');
+    tick();
+  }
   function sel(key, val, el) {
     S[key] = val;
     el.closest('.grid').querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
