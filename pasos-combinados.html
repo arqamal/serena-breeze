@@ -574,8 +574,11 @@
   function submit() {
     const name  = document.getElementById('cName').value.trim();
     const email = document.getElementById('cEmail').value.trim();
+    const phone = document.getElementById('cPhone') ? document.getElementById('cPhone').value.trim() : '';
+    const notes = document.getElementById('cNotes') ? document.getElementById('cNotes').value.trim() : '';
     const promo = document.getElementById('cPromo').value;
     const unit  = document.getElementById('cUnit').value;
+
     if (!name || !email) {
       alert('Por favor, introduzca su nombre y email antes de confirmar.');
       return;
@@ -584,6 +587,50 @@
       alert('Por favor, seleccione la promoción y la vivienda antes de confirmar.');
       return;
     }
+
+    // Convertir nombre de vivienda a código
+    const promoNum = promo.includes('2') ? '2' : '3';
+    let codigo = '';
+    if (unit.startsWith('Villa')) {
+      const num = unit.split(' ')[1];
+      codigo = promoNum + 'SB' + num;
+    } else {
+      const bloque = unit.match(/Bloque (\d)/);
+      const planta = unit.match(/Planta (\d)/);
+      const puerta = unit.match(/Puerta (\d)/);
+      const b = bloque ? bloque[1] : '1';
+      const pl = planta ? planta[1] : '0';
+      const pu = puerta ? puerta[1] : '1';
+      codigo = promoNum + 'SB' + b + pl + pu;
+    }
+
+    const payload = {
+      promocion: promo,
+      vivienda: codigo,
+      nombre: name,
+      email: email,
+      telefono: phone,
+      observaciones: notes,
+      pav_int:      S['pav_int']      || '',
+      pav_ext:      S['pav_ext']      || '',
+      alic_bano1:   S['alic_bano1']   || '',
+      alic_bano2:   S['alic_bano2']   || '',
+      alic_tv:      S['alic_tv']      || '',
+      bano1_enc:    S['bano1_enc']    || '',
+      mueble_bano2: S['mueble_bano2'] || '',
+      interior:     S['interior']     || '',
+      mueble_a:     S['mueble_a']     || '',
+      mueble_b:     S['mueble_b']     || '',
+      encimera:     S['encimera']     || '',
+      piscina:      S['piscina']      || ''
+    };
+
+    fetch('https://hook.eu1.make.com/3swpksyo36mkjb9g6u9u0p38wqpqjmdn', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).catch(e => console.error('Error webhook:', e));
+
     document.getElementById('step-9').style.display = 'none';
     document.getElementById('success').style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
