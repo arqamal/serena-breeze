@@ -559,7 +559,8 @@
     const t = document.getElementById('step-' + n);
     if (t) t.classList.add('active');
     document.querySelectorAll('.snav-item').forEach(i => { i.classList.remove('active'); if (parseInt(i.dataset.step) === n) i.classList.add('active'); });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' }); 
+    window.parent.postMessage({ scrollTop: true }, '*');
     if (n === 9) buildSummary();
   }
   function next(cur) {
