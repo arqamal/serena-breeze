@@ -637,6 +637,7 @@
     document.getElementById('step-9').style.display = 'none';
     document.getElementById('success').style.display = 'block';
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.parent.postMessage({ scrollTop: true }, '*');
   }
 
   document.addEventListener('DOMContentLoaded', buildSummary);
