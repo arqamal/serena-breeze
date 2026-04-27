@@ -141,6 +141,7 @@
   /* ── SELECT ── */
   select.finput { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 <div class="step-nav-wrap">
@@ -574,6 +575,123 @@
       return `<div class="sum-item"><div class="sum-label">${l}</div><div class="${v ? 'sum-val' : 'sum-empty'}">${v || 'Sin elegir'}</div></div>`;
     }).join('');
   }
+  function generatePDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const margin = 20;
+    const pageW = 210;
+    const col1 = margin;
+    const col2 = 110;
+    let y = 20;
+
+    // Cabecera
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.setTextColor(26, 26, 26);
+    doc.text('SERENA BREEZE', pageW / 2, y, { align: 'center' });
+    y += 8;
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100, 100, 100);
+    doc.text('Elección de materiales', pageW / 2, y, { align: 'center' });
+    y += 3;
+
+    // Línea separadora
+    doc.setDrawColor(26, 26, 26);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y + 3, pageW - margin, y + 3);
+    y += 10;
+
+    // Vivienda
+    const vivienda = document.getElementById('cUnit').value;
+    const promo = document.getElementById('cPromo').value;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(26, 26, 26);
+    doc.text(vivienda, pageW / 2, y, { align: 'center' });
+    y += 6;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(promo, pageW / 2, y, { align: 'center' });
+    y += 10;
+
+    // Datos del cliente
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(26, 26, 26);
+    doc.text('DATOS DEL CLIENTE', margin, y);
+    y += 5;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(60, 60, 60);
+    const nombre = document.getElementById('cName').value;
+    const email = document.getElementById('cEmail').value;
+    const phone = document.getElementById('cPhone').value;
+    const notes = document.getElementById('cNotes').value;
+    const fecha = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    doc.text(`Nombre: ${nombre}`, margin, y); y += 5;
+    doc.text(`Email: ${email}`, margin, y); y += 5;
+    doc.text(`Teléfono: ${phone}`, margin, y); y += 5;
+    doc.text(`Fecha: ${fecha}`, margin, y); y += 10;
+
+    // Materiales
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(26, 26, 26);
+    doc.text('MATERIALES ELEGIDOS', margin, y);
+    y += 6;
+
+    // Fondo gris cabecera tabla
+    doc.setFillColor(240, 240, 240);
+    doc.rect(margin, y - 4, pageW - margin * 2, 6, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.text('CATEGORÍA', col1, y);
+    doc.text('ELECCIÓN', col2, y);
+    y += 4;
+
+    // Filas de materiales
+    LABELS.forEach(([k, l], i) => {
+      const v = S[k] || '—';
+      if (i % 2 === 0) {
+        doc.setFillColor(250, 250, 250);
+        doc.rect(margin, y - 3.5, pageW - margin * 2, 6, 'F');
+      }
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(8);
+      doc.setTextColor(60, 60, 60);
+      doc.text(l, col1, y);
+      doc.setTextColor(26, 26, 26);
+      doc.text(v, col2, y);
+      y += 6;
+    });
+
+    y += 4;
+
+    // Observaciones
+    if (notes) {
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(26, 26, 26);
+      doc.text('OBSERVACIONES', margin, y); y += 5;
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(60, 60, 60);
+      doc.text(notes, margin, y); y += 10;
+    }
+
+    // Línea pie
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y, pageW - margin, y);
+    y += 5;
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(7);
+    doc.setTextColor(150, 150, 150);
+    doc.text('Amal Inmobiliaria · amalconsult.com', pageW / 2, y, { align: 'center' });
+
+    return doc.output('datauristring').split(',')[1]; // base64
+  }
   function submit() {
     const name  = document.getElementById('cName').value.trim();
     const email = document.getElementById('cEmail').value.trim();
@@ -607,6 +725,7 @@
       codigo = promoNum + 'SB' + b + pl + pu;
     }
 
+    const pdfBase64 = generatePDF();
     const payload = {
       promocion: promo,
       vivienda: codigo,
@@ -625,7 +744,8 @@
       mueble_a:     S['mueble_a']     || '',
       mueble_b:     S['mueble_b']     || '',
       encimera:     S['encimera']     || '',
-      piscina:      S['piscina']      || ''
+      piscina:      S['piscina']      || '',
+    pdf: pdfBase64
     };
 
     fetch('https://hook.eu1.make.com/3swpksyo36mkjb9g6u9u0p38wqpqjmdn', {
