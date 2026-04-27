@@ -692,7 +692,7 @@
     
     console.log('PDF base64 inicio:', doc.output('datauristring').substring(0, 80));
 
-    return doc.output('datauristring').split(',')[1]; // base64
+    return doc.output('base64'); // base64
   }
   function submit() {
     const name  = document.getElementById('cName').value.trim();
