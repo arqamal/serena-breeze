@@ -689,6 +689,8 @@
     doc.setFontSize(7);
     doc.setTextColor(150, 150, 150);
     doc.text('Amal Inmobiliaria · amalconsult.com', pageW / 2, y, { align: 'center' });
+    
+    console.log('PDF base64 inicio:', doc.output('datauristring').substring(0, 80));
 
     return doc.output('datauristring').split(',')[1]; // base64
   }
