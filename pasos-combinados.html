@@ -546,9 +546,9 @@
     'RN_Berenjena':'_0015_FLOW_RN_MASAI_Berenjena.png.jpg',
     'RN_Blanco':'_0016_FLOW_RN_MASAI_Blanco.png.jpg',
     'RN_Fango':'_0017_FLOW_RN_MASAI_Fango.png.jpg',
-    'RN_Gris cemento':'_0018_FLOW_RN_MASAI_Gris cemento.png.jpg',
+    'RN_Gris cemento':'_0018_FLOW_RN_MASAI_Gris%20cemento.png.jpg',
     'RN_Moka':'_0019_FLOW_RN_MASAI_Moka.png.jpg',
-    'RN_Negro azabache':'_0021_FLOW_RN_MASAI_Negro azabache.png.jpg',
+    'RN_Negro azabache':'_0021_FLOW_RN_MASAI_Negro%20azabache.png.jpg',
     'RN_Ocean':'_0022_FLOW_RN_MASAI_Ocean.png.jpg',
     'RN_Tierra':'_0023_FLOW_RN_MASAI_Tierra.png.jpg',
     'RN_Tropic':'_0024_FLOW_RN_MASAI_Tropic.png.jpg',
@@ -558,9 +558,9 @@
     'MM_Berenjena':'_0002_FLOW_MM_MASAI_Berenjena.png.jpg',
     'MM_Blanco':'_0003_FLOW_MM_MASAI_Blanco.png.jpg',
     'MM_Fango':'_0004_FLOW_MM_MASAI_Fango.png.jpg',
-    'MM_Gris cemento':'_0005_FLOW_MM_MASAI_Gris cemento.png.jpg',
+    'MM_Gris cemento':'_0005_FLOW_MM_MASAI_Gris%20cemento.png.jpg',
     'MM_Moka':'_0006_FLOW_MM_MASAI_Moka.png.jpg',
-    'MM_Negro azabache':'_0008_FLOW_MM_MASAI_Negro azabache.png.jpg',
+    'MM_Negro azabache':'_0008_FLOW_MM_MASAI_Negro%20azabache.png.jpg',
     'MM_Ocean':'_0009_FLOW_MM_MASAI_Ocean.png.jpg',
     'MM_Tierra':'_0010_FLOW_MM_MASAI_Tierra.png.jpg',
     'MM_Tropic':'_0011_FLOW_MM_MASAI_Tropic.png.jpg',
@@ -583,7 +583,7 @@
     const code = bano1Mueble + '_' + bano1Lavabo;
     const file = BANO1_IMGS[code];
     if (file) {
-      const url = BANO1_BASE + encodeURIComponent(file);
+      const url = BANO1_BASE + file;
       wrap.innerHTML = '<img src="' + url + '" alt="Flow ' + bano1Mueble + ' + Masai ' + bano1Lavabo + '" style="width:100%;display:block;">';
     }
   }
