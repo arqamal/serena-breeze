@@ -531,7 +531,7 @@
     const file = BANO1_IMGS[code];
     if (file) {
       const url = BANO1_BASE + file;
-      wrap.innerHTML = '<img src="' + url + '" alt="Flow ' + bano1Mueble + ' + Masai ' + bano1Lavabo + '" style="width:100%;display:block;">';
+      wrap.innerHTML = '<img src="' + url + '" alt="Flow ' + bano1Mueble + ' + Masai ' + bano1Lavabo + '" style="width:100%;display:block;" onload="sendHeight()">';
     }
   }
 
@@ -595,7 +595,7 @@
     const file = BANO2_IMGS[code];
     if (file) {
       const url = BANO2_BASE + file;
-      wrap.innerHTML = '<img src="' + url + '" alt="Lambda ' + bano2Frente + ' + Masai ' + bano2Lavabo + '" style="width:100%;display:block;">';
+      wrap.innerHTML = '<img src="' + url + '" alt="Lambda ' + bano2Frente + ' + Masai ' + bano2Lavabo + '" style="width:100%;display:block;" onload="sendHeight()">';
     }
   }
 
