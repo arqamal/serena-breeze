@@ -140,41 +140,50 @@
   .cswatch { background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; }
   /* ── SELECT ── */
   select.finput { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; }
+
+  /* ── LANG TOGGLE ── */
+  .lang-toggle { position:fixed; top:12px; right:16px; z-index:1000; display:flex; gap:0; border:1px solid var(--border); border-radius:4px; overflow:hidden; background:white; }
+  .lang-btn { font-family:'Roboto',sans-serif; font-size:11px; letter-spacing:1px; padding:6px 12px; cursor:pointer; border:none; background:transparent; color:var(--slate-gray); transition:all .2s; }
+  .lang-btn.active { background:var(--black); color:white; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-es" onclick="setLang('es')">ES</button>
+  <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+</div>
 <div class="step-nav-wrap">
   <div class="step-nav">
-    <div class="snav-item active" onclick="goTo(1)" data-step="1"><div class="snav-dot"></div>01 · Pav. interior</div>
-    <div class="snav-item" onclick="goTo(2)" data-step="2"><div class="snav-dot"></div>02 · Pav. exterior</div>
-    <div class="snav-item" onclick="goTo(3)" data-step="3"><div class="snav-dot"></div>03 · Alicatado</div>
-    <div class="snav-item" onclick="goTo(4)" data-step="4"><div class="snav-dot"></div>04 · Baño 1 (Suite)</div>
-    <div class="snav-item" onclick="goTo(5)" data-step="5"><div class="snav-dot"></div>05 · Baño 2</div>
-    <div class="snav-item" onclick="goTo(6)" data-step="6"><div class="snav-dot"></div>06 · Muebles cocina</div>
-    <div class="snav-item" onclick="goTo(7)" data-step="7"><div class="snav-dot"></div>07 · Encimera</div>
-    <div class="snav-item" onclick="goTo(8)" data-step="8"><div class="snav-dot"></div>08 · Piscina</div>
-    <div class="snav-item" onclick="goTo(9)" data-step="9"><div class="snav-dot"></div>09 · Confirmar</div>
+    <div class="snav-item active" onclick="goTo(1)" data-step="1"><div class="snav-dot"></div><span data-i18n="nav1">01 · Pav. interior</span></div>
+    <div class="snav-item" onclick="goTo(2)" data-step="2"><div class="snav-dot"></div><span data-i18n="nav2">02 · Pav. exterior</span></div>
+    <div class="snav-item" onclick="goTo(3)" data-step="3"><div class="snav-dot"></div><span data-i18n="nav3">03 · Alicatado</span></div>
+    <div class="snav-item" onclick="goTo(4)" data-step="4"><div class="snav-dot"></div><span data-i18n="nav4">04 · Baño 1 (Suite)</span></div>
+    <div class="snav-item" onclick="goTo(5)" data-step="5"><div class="snav-dot"></div><span data-i18n="nav5">05 · Baño 2</span></div>
+    <div class="snav-item" onclick="goTo(6)" data-step="6"><div class="snav-dot"></div><span data-i18n="nav6">06 · Muebles cocina</span></div>
+    <div class="snav-item" onclick="goTo(7)" data-step="7"><div class="snav-dot"></div><span data-i18n="nav7">07 · Encimera</span></div>
+    <div class="snav-item" onclick="goTo(8)" data-step="8"><div class="snav-dot"></div><span data-i18n="nav8">08 · Piscina</span></div>
+    <div class="snav-item" onclick="goTo(9)" data-step="9"><div class="snav-dot"></div><span data-i18n="nav9">09 · Confirmar</span></div>
   </div>
 <main>
 <div class="step active" id="step-1">
-  <div class="sec-eyebrow">01 — Pavimentos</div>
-  <h2 class="sec-title">Pavimento interior</h2>
-  <p class="sec-desc">Solado con baldosas de gres porcelánico 100×100 cm.</p>
+  <div class="sec-eyebrow" data-i18n="ey1">01 — Pavimentos</div>
+  <h2 class="sec-title" data-i18n="t1">Pavimento interior</h2>
+  <p class="sec-desc" data-i18n="d1">Solado con baldosas de gres porcelánico 100×100 cm.</p>
   <img src="https://arqamal.github.io/serena-breeze/img/int/Pavimento%20interior.jpg" alt="Plano pavimento interior" style="width:100%;display:block;margin-bottom:24px;" onload="sendHeight()">
   <div class="grid">
     <div class="card" onclick="sel('pav_int','Unik Stone 100×100',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/int/UNIK%20Stone.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Stone</div><div class="card-dims">100 × 100 cm</div></div></div>
     <div class="card" onclick="sel('pav_int','Unik Mink 100×100',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/int/UNIK%20Mink.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Mink</div><div class="card-dims">100 × 100 cm</div></div></div>
     <div class="card" onclick="sel('pav_int','Unik Grey 100×100',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/int/UNIK%20Grey.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Grey</div><div class="card-dims">100 × 100 cm</div></div></div>
   </div>
-  <div class="nav-btns"><div></div><button class="btn btn-next" onclick="next(1)">Siguiente →</button></div>
+  <div class="nav-btns"><div></div><button class="btn btn-next" onclick="next(1)" data-i18n="btn_next">Siguiente →</button></div>
 </div>
 
 <div class="step" id="step-2">
-  <div class="sec-eyebrow">02 — Pavimentos</div>
-  <h2 class="sec-title">Pavimento exterior</h2>
-  <p class="sec-desc">Solado exterior de la vivienda.</p>
-  <div class="note">Le aconsejamos elegir el mismo pavimento que haya elegido para el interior, pero puede optar por cualquiera de las siguientes opciones.</div>
+  <div class="sec-eyebrow" data-i18n="ey2">02 — Pavimentos</div>
+  <h2 class="sec-title" data-i18n="t2">Pavimento exterior</h2>
+  <p class="sec-desc" data-i18n="d2">Solado exterior de la vivienda.</p>
+  <div class="note" data-i18n="note2">Le aconsejamos elegir el mismo pavimento que haya elegido para el interior, pero puede optar por cualquiera de las siguientes opciones.</div>
   <img src="https://arqamal.github.io/serena-breeze/img/ext/Pavimento%20exterior.jpg" alt="Plano pavimento exterior" style="width:100%;display:block;margin-bottom:24px;" onload="sendHeight()">
   <div class="grid wide">
     <div class="card" onclick="sel('pav_ext','Unik Stone 100×100',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/ext/UNIK%20Stone.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Stone</div><div class="card-dims">100 × 100 cm</div></div></div>
@@ -183,14 +192,14 @@
     <div class="card" onclick="sel('pav_ext','Amberly Natural 23×120',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/ext/AMBERLY%20Natural.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Amberly Natural</div><div class="card-dims">23 × 120 cm</div></div></div>
     <div class="card" onclick="sel('pav_ext','Amberly Oak 23×120',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/ext/AMBERLY%20Oak.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Amberly Oak</div><div class="card-dims">23 × 120 cm</div></div></div>
   </div>
-  <div class="nav-btns"><button class="btn btn-back" onclick="prev(2)">← Anterior</button><button class="btn btn-next" onclick="next(2)">Siguiente →</button></div>
+  <div class="nav-btns"><button class="btn btn-back" onclick="prev(2)" data-i18n="btn_back">← Anterior</button><button class="btn btn-next" onclick="next(2)" data-i18n="btn_next">Siguiente →</button></div>
 </div>
 
 <div class="step" id="step-3">
-  <div class="sec-eyebrow">03 — Alicatado</div>
-  <h2 class="sec-title">Alicatado de baños y zona TV</h2>
-  <p class="sec-desc">Gres porcelánico o pasta blanca rectificada 60×120 cm. Puede elegir una opción diferente para cada espacio.</p>
-  <div class="sub-label">Baño 1 (Suite)</div>
+  <div class="sec-eyebrow" data-i18n="ey3">03 — Alicatado</div>
+  <h2 class="sec-title" data-i18n="t3">Alicatado de baños y zona TV</h2>
+  <p class="sec-desc" data-i18n="d3">Gres porcelánico o pasta blanca rectificada 60×120 cm. Puede elegir una opción diferente para cada espacio.</p>
+  <div class="sub-label" data-i18n="sl_b1">Baño 1 (Suite)</div>
   <img src="https://arqamal.github.io/serena-breeze/img/alic/Alicatado%20ba%C3%B1o%201.jpg" alt="Plano alicatado Baño 1" style="width:100%;display:block;margin-bottom:16px;" onload="sendHeight()">
   <div class="grid" id="g-b1">
     <div class="card" onclick="selG('alic_bano1','Unik Stone 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/UNIK%20Stone%2060x120.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Stone</div><div class="card-dims">60 × 120 cm</div></div></div>
@@ -201,7 +210,7 @@
     <div class="card" onclick="selG('alic_bano1','Flodsten Smoke 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/Flodsten%20Smoke%2060x120.png') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Flodsten Smoke</div><div class="card-dims">60 × 120 cm</div></div></div>
     <div class="card" onclick="selG('alic_bano1','Flodsten Snow 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/Flodsten%20Snow%2060x120.png') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Flodsten Snow</div><div class="card-dims">60 × 120 cm</div></div></div>
   </div>
-  <div class="sub-label">Baño 2</div>
+  <div class="sub-label" data-i18n="sl_b2">Baño 2</div>
   <img src="https://arqamal.github.io/serena-breeze/img/alic/Alicatado%20ba%C3%B1o%202.jpg" alt="Plano alicatado Baño 2" style="width:100%;display:block;margin-bottom:16px;" onload="sendHeight()">
   <div class="grid" id="g-b2">
     <div class="card" onclick="selG('alic_bano2','Unik Stone 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/UNIK%20Stone%2060x120.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Stone</div><div class="card-dims">60 × 120 cm</div></div></div>
@@ -212,7 +221,7 @@
     <div class="card" onclick="selG('alic_bano2','Flodsten Smoke 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/Flodsten%20Smoke%2060x120.png') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Flodsten Smoke</div><div class="card-dims">60 × 120 cm</div></div></div>
     <div class="card" onclick="selG('alic_bano2','Flodsten Snow 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/Flodsten%20Snow%2060x120.png') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Flodsten Snow</div><div class="card-dims">60 × 120 cm</div></div></div>
   </div>
-  <div class="sub-label">Zona TV</div>
+  <div class="sub-label" data-i18n="sl_tv">Zona TV</div>
   <img src="https://arqamal.github.io/serena-breeze/img/alic/Alicatado%20tv.jpg" alt="Plano alicatado Zona TV" style="width:100%;display:block;margin-bottom:16px;" onload="sendHeight()">
   <div class="grid" id="g-tv">
     <div class="card" onclick="selG('alic_tv','Unik Stone 60×120',this,'g-tv')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/UNIK%20Stone%2060x120.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Stone</div><div class="card-dims">60 × 120 cm</div></div></div>
@@ -223,27 +232,27 @@
     <div class="card" onclick="selG('alic_tv','Flodsten Smoke 60×120',this,'g-tv')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/Flodsten%20Smoke%2060x120.png') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Flodsten Smoke</div><div class="card-dims">60 × 120 cm</div></div></div>
     <div class="card" onclick="selG('alic_tv','Flodsten Snow 60×120',this,'g-tv')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/Flodsten%20Snow%2060x120.png') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Flodsten Snow</div><div class="card-dims">60 × 120 cm</div></div></div>
   </div>
-  <div class="nav-btns"><button class="btn btn-back" onclick="prev(3)">← Anterior</button><button class="btn btn-next" onclick="next(3)">Siguiente →</button></div>
+  <div class="nav-btns"><button class="btn btn-back" onclick="prev(3)" data-i18n="btn_back">← Anterior</button><button class="btn btn-next" onclick="next(3)" data-i18n="btn_next">Siguiente →</button></div>
 </div>
 
 <div class="step" id="step-4">
-  <div class="sec-eyebrow">04 — Baño 1 (Suite)</div>
-  <h2 class="sec-title">Mueble y lavabo</h2>
-  <p class="sec-desc">Mueble suspendido Flow (120 cm) con lavabo de resina Masai. Elija el acabado del mueble y el color del lavabo.</p>
+  <div class="sec-eyebrow" data-i18n="ey4">04 — Baño 1 (Suite)</div>
+  <h2 class="sec-title" data-i18n="t4">Mueble y lavabo</h2>
+  <p class="sec-desc" data-i18n="d4">Mueble suspendido Flow (120 cm) con lavabo de resina Masai. Elija el acabado del mueble y el color del lavabo.</p>
   <div class="cocina-layout" style="margin-bottom:0;">
     <div class="cocina-ref">
       <div id="bano1-ref-wrap" style="border:1px solid var(--border); overflow:hidden; background:var(--off-white); display:flex; align-items:center; justify-content:center; min-height:280px;">
-        <p style="font-family:'Roboto',sans-serif; font-size:13px; color:var(--mid); text-align:center; padding:40px;">Seleccione el mueble y el lavabo para ver la combinación</p>
+        <p style="font-family:'Roboto',sans-serif; font-size:13px; color:var(--mid); text-align:center; padding:40px;" data-i18n="ph_bano1">Seleccione el mueble y el lavabo para ver la combinación</p>
       </div>
-      <div class="cocina-ref-caption">La imagen muestra la combinación del mueble Flow con el lavabo Masai en los colores seleccionados.</div>
+      <div class="cocina-ref-caption"><span data-i18n="cap4">La imagen muestra la combinación del mueble Flow con el lavabo Masai en los colores seleccionados.</span></div>
     </div>
     <div>
-      <div class="sub-label" style="margin-top:0;">Color del mueble — Flow</div>
+      <div class="sub-label" style="margin-top:0;" data-i18n="sl_b1m">Color del mueble — Flow</div>
       <div class="cgrid" id="cg-bano1-mueble">
         <div class="ccard" onclick="selBano1Mueble('Roble Natural',this)"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/bano1/roble-natural.jpg') center/cover no-repeat;"></div><div class="clabel">Roble Natural</div></div>
         <div class="ccard" onclick="selBano1Mueble('Moka Mate',this)"><div class="cswatch" style="height:64px;background:#bcb4a9;"></div><div class="clabel">Moka Mate</div></div>
       </div>
-      <div class="sub-label">Color del lavabo — Masai</div>
+      <div class="sub-label" data-i18n="sl_b1l">Color del lavabo — Masai</div>
       <div class="cgrid" id="cg-bano1-lavabo">
         <div class="ccard" onclick="selBano1Lavabo('Blanco',this)"><div class="cswatch" style="height:64px;background:#ffffff;border:1px solid #ccc;"></div><div class="clabel">Blanco</div></div>
         <div class="ccard" onclick="selBano1Lavabo('Negro azabache',this)"><div class="cswatch" style="height:64px;background:#454343;"></div><div class="clabel">Negro Azabache</div></div>
@@ -252,20 +261,20 @@
       </div>
     </div>
   </div>
-  <div class="nav-btns"><button class="btn btn-back" onclick="prev(4)">← Anterior</button><button class="btn btn-next" onclick="next(4)">Siguiente →</button></div>
+  <div class="nav-btns"><button class="btn btn-back" onclick="prev(4)" data-i18n="btn_back">← Anterior</button><button class="btn btn-next" onclick="next(4)" data-i18n="btn_next">Siguiente →</button></div>
 </div>
 
 <div class="step" id="step-5">
-  <div class="sec-eyebrow">05 — Baño 2</div>
-  <h2 class="sec-title">Mueble y lavabo</h2>
-  <p class="sec-desc">Mueble suspendido Lambda (80 cm) con lavabo de resina Masai. Elija el color del frente del mueble y el color del lavabo.</p>
+  <div class="sec-eyebrow" data-i18n="ey5">05 — Baño 2</div>
+  <h2 class="sec-title" data-i18n="t5">Mueble y lavabo</h2>
+  <p class="sec-desc" data-i18n="d5">Mueble suspendido Lambda (80 cm) con lavabo de resina Masai. Elija el color del frente del mueble y el color del lavabo.</p>
   <div class="cocina-layout" style="margin-bottom:0;">
     <div class="cocina-ref">
-      <div id="bano2-ref-wrap" style="border:1px solid var(--border); overflow:hidden; background:var(--off-white); display:flex; align-items:center; justify-content:center; min-height:360px;"><p style="font-family:'Roboto',sans-serif; font-size:13px; color:var(--mid); text-align:center; padding:40px;">Seleccione el mueble y el lavabo para ver la combinación</p></div>
-      <div class="cocina-ref-caption">Mueble suspendido Lambda con lavabo Masai. Los colores del frente y del lavabo varían según la elección.</div>
+      <div id="bano2-ref-wrap" style="border:1px solid var(--border); overflow:hidden; background:var(--off-white); display:flex; align-items:center; justify-content:center; min-height:360px;"><p style="font-family:'Roboto',sans-serif; font-size:13px; color:var(--mid); text-align:center; padding:40px;" data-i18n="ph_bano2">Seleccione el mueble y el lavabo para ver la combinación</p></div>
+      <div class="cocina-ref-caption"><span data-i18n="cap5">Mueble suspendido Lambda con lavabo Masai. Los colores del frente y del lavabo varían según la elección.</span></div>
     </div>
     <div>
-      <div class="sub-label" style="margin-top:0;">Color del frente — Lambda</div>
+      <div class="sub-label" style="margin-top:0;" data-i18n="sl_b2f">Color del frente — Lambda</div>
       <div class="cgrid" id="cg-bano2-frente">
         <div class="ccard" onclick="selBano2Frente('Blanco',this)"><div class="cswatch" style="height:64px;background:#ffffff;border:1px solid #ddd;"></div><div class="clabel">Blanco</div></div>
         <div class="ccard" onclick="selBano2Frente('Negro Azabache',this)"><div class="cswatch" style="height:64px;background:#130f0a;"></div><div class="clabel">Negro Azabache</div></div>
@@ -273,7 +282,7 @@
         <div class="ccard" onclick="selBano2Frente('Leaf',this)"><div class="cswatch" style="height:64px;background:#8d9889;"></div><div class="clabel">Leaf</div></div>
         <div class="ccard" onclick="selBano2Frente('Roble Natural',this)"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/bano2/roble-natural.jpg') center/cover no-repeat;"></div><div class="clabel">Roble Natural</div></div>
       </div>
-      <div class="sub-label">Color del lavabo — Masai</div>
+      <div class="sub-label" data-i18n="sl_b2l">Color del lavabo — Masai</div>
       <div class="cgrid" id="cg-bano2-lavabo">
         <div class="ccard" onclick="selBano2Lavabo('Blanco',this)"><div class="cswatch" style="height:64px;background:#ffffff;border:1px solid #ccc;"></div><div class="clabel">Blanco</div></div>
         <div class="ccard" onclick="selBano2Lavabo('Negro azabache',this)"><div class="cswatch" style="height:64px;background:#454343;"></div><div class="clabel">Negro Azabache</div></div>
@@ -282,16 +291,16 @@
       </div>
     </div>
   </div>
-  <div class="nav-btns"><button class="btn btn-back" onclick="prev(5)">← Anterior</button><button class="btn btn-next" onclick="next(5)">Siguiente →</button></div>
+  <div class="nav-btns"><button class="btn btn-back" onclick="prev(5)" data-i18n="btn_back">← Anterior</button><button class="btn btn-next" onclick="next(5)" data-i18n="btn_next">Siguiente →</button></div>
 </div>
 
 <div class="step" id="step-6">
-  <div class="sec-eyebrow">06 — Cocina</div>
-  <h2 class="sec-title">Muebles de cocina</h2>
-  <p class="sec-desc">Puede elegir acabados diferentes para los interiores, la Zona A (frentes de armario) y la Zona B (trasera de isla y vinoteca).</p>
+  <div class="sec-eyebrow" data-i18n="ey6">06 — Cocina</div>
+  <h2 class="sec-title" data-i18n="t6">Muebles de cocina</h2>
+  <p class="sec-desc" data-i18n="d6">Puede elegir acabados diferentes para los interiores, la Zona A (frentes de armario) y la Zona B (trasera de isla y vinoteca).</p>
 
   <!-- Interiores -->
-  <div class="cocina-zone-title">Interiores</div>
+  <div class="cocina-zone-title" data-i18n="cz_int">Interiores</div>
   <img src="https://arqamal.github.io/serena-breeze/img/cocina/Interiores.jpg" alt="Referencia Interiores" style="width:100%;display:block;margin-bottom:20px;" onload="sendHeight()">
   <div class="cgrid" id="cg-int">
           <div class="ccard" onclick="selG('interior','Blanco',this,'cg-int')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/int/BLANCO.jpg') center/cover no-repeat;"></div><div class="clabel">Blanco</div></div>
@@ -303,7 +312,7 @@
         </div>
 
   <!-- Zona A -->
-  <div class="cocina-zone-title" style="margin-top:40px;">Zona A — Frentes de armario</div>
+  <div class="cocina-zone-title" style="margin-top:40px;"><span data-i18n="cz_a">Zona A — Frentes de armario</span></div>
   <img src="https://arqamal.github.io/serena-breeze/img/cocina/Zona%20A.jpg" alt="Referencia Zona A" style="width:100%;display:block;margin-bottom:20px;" onload="sendHeight()">
   
         <div class="sub-label" style="margin-top:20px;margin-bottom:16px;">Aluplas</div>
@@ -338,7 +347,7 @@
         </div>
 
   <!-- Zona B -->
-  <div class="cocina-zone-title" style="margin-top:40px;">Zona B — Trasera de isla y vinoteca</div>
+  <div class="cocina-zone-title" style="margin-top:40px;"><span data-i18n="cz_b">Zona B — Trasera de isla y vinoteca</span></div>
   <img src="https://arqamal.github.io/serena-breeze/img/cocina/Zona%20B.jpg" alt="Referencia Zona B" style="width:100%;display:block;margin-bottom:20px;" onload="sendHeight()">
   
         <div class="sub-label" style="margin-top:20px;margin-bottom:16px;">Aluplas</div>
@@ -372,21 +381,21 @@
           <div class="ccard" onclick="selAll('mueble_b','Negro',this,['cg-cb-a','cg-cb-o'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/oslo/COCO%20NEGRO.jpg') center/cover no-repeat;"></div><div class="clabel">Negro</div></div>
         </div>
 
-  <div class="nav-btns"><button class="btn btn-back" onclick="prev(6)">← Anterior</button><button class="btn btn-next" onclick="next(6)">Siguiente →</button></div>
+  <div class="nav-btns"><button class="btn btn-back" onclick="prev(6)" data-i18n="btn_back">← Anterior</button><button class="btn btn-next" onclick="next(6)" data-i18n="btn_next">Siguiente →</button></div>
 </div>
 
 <div class="step" id="step-7">
-  <div class="sec-eyebrow">07 — Cocina</div>
-  <h2 class="sec-title">Encimera de cocina</h2>
-  <p class="sec-desc">Elija el material y acabado de la encimera.</p>
-  <div class="sub-label">Compac (cuarzo)</div>
+  <div class="sec-eyebrow" data-i18n="ey7">07 — Cocina</div>
+  <h2 class="sec-title" data-i18n="t7">Encimera de cocina</h2>
+  <p class="sec-desc" data-i18n="d7">Elija el material y acabado de la encimera.</p>
+  <div class="sub-label" data-i18n="sl_compac">Compac (cuarzo)</div>
   <div class="grid" id="grid-compac">
     <div class="card" onclick="selEnc('encimera','Luna',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/encimera/compac/compac-luna-pulido-cabecera.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Luna</div><div class="card-dims">Compac</div></div></div>
     <div class="card" onclick="selEnc('encimera','Ceniza',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/encimera/compac/compac-ceniza-pulido-cabecera.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Ceniza</div><div class="card-dims">Compac</div></div></div>
     <div class="card" onclick="selEnc('encimera','Arena',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/encimera/compac/compac-arena-pulido-cabecera.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Arena</div><div class="card-dims">Compac</div></div></div>
     <div class="card" onclick="selEnc('encimera','Plomo',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/encimera/compac/compac-plomo-pulido-cabecera.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Plomo</div><div class="card-dims">Compac</div></div></div>
   </div>
-  <div class="sub-label" style="margin-top:28px;">Porcelánico</div>
+  <div class="sub-label" style="margin-top:28px;" data-i18n="sl_porc7">Porcelánico</div>
   <div class="grid" id="grid-porc">
     <div class="card" onclick="selEnc('encimera','White Snow',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/encimera/porcelanico/CUPASTONE%20White%20snow.jpg') center/cover;"></div><div class="card-info"><div class="card-name">White Snow</div><div class="card-dims">Porcelánico</div></div></div>
     <div class="card" onclick="selEnc('encimera','Nero Saint Laurent',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/encimera/porcelanico/CUPASTONE%20Nero%20Saint%20Laurent.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Nero Saint Laurent</div><div class="card-dims">Porcelánico</div></div></div>
@@ -394,93 +403,98 @@
     <div class="card" onclick="selEnc('encimera','Dolomiti',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/encimera/porcelanico/CUPASTONE%20Dolomiti.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Dolomiti</div><div class="card-dims">Porcelánico</div></div></div>
     <div class="card" onclick="selEnc('encimera','Borghini',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/encimera/porcelanico/CUPASTONE%20Borghini.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Borghini</div><div class="card-dims">Porcelánico</div></div></div>
   </div>
-  <div class="nav-btns"><button class="btn btn-back" onclick="prev(7)">← Anterior</button><button class="btn btn-next" onclick="next(7)">Siguiente →</button></div>
+  <div class="nav-btns"><button class="btn btn-back" onclick="prev(7)" data-i18n="btn_back">← Anterior</button><button class="btn btn-next" onclick="next(7)" data-i18n="btn_next">Siguiente →</button></div>
 </div>
 
 <div class="step" id="step-8">
-  <div class="sec-eyebrow">08 — Piscina</div>
-  <h2 class="sec-title">Revestimiento de piscina</h2>
-  <p class="sec-desc">Elija entre gresite o porcelánico esmaltado.</p>
+  <div class="sec-eyebrow" data-i18n="ey8">08 — Piscina</div>
+  <h2 class="sec-title" data-i18n="t8">Revestimiento de piscina</h2>
+  <p class="sec-desc" data-i18n="d8">Elija entre gresite o porcelánico esmaltado.</p>
   <div class="sub-label">Gresite</div>
   <div class="grid" id="pool-gresite">
-    <div class="card" onclick="selPool('PS 55',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/piscina/gresite/PS55.jpg') center/cover;"></div><div class="card-info"><div class="card-name">PS 55</div><div class="card-dims">Azul profundo</div></div></div>
-    <div class="card" onclick="selPool('PS 53',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/piscina/gresite/PS53.jpg') center/cover;"></div><div class="card-info"><div class="card-name">PS 53</div><div class="card-dims">Azul medio</div></div></div>
-    <div class="card" onclick="selPool('PS 50',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/piscina/gresite/PS50.jpg') center/cover;"></div><div class="card-info"><div class="card-name">PS 50</div><div class="card-dims">Azul claro</div></div></div>
-    <div class="card" onclick="selPool('Menta',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/piscina/gresite/Menta.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Menta</div><div class="card-dims">Verde menta</div></div></div>
-    <div class="card" onclick="selPool('Verde Oscuro Niebla',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/piscina/gresite/Verde%20Oscuro%20Niebla.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Verde Oscuro Niebla</div><div class="card-dims">Verde grisáceo</div></div></div>
-    <div class="card" onclick="selPool('PS 25',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/piscina/gresite/ps25.jpg') center/cover;"></div><div class="card-info"><div class="card-name">PS 25</div><div class="card-dims">Blanco nacarado</div></div></div>
+    <div class="card" onclick="selPool('PS 55',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/piscina/gresite/PS55.jpg') center/cover;"></div><div class="card-info"><div class="card-name">PS 55</div><div class="card-dims" data-i18n="pd_1">Azul profundo</div></div></div>
+    <div class="card" onclick="selPool('PS 53',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/piscina/gresite/PS53.jpg') center/cover;"></div><div class="card-info"><div class="card-name">PS 53</div><div class="card-dims" data-i18n="pd_2">Azul medio</div></div></div>
+    <div class="card" onclick="selPool('PS 50',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/piscina/gresite/PS50.jpg') center/cover;"></div><div class="card-info"><div class="card-name">PS 50</div><div class="card-dims" data-i18n="pd_3">Azul claro</div></div></div>
+    <div class="card" onclick="selPool('Menta',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/piscina/gresite/Menta.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Menta</div><div class="card-dims" data-i18n="pd_4">Verde menta</div></div></div>
+    <div class="card" onclick="selPool('Verde Oscuro Niebla',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/piscina/gresite/Verde%20Oscuro%20Niebla.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Verde Oscuro Niebla</div><div class="card-dims" data-i18n="pd_5">Verde grisáceo</div></div></div>
+    <div class="card" onclick="selPool('PS 25',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/piscina/gresite/ps25.jpg') center/cover;"></div><div class="card-info"><div class="card-name">PS 25</div><div class="card-dims" data-i18n="pd_6">Blanco nacarado</div></div></div>
   </div>
-  <div class="sub-label" style="margin-top:28px;">Porcelánico esmaltado</div>
+  <div class="sub-label" style="margin-top:28px;" data-i18n="sl_porc8">Porcelánico esmaltado</div>
   <div class="grid" id="pool-porcelanico">
-    <div class="card" onclick="selPool('Samoa Azul',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/piscina/porcelanico/SAMOA%20Azul.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Samoa Azul</div><div class="card-dims">Porcelánico esmaltado</div></div></div>
-    <div class="card" onclick="selPool('Samoa Turquesa',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/piscina/porcelanico/SAMOA%20Turquesa.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Samoa Turquesa</div><div class="card-dims">Porcelánico esmaltado</div></div></div>
+    <div class="card" onclick="selPool('Samoa Azul',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/piscina/porcelanico/SAMOA%20Azul.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Samoa Azul</div><div class="card-dims" data-i18n="pd_pe">Porcelánico esmaltado</div></div></div>
+    <div class="card" onclick="selPool('Samoa Turquesa',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/piscina/porcelanico/SAMOA%20Turquesa.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Samoa Turquesa</div><div class="card-dims" data-i18n="pd_pe">Porcelánico esmaltado</div></div></div>
   </div>
-  <div class="nav-btns"><button class="btn btn-back" onclick="prev(8)">← Anterior</button><button class="btn btn-next" onclick="next(8)">Siguiente →</button></div>
+  <div class="nav-btns"><button class="btn btn-back" onclick="prev(8)" data-i18n="btn_back">← Anterior</button><button class="btn btn-next" onclick="next(8)" data-i18n="btn_next">Siguiente →</button></div>
 </div>
 
 <div class="step" id="step-9">
-  <div class="sec-eyebrow">09 — Confirmación</div>
-  <h2 class="sec-title">Resumen de su elección</h2>
-  <p class="sec-desc">Revise sus selecciones antes de confirmar. Recibirá una copia por email.</p>
+  <div class="sec-eyebrow" data-i18n="ey9">09 — Confirmación</div>
+  <h2 class="sec-title" data-i18n="t9">Resumen de su elección</h2>
+  <p class="sec-desc" data-i18n="d9">Revise sus selecciones antes de confirmar. Recibirá una copia por email.</p>
   <div class="summary-grid" id="summaryGrid"></div>
   <div class="form-block">
-    <div class="form-title">Sus datos</div>
+    <div class="form-title" data-i18n="ft">Sus datos</div>
     <div class="form-row">
       <div class="fgroup">
-        <label class="flabel">Promoción</label>
+        <label class="flabel" data-i18n="fl_promo">Promoción</label>
         <select class="finput" id="cPromo" onchange="updateViviendas()">
-          <option value="">Seleccione promoción…</option>
+          <option value="" data-i18n="opt_promo">Seleccione promoción…</option>
           <option value="Serena Breeze 2">Serena Breeze 2</option>
           <option value="Serena Breeze 3">Serena Breeze 3</option>
         </select>
       </div>
       <div class="fgroup">
-        <label class="flabel">Vivienda</label>
+        <label class="flabel" data-i18n="fl_unit">Vivienda</label>
         <select class="finput" id="cUnit" disabled>
           <option value="">Seleccione primero la promoción…</option>
         </select>
       </div>
     </div>
     <div class="form-row">
-      <div class="fgroup"><label class="flabel">Nombre completo</label><input class="finput" id="cName" type="text" placeholder="Nombre y apellidos"></div>
-      <div class="fgroup"><label class="flabel">Email</label><input class="finput" id="cEmail" type="email" placeholder="correo@ejemplo.com"></div>
+      <div class="fgroup"><label class="flabel" data-i18n="fl_name">Nombre completo</label><input class="finput" id="cName" type="text" placeholder="Nombre y apellidos" data-i18n="ip_name" data-i18n-attr="placeholder"></div>
+      <div class="fgroup"><label class="flabel" data-i18n="fl_email">Email</label><input class="finput" id="cEmail" type="email" placeholder="correo@ejemplo.com"></div>
     </div>
     <div class="form-row">
-      <div class="fgroup"><label class="flabel">Teléfono</label><input class="finput" id="cPhone" type="tel" placeholder="+34 600 000 000"></div>
-      <div class="fgroup"><label class="flabel">Observaciones (opcional)</label><input class="finput" id="cNotes" type="text" placeholder="Comentarios adicionales"></div>
+      <div class="fgroup"><label class="flabel" data-i18n="fl_phone">Teléfono</label><input class="finput" id="cPhone" type="tel" placeholder="+34 600 000 000"></div>
+      <div class="fgroup"><label class="flabel" data-i18n="fl_notes">Observaciones (opcional)</label><input class="finput" id="cNotes" type="text" placeholder="Comentarios adicionales" data-i18n="ip_notes" data-i18n-attr="placeholder"></div>
     </div>
   </div>
   <div class="nav-btns">
-    <button class="btn btn-back" onclick="prev(9)">← Anterior</button>
-    <button class="btn btn-submit" onclick="submit()">Confirmar elección →</button>
+    <button class="btn btn-back" onclick="prev(9)" data-i18n="btn_back">← Anterior</button>
+    <button class="btn btn-submit" onclick="submit()" data-i18n="btn_submit">Confirmar elección →</button>
   </div>
 </div>
 <div class="success" id="success">
   <div class="success-line"></div>
-  <h2>Elección confirmada</h2>
-  <p>Hemos recibido su selección de materiales.<br>En breve recibirá un email de confirmación.<br>Si no lo recibe, póngase en contacto con jose@amalconsult.com.</p>
+  <h2 data-i18n="suc_t">Elección confirmada</h2>
+  <p data-i18n="suc_p" data-i18n-attr="html">Hemos recibido su selección de materiales.<br>En breve recibirá un email de confirmación.<br>Si no lo recibe, póngase en contacto con jose@amalconsult.com.</p>
 </main>
 <script>
 
   const S = {};
 
   // Orden canónico de pasos para el resumen
-  const LABELS = [
-    ['pav_int',     'Pavimento interior'],
-    ['pav_ext',     'Pavimento exterior'],
-    ['alic_bano1',  'Alicatado Baño 1 (Suite)'],
-    ['alic_bano2',  'Alicatado Baño 2'],
-    ['alic_tv',     'Alicatado Zona TV'],
-    ['bano1_mueble','Mueble Baño 1 (Flow)'],
-    ['bano1_lavabo','Lavabo Baño 1 (Masai)'],
-    ['bano2_frente','Frente Baño 2 (Lambda)'],
-    ['bano2_lavabo','Lavabo Baño 2 (Masai)'],
-    ['interior',    'Interiores cocina'],
-    ['mueble_a',    'Mueble cocina Zona A'],
-    ['mueble_b',    'Mueble cocina Zona B'],
-    ['encimera',    'Encimera cocina'],
-    ['piscina',     'Piscina']
-  ];
+  let LANG = 'es';
+  const LABELS_I18N = {
+    pav_int:     { es:'Pavimento interior',        en:'Interior flooring' },
+    pav_ext:     { es:'Pavimento exterior',         en:'Exterior flooring' },
+    alic_bano1:  { es:'Alicatado Baño 1 (Suite)',   en:'Wall tiles Bathroom 1 (Suite)' },
+    alic_bano2:  { es:'Alicatado Baño 2',           en:'Wall tiles Bathroom 2' },
+    alic_tv:     { es:'Alicatado Zona TV',          en:'Wall tiles TV area' },
+    bano1_mueble:{ es:'Mueble Baño 1 (Flow)',       en:'Vanity Bathroom 1 (Flow)' },
+    bano1_lavabo:{ es:'Lavabo Baño 1 (Masai)',      en:'Washbasin Bathroom 1 (Masai)' },
+    bano2_frente:{ es:'Frente Baño 2 (Lambda)',     en:'Front Bathroom 2 (Lambda)' },
+    bano2_lavabo:{ es:'Lavabo Baño 2 (Masai)',      en:'Washbasin Bathroom 2 (Masai)' },
+    interior:    { es:'Interiores cocina',           en:'Kitchen interiors' },
+    mueble_a:    { es:'Mueble cocina Zona A',       en:'Kitchen cabinet Zone A' },
+    mueble_b:    { es:'Mueble cocina Zona B',       en:'Kitchen cabinet Zone B' },
+    encimera:    { es:'Encimera cocina',             en:'Kitchen countertop' },
+    piscina:     { es:'Piscina',                     en:'Pool' }
+  };
+  function getLABELS() {
+    return Object.entries(LABELS_I18N).map(([k,v]) => [k, v[LANG]]);
+  }
+  const LABELS = Object.entries(LABELS_I18N).map(([k,v]) => [k, v.es]);
 
   // Opciones de vivienda por promoción
   const VIVIENDAS = {
@@ -497,12 +511,12 @@
     const sel = document.getElementById('cUnit');
     sel.innerHTML = '';
     if (!promo) {
-      sel.innerHTML = '<option value="">Seleccione primero la promoción…</option>';
+      sel.innerHTML = '<option value="">' + (LANG==='es' ? 'Seleccione primero la promoción…' : 'Select a development first…') + '</option>';
       sel.disabled = true;
       return;
     }
     sel.disabled = false;
-    sel.innerHTML = '<option value="">Seleccione vivienda…</option>' +
+    sel.innerHTML = '<option value="">' + (LANG==='es' ? 'Seleccione vivienda…' : 'Select property…') + '</option>' +
       VIVIENDAS[promo].map(v => `<option value="${v}">${v}</option>`).join('');
   }
 
@@ -524,11 +538,11 @@
   function updateBano1Ref() {
     const wrap = document.getElementById('bano1-ref-wrap');
     if (!bano1Mueble || !bano1Lavabo) {
-      let msg = 'Seleccione ';
-      if (!bano1Mueble && !bano1Lavabo) msg += 'el mueble y el lavabo';
-      else if (!bano1Mueble) msg += 'el color del mueble';
-      else msg += 'el color del lavabo';
-      msg += ' para ver la combinación';
+      let msg = LANG==='es' ? 'Seleccione ' : 'Select ';
+      if (!bano1Mueble && !bano1Lavabo) msg += LANG==='es' ? 'el mueble y el lavabo' : 'the vanity and washbasin';
+      else if (!bano1Mueble) msg += LANG==='es' ? 'el color del mueble' : 'the vanity colour';
+      else msg += LANG==='es' ? 'el color del lavabo' : 'the washbasin colour';
+      msg += LANG==='es' ? ' para ver la combinación' : ' to see the combination';
       wrap.innerHTML = '<p style="font-family:\'Roboto\',sans-serif; font-size:13px; color:var(--mid); text-align:center; padding:40px;">' + msg + '</p>';
       return;
     }
@@ -588,11 +602,11 @@
   function updateBano2Ref() {
     const wrap = document.getElementById('bano2-ref-wrap');
     if (!bano2Frente || !bano2Lavabo) {
-      let msg = 'Seleccione ';
-      if (!bano2Frente && !bano2Lavabo) msg += 'el mueble y el lavabo';
-      else if (!bano2Frente) msg += 'el color del mueble';
-      else msg += 'el color del lavabo';
-      msg += ' para ver la combinación';
+      let msg = LANG==='es' ? 'Seleccione ' : 'Select ';
+      if (!bano2Frente && !bano2Lavabo) msg += LANG==='es' ? 'el mueble y el lavabo' : 'the vanity and washbasin';
+      else if (!bano2Frente) msg += LANG==='es' ? 'el color del mueble' : 'the vanity colour';
+      else msg += LANG==='es' ? 'el color del lavabo' : 'the washbasin colour';
+      msg += LANG==='es' ? ' para ver la combinación' : ' to see the combination';
       wrap.innerHTML = '<p style="font-family:\'Roboto\',sans-serif; font-size:13px; color:var(--mid); text-align:center; padding:40px;">' + msg + '</p>';
       return;
     }
@@ -812,11 +826,11 @@
     const unit  = document.getElementById('cUnit').value;
 
     if (!name || !email) {
-      alert('Por favor, introduzca su nombre y email antes de confirmar.');
+      alert(LANG==='es' ? 'Por favor, introduzca su nombre y email antes de confirmar.' : 'Please enter your name and email before confirming.');
       return;
     }
     if (!promo || !unit) {
-      alert('Por favor, seleccione la promoción y la vivienda antes de confirmar.');
+      alert(LANG==='es' ? 'Por favor, seleccione la promoción y la vivienda antes de confirmar.' : 'Please select the development and property before confirming.');
       return;
     }
 
@@ -875,6 +889,142 @@
 
   document.addEventListener('DOMContentLoaded', buildSummary);
 
+
+
+  // ═══ TRANSLATIONS ═══
+  const T = {
+    // Nav
+    nav1: { es:'01 · Pav. interior',  en:'01 · Int. flooring' },
+    nav2: { es:'02 · Pav. exterior',  en:'02 · Ext. flooring' },
+    nav3: { es:'03 · Alicatado',      en:'03 · Wall tiles' },
+    nav4: { es:'04 · Baño 1 (Suite)', en:'04 · Bathroom 1 (Suite)' },
+    nav5: { es:'05 · Baño 2',         en:'05 · Bathroom 2' },
+    nav6: { es:'06 · Muebles cocina', en:'06 · Kitchen cabinets' },
+    nav7: { es:'07 · Encimera',       en:'07 · Countertop' },
+    nav8: { es:'08 · Piscina',        en:'08 · Pool' },
+    nav9: { es:'09 · Confirmar',      en:'09 · Confirm' },
+    // Eyebrows
+    ey1: { es:'01 — Pavimentos',       en:'01 — Flooring' },
+    ey2: { es:'02 — Pavimentos',       en:'02 — Flooring' },
+    ey3: { es:'03 — Alicatado',        en:'03 — Wall tiles' },
+    ey4: { es:'04 — Baño 1 (Suite)',   en:'04 — Bathroom 1 (Suite)' },
+    ey5: { es:'05 — Baño 2',          en:'05 — Bathroom 2' },
+    ey6: { es:'06 — Cocina',           en:'06 — Kitchen' },
+    ey7: { es:'07 — Cocina',           en:'07 — Kitchen' },
+    ey8: { es:'08 — Piscina',          en:'08 — Pool' },
+    ey9: { es:'09 — Confirmación',     en:'09 — Confirmation' },
+    // Titles
+    t1: { es:'Pavimento interior',            en:'Interior flooring' },
+    t2: { es:'Pavimento exterior',            en:'Exterior flooring' },
+    t3: { es:'Alicatado de baños y zona TV',  en:'Bathroom and TV area wall tiles' },
+    t4: { es:'Mueble y lavabo',               en:'Vanity unit and washbasin' },
+    t5: { es:'Mueble y lavabo',               en:'Vanity unit and washbasin' },
+    t6: { es:'Muebles de cocina',             en:'Kitchen cabinets' },
+    t7: { es:'Encimera de cocina',            en:'Kitchen countertop' },
+    t8: { es:'Revestimiento de piscina',      en:'Pool finish' },
+    t9: { es:'Resumen de su elección',        en:'Summary of your selection' },
+    // Descriptions
+    d1: { es:'Solado con baldosas de gres porcelánico 100×100 cm.',
+          en:'Porcelain stoneware floor tiles 100×100 cm.' },
+    d2: { es:'Solado exterior de la vivienda.',
+          en:'Outdoor flooring for the property.' },
+    d3: { es:'Gres porcelánico o pasta blanca rectificada 60×120 cm. Puede elegir una opción diferente para cada espacio.',
+          en:'Rectified porcelain stoneware or white body tiles 60×120 cm. You may choose a different option for each area.' },
+    d4: { es:'Mueble suspendido Flow (120 cm) con lavabo de resina Masai. Elija el acabado del mueble y el color del lavabo.',
+          en:'Wall-mounted Flow vanity unit (120 cm) with Masai resin washbasin. Choose the vanity finish and washbasin colour.' },
+    d5: { es:'Mueble suspendido Lambda (80 cm) con lavabo de resina Masai. Elija el color del frente del mueble y el color del lavabo.',
+          en:'Wall-mounted Lambda vanity unit (80 cm) with Masai resin washbasin. Choose the front colour and washbasin colour.' },
+    d6: { es:'Puede elegir acabados diferentes para los interiores, la Zona A (frentes de armario) y la Zona B (trasera de isla y vinoteca).',
+          en:'You may choose different finishes for the interiors, Zone A (cabinet fronts) and Zone B (island back panel and wine cabinet).' },
+    d7: { es:'Elija el material y acabado de la encimera.',
+          en:'Choose the countertop material and finish.' },
+    d8: { es:'Elija entre gresite o porcelánico esmaltado.',
+          en:'Choose between mosaic tiles or glazed porcelain.' },
+    d9: { es:'Revise sus selecciones antes de confirmar. Recibirá una copia por email.',
+          en:'Review your selections before confirming. You will receive a copy by email.' },
+    // Note
+    note2: { es:'Le aconsejamos elegir el mismo pavimento que haya elegido para el interior, pero puede optar por cualquiera de las siguientes opciones.',
+             en:'We recommend choosing the same flooring as the interior, but you may select any of the following options.' },
+    // Sub-labels
+    sl_b1:  { es:'Baño 1 (Suite)',           en:'Bathroom 1 (Suite)' },
+    sl_b2:  { es:'Baño 2',                   en:'Bathroom 2' },
+    sl_tv:  { es:'Zona TV',                  en:'TV Area' },
+    sl_b1m: { es:'Color del mueble — Flow',  en:'Vanity colour — Flow' },
+    sl_b1l: { es:'Color del lavabo — Masai', en:'Washbasin colour — Masai' },
+    sl_b2f: { es:'Color del frente — Lambda',en:'Front colour — Lambda' },
+    sl_b2l: { es:'Color del lavabo — Masai', en:'Washbasin colour — Masai' },
+    sl_compac: { es:'Compac (cuarzo)',        en:'Compac (quartz)' },
+    sl_porc7:  { es:'Porcelánico',            en:'Porcelain' },
+    sl_porc8:  { es:'Porcelánico esmaltado',  en:'Glazed porcelain' },
+    // Cocina zones
+    cz_int: { es:'Interiores',                        en:'Interiors' },
+    cz_a:   { es:'Zona A — Frentes de armario',       en:'Zone A — Cabinet fronts' },
+    cz_b:   { es:'Zona B — Trasera de isla y vinoteca',en:'Zone B — Island back panel and wine cabinet' },
+    // Captions
+    cap4: { es:'La imagen muestra la combinación del mueble Flow con el lavabo Masai en los colores seleccionados.',
+            en:'The image shows the selected Flow vanity and Masai washbasin colour combination.' },
+    cap5: { es:'Mueble suspendido Lambda con lavabo Masai. Los colores del frente y del lavabo varían según la elección.',
+            en:'Wall-mounted Lambda vanity with Masai washbasin. Front and washbasin colours vary according to selection.' },
+    // Placeholders bano
+    ph_bano1: { es:'Seleccione el mueble y el lavabo para ver la combinación',
+                en:'Select the vanity and washbasin to see the combination' },
+    ph_bano2: { es:'Seleccione el mueble y el lavabo para ver la combinación',
+                en:'Select the vanity and washbasin to see the combination' },
+    // Pool descriptions
+    pd_1:  { es:'Azul profundo',        en:'Deep blue' },
+    pd_2:  { es:'Azul medio',           en:'Medium blue' },
+    pd_3:  { es:'Azul claro',           en:'Light blue' },
+    pd_4:  { es:'Verde menta',          en:'Mint green' },
+    pd_5:  { es:'Verde grisáceo',       en:'Greyish green' },
+    pd_6:  { es:'Blanco nacarado',      en:'Pearly white' },
+    pd_pe: { es:'Porcelánico esmaltado',en:'Glazed porcelain' },
+    // Form
+    ft:       { es:'Sus datos',                    en:'Your details' },
+    fl_promo: { es:'Promoción',                    en:'Development' },
+    fl_unit:  { es:'Vivienda',                     en:'Property' },
+    fl_name:  { es:'Nombre completo',              en:'Full name' },
+    fl_email: { es:'Email',                        en:'Email' },
+    fl_phone: { es:'Teléfono',                     en:'Phone' },
+    fl_notes: { es:'Observaciones (opcional)',      en:'Comments (optional)' },
+    opt_promo:{ es:'Seleccione promoción…',         en:'Select development…' },
+    ip_name:  { es:'Nombre y apellidos',            en:'Full name' },
+    ip_notes: { es:'Comentarios adicionales',       en:'Additional comments' },
+    // Buttons
+    btn_next:   { es:'Siguiente →', en:'Next →' },
+    btn_back:   { es:'← Anterior',  en:'← Back' },
+    btn_submit: { es:'Confirmar elección →', en:'Confirm selection →' },
+    // Success
+    suc_t: { es:'Elección confirmada', en:'Selection confirmed' },
+    suc_p: { es:'Hemos recibido su selección de materiales.<br>En breve recibirá un email de confirmación.<br>Si no lo recibe, póngase en contacto con jose@amalconsult.com.',
+             en:'We have received your material selection.<br>You will shortly receive a confirmation email.<br>If you don\'t receive it, please contact jose@amalconsult.com.' }
+  };
+
+  function setLang(lang) {
+    LANG = lang;
+    document.getElementById('btn-es').classList.toggle('active', lang==='es');
+    document.getElementById('btn-en').classList.toggle('active', lang==='en');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      if (!T[key]) return;
+      const attr = el.dataset.i18nAttr;
+      if (attr === 'placeholder') el.placeholder = T[key][lang];
+      else if (attr === 'html') el.innerHTML = T[key][lang];
+      else el.textContent = T[key][lang];
+    });
+    // Update dynamic select options
+    const promoSel = document.getElementById('cPromo');
+    if (promoSel.options[0] && !promoSel.options[0].value) {
+      promoSel.options[0].textContent = T.opt_promo[lang];
+    }
+    const unitSel = document.getElementById('cUnit');
+    if (unitSel.disabled && unitSel.options[0]) {
+      unitSel.options[0].textContent = lang==='es' ? 'Seleccione primero la promoción…' : 'Select a development first…';
+    } else if (!unitSel.disabled && unitSel.options[0] && !unitSel.options[0].value) {
+      unitSel.options[0].textContent = lang==='es' ? 'Seleccione vivienda…' : 'Select property…';
+    }
+    // Rebuild summary with new language
+    buildSummary();
+  }
 
   function sendHeight() {
     window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, '*');
