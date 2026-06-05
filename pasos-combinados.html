@@ -19,7 +19,8 @@
     --black: #111111;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 14px; font-weight: 400; }
+  html { overflow-x: hidden; }
+  body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 14px; font-weight: 400; overflow-x: hidden; overflow-y: visible; }
 
   /* ── HEADER (solo preview) ── */
   header { border-bottom: 1px solid var(--border); padding: 0 48px; height: 64px; display: flex; align-items: center; justify-content: space-between; background: var(--white); position: sticky; top: 0; z-index: 100; }
@@ -35,7 +36,7 @@
   .hero-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.8; max-width: 480px; }
 
   /* ── STEP NAV ── */
-  .step-nav-wrap { border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+  .step-nav-wrap { border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; position: sticky; top: 0; z-index: 50; background: var(--white); }
   .step-nav-wrap::-webkit-scrollbar { display: none; }
   .step-nav { display: flex; padding: 0 48px; min-width: max-content; }
   .snav-item { padding: 14px 20px; font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .2s; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
@@ -46,7 +47,7 @@
   .snav-item.done .snav-dot { display: block; }
 
   /* ── MAIN ── */
-  main { max-width: 1080px; margin: 0 auto; padding: 56px 48px 80px; }
+  main { max-width: 1080px; margin: 0 auto; padding: 56px 48px 80px; overflow-x: hidden; }
   .sec-eyebrow { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 10px; }
   .sec-title { font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 400; text-transform: uppercase; color: var(--black); margin-bottom: 12px; letter-spacing: 1px; }
   .sec-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.7; max-width: 600px; margin-bottom: 40px; }
@@ -165,6 +166,7 @@
     <div class="snav-item" onclick="goTo(8)" data-step="8"><div class="snav-dot"></div><span data-i18n="nav8">08 · Piscina</span></div>
     <div class="snav-item" onclick="goTo(9)" data-step="9"><div class="snav-dot"></div><span data-i18n="nav9">09 · Confirmar</span></div>
   </div>
+</div>
 <main>
 <div class="step active" id="step-1">
   <div class="sec-eyebrow" data-i18n="ey1">01 — Pavimentos</div>
