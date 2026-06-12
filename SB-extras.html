@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serena Breeze — Extras</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #FFFFFF;
+    --off-white: #F7F6F4;
+    --border: #E0DDD8;
+    --mid: #B0AA9F;
+    --slate-gray: #6B7280;
+    --text: #2A2520;
+    --black: #111111;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 14px; }
+
+  .step-nav-wrap { border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; position: sticky; top: 0; z-index: 100; background: var(--white); }
+  .step-nav-wrap::-webkit-scrollbar { display: none; }
+  .step-nav { display: flex; padding: 0 48px; min-width: max-content; }
+  .snav-item { padding: 14px 20px; font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .2s; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+  .snav-item:hover { color: var(--text); }
+  .snav-item.active { color: var(--black); border-bottom-color: var(--black); }
+  .snav-item.done { color: var(--text); }
+  .snav-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--black); display: none; }
+  .snav-item.done .snav-dot { display: block; }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 48px 48px 80px; }
+  .sec-eyebrow { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 10px; }
+  .sec-title { font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 400; text-transform: uppercase; color: var(--black); margin-bottom: 12px; letter-spacing: 1px; }
+  .sec-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.7; max-width: 600px; margin-bottom: 36px; }
+  .sub-area-label { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 12px; margin-top: 36px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+
+  /* TABLE */
+  .extras-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+  .extras-table th { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate-gray); text-align: left; padding: 10px 10px; border-bottom: 1px solid var(--border); font-weight: 400; white-space: nowrap; }
+  .extras-table th.tc { text-align: center; width: 72px; }
+  .extras-table th.tr { text-align: right; width: 120px; }
+  .extras-table th.tn { width: 170px; }
+  .extras-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .extras-table tr:last-child td { border-bottom: none; }
+  .extras-table tr:hover td { background: var(--off-white); }
+  .extra-name { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); }
+  .extra-subline { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--slate-gray); margin-top: 3px; padding-left: 8px; }
+  .extra-oficio { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--mid); background: var(--off-white); border: 1px solid var(--border); padding: 1px 5px; margin-left: 4px; border-radius: 2px; }
+  .oficio-badge { display: inline-block; font-family: 'Roboto', sans-serif; font-size: 9px; font-weight: 400; letter-spacing: 1.5px; text-transform: uppercase; color: #E87722; background: #FEF3EA; border: 1px solid #F5C89A; padding: 3px 7px; border-radius: 2px; white-space: nowrap; }
+  .extras-table th.to { width: 130px; text-align: center; }
+  .extra-pedido { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: white; background: var(--black); padding: 1px 5px; margin-left: 6px; border-radius: 2px; }
+  .extra-desc { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--slate-gray); margin-top: 2px; font-weight: 300; }
+
+  /* INPUTS */
+  .inp { border: 1px solid var(--border); padding: 7px 10px; font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); background: var(--white); outline: none; transition: border-color .2s; border-radius: 0; -webkit-appearance: none; width: 100%; }
+  .inp:focus { border-color: var(--black); }
+  .inp-qty { width: 64px; text-align: center; }
+  .inp-price { width: 96px; text-align: right; }
+  .inp-total { font-family: 'Oswald', sans-serif; font-size: 14px; color: var(--black); text-align: right; display: block; }
+  .inp-total.consultar { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--mid); font-style: italic; }
+  .inp-name { width: 100%; font-size: 13px; }
+  .inp-notes { width: 100%; font-size: 12px; }
+
+  /* CUSTOM ROW */
+  .custom-row td { background: var(--off-white); }
+  .custom-row:hover td { background: #f0ede8; }
+  .custom-row-label { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--mid); margin-bottom: 3px; }
+
+  /* AREA TOTAL */
+  .area-total-row { display: flex; justify-content: flex-end; align-items: center; gap: 16px; padding: 10px 10px; background: var(--off-white); border: 1px solid var(--border); margin-top: 4px; }
+  .area-total-label { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate-gray); }
+  .area-total-val { font-family: 'Oswald', sans-serif; font-size: 18px; color: var(--black); min-width: 110px; text-align: right; }
+
+  /* NAV */
+  .nav-btns { display: flex; justify-content: space-between; align-items: center; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); }
+  .btn { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; padding: 14px 32px; border: none; transition: all .2s; }
+  .btn-back { background: transparent; color: var(--slate-gray); border: 1px solid var(--border); }
+  .btn-back:hover { border-color: var(--black); color: var(--black); }
+  .btn-next { background: var(--black); color: white; }
+  .btn-next:hover { background: #333; }
+  .btn-submit { background: var(--black); color: white; padding: 14px 48px; }
+  .btn-submit:hover { background: #333; }
+
+  /* SUMMARY */
+  .summary-area { margin-bottom: 28px; }
+  .summary-area-title { font-family: 'Oswald', sans-serif; font-size: 15px; text-transform: uppercase; color: var(--black); padding: 10px 0 8px; border-bottom: 2px solid var(--black); letter-spacing: 1px; }
+  .sum-table { width: 100%; border-collapse: collapse; }
+  .sum-table td { padding: 8px 10px; border-bottom: 1px solid var(--border); font-family: 'Roboto', sans-serif; font-size: 13px; }
+  .sum-table td:nth-child(2) { width: 60px; text-align: center; color: var(--slate-gray); font-size: 12px; }
+  .sum-table td:nth-child(3) { width: 110px; text-align: right; font-family: 'Oswald', sans-serif; font-size: 14px; color: var(--black); }
+  .sum-table td:nth-child(4) { width: 160px; font-size: 11px; color: var(--slate-gray); }
+
+  .grand-total { display: flex; justify-content: flex-end; align-items: baseline; gap: 20px; padding: 20px 0; border-top: 2px solid var(--black); margin-top: 20px; margin-bottom: 36px; }
+  .grand-total-label { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); }
+  .grand-total-val { font-family: 'Oswald', sans-serif; font-size: 28px; color: var(--black); }
+  .grand-total-vat { font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--slate-gray); margin-top: 4px; }
+
+  /* FORM */
+  .form-block { border: 1px solid var(--border); padding: 32px; margin-bottom: 28px; }
+  .form-title { font-family: 'Oswald', sans-serif; font-size: 20px; font-weight: 400; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 24px; color: var(--black); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 16px; }
+  .fgroup { display: flex; flex-direction: column; gap: 7px; }
+  .flabel { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); }
+  .finput { border: 1px solid var(--border); padding: 11px 14px; font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--text); background: var(--white); outline: none; transition: border-color .2s; border-radius: 0; }
+  .finput:focus { border-color: var(--black); }
+  select.finput { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; }
+
+  /* SUCCESS */
+  .step { display: none; }
+  .step.active { display: block; }
+
+  /* LOAD INDICATOR */
+  #load-indicator {
+    display: none;
+    font-family: 'Roboto', sans-serif; font-size: 12px;
+    color: var(--slate-gray); padding: 8px 16px;
+    background: var(--off-white); border: 1px solid var(--border);
+    margin-bottom: 16px; letter-spacing: 0.5px;
+  }
+  #load-indicator.ok { color: #2d7a2d; background: #f0faf0; border-color: #b8ddb8; }
+
+  /* STEP 12 — FIRMA */
+  .firma-block { border: 1px solid var(--border); padding: 32px; margin-bottom: 24px; }
+  .firma-title { font-family: 'Oswald', sans-serif; font-size: 20px; font-weight: 400; text-transform: uppercase; letter-spacing: 1px; color: var(--black); margin-bottom: 8px; }
+  .firma-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); margin-bottom: 24px; line-height: 1.7; }
+  .firma-generating { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--mid); font-style: italic; padding: 20px 0; }
+  .btn-download-pdf { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; padding: 14px 32px; background: var(--black); color: white; border: none; transition: all .2s; display: inline-block; text-decoration: none; }
+  .btn-download-pdf:hover { background: #333; }
+  .upload-zone { border: 2px dashed var(--border); padding: 32px 20px; text-align: center; cursor: pointer; transition: border-color .2s; margin-top: 24px; }
+  .upload-zone:hover { border-color: var(--black); }
+  .upload-zone.has-file { border-color: #2d7a2d; background: #f0faf0; border-style: solid; }
+  .upload-zone-label { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); cursor: pointer; display: block; }
+  .upload-zone-hint { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--mid); margin-top: 6px; }
+  .upload-zone-filename { font-family: 'Roboto', sans-serif; font-size: 13px; color: #2d7a2d; margin-top: 8px; font-weight: 400; }
+  .docs-file-list { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .docs-file-item { display: flex; align-items: center; justify-content: space-between; background: var(--off-white); border: 1px solid var(--border); padding: 8px 12px; font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--text); }
+  .docs-file-item .remove-btn { font-size: 16px; cursor: pointer; color: var(--mid); background: none; border: none; padding: 0 4px; line-height: 1; }
+  .docs-file-item .remove-btn:hover { color: var(--black); }
+  .btn-enviar-docs { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; padding: 14px 48px; background: var(--black); color: white; border: none; transition: all .2s; margin-top: 24px; opacity: 0.4; pointer-events: none; }
+  .btn-enviar-docs.active { opacity: 1; pointer-events: auto; }
+  .btn-enviar-docs.active:hover { background: #333; }
+  .btn-enviar-firmado { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; padding: 14px 48px; background: var(--black); color: white; border: none; transition: all .2s; margin-top: 24px; opacity: 0.4; pointer-events: none; }
+  .btn-enviar-firmado.active { opacity: 1; pointer-events: auto; }
+  .btn-enviar-firmado.active:hover { background: #333; }
+  .status-chip { display: inline-block; font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; padding: 4px 12px; border-radius: 2px; margin-left: 12px; vertical-align: middle; }
+  .chip-enviado { background: #FEF3EA; color: #E87722; border: 1px solid #F5C89A; }
+  .chip-firmado { background: #f0faf0; color: #2d7a2d; border: 1px solid #b8ddb8; }
+
+  .lang-toggle { position: fixed; top: 52px; right: 16px; z-index: 10000; display: none; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; background: white; }
+  .lang-toggle.visible { display: flex; }
+  .lang-btn { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 1px; padding: 6px 12px; cursor: pointer; border: none; background: transparent; color: var(--slate-gray); transition: all .2s; }
+  .lang-btn.active { background: var(--black); color: white; }
+
+
+  @media (max-width: 768px) {
+    main { padding-left: 16px; padding-right: 16px; }
+    .step-nav { padding: 0 16px; }
+    .form-row { grid-template-columns: 1fr; }
+    .extras-table th.tn, .extras-table th.to, .extras-table td:nth-child(5), .extras-table td:nth-child(6) { display: none; }
+  }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    position: fixed; inset: 0; background: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+  }
+  .login-box {
+    width: 100%; max-width: 380px; padding: 48px 40px;
+    border: 1px solid var(--border);
+  }
+  .login-logo {
+    font-family: 'Oswald', sans-serif; font-size: 18px;
+    letter-spacing: 3px; text-transform: uppercase; color: var(--black);
+    margin-bottom: 6px;
+  }
+  .login-sub {
+    font-family: 'Roboto', sans-serif; font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--mid);
+    margin-bottom: 40px;
+  }
+  .login-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+  .login-label {
+    font-family: 'Roboto', sans-serif; font-size: 10px;
+    letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray);
+  }
+  .login-input {
+    border: 1px solid var(--border); padding: 12px 14px;
+    font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300;
+    color: var(--text); background: var(--white); outline: none;
+    transition: border-color .2s; border-radius: 0; width: 100%;
+  }
+  .login-input:focus { border-color: var(--black); }
+  .login-btn {
+    width: 100%; margin-top: 8px;
+    font-family: 'Oswald', sans-serif; font-size: 12px;
+    letter-spacing: 3px; text-transform: uppercase;
+    background: var(--black); color: white; border: none;
+    padding: 14px; cursor: pointer; transition: background .2s;
+  }
+  .login-btn:hover { background: #333; }
+  .login-error {
+    font-family: 'Roboto', sans-serif; font-size: 12px;
+    color: #c0392b; margin-top: 14px; text-align: center;
+    display: none;
+  }
+  #app-wrapper { display: none; }
+
+  /* ── VIVIENDA SEARCH ── */
+  #vivienda-screen {
+    position: fixed; inset: 0; background: var(--white);
+    display: none; align-items: center; justify-content: center;
+    z-index: 9998;
+  }
+  #vivienda-screen.visible { display: flex; }
+  .vsearch-box {
+    width: 100%; max-width: 420px; padding: 48px 40px;
+    border: 1px solid var(--border);
+  }
+  .vsearch-logo { font-family: 'Oswald', sans-serif; font-size: 18px;
+    letter-spacing: 3px; text-transform: uppercase; color: var(--black);
+    margin-bottom: 6px; }
+  .vsearch-sub { font-family: 'Roboto', sans-serif; font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--mid);
+    margin-bottom: 40px; }
+  .vsearch-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+  .vsearch-label { font-family: 'Roboto', sans-serif; font-size: 10px;
+    letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); }
+  .vsearch-select { border: 1px solid var(--border); padding: 12px 14px;
+    font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300;
+    color: var(--text); background: var(--white); outline: none;
+    transition: border-color .2s; border-radius: 0; width: 100%;
+    appearance: none; -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  .vsearch-select:focus { border-color: var(--black); }
+  .vsearch-btn { width: 100%; margin-top: 8px;
+    font-family: 'Oswald', sans-serif; font-size: 12px;
+    letter-spacing: 3px; text-transform: uppercase;
+    background: var(--black); color: white; border: none;
+    padding: 14px; cursor: pointer; transition: background .2s; }
+  .vsearch-btn:hover { background: #333; }
+  .vsearch-btn.secondary { background: transparent; color: var(--slate-gray);
+    border: 1px solid var(--border); margin-top: 8px; }
+  .vsearch-btn.secondary:hover { border-color: var(--black); color: var(--black); }
+  .vsearch-info { font-family: 'Roboto', sans-serif; font-size: 12px;
+    color: var(--slate-gray); margin-top: 16px; line-height: 1.6;
+    padding: 12px 14px; background: var(--off-white);
+    border-left: 3px solid var(--border); display: none; }
+  .vsearch-info.visible { display: block; }
+  .vsearch-info.found { border-left-color: #2d7a2d; color: #2d7a2d; background: #f0faf0; }
+  .vsearch-info.new { border-left-color: var(--mid); }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Serena Breeze</div>
+    <div class="login-sub">Selector de extras · Uso interno</div>
+    <div class="login-field">
+      <label class="login-label">Usuario</label>
+      <input class="login-input" id="login-user" type="text" placeholder="Usuario" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Contraseña</label>
+      <input class="login-input" id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" onclick="doLogin()">Acceder →</button>
+    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
+  </div>
+</div>
+
+<div id="vivienda-screen">
+  <div class="vsearch-box">
+    <div class="vsearch-logo">Serena Breeze</div>
+    <div class="vsearch-sub" id="vs-sub">Selector de extras · Seleccione vivienda</div>
+    <div class="vsearch-field">
+      <label class="vsearch-label" id="vs-lbl-promo">Promoción</label>
+      <select class="vsearch-select" id="vs-promo" onchange="vsUpdateApts()">
+        <option value="">Seleccione promoción…</option>
+        <option value="Serena Breeze 2">Serena Breeze 2</option>
+        <option value="Serena Breeze 3">Serena Breeze 3</option>
+      </select>
+    </div>
+    <div class="vsearch-field">
+      <label class="vsearch-label" id="vs-lbl-viv">Vivienda</label>
+      <select class="vsearch-select" id="vs-unit" disabled>
+        <option value="">Seleccione primero la promoción…</option>
+      </select>
+    </div>
+    <div class="vsearch-info" id="vs-info"></div>
+    <button class="vsearch-btn" id="vs-btn" onclick="vsConfirm()">Continuar →</button>
+    <button class="vsearch-btn secondary" id="vs-new-btn"
+      onclick="vsStartNew()" style="display:none">
+      Nueva selección (borrar datos)
+    </button>
+  </div>
+</div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-es" onclick="setLang('es')">ES</button>
+  <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+</div>
+
+<div id="app-wrapper">
+
+<div class="step-nav-wrap">
+  <div class="step-nav" id="stepNav"></div>
+</div>
+
+<main>
+  <div id="load-indicator"></div>
+  <div id="stepsContainer"></div>
+</main>
+
+</div><!-- /app-wrapper -->
+
+<script>
+// ─── LOGIN ───────────────────────────────────────────────────────────
+const CREDENTIALS = { user: 'ventas', pass: 'Amal2026*' };
+
+// ─── WEBHOOKS ────────────────────────────────────────────────────────
+const WEBHOOK_SUBMIT  = 'https://hook.eu1.make.com/WEBHOOK_EXTRAS_AQUI';
+const WEBHOOK_CONSULTA = 'https://hook.eu1.make.com/i989c4dnkdndhgcb78ebh3kyq1kb5ypx';
+const WEBHOOK_DOCS     = 'https://hook.eu1.make.com/WEBHOOK_DOCS_AQUI';
+
+// Fixed vivienda code for the session
+let SESSION_CODIGO = null;
+let SESSION_PROMO  = null;
+
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  if (u === CREDENTIALS.user && p === CREDENTIALS.pass) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('vivienda-screen').classList.add('visible');
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+// ─── VIVIENDA SEARCH SCREEN ──────────────────────────────────────────
+function vsUpdateApts() {
+  const promo = document.getElementById('vs-promo').value;
+  const sel   = document.getElementById('vs-unit');
+  const info  = document.getElementById('vs-info');
+  const newBtn = document.getElementById('vs-new-btn');
+  info.className = 'vsearch-info';
+  newBtn.style.display = 'none';
+  if (!promo) { sel.innerHTML = '<option value="">Seleccione primero la promoción…</option>'; sel.disabled = true; return; }
+  sel.disabled = false;
+  sel.innerHTML = '<option value="">Seleccione vivienda…</option>' +
+    VIVIENDAS[promo].map(v => `<option value="${v}">${v}</option>`).join('');
+  sel.onchange = () => vsCheckVivienda();
+}
+
+async function vsCheckVivienda() {
+  const raw    = document.getElementById('vs-unit').value;
+  const info   = document.getElementById('vs-info');
+  const newBtn = document.getElementById('vs-new-btn');
+  if (!raw) { info.className = 'vsearch-info'; newBtn.style.display = 'none'; return; }
+  const codigo = raw.includes('—') ? raw.split('—')[0].trim() : raw;
+
+  info.className = 'vsearch-info visible';
+  info.textContent = LANG === 'es' ? '⟳ Comprobando datos existentes…' : '⟳ Checking existing data…';
+  newBtn.style.display = 'none';
+
+  try {
+    const res = await fetch(WEBHOOK_CONSULTA, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vivienda: codigo })
+    });
+    const data = await res.json();
+    const extras = Array.isArray(data) ? data : (data.extras || []);
+    const found  = extras.filter(e => (e.qty || 0) > 0).length;
+
+    if (found > 0) {
+      info.className = 'vsearch-info visible found';
+      info.textContent = LANG === 'es'
+        ? `✓ ${found} extra${found > 1 ? 's' : ''} guardado${found > 1 ? 's' : ''} para ${codigo}. Se cargarán automáticamente.`
+        : `✓ ${found} saved extra${found > 1 ? 's' : ''} found for ${codigo}. Will be loaded automatically.`;
+      newBtn.style.display = 'block';
+      // Store data for loading after confirm
+      newBtn._cachedExtras = extras;
+      document.getElementById('vs-btn')._cachedExtras = extras;
+    } else {
+      info.className = 'vsearch-info visible new';
+      info.textContent = LANG === 'es'
+        ? `Nueva selección para ${codigo} — sin datos guardados.`
+        : `New selection for ${codigo} — no saved data.`;
+      document.getElementById('vs-btn')._cachedExtras = [];
+    }
+  } catch(e) {
+    info.className = 'vsearch-info visible new';
+    info.textContent = LANG === 'es'
+      ? 'No se pudo conectar. Se iniciará una selección nueva.'
+      : 'Could not connect. Starting a new selection.';
+    document.getElementById('vs-btn')._cachedExtras = [];
+  }
+}
+
+function vsConfirm() {
+  const raw    = document.getElementById('vs-unit').value;
+  const promo  = document.getElementById('vs-promo').value;
+  if (!raw || !promo) {
+    alert(LANG === 'es' ? 'Seleccione promoción y vivienda.' : 'Please select development and property.');
+    return;
+  }
+  const codigo = raw.includes('—') ? raw.split('—')[0].trim() : raw;
+  SESSION_CODIGO = codigo;
+  SESSION_PROMO  = promo;
+
+  // Load cached extras into state
+  const extras = document.getElementById('vs-btn')._cachedExtras || [];
+  extras.forEach(e => {
+    if (e.qty   !== undefined && e.qty   !== null && e.qty   !== 0) QTY[e.id]   = Number(e.qty);
+    if (e.price !== undefined && e.price !== null) PRICE[e.id] = Number(e.price);
+    if (e.notes !== undefined && e.notes !== '')   NOTES[e.id] = e.notes;
+  });
+
+  // Show app
+  document.getElementById('vivienda-screen').classList.remove('visible');
+  document.getElementById('app-wrapper').style.display = 'block';
+  document.querySelector('.lang-toggle').classList.add('visible');
+
+  // Build DOM (which also renders tables with loaded data)
+  buildDOM();
+  sendHeight();
+}
+
+function vsStartNew() {
+  // Clear all state and start fresh for same vivienda
+  Object.keys(QTY).forEach(k => delete QTY[k]);
+  Object.keys(PRICE).forEach(k => delete PRICE[k]);
+  Object.keys(NOTES).forEach(k => delete NOTES[k]);
+  document.getElementById('vs-btn')._cachedExtras = [];
+  const info = document.getElementById('vs-info');
+  info.className = 'vsearch-info visible new';
+  info.textContent = LANG === 'es'
+    ? 'Datos borrados. Se iniciará una selección nueva.'
+    : 'Data cleared. Starting a new selection.';
+  document.getElementById('vs-new-btn').style.display = 'none';
+}
+
+// Allow Enter key on login inputs
+document.addEventListener('DOMContentLoaded', () => {
+  ['login-user','login-pass'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
+  });
+});
+
+// ─── AREAS ───────────────────────────────────────────────────────────
+const AREAS = [
+  // ── CLIMATIZACIÓN Y CALEFACCIÓN ──────────────────────────────────────
+  { key:'clima', step:1,
+    label_es:'Climatización y calefacción', label_en:'Climate control & heating',
+    nav_es:'01 · Climatización', nav_en:'01 · Climate ctrl.',
+    desc_es:'Aire acondicionado, aerotermia, suelo radiante y toalleros.',
+    desc_en:'Air conditioning, aerothermics, underfloor heating and towel rails.',
+    items:[
+      { id:'cli_01', name_es:'Máquina de A/A para conductos de 8900 frigorías', name_en:'A/C unit 8900 kcal/h', desc_es:'Villa', desc_en:'Villa', price:3900, oficio:'CLIMA', pedido:true, comment_es:'', comment_en:'' },
+      { id:'cli_02', name_es:'Máquina de A/A para conductos de 8900 frigorías', name_en:'A/C unit 8900 kcal/h', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:3900, oficio:'CLIMA', pedido:true, comment_es:'', comment_en:'' },
+      { id:'cli_03', name_es:'Máquina de A/A para conductos de 6000 frigorías', name_en:'A/C unit 6000 kcal/h', desc_es:'Apartamento 2 dorm.', desc_en:'2-bed apartment', price:3600, oficio:'CLIMA', pedido:true, comment_es:'', comment_en:'' },
+      { id:'cli_04', name_es:'Sistema de Airzone', name_en:'Airzone system', desc_es:'Villa', desc_en:'Villa', price:4200, oficio:'CLIMA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cli_05', name_es:'Sistema de Airzone', name_en:'Airzone system', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:4200, oficio:'CLIMA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cli_06', name_es:'Sistema de Airzone', name_en:'Airzone system', desc_es:'Apartamento 2 dorm.', desc_en:'2-bed apartment', price:3300, oficio:'CLIMA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cli_07', name_es:'Calefacción suelo radiante + ACS aerotermia', name_en:'Underfloor heating + DHW aerothermics', desc_es:'Villa — instalación para PB', desc_en:'Villa — ground floor installation', price:18500, oficio:'CLIMA', pedido:false, comment_es:'No incluye A/A. Descontada aerotermia de serie', comment_en:'A/C not included. Aerothermics deducted' },
+      { id:'cli_08', name_es:'Calefacción suelo radiante + ACS aerotermia', name_en:'Underfloor heating + DHW aerothermics', desc_es:'Apartamento ático 2SB', desc_en:'2SB penthouse apartment', price:25875, oficio:'CLIMA', pedido:false, comment_es:'No incluye A/A. Descontada aerotermia de serie', comment_en:'A/C not included. Aerothermics deducted' },
+      { id:'cli_09', name_es:'Suelo radiante eléctrico baño', name_en:'Electric underfloor heating bathroom', desc_es:'Apartamento / Villa', desc_en:'Apartment / Villa', price:1200, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cli_10', name_es:'Instalación de toallero eléctrico 80×50', name_en:'Electric towel rail 80×50', desc_es:'', desc_en:'', price:900, oficio:'ELECTRICISTA', pedido:true, comment_es:'', comment_en:'' },
+      { id:'cli_11', name_es:'Instalación de toallero eléctrico 120×50', name_en:'Electric towel rail 120×50', desc_es:'', desc_en:'', price:900, oficio:'ELECTRICISTA', pedido:true, comment_es:'', comment_en:'' },
+    ]},
+  // ── COCINA ────────────────────────────────────────────────────────────
+  { key:'cocina', step:2,
+    label_es:'Cocina', label_en:'Kitchen',
+    nav_es:'02 · Cocina', nav_en:'02 · Kitchen',
+    desc_es:'Electrodomésticos y equipamiento de cocina.',
+    desc_en:'Kitchen appliances and equipment.',
+    items:[
+      { id:'coc_01', name_es:'Electrodomésticos BOSCH', name_en:'BOSCH appliances', desc_es:'Pack', desc_en:'Pack', price:4210, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_02', name_es:'Secadora libre instalación BOSCH', name_en:'BOSCH freestanding dryer', desc_es:'', desc_en:'', price:1055, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_03', name_es:'Lava-secadora integración BOSCH', name_en:'BOSCH washer-dryer integrated', desc_es:'', desc_en:'', price:1518, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_04', name_es:'Lava-secadora libre instalación BOSCH', name_en:'BOSCH washer-dryer freestanding', desc_es:'', desc_en:'', price:1076, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_05', name_es:'Electrodomésticos JOHNSON', name_en:'JOHNSON appliances', desc_es:'Pack', desc_en:'Pack', price:3100, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_06', name_es:'Secadora libre instalación JOHNSON', name_en:'JOHNSON freestanding dryer', desc_es:'', desc_en:'', price:533, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_07', name_es:'Lava-secadora integración JOHNSON', name_en:'JOHNSON washer-dryer integrated', desc_es:'', desc_en:'', price:794, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_08', name_es:'Lava-secadora libre instalación JOHNSON', name_en:'JOHNSON washer-dryer freestanding', desc_es:'', desc_en:'', price:871, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_09', name_es:'Cambio de encimera de cocina a porcelánico', name_en:'Kitchen countertop upgrade to porcelain', desc_es:'Apartamentos y áticos de esquina', desc_en:'Corner apartments and penthouses', price:1200, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_10', name_es:'Cambio de encimera de cocina a porcelánico', name_en:'Kitchen countertop upgrade to porcelain', desc_es:'Apartamentos ático central', desc_en:'Central penthouse apartment', price:1700, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_11', name_es:'Mueble de limpieza', name_en:'Utility cabinet', desc_es:'Apartamentos (incluye enchufe interior)', desc_en:'Apartments (includes internal socket)', price:1025, oficio:'COCINAS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_12', name_es:'Quoker', name_en:'Quooker', desc_es:'', desc_en:'', price:null, oficio:'COCINAS', pedido:false, comment_es:'Consultar precio según modelo', comment_en:'Price on request depending on model' },
+    ]},
+  // ── EQUIPAMIENTO INTERIOR ─────────────────────────────────────────────
+  { key:'equipamiento', step:3,
+    label_es:'Equipamiento interior', label_en:'Interior equipment',
+    nav_es:'03 · Equipamiento', nav_en:'03 · Furnishings',
+    desc_es:'Packs de equipamiento, estores, mosquiteras e iluminación.',
+    desc_en:'Equipment packs, blinds, mosquito screens and lighting.',
+    items:[
+      { id:'equ_01', name_es:'FULL EQUIP PACK — Villa', name_en:'FULL EQUIP PACK — Villa', desc_es:'Estores · electrodomésticos · A/A · mobiliario', desc_en:'Blinds · appliances · A/C · furniture', price:19990, oficio:null, pedido:false, comment_es:'Incluye regalo colgante de salón. Resto spotlight', comment_en:'Includes living room pendant as gift. Rest spotlight',
+        sublines:[{name_es:'Estores Villa',name_en:'Blinds Villa',oficio:'MOBILIARIO Estores',desc_es:'Corredera Salón / Fijo salón / Fijo Pasillo / Dormitorio 1 / Dormitorio 2 / Dormitorio 3',desc_en:'Sliding living / Fixed living / Fixed hallway / Bedroom 1 / Bedroom 2 / Bedroom 3'},{name_es:'Electrodomésticos BOSCH',name_en:'BOSCH Appliances',oficio:'ELECTRODOMESTICOS',desc_es:'',desc_en:''},{name_es:'Aire acondicionado Villa',name_en:'A/C Villa',oficio:'CLIMA',pedido:true,desc_es:'8900',desc_en:'8900'},{name_es:'Mobiliario Villa',name_en:'Furniture Villa',oficio:'MOBILIARIO',desc_es:'',desc_en:''}]},
+      { id:'equ_02', name_es:'FULL EQUIP PACK — Apto. 2 dorm.', name_en:'FULL EQUIP PACK — 2-bed apt.', desc_es:'Estores · electrodomésticos · A/A · mobiliario', desc_en:'Blinds · appliances · A/C · furniture', price:15600, oficio:null, pedido:false, comment_es:'Incluye regalo colgante de salón. Resto spotlight', comment_en:'Includes living room pendant as gift. Rest spotlight',
+        sublines:[{name_es:'Estores Apto. 2 dorm.',name_en:'Blinds 2-bed apt.',oficio:'MOBILIARIO Estores',desc_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2',desc_en:'Sliding living / Bedroom 1 / Bedroom 2'},{name_es:'Electrodomésticos BOSCH',name_en:'BOSCH Appliances',oficio:'ELECTRODOMESTICOS',desc_es:'',desc_en:''},{name_es:'Aire acondicionado Apto. 2 dorm.',name_en:'A/C 2-bed apt.',oficio:'CLIMA',pedido:true,desc_es:'6000',desc_en:'6000'},{name_es:'Mobiliario Apto. 2 dorm.',name_en:'Furniture 2-bed apt.',oficio:'MOBILIARIO',desc_es:'',desc_en:''}]},
+      { id:'equ_03', name_es:'FULL EQUIP PACK — Apto. 3 dorm.', name_en:'FULL EQUIP PACK — 3-bed apt.', desc_es:'Estores · electrodomésticos · A/A · mobiliario', desc_en:'Blinds · appliances · A/C · furniture', price:17500, oficio:null, pedido:false, comment_es:'Incluye regalo colgante de salón. Resto spotlight', comment_en:'Includes living room pendant as gift. Rest spotlight',
+        sublines:[{name_es:'Estores Apto. 3 dorm.',name_en:'Blinds 3-bed apt.',oficio:'MOBILIARIO Estores',desc_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2 / Dormitorio 3',desc_en:'Sliding living / Bedroom 1 / Bedroom 2 / Bedroom 3'},{name_es:'Electrodomésticos BOSCH',name_en:'BOSCH Appliances',oficio:'ELECTRODOMESTICOS',desc_es:'',desc_en:''},{name_es:'Aire acondicionado Apto. 3 dorm.',name_en:'A/C 3-bed apt.',oficio:'CLIMA',pedido:true,desc_es:'8900',desc_en:'8900'},{name_es:'Mobiliario Apto. 3 dorm.',name_en:'Furniture 3-bed apt.',oficio:'MOBILIARIO',desc_es:'',desc_en:''}]},
+      { id:'equ_04', name_es:'Muebles + estores — Villa', name_en:'Furniture + blinds — Villa', desc_es:'Villa', desc_en:'Villa', price:12500, oficio:null, pedido:false, comment_es:'', comment_en:'',
+        sublines:[{name_es:'Estores Villa',name_en:'Blinds Villa',oficio:'MOBILIARIO Estores',desc_es:'Corredera Salón / Fijo salón / Fijo Pasillo / Dormitorio 1 / Dormitorio 2 / Dormitorio 3',desc_en:'Sliding living / Fixed living / Fixed hallway / Bedroom 1 / Bedroom 2 / Bedroom 3'},{name_es:'Mobiliario Villa',name_en:'Furniture Villa',oficio:'MOBILIARIO',desc_es:'',desc_en:''}]},
+      { id:'equ_05', name_es:'Muebles + estores — Apto. 2 dorm.', name_en:'Furniture + blinds — 2-bed apt.', desc_es:'Apartamento 2 dorm.', desc_en:'2-bed apartment', price:9300, oficio:null, pedido:false, comment_es:'', comment_en:'',
+        sublines:[{name_es:'Estores Apto. 2 dorm.',name_en:'Blinds 2-bed apt.',oficio:'MOBILIARIO Estores',desc_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2',desc_en:'Sliding living / Bedroom 1 / Bedroom 2'},{name_es:'Mobiliario Apto. 2 dorm.',name_en:'Furniture 2-bed apt.',oficio:'MOBILIARIO',desc_es:'',desc_en:''}]},
+      { id:'equ_06', name_es:'Muebles + estores — Apto. 3 dorm.', name_en:'Furniture + blinds — 3-bed apt.', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:10900, oficio:null, pedido:false, comment_es:'', comment_en:'',
+        sublines:[{name_es:'Estores Apto. 3 dorm.',name_en:'Blinds 3-bed apt.',oficio:'MOBILIARIO Estores',desc_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2 / Dormitorio 3',desc_en:'Sliding living / Bedroom 1 / Bedroom 2 / Bedroom 3'},{name_es:'Mobiliario Apto. 3 dorm.',name_en:'Furniture 3-bed apt.',oficio:'MOBILIARIO',desc_es:'',desc_en:''}]},
+      { id:'equ_07', name_es:'Pack mobiliario — Villa', name_en:'Furniture pack — Villa', desc_es:'Villa', desc_en:'Villa', price:10100, oficio:'MOBILIARIO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_08', name_es:'Pack mobiliario — Apto. 2 dorm.', name_en:'Furniture pack — 2-bed apt.', desc_es:'Apartamento 2 dorm.', desc_en:'2-bed apartment', price:7200, oficio:'MOBILIARIO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_09', name_es:'Pack mobiliario — Apto. 3 dorm.', name_en:'Furniture pack — 3-bed apt.', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:8280, oficio:'MOBILIARIO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_10', name_es:'Estores eléctricos pack (6) — Villa', name_en:'Electric blinds pack (6) — Villa', desc_es:'Villa', desc_en:'Villa', price:3600, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'Corredera Salón / Fijo salón / Fijo Pasillo / Dormitorio 1 / Dormitorio 2 / Dormitorio 3', comment_en:'Sliding living room / Fixed living room / Fixed hallway / Bedroom 1 / Bedroom 2 / Bedroom 3' },
+      { id:'equ_11', name_es:'Estores eléctricos pack (3) — Apto. 2 hab.', name_en:'Electric blinds pack (3) — 2-bed apt.', desc_es:'Apartamento 2 habitaciones', desc_en:'2-bed apartment', price:2800, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2', comment_en:'Sliding living room / Bedroom 1 / Bedroom 2' },
+      { id:'equ_12', name_es:'Estores eléctricos pack (4) — Apto. 3 hab.', name_en:'Electric blinds pack (4) — 3-bed apt.', desc_es:'Apartamento 3 habitaciones', desc_en:'3-bed apartment', price:3080, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2 / Dormitorio 3', comment_en:'Sliding living room / Bedroom 1 / Bedroom 2 / Bedroom 3' },
+      { id:'equ_13', name_es:'Pack mosquiteras — Villa', name_en:'Mosquito screen pack — Villa', desc_es:'Villa', desc_en:'Villa', price:4863, oficio:'Carpinteria METALICA', pedido:false, comment_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2 / Dormitorio 3 / Baño 1 / Baño 2', comment_en:'Sliding living room / Bedroom 1 / Bedroom 2 / Bedroom 3 / Bathroom 1 / Bathroom 2' },
+      { id:'equ_14', name_es:'Pack mosquiteras — Apto. 2 hab.', name_en:'Mosquito screen pack — 2-bed apt.', desc_es:'Apartamento 2 habitaciones', desc_en:'2-bed apartment', price:2700, oficio:'Carpinteria METALICA', pedido:false, comment_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2', comment_en:'Sliding living room / Bedroom 1 / Bedroom 2' },
+      { id:'equ_15', name_es:'Pack mosquiteras — Apto. 3 dorm.', name_en:'Mosquito screen pack — 3-bed apt.', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:2860, oficio:'Carpinteria METALICA', pedido:false, comment_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2 / Dormitorio 3', comment_en:'Sliding living room / Bedroom 1 / Bedroom 2 / Bedroom 3' },
+      { id:'equ_16', name_es:'Pack mosquiteras — Apto. 3 dorm. con baño exterior', name_en:'Mosquito screen pack — 3-bed apt. with exterior bathroom', desc_es:'Apartamento 3 dorm. con baño exterior', desc_en:'3-bed apt. with exterior bathroom', price:3100, oficio:'Carpinteria METALICA', pedido:false, comment_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2 / Dormitorio 3 / Baño 2', comment_en:'Sliding living room / Bedroom 1 / Bedroom 2 / Bedroom 3 / Bathroom 2' },
+      { id:'equ_17', name_es:'Pack iluminación', name_en:'Lighting pack', desc_es:'Colgantes en dormitorios y salón (iguales a villa piloto)', desc_en:'Pendants in bedrooms and living room (as show villa)', price:900, oficio:'ELECTRICISTA', pedido:true, comment_es:'1×Salón / 2×Dormitorio 1 / 2×Dormitorio 2 / 2×Dormitorio 3', comment_en:'1×Living room / 2×Bedroom 1 / 2×Bedroom 2 / 2×Bedroom 3' },
+      { id:'equ_18', name_es:'Estor corredera salón — Villa', name_en:'Sliding blind living room — Villa', desc_es:'Villa', desc_en:'Villa', price:750, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_19', name_es:'Estor fijo salón — Villa', name_en:'Fixed blind living room — Villa', desc_es:'Villa', desc_en:'Villa', price:1117, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_20', name_es:'Estor corredera suite — Villa', name_en:'Sliding blind suite — Villa', desc_es:'Villa', desc_en:'Villa', price:728, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_21', name_es:'Estor corredera dorm 2 — Villa', name_en:'Sliding blind bedroom 2 — Villa', desc_es:'Villa', desc_en:'Villa', price:700, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_22', name_es:'Estor corredera dorm 3 — Villa', name_en:'Sliding blind bedroom 3 — Villa', desc_es:'Villa', desc_en:'Villa', price:700, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_23', name_es:'Estor fijo pasillo — Villa', name_en:'Fixed blind hallway — Villa', desc_es:'Villa', desc_en:'Villa', price:550, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_24', name_es:'Estor baño 1 — Villa', name_en:'Blind bathroom 1 — Villa', desc_es:'Villa', desc_en:'Villa', price:550, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_25', name_es:'Estor baño 2 — Villa', name_en:'Blind bathroom 2 — Villa', desc_es:'Villa', desc_en:'Villa', price:550, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_26', name_es:'Estor corredera salón — Apartamento', name_en:'Sliding blind living room — Apartment', desc_es:'Apartamento 2 y 3 dorm.', desc_en:'2 and 3-bed apartment', price:850, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_27', name_es:'Estor fijo salón (esquina) — Apartamento', name_en:'Fixed blind living room (corner) — Apartment', desc_es:'Apartamento 2 y 3 dorm.', desc_en:'2 and 3-bed apartment', price:550, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_28', name_es:'Estor corredera suite — Apartamento', name_en:'Sliding blind suite — Apartment', desc_es:'Apartamento 2 y 3 dorm.', desc_en:'2 and 3-bed apartment', price:700, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_29', name_es:'Estor corredera dorm 2 — Apartamento', name_en:'Sliding blind bedroom 2 — Apartment', desc_es:'Apartamento 2 y 3 dorm.', desc_en:'2 and 3-bed apartment', price:700, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_30', name_es:'Estor corredera dorm 3 — Apto. 3 dorm.', name_en:'Sliding blind bedroom 3 — 3-bed apt.', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:650, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_31', name_es:'Estor baño 2 — Apto. 3 dorm.', name_en:'Blind bathroom 2 — 3-bed apt.', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:550, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_32', name_es:'Mosquitera corredera salón (plisada) — Villa', name_en:'Sliding mosquito screen living room (pleated) — Villa', desc_es:'Villa', desc_en:'Villa', price:1755, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_33', name_es:'Mosquitera corredera suite (plisada) — Villa', name_en:'Sliding mosquito screen suite (pleated) — Villa', desc_es:'Villa', desc_en:'Villa', price:1148, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_34', name_es:'Mosquitera corredera dorm 2 (plisada) — Villa', name_en:'Sliding mosquito screen bedroom 2 (pleated) — Villa', desc_es:'Villa', desc_en:'Villa', price:878, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_35', name_es:'Mosquitera corredera dorm 3 (plisada) — Villa', name_en:'Sliding mosquito screen bedroom 3 (pleated) — Villa', desc_es:'Villa', desc_en:'Villa', price:878, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_36', name_es:'Mosquitera baño 1 (enrollable) — Villa', name_en:'Roller mosquito screen bathroom 1 — Villa', desc_es:'Villa', desc_en:'Villa', price:297, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_37', name_es:'Mosquitera baño 2 (enrollable) — Villa', name_en:'Roller mosquito screen bathroom 2 — Villa', desc_es:'Villa', desc_en:'Villa', price:297, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_38', name_es:'Mosquitera corredera salón (plisada) — Apartamento', name_en:'Sliding mosquito screen living room (pleated) — Apartment', desc_es:'Apartamento 2 y 3 dorm.', desc_en:'2 and 3-bed apartment', price:1593, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_39', name_es:'Mosquitera corredera dorm 1 (plisada) — Apartamento', name_en:'Sliding mosquito screen bedroom 1 (pleated) — Apartment', desc_es:'Apartamento 2 y 3 dorm.', desc_en:'2 and 3-bed apartment', price:945, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_40', name_es:'Mosquitera corredera dorm 2 (plisada) — Apartamento', name_en:'Sliding mosquito screen bedroom 2 (pleated) — Apartment', desc_es:'Apartamento 2 y 3 dorm.', desc_en:'2 and 3-bed apartment', price:945, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_41', name_es:'Mosquitera corredera dorm 3 (plisada) — Apto. 3 dorm.', name_en:'Sliding mosquito screen bedroom 3 (pleated) — 3-bed apt.', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:378, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_42', name_es:'Mosquitera baño 2 (enrollable) — Apto. 3 dorm.', name_en:'Roller mosquito screen bathroom 2 — 3-bed apt.', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:297, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+    ]},
+  // ── FONTANERÍA Y BAÑOS ────────────────────────────────────────────────
+  { key:'fontaneria', step:4,
+    label_es:'Fontanería y baños', label_en:'Plumbing and bathrooms',
+    nav_es:'04 · Fontanería', nav_en:'04 · Plumbing',
+    desc_es:'Instalaciones de agua, griferías y mamparas.',
+    desc_en:'Water installations, taps and shower screens.',
+    items:[
+      { id:'fon_01', name_es:'Punto de agua fría', name_en:'Cold water point', desc_es:'Punto agua fría', desc_en:'Cold water point', price:390, oficio:'FONTANERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'fon_02', name_es:'Instalación de ósmosis', name_en:'Osmosis installation', desc_es:'Osmosis Midea Eco 4000', desc_en:'Midea Eco 4000 osmosis unit', price:750, oficio:'FONTANERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'fon_03', name_es:'Instalación de descalcificador', name_en:'Water softener installation', desc_es:'Descalcificador ATH Robosoft 180', desc_en:'ATH Robosoft 180 water softener', price:2100, oficio:'FONTANERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'fon_04', name_es:'Punto agua caliente para ducha piscina', name_en:'Hot water point pool shower', desc_es:'Villa', desc_en:'Villa', price:390, oficio:'FONTANERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'fon_05', name_es:'Ducha con agua fría y caliente en solarium', name_en:'Hot and cold shower in solarium', desc_es:'Apartamento ático', desc_en:'Penthouse apartment', price:1050, oficio:'FONTANERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'fon_06', name_es:'Pasamanos en ducha', name_en:'Shower grab rail', desc_es:'', desc_en:'', price:390, oficio:'FONTANERO', pedido:true, comment_es:'Cromo', comment_en:'Chrome' },
+      { id:'fon_07', name_es:'Preinstalación para descalcificador', name_en:'Pre-installation for water softener', desc_es:'Villas y áticos', desc_en:'Villas and penthouses', price:500, oficio:'FONTANERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'fon_08', name_es:'Cambio de altura de muebles de baño', name_en:'Bathroom cabinet height change', desc_es:'', desc_en:'', price:300, oficio:'FONTANERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'fon_09', name_es:'Griferías en negro', name_en:'Black taps and fittings', desc_es:'', desc_en:'', price:500, oficio:'FONTANERO', pedido:true, comment_es:'', comment_en:'' },
+      { id:'fon_10', name_es:'Cambio de mamparas fijas a correderas', name_en:'Fixed to sliding shower screen upgrade', desc_es:'', desc_en:'', price:600, oficio:'CRISTALERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'fon_11', name_es:'Cambio de vidrios en mamparas a traslúcidos', name_en:'Shower screen glass to translucent', desc_es:'', desc_en:'', price:300, oficio:'CRISTALERO', pedido:false, comment_es:'', comment_en:'' },
+    ]},
+  // ── ELECTRICIDAD Y FOTOVOLTAICA ───────────────────────────────────────
+  { key:'electricidad', step:5,
+    label_es:'Electricidad y fotovoltaica', label_en:'Electrical & solar',
+    nav_es:'05 · Electricidad', nav_en:'05 · Electrical',
+    desc_es:'Puntos de luz, mecanismos, cargadores y placas solares.',
+    desc_en:'Light points, mechanisms, chargers and solar panels.',
+    items:[
+      { id:'ele_01', name_es:'Añadir enchufe', name_en:'Add socket', desc_es:'A línea existente', desc_en:'To existing circuit', price:290, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_02', name_es:'Añadir punto iluminación', name_en:'Add light point', desc_es:'A circuito existente', desc_en:'To existing circuit', price:290, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_03', name_es:'Mecanismos negros', name_en:'Black mechanisms', desc_es:'Villa — instalación de mecanismos negros', desc_en:'Villa — black mechanism installation', price:1000, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_04', name_es:'Internet + 2 enchufes', name_en:'Internet + 2 sockets', desc_es:'Villa', desc_en:'Villa', price:870, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_05', name_es:'Cargador coche eléctrico', name_en:'EV charger', desc_es:'Villa', desc_en:'Villa', price:2400, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_06', name_es:'Instalación de fotovoltaica', name_en:'Solar PV installation', desc_es:'Fotovoltaica 4 kW 1PH LB0 inversor 4040 WP FT 18.324', desc_en:'Solar PV 4 kW 1PH LB0 inverter 4040 WP FT 18.324', price:8900, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_07', name_es:'Instalación de fotovoltaica', name_en:'Solar PV installation', desc_es:'Fotovoltaica 3,6 kW 1PH LB0 inversor 3030 WP FT 18.325', desc_en:'Solar PV 3.6 kW 1PH LB0 inverter 3030 WP FT 18.325', price:8200, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_08', name_es:'Mecanismos negros', name_en:'Black mechanisms', desc_es:'Apartamento — instalación de mecanismos negros', desc_en:'Apartment — black mechanism installation', price:535, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_09', name_es:'Cargador coche eléctrico', name_en:'EV charger', desc_es:'Apartamento', desc_en:'Apartment', price:2900, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_10', name_es:'Circuito dimmer', name_en:'Dimmer circuit', desc_es:'', desc_en:'', price:950, oficio:'ELECTRICISTA', pedido:false, comment_es:'Incluye cambio de tipo de iluminación', comment_en:'Includes lighting type change' },
+      { id:'ele_11', name_es:'Añadir RJ45 en solarium', name_en:'Add RJ45 in solarium', desc_es:'', desc_en:'', price:350, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_12', name_es:'Cambio de temperatura de color de la iluminación', name_en:'Lighting colour temperature change', desc_es:'', desc_en:'', price:500, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+    ]},
+  // ── CARPINTERÍA DE MADERA ─────────────────────────────────────────────
+  { key:'carp_madera', step:6,
+    label_es:'Carpintería de madera', label_en:'Wood carpentry',
+    nav_es:'06 · Carp. madera', nav_en:'06 · Woodwork',
+    desc_es:'Puertas y herrajes.',
+    desc_en:'Doors and fittings.',
+    items:[
+      { id:'cpm_01', name_es:'Puertas lacadas en RAL distinto a blanco', name_en:'Doors lacquered in RAL other than white', desc_es:'', desc_en:'', price:600, oficio:'Carpinteria MADERA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cpm_02', name_es:'Cambio color herrajes de cromo a negro', name_en:'Chrome to black fittings upgrade', desc_es:'', desc_en:'', price:400, oficio:'Carpinteria MADERA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cpm_03', name_es:'Pestillo en puerta', name_en:'Door latch', desc_es:'', desc_en:'', price:190, oficio:'Carpinteria MADERA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cpm_04', name_es:'Cerradura en puerta de paso', name_en:'Lock on internal door', desc_es:'', desc_en:'', price:300, oficio:'Carpinteria MADERA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cpm_05', name_es:'Puerta de paso abatible', name_en:'Hinged internal door', desc_es:'', desc_en:'', price:700, oficio:'Carpinteria MADERA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cpm_06', name_es:'Puerta de paso corredera', name_en:'Sliding internal door', desc_es:'', desc_en:'', price:1200, oficio:'Carpinteria MADERA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cpm_07', name_es:'Cambio de puerta de paso abatible a corredera', name_en:'Hinged to sliding door upgrade', desc_es:'', desc_en:'', price:500, oficio:'Carpinteria MADERA', pedido:false, comment_es:'', comment_en:'' },
+    ]},
+  // ── CARPINTERÍA DE ALUMINIO ───────────────────────────────────────────
+  { key:'carp_aluminio', step:7,
+    label_es:'Carpintería de aluminio', label_en:'Aluminum glazing',
+    nav_es:'07 · Carp. aluminio', nav_en:'07 · Glazing',
+    desc_es:'Carpintería de aluminio y persianas.',
+    desc_en:'Aluminium carpentry and shutters.',
+    items:[
+      { id:'cpa_01', name_es:'Carpintería de aluminio enrasada a suelo', name_en:'Floor-flush aluminium glazing', desc_es:'', desc_en:'', price:500, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cpa_02', name_es:'Persiana en ventana', name_en:'Window shutter', desc_es:'', desc_en:'', price:750, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+    ]},
+  // ── EXTERIORES ────────────────────────────────────────────────────────
+  { key:'exteriores', step:8,
+    label_es:'Exteriores', label_en:'Outdoors',
+    nav_es:'08 · Exteriores', nav_en:'08 · Outdoors',
+    desc_es:'Toldos, pérgola, solarium y mobiliario exterior.',
+    desc_en:'Awnings, pergola, solarium and outdoor furniture.',
+    items:[
+      { id:'ext_01', name_es:'Toldo automático — hab. corredera', name_en:'Motorised awning — bedroom sliding', desc_es:'Villa · blanco 3.70 m × 3.25 m · brazos invisibles motorizados', desc_en:'Villa · white 3.70 m × 3.25 m · concealed motorised arms', price:3330, oficio:'TOLDOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ext_02', name_es:'Toldo automático — salón corredera', name_en:'Motorised awning — living sliding', desc_es:'Villa · blanco 4.45 m × 3.25 m · brazos invisibles motorizados', desc_en:'Villa · white 4.45 m × 3.25 m · concealed motorised arms', price:4500, oficio:'TOLDOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ext_03', name_es:'Toldo automático — salón fijo', name_en:'Motorised awning — living fixed', desc_es:'Villa · blanco 4.70 m × 3.25 m · brazos invisibles motorizados', desc_en:'Villa · white 4.70 m × 3.25 m · concealed motorised arms', price:4200, oficio:'TOLDOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ext_04', name_es:'Pérgola con toldo palillería (no apto paneles solares)', name_en:'Pergola with louvred awning (not suitable for solar panels)', desc_es:'Villa · solarium · herraje RAL 8014 texturado', desc_en:'Villa · solarium · RAL 8014 textured fitting', price:3900, oficio:'TOLDOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ext_05', name_es:'Pérgola para paneles solares', name_en:'Pergola for solar panels', desc_es:'Apartamentos ático · herraje RAL 8014 texturado', desc_en:'Penthouse apartments · RAL 8014 textured fitting', price:null, oficio:'TOLDOS', pedido:false, comment_es:'Consultar precio según dimensiones', comment_en:'Price on request depending on dimensions' },
+      { id:'ext_06', name_es:'Solarium', name_en:'Solarium', desc_es:'Villa · incluye cocina exterior', desc_en:'Villa · includes outdoor kitchen', price:19990, oficio:'ALBAÑILERIA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ext_07', name_es:'Cocina exterior', name_en:'Outdoor kitchen', desc_es:'', desc_en:'', price:4500, oficio:'ALBAÑILERIA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ext_08', name_es:'Mobiliario exterior', name_en:'Outdoor furniture', desc_es:'Precio según catálogo IREL', desc_en:'Price per IREL catalogue', price:null, oficio:'MOBILIARIO', pedido:false, comment_es:'', comment_en:'' },
+    ]},
+  // ── PISCINA ───────────────────────────────────────────────────────────
+  { key:'piscina', step:9,
+    label_es:'Piscina', label_en:'Pool',
+    nav_es:'09 · Piscina', nav_en:'09 · Pool',
+    desc_es:'Equipamiento e instalaciones para la piscina.',
+    desc_en:'Pool equipment and installations.',
+    items:[
+      { id:'pis_01', name_es:'Bomba de calor + cubierta térmica', name_en:'Heat pump + thermal cover', desc_es:'Villa · ECO ELYO 15 kW + cubierta térmica y enrollador', desc_en:'Villa · ECO ELYO 15 kW + thermal cover and roller', price:5900, oficio:'PISCINA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'pis_02', name_es:'Cañón de agua', name_en:'Water cannon', desc_es:'Villa · chorro presión con pulsador + motor 0.75 CV', desc_en:'Villa · pressure jet with push button + 0.75 HP motor', price:1575, oficio:'PISCINA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'pis_03', name_es:'Cascada en piscina', name_en:'Pool waterfall', desc_es:'Villa · pulsador piezoeléctrico + motor 0.75 CV', desc_en:'Villa · piezoelectric push button + 0.75 HP motor', price:2700, oficio:'PISCINA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'pis_04', name_es:'Jacuzzi en bancada', name_en:'Jacuzzi in bench', desc_es:'Villa · bomba aire soplante Astral 1.5 CV', desc_en:'Villa · Astral air blower pump 1.5 HP', price:2400, oficio:'PISCINA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'pis_05', name_es:'Sistema de cloración salina', name_en:'Salt chlorination system', desc_es:'Villa · regulador automático de pH', desc_en:'Villa · automatic pH regulator', price:2900, oficio:'PISCINA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'pis_06', name_es:'Jacuzzi prefabricado 6 pax', name_en:'Prefab jacuzzi 6 pax', desc_es:'Villas y apartamentos con solarium', desc_en:'Villas and apartments with solarium', price:7800, oficio:'JACUZZI', pedido:false, comment_es:'Natuspa M6/67 o similar', comment_en:'Natuspa M6/67 or similar' },
+      { id:'pis_07', name_es:'Jacuzzi prefabricado 5 pax', name_en:'Prefab jacuzzi 5 pax', desc_es:'Villas y apartamentos con solarium', desc_en:'Villas and apartments with solarium', price:6750, oficio:'JACUZZI', pedido:false, comment_es:'Natuspa S5/52 o similar', comment_en:'Natuspa S5/52 or similar' },
+      { id:'pis_08', name_es:'Jacuzzi prefabricado 3 pax', name_en:'Prefab jacuzzi 3 pax', desc_es:'Villas y apartamentos con solarium', desc_en:'Villas and apartments with solarium', price:5750, oficio:'JACUZZI', pedido:false, comment_es:'Natuspa SX3/35 o similar', comment_en:'Natuspa SX3/35 or similar' },
+      { id:'pis_09', name_es:'Ampliación de dimensiones de piscina', name_en:'Pool size extension', desc_es:'Villa · precio por m² extra', desc_en:'Villa · price per extra m²', price:750, oficio:'PISCINA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'pis_10', name_es:'Vallado de seguridad para piscina', name_en:'Pool safety fence', desc_es:'Villa', desc_en:'Villa', price:null, oficio:'OTROS PISCINA', pedido:false, comment_es:'Consultar precio', comment_en:'On request' },
+      { id:'pis_11', name_es:'Cambio a iluminación RGB en piscina', name_en:'Pool lighting upgrade to RGB', desc_es:'Villa', desc_en:'Villa', price:600, oficio:'PISCINA', pedido:false, comment_es:'', comment_en:'' },
+    ]},
+  // ── JARDINERÍA ────────────────────────────────────────────────────────
+  { key:'jardineria', step:10,
+    label_es:'Jardinería', label_en:'Gardening',
+    nav_es:'10 · Jardinería', nav_en:'10 · Gardening',
+    desc_es:'Palmeras e iluminación en vegetación.',
+    desc_en:'Palm trees and vegetation lighting.',
+    items:[
+      { id:'jar_01', name_es:'Palmera adicional 3 m', name_en:'Additional palm tree 3 m', desc_es:'Villa · alcorque + palmera 3 m', desc_en:'Villa · tree pit + palm tree 3 m', price:600, oficio:'JARDINERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'jar_02', name_es:'Palmera adicional 4 m', name_en:'Additional palm tree 4 m', desc_es:'Villa · alcorque + palmera 4 m', desc_en:'Villa · tree pit + palm tree 4 m', price:850, oficio:'JARDINERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'jar_03', name_es:'Iluminación puntual en vegetación', name_en:'Spot lighting in vegetation', desc_es:'', desc_en:'', price:400, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+    ]},
+  // ── ALBAÑILERÍA ───────────────────────────────────────────────────────
+  { key:'albanileria', step:11,
+    label_es:'Albañilería', label_en:'Masonry',
+    nav_es:'11 · Albañilería', nav_en:'11 · Masonry',
+    desc_es:'Cambios de pavimento y actuaciones en zonas exteriores.',
+    desc_en:'Flooring changes and exterior area works.',
+    items:[
+      { id:'alb_01', name_es:'Cambio de pavimento 100×100 — Apartamento 2H', name_en:'Flooring upgrade 100×100 — 2-bed apt.', desc_es:'Apartamento — cambio de pavimento 100×100', desc_en:'Apartment — flooring upgrade 100×100', price:2100, oficio:'ALBAÑILERIA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'alb_02', name_es:'Cambio de pavimento 100×100 — Ático', name_en:'Flooring upgrade 100×100 — Penthouse', desc_es:'Apartamento — cambio de pavimento 100×100', desc_en:'Apartment — flooring upgrade 100×100', price:2700, oficio:'ALBAÑILERIA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'alb_03', name_es:'Ampliación de pavimento en zona jardinera', name_en:'Flooring extension garden area', desc_es:'m²', desc_en:'m²', price:200, oficio:'ALBAÑILERIA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'alb_04', name_es:'Quitar césped, poner porcelánico', name_en:'Remove lawn, install porcelain', desc_es:'m²', desc_en:'m²', price:135, oficio:'ALBAÑILERIA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'alb_05', name_es:'Quitar porcelánico, poner césped', name_en:'Remove porcelain, install lawn', desc_es:'m²', desc_en:'m²', price:75, oficio:'ALBAÑILERIA', pedido:true, comment_es:'', comment_en:'' },
+    ]},
+];
+
+
+
+// ─── STATE ─────────────────────────────────────────────────────────
+const QTY   = {}; // id → qty (number)
+const PRICE = {}; // id → price override (number)
+const NOTES = {}; // id → string
+// Custom extras per area key
+const CUSTOM = {}; // areaKey → [{name, price, qty, oficio, notes}]
+const OFICIOS = ["ALBA\u00d1ILERIA", "Carpinteria MADERA", "Carpinteria METALICA", "CLIMA", "COCINAS", "CRISTALERO", "ELECTRICISTA", "ELECTRODOMESTICOS", "FONTANERO", "ILUMINACION", "JACUZZI", "JARDINERO", "MOBILIARIO", "MOBILIARIO Estores", "OTROS PISCINA", "PISCINA", "TOLDOS"];
+
+let LANG = 'es';
+let currentStep = 1;
+const TOTAL_STEPS = 13; // 11 areas + confirm + firma
+
+// ─── VIVIENDAS ──────────────────────────────────────────────────────
+const VIVIENDAS = {
+  'Serena Breeze 2': [
+    '2SB1 — Villa 1','2SB2 — Villa 2','2SB3 — Villa 3','2SB4 — Villa 4',
+    '2SB101','2SB102','2SB103','2SB201','2SB202','2SB203',
+    '2SB301','2SB302','2SB303',
+  ],
+  'Serena Breeze 3': [
+    '3SB1 — Villa 1','3SB2 — Villa 2','3SB3 — Villa 3','3SB4 — Villa 4',
+    '3SB5 — Villa 5','3SB6 — Villa 6','3SB7 — Villa 7',
+    '3SB101','3SB102','3SB103','3SB104',
+    '3SB201','3SB202','3SB203','3SB204',
+    '3SB301','3SB302','3SB303','3SB304',
+  ]
+};
+
+// ─── RENDER ─────────────────────────────────────────────────────────
+function getAllItems(area) {
+  if (area.subAreas) {
+    return area.subAreas.flatMap(s => s.items);
+  }
+  return area.items || [];
+}
+
+function renderTable(tbodyId, items, areaKey) {
+  const tbody = document.getElementById(tbodyId);
+  if (!tbody) return;
+  tbody.innerHTML = '';
+  items.forEach(item => {
+    const qty = QTY[item.id] || 0;
+    const unitPrice = PRICE[item.id] !== undefined ? PRICE[item.id] : item.price;
+    const note = NOTES[item.id] || '';
+    const name = LANG === 'es' ? item.name_es : item.name_en;
+    const desc = LANG === 'es' ? item.desc_es : item.desc_en;
+    const isConsultar = unitPrice === null || unitPrice === undefined;
+    const displayPrice = isConsultar ? (PRICE[item.id] !== undefined ? PRICE[item.id] : '') : unitPrice;
+    const resolvedPrice = isConsultar ? (PRICE[item.id] !== undefined ? PRICE[item.id] : null) : unitPrice;
+    const totalVal = (resolvedPrice !== null && resolvedPrice !== undefined) ? resolvedPrice * qty : 0;
+
+    const tr = document.createElement('tr');
+    // Sublines: indented rows below pack header (no qty/price/total)
+    const sublines = item.sublines || [];
+    const comment = LANG==='es' ? (item.comment_es||'') : (item.comment_en||'');
+    tr.innerHTML = `
+      <td>
+        <div class="extra-name">${name}</div>
+        ${desc ? `<div class="extra-desc">${desc}</div>` : ''}
+        ${comment ? `<div class="extra-desc" style="color:var(--text);font-style:normal;margin-top:3px;">${comment}</div>` : ''}
+        ${isConsultar && !comment ? `<div class="extra-desc" style="color:var(--mid);font-style:italic">${LANG==='es'?'Precio a introducir manualmente':'Enter price manually'}</div>` : ''}
+        ${sublines.length ? sublines.map(s => {
+          const sname = LANG==='es' ? s.name_es : s.name_en;
+          const sdesc = LANG==='es' ? (s.desc_es||'') : (s.desc_en||'');
+          return `<div class="extra-subline">↳ ${sname}${sdesc ? `<span class="extra-desc" style="display:inline;margin-left:6px;">${sdesc}</span>` : ''}</div>`;
+        }).join('') : ''}
+      </td>
+      <td style="text-align:center">
+        <input type="number" class="inp inp-qty" min="0" value="${qty}"
+          data-id="${item.id}" data-area="${areaKey}"
+          oninput="onQty(this)">
+      </td>
+      <td style="text-align:right">
+        <input type="number" class="inp inp-price" min="0" step="1"
+          value="${displayPrice}"
+          placeholder="${isConsultar ? (LANG==='es'?'Precio…':'Price…') : ''}"
+          data-id="${item.id}" data-area="${areaKey}"
+          oninput="onPrice(this)">
+      </td>
+      <td style="text-align:right">
+        <span class="inp-total" id="tot-${item.id}">
+          ${totalVal > 0 ? fmtEur(totalVal) : '—'}
+        </span>
+      </td>
+      <td style="text-align:center;vertical-align:top;padding-top:10px;">
+        ${item.oficio ? `<span class="oficio-badge">${item.oficio}</span>` : ''}
+        ${sublines.length ? sublines.map(s => `<div style="margin-top:5px"><span class="oficio-badge">${s.oficio}</span></div>`).join('') : ''}
+      </td>
+      <td>
+        <input type="text" class="inp inp-notes" placeholder="${LANG==='es'?'Observación…':'Note…'}"
+          data-id="${item.id}" value="${note}" oninput="onNote(this)">
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  // Custom extras
+  renderCustomRows(tbody, areaKey);
+}
+
+function renderCustomRows(tbody, areaKey) {
+  if (!CUSTOM[areaKey]) CUSTOM[areaKey] = [];
+  CUSTOM[areaKey].forEach((c, idx) => {
+    const tr = document.createElement('tr');
+    tr.className = 'custom-row';
+    const total = c.price && c.qty ? c.price * c.qty : 0;
+    tr.innerHTML = `
+      <td>
+        <div class="custom-row-label">${LANG==='es'?'Extra personalizado':'Custom extra'}</div>
+        <input type="text" class="inp inp-name" placeholder="${LANG==='es'?'Nombre del extra…':'Extra name…'}"
+          value="${c.name||''}" oninput="onCustomName('${areaKey}',${idx},this)">
+      </td>
+      <td style="text-align:center">
+        <input type="number" class="inp inp-qty" min="0" value="${c.qty||0}"
+          oninput="onCustomQty('${areaKey}',${idx},this)">
+      </td>
+      <td style="text-align:right">
+        <input type="number" class="inp inp-price" min="0" step="1" value="${c.price||''}"
+          placeholder="0" oninput="onCustomPrice('${areaKey}',${idx},this)">
+      </td>
+      <td style="text-align:right">
+        <span class="inp-total" id="ctot-${areaKey}-${idx}">
+          ${total > 0 ? fmtEur(total) : '—'}
+        </span>
+      </td>
+      <td style="text-align:center;vertical-align:middle">
+        <select class="inp" style="font-size:9px;padding:4px 6px;text-transform:uppercase;width:100%"
+          onchange="onCustomOficio('${areaKey}',${idx},this)">
+          <option value="">${LANG==='es'?'Oficio…':'Trade…'}</option>
+          ${OFICIOS.map(o=>`<option value="${o}"${c.oficio===o?' selected':''}>${o}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <input type="text" class="inp inp-notes" placeholder="${LANG==='es'?'Observación…':'Note…'}"
+          value="${c.notes||''}" oninput="onCustomNote('${areaKey}',${idx},this)">
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  // Add-custom button row
+  const addRow = document.createElement('tr');
+  addRow.innerHTML = `<td colspan="6" style="padding:8px 10px;">
+    <button onclick="addCustomRow('${areaKey}')" style="font-family:'Roboto',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;background:transparent;border:1px dashed var(--border);color:var(--slate-gray);padding:8px 16px;cursor:pointer;width:100%;text-align:center;transition:all .2s;"
+      onmouseover="this.style.borderColor='var(--black)';this.style.color='var(--black)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--slate-gray)'">
+      + ${LANG==='es'?'Añadir extra personalizado':'Add custom extra'}
+    </button>
+  </td>`;
+  tbody.appendChild(addRow);
+}
+
+// ─── EVENTS ────────────────────────────────────────────────────────
+function onQty(input) {
+  const id = input.dataset.id;
+  const qty = Math.max(0, parseInt(input.value) || 0);
+  input.value = qty;
+  QTY[id] = qty;
+  refreshTotal(id);
+  refreshAreaTotal(input.dataset.area);
+}
+function onPrice(input) {
+  const id = input.dataset.id;
+  const p = parseFloat(input.value) || 0;
+  PRICE[id] = p;
+  refreshTotal(id);
+  refreshAreaTotal(input.dataset.area);
+}
+function onNote(input) { NOTES[input.dataset.id] = input.value; }
+
+function refreshTotal(id) {
+  const el = document.getElementById('tot-' + id);
+  if (!el) return;
+  let item = null;
+  for (const area of AREAS) {
+    const all = getAllItems(area);
+    item = all.find(i => i.id === id);
+    if (item) break;
+  }
+  if (!item) return;
+  const unitPrice = PRICE[id] !== undefined ? PRICE[id] : item.price;
+  const qty = QTY[id] || 0;
+  if (unitPrice === null || unitPrice === undefined) { el.textContent = '—'; return; }
+  const total = unitPrice * qty;
+  el.textContent = total > 0 ? fmtEur(total) : '—';
+}
+
+function refreshAreaTotal(areaKey) {
+  // find area
+  const area = AREAS.find(a => a.key === areaKey || (a.subAreas && a.subAreas.find(s => s.key === areaKey)));
+  let items = [];
+  if (area) {
+    if (area.subAreas) {
+      items = area.subAreas.flatMap(s => s.items);
+    } else {
+      items = area.items || [];
+    }
+  }
+  // also check subArea match
+  if (!area) {
+    for (const a of AREAS) {
+      if (a.subAreas) {
+        const sub = a.subAreas.find(s => s.key === areaKey);
+        if (sub) { items = getAllItems(a); break; }
+      }
+    }
+  }
+
+  let total = 0;
+  items.forEach(item => {
+    const p = PRICE[item.id] !== undefined ? PRICE[item.id] : item.price;
+    if (p !== null && p !== undefined) total += p * (QTY[item.id] || 0);
+  });
+  // add custom
+  const theArea = AREAS.find(a => a.key === areaKey || (a.subAreas && a.subAreas.some(s => s.key === areaKey)));
+  const ck = theArea ? theArea.key : areaKey;
+  (CUSTOM[ck] || []).forEach(c => {
+    if (c.price && c.qty) total += c.price * c.qty;
+  });
+
+  const el = document.getElementById('atotal-' + (theArea ? theArea.step : ''));
+  if (el) el.textContent = fmtEur(total);
+}
+
+// Custom extras
+function addCustomRow(areaKey) {
+  if (!CUSTOM[areaKey]) CUSTOM[areaKey] = [];
+  CUSTOM[areaKey].push({ name:'', price:null, qty:0, notes:'', oficio:'' });
+  rebuildStep(areaKey);
+}
+function onCustomName(areaKey, idx, input) {
+  if (!CUSTOM[areaKey]) return;
+  CUSTOM[areaKey][idx].name = input.value;
+}
+function onCustomQty(areaKey, idx, input) {
+  if (!CUSTOM[areaKey]) return;
+  const qty = Math.max(0, parseInt(input.value)||0);
+  input.value = qty;
+  CUSTOM[areaKey][idx].qty = qty;
+  const el = document.getElementById(`ctot-${areaKey}-${idx}`);
+  const c = CUSTOM[areaKey][idx];
+  if (el) el.textContent = (c.price && c.qty) ? fmtEur(c.price * c.qty) : '—';
+  refreshAreaTotal(areaKey);
+}
+function onCustomPrice(areaKey, idx, input) {
+  if (!CUSTOM[areaKey]) return;
+  const p = parseFloat(input.value)||0;
+  CUSTOM[areaKey][idx].price = p;
+  const el = document.getElementById(`ctot-${areaKey}-${idx}`);
+  const c = CUSTOM[areaKey][idx];
+  if (el) el.textContent = (c.price && c.qty) ? fmtEur(c.price * c.qty) : '—';
+  refreshAreaTotal(areaKey);
+}
+function onCustomNote(areaKey, idx, input) {
+  if (!CUSTOM[areaKey]) return;
+  CUSTOM[areaKey][idx].notes = input.value;
+}
+function onCustomOficio(areaKey, idx, sel) {
+  if (!CUSTOM[areaKey]) return;
+  CUSTOM[areaKey][idx].oficio = sel.value;
+}
+
+function rebuildStep(areaKey) {
+  const area = AREAS.find(a => a.key === areaKey);
+  if (!area) return;
+  if (area.subAreas) {
+    area.subAreas.forEach(sub => {
+      renderTable('tbody-' + sub.key, sub.items, area.key);
+    });
+  } else {
+    renderTable('tbody-' + area.key, area.items, area.key);
+  }
+}
+
+// ─── BUILD DOM ──────────────────────────────────────────────────────
+function buildDOM() {
+  // Nav
+  const nav = document.getElementById('stepNav');
+  nav.innerHTML = '';
+  AREAS.forEach(area => {
+    const div = document.createElement('div');
+    div.className = 'snav-item' + (area.step === 1 ? ' active' : '');
+    div.dataset.step = area.step;
+    div.onclick = () => goTo(area.step);
+    div.innerHTML = `<div class="snav-dot"></div><span data-navkey="${area.key}">${LANG==='es'?area.nav_es:area.nav_en}</span>`;
+    nav.appendChild(div);
+  });
+  // Confirm nav item
+  const confirmDiv = document.createElement('div');
+  confirmDiv.className = 'snav-item';
+  confirmDiv.dataset.step = TOTAL_STEPS - 1;
+  confirmDiv.onclick = () => goTo(TOTAL_STEPS - 1);
+  confirmDiv.innerHTML = `<div class="snav-dot"></div><span id="nav-confirm">${LANG==='es'?'12 · Confirmar':'12 · Confirm'}</span>`;
+  nav.appendChild(confirmDiv);
+  // Step 13 — Firma
+  const firmaDiv = document.createElement('div');
+  firmaDiv.className = 'snav-item';
+  firmaDiv.dataset.step = TOTAL_STEPS;
+  firmaDiv.onclick = () => goTo(TOTAL_STEPS);
+  firmaDiv.innerHTML = `<div class="snav-dot"></div><span id="nav-firma">${LANG==='es'?'13 · Firma':'13 · Signature'}</span>`;
+  nav.appendChild(firmaDiv);
+
+  // Steps
+  const container = document.getElementById('stepsContainer');
+  container.innerHTML = '';
+  AREAS.forEach(area => {
+    const div = document.createElement('div');
+    div.className = 'step' + (area.step === 1 ? ' active' : '');
+    div.id = 'step-' + area.step;
+
+    let tableHTML = '';
+    const theadRow = `<thead><tr>
+      <th data-i18n="th_item">${LANG==='es'?'Extra':'Extra'}</th>
+      <th class="tc" data-i18n="th_qty">${LANG==='es'?'Uds.':'Units'}</th>
+      <th class="tr" data-i18n="th_price">${LANG==='es'?'Precio unit. (€)':'Unit price (€)'}</th>
+      <th class="tr" data-i18n="th_total">${LANG==='es'?'Total (€)':'Total (€)'}</th>
+        <th class="to">${LANG==='es'?'Oficio':'Trade'}</th>
+        <th class="tn" data-i18n="th_notes">${LANG==='es'?'Comentario':'Comment'}</th>
+    </tr></thead>`;
+
+    if (area.subAreas) {
+      area.subAreas.forEach(sub => {
+        tableHTML += `<div class="sub-area-label" data-subkey="${sub.key}">${LANG==='es'?sub.label_es:sub.label_en}</div>
+        <table class="extras-table">${theadRow}<tbody id="tbody-${sub.key}"></tbody></table>`;
+      });
+    } else {
+      tableHTML = `<table class="extras-table">${theadRow}<tbody id="tbody-${area.key}"></tbody></table>`;
+    }
+
+    const isFirst = area.step === 1;
+    const isLast = area.step === AREAS.length;
+
+    div.innerHTML = `
+      <div class="sec-eyebrow">${String(area.step).padStart(2,'0')} — ${LANG==='es'?'Extras':'Extras'}</div>
+      <h2 class="sec-title" data-areakey="${area.key}-title">${LANG==='es'?area.label_es:area.label_en}</h2>
+      <p class="sec-desc" data-areakey="${area.key}-desc">${LANG==='es'?area.desc_es:area.desc_en}</p>
+      ${tableHTML}
+      <div class="area-total-row">
+        <span class="area-total-label">${LANG==='es'?'Total área':'Area total'}</span>
+        <span class="area-total-val" id="atotal-${area.step}">0 €</span>
+      </div>
+      <div class="nav-btns">
+        ${!isFirst ? `<button class="btn btn-back" onclick="prev(${area.step})">${LANG==='es'?'← Anterior':'← Back'}</button>` : '<div></div>'}
+        <button class="btn btn-next" onclick="next(${area.step})">${LANG==='es'?'Siguiente →':'Next →'}</button>
+      </div>`;
+    container.appendChild(div);
+  });
+
+  // Confirm step
+  const confirmStep = document.createElement('div');
+  confirmStep.className = 'step';
+  confirmStep.id = 'step-' + (TOTAL_STEPS - 1);
+  confirmStep.innerHTML = `
+    <div class="sec-eyebrow">12 — ${LANG==='es'?'Confirmación':'Confirmation'}</div>
+    <h2 class="sec-title">${LANG==='es'?'Resumen de extras':'Extras summary'}</h2>
+    <p class="sec-desc">${LANG==='es'?'Revise su selección antes de confirmar.':'Review your selection before confirming.'}</p>
+    <div id="summary-container"></div>
+    <div class="grand-total">
+      <span class="area-total-label">${LANG==='es'?'Total extras (sin IVA)':'Total extras (excl. VAT)'}</span>
+      <div>
+        <div class="grand-total-val" id="grand-total-val">0 €</div>
+        <div class="grand-total-vat" id="grand-total-vat">+ IVA (10%): 0 €</div>
+      </div>
+    </div>
+    <div class="form-block">
+      <div class="form-title" id="lbl-form-title">${LANG==='es'?'Datos de la vivienda':'Property details'}</div>
+      <div class="form-row">
+        <div class="fgroup">
+          <label class="flabel" id="lbl-promo">${LANG==='es'?'Promoción':'Development'}</label>
+          <input class="finput" type="text" value="${SESSION_PROMO||''}" readonly
+            style="background:var(--off-white);color:var(--slate-gray);cursor:default;">
+        </div>
+        <div class="fgroup">
+          <label class="flabel" id="lbl-unit">${LANG==='es'?'Vivienda':'Property'}</label>
+          <input class="finput" id="cUnit" type="text" value="${SESSION_CODIGO||''}" readonly
+            style="background:var(--off-white);font-weight:500;cursor:default;">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="fgroup"><label class="flabel" id="lbl-name">${LANG==='es'?'Nombre cliente':'Client name'}</label><input class="finput" id="cName" type="text" placeholder="${LANG==='es'?'Nombre y apellidos':'Full name'}"></div>
+        <div class="fgroup"><label class="flabel">Email</label><input class="finput" id="cEmail" type="email" placeholder="correo@ejemplo.com"></div>
+      </div>
+      <div class="form-row">
+        <div class="fgroup"><label class="flabel" id="lbl-phone">${LANG==='es'?'Teléfono':'Phone'}</label><input class="finput" id="cPhone" type="tel" placeholder="+34 600 000 000"></div>
+        <div class="fgroup"><label class="flabel" id="lbl-notes">${LANG==='es'?'Observaciones':'Notes'}</label><input class="finput" id="cNotes" type="text" placeholder="${LANG==='es'?'Comentarios adicionales':'Additional comments'}"></div>
+      </div>
+    </div>
+    <div class="nav-btns">
+      <button class="btn btn-back" onclick="prev(${TOTAL_STEPS - 1})">${LANG==='es'?'← Anterior':'← Back'}</button>
+      <button class="btn btn-submit" onclick="submitExtras()">${LANG==='es'?'Confirmar extras →':'Confirm extras →'}</button>
+    </div>
+
+    `;
+  container.appendChild(confirmStep);
+
+  // ── Step 13 — Firma ─────────────────────────────────────────────
+  const firmaStep = document.createElement('div');
+  firmaStep.className = 'step';
+  firmaStep.id = 'step-' + TOTAL_STEPS;
+  firmaStep.innerHTML = `
+    <div class="sec-eyebrow">13 — ${LANG==='es'?'Firma':'Signature'}</div>
+    <h2 class="sec-title" id="firma-step-title">${LANG==='es'?'Documento y firma':'Document & signature'}</h2>
+    <div class="firma-block">
+      <div class="firma-title" id="firma-pdf-title">${LANG==='es'?'Presupuesto generado':'Quote generated'}</div>
+      <div class="firma-desc" id="firma-pdf-desc">${LANG==='es'?'El presupuesto ha sido enviado al cliente por email. Puedes descargarlo aquí:':'The quote has been sent to the client by email. You can download it here:'}</div>
+      <div id="firma-generating" class="firma-generating">${LANG==='es'?'⟳ Generando documento…':'⟳ Generating document…'}</div>
+      <div id="firma-download-wrap" style="display:none">
+        <a id="btn-dl-pdf" class="btn-download-pdf" href="#" target="_blank">
+          ⬇ ${LANG==='es'?'Descargar presupuesto PDF':'Download PDF quote'}
+        </a>
+        <span class="status-chip chip-enviado">${LANG==='es'?'Enviado':'Sent'}</span>
+      </div>
+    </div>
+    <div class="firma-block">
+      <div class="firma-title" id="firma-upload-title">${LANG==='es'?'Adjuntar documento firmado':'Attach signed document'}</div>
+      <div class="firma-desc" id="firma-upload-desc">${LANG==='es'?'Una vez el cliente firme el presupuesto, adjunta aquí el PDF escaneado. Solo los extras con presupuesto firmado pasan a producción.':'Once the client signs the quote, attach the scanned PDF here. Only extras with a signed quote go into production.'}</div>
+      <div class="upload-zone" id="upload-zone" onclick="document.getElementById('pdf-signed-input').click()">
+        <input type="file" id="pdf-signed-input" accept=".pdf" style="display:none" onchange="onSignedUpload(this)">
+        <label class="upload-zone-label" id="lbl-upload-zone">${LANG==='es'?'Haz clic o arrastra aquí el PDF firmado':'Click or drag the signed PDF here'}</label>
+        <div class="upload-zone-hint" id="lbl-upload-hint">${LANG==='es'?'Solo archivos PDF':'PDF files only'}</div>
+        <div class="upload-zone-filename" id="upload-zone-filename"></div>
+      </div>
+      <button class="btn-enviar-firmado" id="btn-enviar-firmado" onclick="submitSigned()">
+        ${LANG==='es'?'Enviar documento firmado →':'Send signed document →'}
+      </button>
+    </div>
+
+    <div class="firma-block">
+      <div class="firma-title" id="firma-docs-title">${LANG==='es'?'Documentación adicional':'Additional documents'}</div>
+      <div class="firma-desc" id="firma-docs-desc">${LANG==='es'?'Adjunta planos, aclaraciones u otros documentos relacionados con esta vivienda. Puedes añadir varios archivos PDF.':'Attach plans, clarifications or other documents related to this property. You can add multiple PDF files.'}</div>
+      <div class="upload-zone" id="docs-upload-zone" onclick="document.getElementById('docs-input').click()">
+        <input type="file" id="docs-input" accept=".pdf" multiple style="display:none" onchange="onDocsUpload(this)">
+        <label class="upload-zone-label" id="lbl-docs-zone">${LANG==='es'?'Haz clic o arrastra aquí los PDFs':'Click or drag PDF files here'}</label>
+        <div class="upload-zone-hint" id="lbl-docs-hint">${LANG==='es'?'Solo archivos PDF · Puedes añadir varios':'PDF files only · Multiple files allowed'}</div>
+      </div>
+      <div class="docs-file-list" id="docs-file-list"></div>
+      <button class="btn-enviar-docs" id="btn-enviar-docs" onclick="submitDocs()">
+        ${LANG==='es'?'Enviar documentación →':'Send documents →'}
+      </button>
+    </div>`;
+  container.appendChild(firmaStep);
+
+  // Render all tables
+  AREAS.forEach(area => {
+    if (area.subAreas) {
+      area.subAreas.forEach(sub => renderTable('tbody-' + sub.key, sub.items, area.key));
+    } else {
+      renderTable('tbody-' + area.key, area.items, area.key);
+    }
+  });
+}
+
+// ─── NAVIGATION ─────────────────────────────────────────────────────
+function goTo(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  const t = document.getElementById('step-' + n);
+  if (t) t.classList.add('active');
+  document.querySelectorAll('.snav-item').forEach(i => {
+    i.classList.remove('active');
+    if (parseInt(i.dataset.step) === n) i.classList.add('active');
+  });
+  currentStep = n;
+  if (n === TOTAL_STEPS - 1) buildSummary();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.parent.postMessage({ scrollTop: true }, '*');
+  setTimeout(sendHeight, 100);
+}
+function next(cur) {
+  document.querySelector(`.snav-item[data-step="${cur}"]`)?.classList.add('done');
+  goTo(cur + 1);
+}
+function prev(cur) { goTo(cur - 1); }
+
+// ─── SUMMARY ─────────────────────────────────────────────────────────
+function buildSummary() {
+  const container = document.getElementById('summary-container');
+  if (!container) return;
+  container.innerHTML = '';
+  let grandTotal = 0;
+
+  AREAS.forEach(area => {
+    const items = getAllItems(area);
+    const selected = items.filter(item => (QTY[item.id] || 0) > 0);
+    const customs = (CUSTOM[area.key] || []).filter(c => c.qty > 0 || c.name);
+    if (selected.length === 0 && customs.length === 0) return;
+
+    const div = document.createElement('div');
+    div.className = 'summary-area';
+    const areaLabel = LANG === 'es' ? area.label_es : area.label_en;
+    let html = `<div class="summary-area-title">${areaLabel}</div><table class="sum-table"><tbody>`;
+
+    selected.forEach(item => {
+      const qty = QTY[item.id] || 0;
+      const p = PRICE[item.id] !== undefined ? PRICE[item.id] : item.price;
+      const total = (p !== null && p !== undefined) ? p * qty : null;
+      if (total) grandTotal += total;
+      const name = LANG === 'es' ? item.name_es : item.name_en;
+      const note = NOTES[item.id] || '';
+      html += `<tr>
+        <td>${name}</td>
+        <td>× ${qty}</td>
+        <td>${total !== null ? fmtEur(total) : `<span style="font-size:11px;color:var(--mid)">${LANG==='es'?'Sin precio':'No price'}</span>`}</td>
+        <td>${note ? `<span>${note}</span>` : ''}</td>
+      </tr>`;
+    });
+
+    customs.forEach(c => {
+      const total = c.price && c.qty ? c.price * c.qty : null;
+      if (total) grandTotal += total;
+      html += `<tr style="background:var(--off-white)">
+        <td>${c.name || `(${LANG==='es'?'Extra sin nombre':'Unnamed extra'})`}</td>
+        <td>× ${c.qty}</td>
+        <td>${total !== null ? fmtEur(total) : '—'}</td>
+        <td>${c.notes ? `<span>${c.notes}</span>` : ''}</td>
+      </tr>`;
+    });
+
+    html += '</tbody></table>';
+    div.innerHTML = html;
+    container.appendChild(div);
+  });
+
+  if (!container.innerHTML) {
+    container.innerHTML = `<p style="font-family:'Roboto',sans-serif;font-size:14px;color:var(--mid);font-style:italic;padding:20px 0;">
+      ${LANG==='es'?'No ha seleccionado ningún extra.':'No extras selected.'}</p>`;
+  }
+
+  document.getElementById('grand-total-val').textContent = fmtEur(grandTotal);
+  document.getElementById('grand-total-vat').textContent = `+ IVA (10%): ${fmtEur(grandTotal * 0.10)}`;
+}
+
+// ─── VIVIENDAS ───────────────────────────────────────────────────────
+function updateViviendas() {
+  const promo = document.getElementById('cPromo')?.value;
+  const sel = document.getElementById('cUnit');
+  if (!sel) return;
+  if (!promo) {
+    sel.innerHTML = `<option value="">${LANG==='es'?'Seleccione primero la promoción…':'Select a development first…'}</option>`;
+    sel.disabled = true; return;
+  }
+  sel.disabled = false;
+  sel.innerHTML = `<option value="">${LANG==='es'?'Seleccione vivienda…':'Select property…'}</option>` +
+    VIVIENDAS[promo].map(v => `<option value="${v}">${v}</option>`).join('');
+}
+
+// ─── SIGNED PDF STATE ────────────────────────────────────────────────
+let signedPdfBase64 = null;
+
+function onSignedUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const zone = document.getElementById('upload-zone');
+  const fname = document.getElementById('upload-zone-filename');
+  if (zone) zone.classList.add('has-file');
+  if (fname) fname.textContent = '✓ ' + file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    signedPdfBase64 = e.target.result.split(',')[1];
+    const btn = document.getElementById('btn-enviar-firmado');
+    if (btn) btn.classList.add('active');
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitSigned() {
+  if (!signedPdfBase64) return;
+  const btn = document.getElementById('btn-enviar-firmado');
+  if (btn) { btn.textContent = LANG==='es'?'Enviando…':'Sending…'; btn.classList.remove('active'); }
+
+  fetch(WEBHOOK_SUBMIT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      vivienda: SESSION_CODIGO,
+      promocion: SESSION_PROMO,
+      lang: LANG,
+      estado: 'Firmado',
+      pdf_firmado: signedPdfBase64
+    })
+  }).then(() => {
+    if (btn) {
+      btn.textContent = LANG==='es'?'✓ Documento enviado':'✓ Document sent';
+      btn.style.background = '#2d7a2d';
+    }
+    const chip = document.createElement('span');
+    chip.className = 'status-chip chip-firmado';
+    chip.textContent = LANG==='es'?'Firmado':'Signed';
+    btn.parentNode.insertBefore(chip, btn.nextSibling);
+  }).catch(e => {
+    console.error('Error:', e);
+    if (btn) { btn.textContent = LANG==='es'?'Error — reintentar':'Error — retry'; btn.classList.add('active'); }
+  });
+}
+
+// ─── DOCS UPLOAD ─────────────────────────────────────────────────────
+const docsFiles = []; // [{name, base64}]
+
+function onDocsUpload(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+
+  const zone = document.getElementById('docs-upload-zone');
+  const list = document.getElementById('docs-file-list');
+  const btn  = document.getElementById('btn-enviar-docs');
+
+  let processed = 0;
+  files.forEach(file => {
+    if (file.type !== 'application/pdf') return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const b64 = e.target.result.split(',')[1];
+      docsFiles.push({ name: file.name, base64: b64 });
+      processed++;
+      renderDocsList();
+      if (docsFiles.length > 0 && btn) btn.classList.add('active');
+    };
+    reader.readAsDataURL(file);
+  });
+  // Reset input so same file can be added again if needed
+  input.value = '';
+}
+
+function renderDocsList() {
+  const list = document.getElementById('docs-file-list');
+  if (!list) return;
+  list.innerHTML = docsFiles.map((f, i) => `
+    <div class="docs-file-item">
+      <span>📄 ${f.name}</span>
+      <button class="remove-btn" onclick="removeDoc(${i})" title="${LANG==='es'?'Eliminar':'Remove'}">×</button>
+    </div>`).join('');
+  const zone = document.getElementById('docs-upload-zone');
+  if (zone) zone.classList.toggle('has-file', docsFiles.length > 0);
+}
+
+function removeDoc(idx) {
+  docsFiles.splice(idx, 1);
+  renderDocsList();
+  const btn = document.getElementById('btn-enviar-docs');
+  if (btn) btn.classList.toggle('active', docsFiles.length > 0);
+}
+
+function submitDocs() {
+  if (!docsFiles.length) return;
+  const btn = document.getElementById('btn-enviar-docs');
+  if (btn) { btn.textContent = LANG==='es'?'Enviando…':'Sending…'; btn.classList.remove('active'); }
+
+  fetch(WEBHOOK_DOCS, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      vivienda: SESSION_CODIGO,
+      promocion: SESSION_PROMO,
+      lang: LANG,
+      documentos: docsFiles.map(f => ({ nombre: f.name, pdf: f.base64 }))
+    })
+  }).then(() => {
+    if (btn) {
+      btn.textContent = `✓ ${docsFiles.length} ${LANG==='es'?'documento(s) enviado(s)':'document(s) sent'}`;
+      btn.style.background = '#2d7a2d';
+    }
+  }).catch(e => {
+    console.error('Error docs:', e);
+    if (btn) { btn.textContent = LANG==='es'?'Error — reintentar':'Error — retry'; btn.classList.add('active'); }
+  });
+}
+
+// ─── SUBMIT ─────────────────────────────────────────────────────────
+function submitExtras() {
+  const name  = document.getElementById('cName').value.trim();
+  const email = document.getElementById('cEmail').value.trim();
+  const promo = SESSION_PROMO;
+  const codigo = SESSION_CODIGO;
+
+  if (!promo || !codigo) { alert(LANG==='es'?'Error: vivienda no seleccionada.':'Error: no property selected.'); return; }
+  if (!name || !email) { alert(LANG==='es'?'Introduzca nombre y email.':'Please enter name and email.'); return; }
+
+  // Build extras payload
+  const extrasPayload = [];
+  let grandTotal = 0;
+
+  AREAS.forEach(area => {
+    const items = getAllItems(area);
+    items.forEach(item => {
+      const qty = QTY[item.id] || 0;
+      if (qty === 0 && !NOTES[item.id]) return;
+      const p = PRICE[item.id] !== undefined ? PRICE[item.id] : item.price;
+      const total = p !== null ? p * qty : null;
+      if (total) grandTotal += total;
+      extrasPayload.push({
+        area: area.label_es,
+        area_en: area.label_en,
+        id: item.id,
+        extra: item.name_es,
+        extra_en: item.name_en,
+        descripcion: item.desc_es || '',
+        descripcion_en: item.desc_en || '',
+        oficio: item.oficio || '',
+        pedido: item.pedido ? 'P' : '',
+        precio_unit: p,
+        cantidad: qty,
+        total: total,
+        nota_extra: item.comment_es || '',
+        nota_extra_en: item.comment_en || '',
+        comentario: NOTES[item.id] || ''
+      });
+    });
+    (CUSTOM[area.key] || []).forEach(c => {
+      if (!c.name && !c.qty) return;
+      const total = c.price && c.qty ? c.price * c.qty : null;
+      if (total) grandTotal += total;
+      extrasPayload.push({
+        area: area.label_es,
+        area_en: area.label_en,
+        id: '',
+        extra: c.name || '(Extra personalizado)',
+        extra_en: c.name || '(Custom extra)',
+        descripcion: '', descripcion_en: '',
+        oficio: c.oficio || '', pedido: '',
+        precio_unit: c.price,
+        cantidad: c.qty,
+        total: total,
+        nota_extra: '', nota_extra_en: '',
+        comentario: c.notes || ''
+      });
+    });
+  });
+
+  const payload = {
+    promocion: promo,
+    lang: LANG,
+    vivienda: codigo,
+    nombre: name,
+    email: email,
+    telefono: document.getElementById('cPhone').value.trim(),
+    observaciones: document.getElementById('cNotes').value.trim(),
+    fecha: new Date().toLocaleDateString('es-ES'),
+    total_sin_iva: grandTotal,
+    total_iva: grandTotal * 0.10,
+    total_con_iva: grandTotal * 1.10,
+    extras: extrasPayload,
+    estado: 'Enviado'
+  };
+
+  // Disable button while waiting
+  const btnSubmit = document.querySelector('.btn-submit');
+  if (btnSubmit) { btnSubmit.textContent = LANG==='es'?'Enviando…':'Sending…'; btnSubmit.disabled = true; }
+
+  // Await response from Make (which returns pdf_url)
+  fetch(WEBHOOK_SUBMIT, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(r => r.json())
+  .then(data => {
+    // Navigate to step 13
+    const confirmStep = document.getElementById('step-' + (TOTAL_STEPS - 1));
+    if (confirmStep) confirmStep.style.display = 'none';
+    document.querySelector(`.snav-item[data-step="${TOTAL_STEPS - 1}"]`)?.classList.add('done');
+    goTo(TOTAL_STEPS);
+
+    // Set PDF URL if Make returned one
+    const pdfUrl = data.pdf_url || data.url || null;
+    const generating = document.getElementById('firma-generating');
+    const dlWrap = document.getElementById('firma-download-wrap');
+    const dlBtn = document.getElementById('btn-dl-pdf');
+    if (pdfUrl && dlBtn && dlWrap && generating) {
+      generating.style.display = 'none';
+      dlBtn.href = pdfUrl;
+      dlWrap.style.display = 'block';
+    } else if (generating) {
+      generating.textContent = LANG==='es'
+        ? '⚠ No se pudo obtener el enlace del PDF. Comprueba el email del cliente.'
+        : '⚠ Could not get PDF link. Check the client email.';
+    }
+  })
+  .catch(() => {
+    // If Make doesn't respond (e.g. local test), still go to step 13
+    document.querySelector(`.snav-item[data-step="${TOTAL_STEPS - 1}"]`)?.classList.add('done');
+    goTo(TOTAL_STEPS);
+    const generating = document.getElementById('firma-generating');
+    if (generating) generating.textContent = LANG==='es'
+      ? '⚠ Sin conexión — el documento se procesará en breve.'
+      : '⚠ No connection — the document will be processed shortly.';
+  });
+}
+
+// ─── LANG ────────────────────────────────────────────────────────────
+function setLang(lang) {
+  LANG = lang;
+  document.getElementById('btn-es').classList.toggle('active', lang === 'es');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+
+  // Vivienda screen
+  const vsSub = document.getElementById('vs-sub');
+  if (vsSub) vsSub.textContent = lang === 'es' ? 'Selector de extras · Seleccione vivienda' : 'Extras selector · Select property';
+  const vsBtn = document.getElementById('vs-btn');
+  if (vsBtn) vsBtn.textContent = lang === 'es' ? 'Continuar →' : 'Continue →';
+  const vsNewBtn = document.getElementById('vs-new-btn');
+  if (vsNewBtn) vsNewBtn.textContent = lang === 'es' ? 'Nueva selección (borrar datos)' : 'New selection (clear data)';
+  const vsLblPromo = document.getElementById('vs-lbl-promo');
+  if (vsLblPromo) vsLblPromo.textContent = lang === 'es' ? 'Promoción' : 'Development';
+  const vsLblViv = document.getElementById('vs-lbl-viv');
+  if (vsLblViv) vsLblViv.textContent = lang === 'es' ? 'Vivienda' : 'Property';
+
+  if (document.getElementById('app-wrapper').style.display !== 'block') return;
+
+  // Nav labels
+  document.querySelectorAll('.snav-item[data-step]').forEach(el => {
+    const step = parseInt(el.dataset.step);
+    const span = el.querySelector('span');
+    if (!span) return;
+    if (step === TOTAL_STEPS - 1) { span.textContent = lang === 'es' ? '12 · Confirmar' : '12 · Confirm'; return; }
+    if (step === TOTAL_STEPS)     { span.textContent = lang === 'es' ? '13 · Firma' : '13 · Signature'; return; }
+    const area = AREAS.find(a => a.step === step);
+    if (area) span.textContent = lang === 'es' ? area.nav_es : area.nav_en;
+  });
+
+  // Step titles, descriptions, table headers, buttons
+  AREAS.forEach(area => {
+    const stepEl = document.getElementById('step-' + area.step);
+    if (!stepEl) return;
+    const title = stepEl.querySelector('.sec-title');
+    const desc  = stepEl.querySelector('.sec-desc');
+    if (title) title.textContent = lang === 'es' ? area.label_es : area.label_en;
+    if (desc)  desc.textContent  = lang === 'es' ? area.desc_es  : area.desc_en;
+    if (area.subAreas) {
+      area.subAreas.forEach(sub => {
+        const lbl = stepEl.querySelector(`[data-subkey="${sub.key}"]`);
+        if (lbl) lbl.textContent = lang === 'es' ? sub.label_es : sub.label_en;
+      });
+    }
+    stepEl.querySelectorAll('thead th').forEach(th => {
+      const map = { th_item:{es:'Extra',en:'Extra'}, th_qty:{es:'Uds.',en:'Units'},
+        th_price:{es:'Precio unit. (€)',en:'Unit price (€)'}, th_total:{es:'Total (€)',en:'Total (€)'},
+        th_notes:{es:'Comentario',en:'Comment'} };
+      const key = th.dataset.i18n;
+      if (key && map[key]) th.textContent = map[key][lang];
+    });
+    const totalLbl = stepEl.querySelector('.area-total-label');
+    if (totalLbl) totalLbl.textContent = lang === 'es' ? 'Total área' : 'Area total';
+    stepEl.querySelectorAll('.btn-back').forEach(b => b.textContent = lang === 'es' ? '← Anterior' : '← Back');
+    stepEl.querySelectorAll('.btn-next').forEach(b => b.textContent = lang === 'es' ? 'Siguiente →' : 'Next →');
+  });
+
+  // Confirm step
+  const confirmEl = document.getElementById('step-' + (TOTAL_STEPS - 1));
+  if (confirmEl) {
+    const title = confirmEl.querySelector('.sec-title');
+    const desc  = confirmEl.querySelector('.sec-desc');
+    if (title) title.textContent = lang === 'es' ? 'Resumen de extras' : 'Extras summary';
+    if (desc)  desc.textContent  = lang === 'es' ? 'Revise su selección antes de confirmar.' : 'Review your selection before confirming.';
+    const gtLbl = confirmEl.querySelector('.area-total-label');
+    if (gtLbl) gtLbl.textContent = lang === 'es' ? 'Total extras (sin IVA)' : 'Total extras (excl. VAT)';
+    confirmEl.querySelectorAll('.btn-back').forEach(b => b.textContent = lang === 'es' ? '← Anterior' : '← Back');
+    confirmEl.querySelectorAll('.btn-submit').forEach(b => b.textContent = lang === 'es' ? 'Confirmar extras →' : 'Confirm extras →');
+    const formTitle = confirmEl.querySelector('.form-title');
+    if (formTitle) formTitle.textContent = lang === 'es' ? 'Datos de la vivienda' : 'Property details';
+    const lp = document.getElementById('lbl-promo');   if (lp) lp.textContent = lang === 'es' ? 'Promoción' : 'Development';
+    const lu = document.getElementById('lbl-unit');    if (lu) lu.textContent = lang === 'es' ? 'Vivienda' : 'Property';
+    const ln = document.getElementById('lbl-name');    if (ln) ln.textContent = lang === 'es' ? 'Nombre cliente' : 'Client name';
+    const lph = document.getElementById('lbl-phone');  if (lph) lph.textContent = lang === 'es' ? 'Teléfono' : 'Phone';
+    const lno = document.getElementById('lbl-notes');  if (lno) lno.textContent = lang === 'es' ? 'Observaciones' : 'Notes';
+    const cName = document.getElementById('cName');   if (cName) cName.placeholder = lang === 'es' ? 'Nombre y apellidos' : 'Full name';
+    const cNotes = document.getElementById('cNotes'); if (cNotes) cNotes.placeholder = lang === 'es' ? 'Comentarios adicionales' : 'Additional comments';
+  }
+
+  // Firma step
+  const firmaEl = document.getElementById('step-' + TOTAL_STEPS);
+  if (firmaEl) {
+    const t = document.getElementById('firma-step-title');   if (t) t.textContent = lang==='es'?'Documento y firma':'Document & signature';
+    const pt = document.getElementById('firma-pdf-title');   if (pt) pt.textContent = lang==='es'?'Presupuesto generado':'Quote generated';
+    const pd = document.getElementById('firma-pdf-desc');    if (pd) pd.textContent = lang==='es'?'El presupuesto ha sido enviado al cliente por email. Puedes descargarlo aquí:':'The quote has been sent to the client by email. You can download it here:';
+    const ut = document.getElementById('firma-upload-title');if (ut) ut.textContent = lang==='es'?'Adjuntar documento firmado':'Attach signed document';
+    const ud = document.getElementById('firma-upload-desc'); if (ud) ud.textContent = lang==='es'?'Una vez el cliente firme el presupuesto, adjunta aquí el PDF escaneado.':'Once the client signs the quote, attach the scanned PDF here.';
+    const ul = document.getElementById('lbl-upload-zone');   if (ul && !signedPdfBase64) ul.textContent = lang==='es'?'Haz clic o arrastra aquí el PDF firmado':'Click or drag the signed PDF here';
+    const uh = document.getElementById('lbl-upload-hint');   if (uh) uh.textContent = lang==='es'?'Solo archivos PDF':'PDF files only';
+    const btn = document.getElementById('btn-enviar-firmado'); if (btn && !btn.classList.contains('active')) btn.textContent = lang==='es'?'Enviar documento firmado →':'Send signed document →';
+    // Generating message — only translate if still showing (not yet replaced by error/link)
+    const gen = document.getElementById('firma-generating');
+    if (gen && gen.style.display !== 'none' && gen.textContent.includes('⟳')) {
+      gen.textContent = lang==='es'?'⟳ Generando documento…':'⟳ Generating document…';
+    }
+    // Download button
+    const dl = document.getElementById('btn-dl-pdf');
+    if (dl) dl.textContent = '⬇ ' + (lang==='es'?'Descargar presupuesto PDF':'Download PDF quote');
+    // Sent chip
+    const chip = document.querySelector('.chip-enviado');
+    if (chip) chip.textContent = lang==='es'?'Enviado':'Sent';
+    // Docs block
+    const dt = document.getElementById('firma-docs-title'); if (dt) dt.textContent = lang==='es'?'Documentación adicional':'Additional documents';
+    const dd = document.getElementById('firma-docs-desc');  if (dd) dd.textContent = lang==='es'?'Adjunta planos, aclaraciones u otros documentos relacionados con esta vivienda. Puedes añadir varios archivos PDF.':'Attach plans, clarifications or other documents related to this property. You can add multiple PDF files.';
+    const dz = document.getElementById('lbl-docs-zone');    if (dz) dz.textContent = lang==='es'?'Haz clic o arrastra aquí los PDFs':'Click or drag PDF files here';
+    const dh = document.getElementById('lbl-docs-hint');    if (dh) dh.textContent = lang==='es'?'Solo archivos PDF · Puedes añadir varios':'PDF files only · Multiple files allowed';
+    const db = document.getElementById('btn-enviar-docs');  if (db && !db.style.background) db.textContent = lang==='es'?'Enviar documentación →':'Send documents →';
+  }
+
+  // Rebuild all tables
+  AREAS.forEach(area => {
+    if (area.subAreas) {
+      area.subAreas.forEach(sub => renderTable('tbody-' + sub.key, sub.items, area.key));
+    } else {
+      renderTable('tbody-' + area.key, area.items, area.key);
+    }
+  });
+  if (currentStep === TOTAL_STEPS - 1) buildSummary();
+}
+
+// ─── UTILS ──────────────────────────────────────────────────────────
+function fmtEur(n) {
+  return n.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' €';
+}
+function sendHeight() {
+  window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, '*');
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  sendHeight();
+  // Drag-and-drop for signed PDF
+  document.addEventListener('dragover', e => {
+    const zone = document.getElementById('upload-zone');
+    const docsZone = document.getElementById('docs-upload-zone');
+    if (zone || docsZone) { e.preventDefault(); }
+    if (zone) zone.style.borderColor = 'var(--black)';
+    if (docsZone) docsZone.style.borderColor = 'var(--black)';
+  });
+  document.addEventListener('dragleave', () => {
+    const zone = document.getElementById('upload-zone');
+    if (zone && !zone.classList.contains('has-file')) zone.style.borderColor = '';
+    const docsZone = document.getElementById('docs-upload-zone');
+    if (docsZone && !docsZone.classList.contains('has-file')) docsZone.style.borderColor = '';
+  });
+  document.addEventListener('drop', e => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+    if (!files.length) return;
+    // Determine target zone by drop position
+    const docsZone = document.getElementById('docs-upload-zone');
+    const signedZone = document.getElementById('upload-zone');
+    const rect = docsZone?.getBoundingClientRect();
+    const isOverDocs = rect && e.clientY >= rect.top && e.clientY <= rect.bottom;
+    if (isOverDocs) {
+      // Multiple files → docs
+      const input = document.getElementById('docs-input');
+      const dt = new DataTransfer();
+      files.forEach(f => dt.items.add(f));
+      input.files = dt.files;
+      onDocsUpload(input);
+    } else if (files.length === 1 && signedZone) {
+      // Single file over signed zone
+      const input = document.getElementById('pdf-signed-input');
+      const dt = new DataTransfer();
+      dt.items.add(files[0]);
+      input.files = dt.files;
+      onSignedUpload(input);
+    }
+  });
+});
+window.addEventListener('resize', sendHeight);
+</script>
+</body>
+</html>
