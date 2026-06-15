@@ -295,8 +295,8 @@
       </select>
     </div>
     <div class="vsearch-info" id="vs-info"></div>
-    <label class="vsearch-check" id="vs-post-check" onclick="togglePostEntrega(this)">
-      <input type="checkbox" id="vs-post" onclick="event.stopPropagation()">
+    <label class="vsearch-check" id="vs-post-check">
+      <input type="checkbox" id="vs-post" onchange="togglePostEntrega()">
       <span class="vsearch-check-label" id="vs-post-label">Extras post-entrega (IVA 21%)</span>
     </label>
     <button class="vsearch-btn" id="vs-btn" onclick="vsConfirm()">Continuar →</button>
@@ -352,12 +352,12 @@ function doLogin() {
 }
 
 // ─── VIVIENDA SEARCH SCREEN ──────────────────────────────────────────
-function togglePostEntrega(label) {
+function togglePostEntrega() {
   const cb = document.getElementById('vs-post');
-  cb.checked = !cb.checked;
+  const check = document.getElementById('vs-post-check');
   POST_ENTREGA = cb.checked;
   IVA_RATE = POST_ENTREGA ? 0.21 : 0.10;
-  label.classList.toggle('active', POST_ENTREGA);
+  check.classList.toggle('active', POST_ENTREGA);
   const pct = POST_ENTREGA ? '21%' : '10%';
   document.getElementById('vs-post-label').textContent =
     (LANG === 'es' ? 'Extras post-entrega (IVA ' : 'Post-delivery extras (VAT ') + pct + ')';
@@ -1056,7 +1056,7 @@ function buildDOM() {
       <span class="area-total-label">${LANG==='es'?'Total extras (sin IVA)':'Total extras (excl. VAT)'}</span>
       <div>
         <div class="grand-total-val" id="grand-total-val">0 €</div>
-        <div class="grand-total-vat" id="grand-total-vat">+ IVA (10%): 0 €</div>
+        <div class="grand-total-vat" id="grand-total-vat">+ IVA (${Math.round(IVA_RATE*100)}%): 0 €</div>
       </div>
     </div>
     <div class="form-block">
@@ -1223,7 +1223,7 @@ function buildSummary() {
   }
 
   document.getElementById('grand-total-val').textContent = fmtEur(grandTotal);
-  document.getElementById('grand-total-vat').textContent = `+ IVA (10%): ${fmtEur(grandTotal * 0.10)}`;
+  document.getElementById('grand-total-vat').textContent = `+ IVA (${Math.round(IVA_RATE*100)}%): ${fmtEur(grandTotal * IVA_RATE)}`;
 }
 
 // ─── VIVIENDAS ───────────────────────────────────────────────────────
