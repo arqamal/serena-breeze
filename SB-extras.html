@@ -1350,6 +1350,7 @@ function submitExtras() {
   if (!name || !email) { alert(LANG==='es'?'Introduzca nombre y email.':'Please enter name and email.'); return; }
 
   // Build extras payload
+  const IVA_RATE = 0.10; // Modificar aquí si cambia el tipo de IVA
   const extrasPayload = [];
   let grandTotal = 0;
 
@@ -1374,6 +1375,8 @@ function submitExtras() {
         precio_unit: p,
         cantidad: qty,
         total: total,
+        iva: total !== null ? total * IVA_RATE : null,
+        total_con_iva: total !== null ? total * (1 + IVA_RATE) : null,
         nota_extra: item.comment_es || '',
         nota_extra_en: item.comment_en || '',
         comentario: NOTES[item.id] || ''
@@ -1394,6 +1397,8 @@ function submitExtras() {
         precio_unit: c.price,
         cantidad: c.qty,
         total: total,
+        iva: total !== null ? total * IVA_RATE : null,
+        total_con_iva: total !== null ? total * (1 + IVA_RATE) : null,
         nota_extra: '', nota_extra_en: '',
         comentario: c.notes || ''
       });
@@ -1410,8 +1415,8 @@ function submitExtras() {
     observaciones: document.getElementById('cNotes').value.trim(),
     fecha: new Date().toLocaleDateString('es-ES'),
     total_sin_iva: grandTotal,
-    total_iva: grandTotal * 0.10,
-    total_con_iva: grandTotal * 1.10,
+    total_iva: grandTotal * IVA_RATE,
+    total_con_iva: grandTotal * (1 + IVA_RATE),
     extras: extrasPayload,
     estado: 'Enviado'
   };
