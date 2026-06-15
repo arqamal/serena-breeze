@@ -250,6 +250,11 @@
   .vsearch-info.visible { display: block; }
   .vsearch-info.found { border-left-color: #2d7a2d; color: #2d7a2d; background: #f0faf0; }
   .vsearch-info.new { border-left-color: var(--mid); }
+  .vsearch-check { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 12px 14px; border: 1px solid var(--border); background: var(--off-white); cursor: pointer; }
+  .vsearch-check input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--black); }
+  .vsearch-check-label { font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--text); cursor: pointer; user-select: none; }
+  .vsearch-check.active { border-color: #E87722; background: #FEF3EA; }
+  .vsearch-check.active .vsearch-check-label { color: #E87722; }
 </style>
 </head>
 <body>
@@ -290,6 +295,10 @@
       </select>
     </div>
     <div class="vsearch-info" id="vs-info"></div>
+    <label class="vsearch-check" id="vs-post-check" onclick="togglePostEntrega(this)">
+      <input type="checkbox" id="vs-post" onclick="event.stopPropagation()">
+      <span class="vsearch-check-label" id="vs-post-label">Extras post-entrega (IVA 21%)</span>
+    </label>
     <button class="vsearch-btn" id="vs-btn" onclick="vsConfirm()">Continuar →</button>
     <button class="vsearch-btn secondary" id="vs-new-btn"
       onclick="vsStartNew()" style="display:none">
@@ -328,6 +337,8 @@ const WEBHOOK_DOCS     = 'https://hook.eu1.make.com/WEBHOOK_DOCS_AQUI';
 // Fixed vivienda code for the session
 let SESSION_CODIGO = null;
 let SESSION_PROMO  = null;
+let POST_ENTREGA   = false;
+let IVA_RATE       = 0.10;
 
 function doLogin() {
   const u = document.getElementById('login-user').value.trim();
@@ -341,6 +352,17 @@ function doLogin() {
 }
 
 // ─── VIVIENDA SEARCH SCREEN ──────────────────────────────────────────
+function togglePostEntrega(label) {
+  const cb = document.getElementById('vs-post');
+  cb.checked = !cb.checked;
+  POST_ENTREGA = cb.checked;
+  IVA_RATE = POST_ENTREGA ? 0.21 : 0.10;
+  label.classList.toggle('active', POST_ENTREGA);
+  const pct = POST_ENTREGA ? '21%' : '10%';
+  document.getElementById('vs-post-label').textContent =
+    (LANG === 'es' ? 'Extras post-entrega (IVA ' : 'Post-delivery extras (VAT ') + pct + ')';
+}
+
 function vsUpdateApts() {
   const promo = document.getElementById('vs-promo').value;
   const sel   = document.getElementById('vs-unit');
@@ -370,7 +392,7 @@ async function vsCheckVivienda() {
     const res = await fetch(WEBHOOK_CONSULTA, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vivienda: codigo })
+      body: JSON.stringify({ vivienda: codigo, post_entrega: POST_ENTREGA })
     });
     const data = await res.json();
     const extras = Array.isArray(data) ? data : (data.extras || []);
@@ -1350,7 +1372,6 @@ function submitExtras() {
   if (!name || !email) { alert(LANG==='es'?'Introduzca nombre y email.':'Please enter name and email.'); return; }
 
   // Build extras payload
-  const IVA_RATE = 0.10; // Modificar aquí si cambia el tipo de IVA
   const extrasPayload = [];
   let grandTotal = 0;
 
@@ -1417,6 +1438,8 @@ function submitExtras() {
     total_sin_iva: grandTotal,
     total_iva: grandTotal * IVA_RATE,
     total_con_iva: grandTotal * (1 + IVA_RATE),
+    iva_rate: IVA_RATE,
+    post_entrega: POST_ENTREGA,
     extras: extrasPayload,
     estado: 'Enviado'
   };
