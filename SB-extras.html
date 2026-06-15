@@ -392,7 +392,7 @@ async function vsCheckVivienda() {
     const res = await fetch(WEBHOOK_CONSULTA, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vivienda: codigo, post_entrega: POST_ENTREGA })
+      body: JSON.stringify({ vivienda: codigo, post_entrega: POST_ENTREGA ? 'TRUE' : 'FALSE' })
     });
     const data = await res.json();
     const extras = Array.isArray(data) ? data : (data.extras || []);
@@ -1439,7 +1439,7 @@ function submitExtras() {
     total_iva: grandTotal * IVA_RATE,
     total_con_iva: grandTotal * (1 + IVA_RATE),
     iva_rate: IVA_RATE,
-    post_entrega: POST_ENTREGA,
+    post_entrega: POST_ENTREGA ? 'TRUE' : 'FALSE',
     extras: extrasPayload,
     estado: 'Enviado'
   };
