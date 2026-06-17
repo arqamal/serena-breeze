@@ -1440,7 +1440,7 @@ function submitExtras() {
     total_con_iva: grandTotal * (1 + IVA_RATE),
     iva_rate: IVA_RATE,
     post_entrega: POST_ENTREGA ? 'TRUE' : 'FALSE',
-    extras: extrasPayload,
+    extras: JSON.stringify(extrasPayload),
     estado: 'Enviado'
   };
 
