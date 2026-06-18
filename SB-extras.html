@@ -1400,8 +1400,36 @@ function submitExtras() {
         total_con_iva: total !== null ? total * (1 + IVA_RATE) : null,
         nota_extra: item.comment_es || '',
         nota_extra_en: item.comment_en || '',
-        comentario: NOTES[item.id] || ''
+        comentario: NOTES[item.id] || '',
+        tipo: ''
       });
+      // Desglose del pack: cada sublínea se guarda como fila propia en _datos
+      // (tipo:'desglose'), sin precio/cantidad propios — solo para listados por oficio.
+      // No se incluyen en el PDF de presupuesto.
+      if (qty > 0 && item.sublines && item.sublines.length) {
+        item.sublines.forEach(sub => {
+          extrasPayload.push({
+            area: area.label_es,
+            area_en: area.label_en,
+            id: '',
+            extra: sub.name_es,
+            extra_en: sub.name_en,
+            descripcion: sub.desc_es || '',
+            descripcion_en: sub.desc_en || '',
+            oficio: sub.oficio || '',
+            pedido: sub.pedido ? 'P' : '',
+            precio_unit: null,
+            cantidad: null,
+            total: null,
+            iva: null,
+            total_con_iva: null,
+            nota_extra: '',
+            nota_extra_en: '',
+            comentario: '',
+            tipo: 'desglose'
+          });
+        });
+      }
     });
     (CUSTOM[area.key] || []).forEach(c => {
       if (!c.name && !c.qty) return;
@@ -1421,7 +1449,8 @@ function submitExtras() {
         iva: total !== null ? total * IVA_RATE : null,
         total_con_iva: total !== null ? total * (1 + IVA_RATE) : null,
         nota_extra: '', nota_extra_en: '',
-        comentario: c.notes || ''
+        comentario: c.notes || '',
+        tipo: ''
       });
     });
   });
