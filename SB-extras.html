@@ -437,9 +437,29 @@ function vsConfirm() {
   // Load cached extras into state
   const extras = document.getElementById('vs-btn')._cachedExtras || [];
   extras.forEach(e => {
+    if (e.id && String(e.id).indexOf('custom_') === 0) {
+      // Extra personalizado guardado — reconstruir su fila en CUSTOM[]
+      // Requiere que WEBHOOK_CONSULTA devuelva también area / extra / oficio (pendiente en Make)
+      const area = AREAS.find(a => a.label_es === e.area || a.label_en === e.area_en);
+      const areaKey = area ? area.key : null;
+      if (areaKey) {
+        if (!CUSTOM[areaKey]) CUSTOM[areaKey] = [];
+        CUSTOM[areaKey].push({
+          id: e.id,
+          name: e.extra || '',
+          price: e.price !== undefined && e.price !== null ? Number(e.price) : null,
+          qty: e.qty !== undefined && e.qty !== null ? Number(e.qty) : 0,
+          notes: e.notes || '',
+          oficio: e.oficio || '',
+          estado: e.estado || ''
+        });
+      }
+      return;
+    }
     if (e.qty   !== undefined && e.qty   !== null && e.qty   !== 0) QTY[e.id]   = Number(e.qty);
     if (e.price !== undefined && e.price !== null) PRICE[e.id] = Number(e.price);
     if (e.notes !== undefined && e.notes !== '')   NOTES[e.id] = e.notes;
+    if (e.estado !== undefined && e.estado !== '') ESTADO[e.id] = e.estado;
   });
 
   // Show app
@@ -457,6 +477,8 @@ function vsStartNew() {
   Object.keys(QTY).forEach(k => delete QTY[k]);
   Object.keys(PRICE).forEach(k => delete PRICE[k]);
   Object.keys(NOTES).forEach(k => delete NOTES[k]);
+  Object.keys(ESTADO).forEach(k => delete ESTADO[k]);
+  Object.keys(ELIMINAR).forEach(k => delete ELIMINAR[k]);
   document.getElementById('vs-btn')._cachedExtras = [];
   const info = document.getElementById('vs-info');
   info.className = 'vsearch-info visible new';
@@ -703,6 +725,8 @@ const AREAS = [
 const QTY   = {}; // id → qty (number)
 const PRICE = {}; // id → price override (number)
 const NOTES = {}; // id → string
+const ESTADO = {}; // id → 'Enviado' | 'Firmado' (del extra ya guardado, para mostrar checkbox de eliminar)
+const ELIMINAR = {}; // id → true si el usuario marcó "eliminar" un extra ya firmado
 // Custom extras per area key
 const CUSTOM = {}; // areaKey → [{name, price, qty, oficio, notes}]
 const OFICIOS = ["ALBA\u00d1ILERIA", "Carpinteria MADERA", "Carpinteria METALICA", "CLIMA", "COCINAS", "CRISTALERO", "ELECTRICISTA", "ELECTRODOMESTICOS", "FONTANERO", "ILUMINACION", "JACUZZI", "JARDINERO", "MOBILIARIO", "MOBILIARIO Estores", "OTROS PISCINA", "PISCINA", "TOLDOS"];
@@ -790,6 +814,9 @@ function renderTable(tbodyId, items, areaKey) {
       <td>
         <input type="text" class="inp inp-notes" placeholder="${LANG==='es'?'Observación…':'Note…'}"
           data-id="${item.id}" value="${note}" oninput="onNote(this)">
+      </td>
+      <td style="text-align:center">
+        ${ESTADO[item.id] === 'Firmado' ? `<input type="checkbox" data-id="${item.id}" ${ELIMINAR[item.id] ? 'checked' : ''} onchange="onEliminar(this)">` : ''}
       </td>`;
     tbody.appendChild(tr);
   });
@@ -832,12 +859,15 @@ function renderCustomRows(tbody, areaKey) {
       <td>
         <input type="text" class="inp inp-notes" placeholder="${LANG==='es'?'Observación…':'Note…'}"
           value="${c.notes||''}" oninput="onCustomNote('${areaKey}',${idx},this)">
+      </td>
+      <td style="text-align:center">
+        ${c.estado === 'Firmado' ? `<input type="checkbox" data-id="${c.id}" ${ELIMINAR[c.id] ? 'checked' : ''} onchange="onEliminar(this)">` : ''}
       </td>`;
     tbody.appendChild(tr);
   });
   // Add-custom button row
   const addRow = document.createElement('tr');
-  addRow.innerHTML = `<td colspan="6" style="padding:8px 10px;">
+  addRow.innerHTML = `<td colspan="7" style="padding:8px 10px;">
     <button onclick="addCustomRow('${areaKey}')" style="font-family:'Roboto',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;background:transparent;border:1px dashed var(--border);color:var(--slate-gray);padding:8px 16px;cursor:pointer;width:100%;text-align:center;transition:all .2s;"
       onmouseover="this.style.borderColor='var(--black)';this.style.color='var(--black)'"
       onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--slate-gray)'">
@@ -864,6 +894,11 @@ function onPrice(input) {
   refreshAreaTotal(input.dataset.area);
 }
 function onNote(input) { NOTES[input.dataset.id] = input.value; }
+function onEliminar(input) {
+  const id = input.dataset.id;
+  if (input.checked) ELIMINAR[id] = true;
+  else delete ELIMINAR[id];
+}
 
 function refreshTotal(id) {
   const el = document.getElementById('tot-' + id);
@@ -922,7 +957,7 @@ function refreshAreaTotal(areaKey) {
 // Custom extras
 function addCustomRow(areaKey) {
   if (!CUSTOM[areaKey]) CUSTOM[areaKey] = [];
-  CUSTOM[areaKey].push({ name:'', price:null, qty:0, notes:'', oficio:'' });
+  CUSTOM[areaKey].push({ id: 'custom_' + Date.now() + '_' + Math.floor(Math.random()*10000), name:'', price:null, qty:0, notes:'', oficio:'' });
   rebuildStep(areaKey);
 }
 function onCustomName(areaKey, idx, input) {
@@ -1013,6 +1048,7 @@ function buildDOM() {
       <th class="tr" data-i18n="th_total">${LANG==='es'?'Total (€)':'Total (€)'}</th>
         <th class="to">${LANG==='es'?'Oficio':'Trade'}</th>
         <th class="tn" data-i18n="th_notes">${LANG==='es'?'Comentario':'Comment'}</th>
+        <th class="tc" data-i18n="th_del">${LANG==='es'?'Eliminar':'Remove'}</th>
     </tr></thead>`;
 
     if (area.subAreas) {
@@ -1378,6 +1414,21 @@ function submitExtras() {
   AREAS.forEach(area => {
     const items = getAllItems(area);
     items.forEach(item => {
+      // Extras ya FIRMADOS: no se reescriben en cada envío.
+      // Si el usuario marca "eliminar", se envía una entrada mínima con accion:'sustituir'
+      // para que Make pase esa fila (y sus sublíneas de desglose) a estado=Sustituido.
+      // Si no se marca, no se incluye nada — la fila firmada se queda intacta tal cual está.
+      if (ESTADO[item.id] === 'Firmado') {
+        if (ELIMINAR[item.id]) {
+          extrasPayload.push({
+            area: area.label_es,
+            area_en: area.label_en,
+            id: item.id,
+            accion: 'sustituir'
+          });
+        }
+        return;
+      }
       const qty = QTY[item.id] || 0;
       if (qty === 0 && !NOTES[item.id]) return;
       const p = PRICE[item.id] !== undefined ? PRICE[item.id] : item.price;
@@ -1407,11 +1458,11 @@ function submitExtras() {
       // (tipo:'desglose'), sin precio/cantidad propios — solo para listados por oficio.
       // No se incluyen en el PDF de presupuesto.
       if (qty > 0 && item.sublines && item.sublines.length) {
-        item.sublines.forEach(sub => {
+        item.sublines.forEach((sub, subIdx) => {
           extrasPayload.push({
             area: area.label_es,
             area_en: area.label_en,
-            id: '',
+            id: item.id + '_sub' + subIdx,
             extra: sub.name_es,
             extra_en: sub.name_en,
             descripcion: sub.desc_es || '',
@@ -1432,13 +1483,24 @@ function submitExtras() {
       }
     });
     (CUSTOM[area.key] || []).forEach(c => {
+      if (c.estado === 'Firmado') {
+        if (ELIMINAR[c.id]) {
+          extrasPayload.push({
+            area: area.label_es,
+            area_en: area.label_en,
+            id: c.id,
+            accion: 'sustituir'
+          });
+        }
+        return;
+      }
       if (!c.name && !c.qty) return;
       const total = c.price && c.qty ? c.price * c.qty : null;
       if (total) grandTotal += total;
       extrasPayload.push({
         area: area.label_es,
         area_en: area.label_en,
-        id: '',
+        id: c.id || '',
         extra: c.name || '(Extra personalizado)',
         extra_en: c.name || '(Custom extra)',
         descripcion: '', descripcion_en: '',
