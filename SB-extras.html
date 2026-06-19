@@ -1308,6 +1308,7 @@ function submitSigned() {
       promocion: SESSION_PROMO,
       lang: LANG,
       estado: 'Firmado',
+      post_entrega: POST_ENTREGA ? 'TRUE' : 'FALSE',
       pdf_firmado: signedPdfBase64
     })
   }).then(() => {
