@@ -456,9 +456,12 @@ function vsConfirm() {
       }
       return;
     }
-    if (e.qty   !== undefined && e.qty   !== null && e.qty   !== 0) QTY[e.id]   = Number(e.qty);
+    const hasQty  = e.qty !== undefined && e.qty !== null && Number(e.qty) !== 0;
+    const hasNote = e.notes !== undefined && e.notes !== '';
+    if (!hasQty && !hasNote) return; // ítem inactivo (qty 0, sin nota) — no cargar nada, evita precio=0 fantasma
+    if (hasQty) QTY[e.id] = Number(e.qty);
     if (e.price !== undefined && e.price !== null) PRICE[e.id] = Number(e.price);
-    if (e.notes !== undefined && e.notes !== '')   NOTES[e.id] = e.notes;
+    if (hasNote) NOTES[e.id] = e.notes;
     if (e.estado !== undefined && e.estado !== '') ESTADO[e.id] = e.estado;
   });
 
