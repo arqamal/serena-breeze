@@ -1392,7 +1392,7 @@ function submitDocs() {
       vivienda: SESSION_CODIGO,
       promocion: SESSION_PROMO,
       lang: LANG,
-      documentos: docsFiles.map(f => ({ nombre: f.name, pdf: f.base64 }))
+      documentos: JSON.stringify(docsFiles.map(f => ({ nombre: f.name, pdf: f.base64 })))
     })
   }).then(r => {
     if (!r.ok) throw new Error('HTTP ' + r.status);
