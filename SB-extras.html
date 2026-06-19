@@ -297,7 +297,7 @@
     <div class="vsearch-info" id="vs-info"></div>
     <label class="vsearch-check" id="vs-post-check">
       <input type="checkbox" id="vs-post" onchange="togglePostEntrega()">
-      <span class="vsearch-check-label" id="vs-post-label">Extras post-entrega (IVA 21%)</span>
+      <span class="vsearch-check-label" id="vs-post-label">Extras post-entrega</span>
     </label>
     <button class="vsearch-btn" id="vs-btn" onclick="vsConfirm()">Continuar →</button>
   </div>
@@ -354,9 +354,9 @@ function togglePostEntrega() {
   POST_ENTREGA = cb.checked;
   IVA_RATE = POST_ENTREGA ? 0.21 : 0.10;
   check.classList.toggle('active', POST_ENTREGA);
-  const pct = POST_ENTREGA ? '21%' : '10%';
-  document.getElementById('vs-post-label').textContent =
-    (LANG === 'es' ? 'Extras post-entrega (IVA ' : 'Post-delivery extras (VAT ') + pct + ')';
+  document.getElementById('vs-post-label').textContent = POST_ENTREGA
+    ? (LANG === 'es' ? 'Extras post-entrega (IVA 21%)' : 'Post-delivery extras (VAT 21%)')
+    : (LANG === 'es' ? 'Extras post-entrega' : 'Post-delivery extras');
 }
 
 function vsUpdateApts() {
@@ -1629,6 +1629,10 @@ function setLang(lang) {
   if (vsLblPromo) vsLblPromo.textContent = lang === 'es' ? 'Promoción' : 'Development';
   const vsLblViv = document.getElementById('vs-lbl-viv');
   if (vsLblViv) vsLblViv.textContent = lang === 'es' ? 'Vivienda' : 'Property';
+  const vsPostLabel = document.getElementById('vs-post-label');
+  if (vsPostLabel) vsPostLabel.textContent = POST_ENTREGA
+    ? (lang === 'es' ? 'Extras post-entrega (IVA 21%)' : 'Post-delivery extras (VAT 21%)')
+    : (lang === 'es' ? 'Extras post-entrega' : 'Post-delivery extras');
 
   if (document.getElementById('app-wrapper').style.display !== 'block') return;
 
