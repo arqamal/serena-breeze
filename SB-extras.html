@@ -1213,9 +1213,11 @@ function buildSummary() {
 
   AREAS.forEach(area => {
     const items = getAllItems(area);
-    const selected = items.filter(item => (QTY[item.id] || 0) > 0);
-    const customs = (CUSTOM[area.key] || []).filter(c => c.qty > 0 || c.name);
-    if (selected.length === 0 && customs.length === 0) return;
+    const selected = items.filter(item => (QTY[item.id] || 0) > 0 && !ELIMINAR[item.id]);
+    const eliminados = items.filter(item => ESTADO[item.id] === 'Firmado' && ELIMINAR[item.id]);
+    const customs = (CUSTOM[area.key] || []).filter(c => (c.qty > 0 || c.name) && !ELIMINAR[c.id]);
+    const customsEliminados = (CUSTOM[area.key] || []).filter(c => c.estado === 'Firmado' && ELIMINAR[c.id]);
+    if (selected.length === 0 && customs.length === 0 && eliminados.length === 0 && customsEliminados.length === 0) return;
 
     const div = document.createElement('div');
     div.className = 'summary-area';
@@ -1245,6 +1247,23 @@ function buildSummary() {
         <td>× ${c.qty}</td>
         <td>${total !== null ? fmtEur(total) : '—'}</td>
         <td>${c.notes ? `<span>${c.notes}</span>` : ''}</td>
+      </tr>`;
+    });
+
+    eliminados.forEach(item => {
+      const name = LANG === 'es' ? item.name_es : item.name_en;
+      html += `<tr style="opacity:.55">
+        <td style="text-decoration:line-through">${name}</td>
+        <td colspan="2" style="color:#b00020;font-size:12px;">${LANG==='es'?'Se eliminará (ya firmado)':'Will be removed (already signed)'}</td>
+        <td></td>
+      </tr>`;
+    });
+
+    customsEliminados.forEach(c => {
+      html += `<tr style="opacity:.55">
+        <td style="text-decoration:line-through">${c.name || (LANG==='es'?'(Extra sin nombre)':'(Unnamed extra)')}</td>
+        <td colspan="2" style="color:#b00020;font-size:12px;">${LANG==='es'?'Se eliminará (ya firmado)':'Will be removed (already signed)'}</td>
+        <td></td>
       </tr>`;
     });
 
