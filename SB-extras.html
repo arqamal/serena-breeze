@@ -300,10 +300,6 @@
       <span class="vsearch-check-label" id="vs-post-label">Extras post-entrega (IVA 21%)</span>
     </label>
     <button class="vsearch-btn" id="vs-btn" onclick="vsConfirm()">Continuar →</button>
-    <button class="vsearch-btn secondary" id="vs-new-btn"
-      onclick="vsStartNew()" style="display:none">
-      Nueva selección (borrar datos)
-    </button>
   </div>
 </div>
 
@@ -367,9 +363,7 @@ function vsUpdateApts() {
   const promo = document.getElementById('vs-promo').value;
   const sel   = document.getElementById('vs-unit');
   const info  = document.getElementById('vs-info');
-  const newBtn = document.getElementById('vs-new-btn');
   info.className = 'vsearch-info';
-  newBtn.style.display = 'none';
   if (!promo) { sel.innerHTML = '<option value="">Seleccione primero la promoción…</option>'; sel.disabled = true; return; }
   sel.disabled = false;
   sel.innerHTML = '<option value="">Seleccione vivienda…</option>' +
@@ -380,13 +374,11 @@ function vsUpdateApts() {
 async function vsCheckVivienda() {
   const raw    = document.getElementById('vs-unit').value;
   const info   = document.getElementById('vs-info');
-  const newBtn = document.getElementById('vs-new-btn');
-  if (!raw) { info.className = 'vsearch-info'; newBtn.style.display = 'none'; return; }
+  if (!raw) { info.className = 'vsearch-info'; return; }
   const codigo = raw.includes('—') ? raw.split('—')[0].trim() : raw;
 
   info.className = 'vsearch-info visible';
   info.textContent = LANG === 'es' ? '⟳ Comprobando datos existentes…' : '⟳ Checking existing data…';
-  newBtn.style.display = 'none';
 
   try {
     const res = await fetch(WEBHOOK_CONSULTA, {
@@ -403,9 +395,6 @@ async function vsCheckVivienda() {
       info.textContent = LANG === 'es'
         ? `✓ ${found} extra${found > 1 ? 's' : ''} guardado${found > 1 ? 's' : ''} para ${codigo}. Se cargarán automáticamente.`
         : `✓ ${found} saved extra${found > 1 ? 's' : ''} found for ${codigo}. Will be loaded automatically.`;
-      newBtn.style.display = 'block';
-      // Store data for loading after confirm
-      newBtn._cachedExtras = extras;
       document.getElementById('vs-btn')._cachedExtras = extras;
     } else {
       info.className = 'vsearch-info visible new';
@@ -436,6 +425,7 @@ function vsConfirm() {
 
   // Load cached extras into state
   const extras = document.getElementById('vs-btn')._cachedExtras || [];
+  HAD_PREVIOUS_EXTRAS = extras.some(e => (Number(e.qty) || 0) > 0 || (e.notes && e.notes !== ''));
   extras.forEach(e => {
     if (e.id && String(e.id).indexOf('custom_') === 0) {
       // Extra personalizado guardado — reconstruir su fila en CUSTOM[]
@@ -473,22 +463,6 @@ function vsConfirm() {
   // Build DOM (which also renders tables with loaded data)
   buildDOM();
   sendHeight();
-}
-
-function vsStartNew() {
-  // Clear all state and start fresh for same vivienda
-  Object.keys(QTY).forEach(k => delete QTY[k]);
-  Object.keys(PRICE).forEach(k => delete PRICE[k]);
-  Object.keys(NOTES).forEach(k => delete NOTES[k]);
-  Object.keys(ESTADO).forEach(k => delete ESTADO[k]);
-  Object.keys(ELIMINAR).forEach(k => delete ELIMINAR[k]);
-  document.getElementById('vs-btn')._cachedExtras = [];
-  const info = document.getElementById('vs-info');
-  info.className = 'vsearch-info visible new';
-  info.textContent = LANG === 'es'
-    ? 'Datos borrados. Se iniciará una selección nueva.'
-    : 'Data cleared. Starting a new selection.';
-  document.getElementById('vs-new-btn').style.display = 'none';
 }
 
 // Allow Enter key on login inputs
@@ -730,6 +704,7 @@ const PRICE = {}; // id → price override (number)
 const NOTES = {}; // id → string
 const ESTADO = {}; // id → 'Enviado' | 'Firmado' (del extra ya guardado, para mostrar checkbox de eliminar)
 const ELIMINAR = {}; // id → true si el usuario marcó "eliminar" un extra ya firmado
+let HAD_PREVIOUS_EXTRAS = false; // true si la vivienda ya tenía algún extra guardado al abrirla
 // Custom extras per area key
 const CUSTOM = {}; // areaKey → [{name, price, qty, oficio, notes}]
 const OFICIOS = ["ALBA\u00d1ILERIA", "Carpinteria MADERA", "Carpinteria METALICA", "CLIMA", "COCINAS", "CRISTALERO", "ELECTRICISTA", "ELECTRODOMESTICOS", "FONTANERO", "ILUMINACION", "JACUZZI", "JARDINERO", "MOBILIARIO", "MOBILIARIO Estores", "OTROS PISCINA", "PISCINA", "TOLDOS"];
@@ -778,6 +753,8 @@ function renderTable(tbodyId, items, areaKey) {
     const totalVal = (resolvedPrice !== null && resolvedPrice !== undefined) ? resolvedPrice * qty : 0;
 
     const tr = document.createElement('tr');
+    const firmado = ESTADO[item.id] === 'Firmado';
+    if (firmado) tr.style.opacity = '.65';
     // Sublines: indented rows below pack header (no qty/price/total)
     const sublines = item.sublines || [];
     const comment = LANG==='es' ? (item.comment_es||'') : (item.comment_en||'');
@@ -787,6 +764,7 @@ function renderTable(tbodyId, items, areaKey) {
         ${desc ? `<div class="extra-desc">${desc}</div>` : ''}
         ${comment ? `<div class="extra-desc" style="color:var(--text);font-style:normal;margin-top:3px;">${comment}</div>` : ''}
         ${isConsultar && !comment ? `<div class="extra-desc" style="color:var(--mid);font-style:italic">${LANG==='es'?'Precio a introducir manualmente':'Enter price manually'}</div>` : ''}
+        ${firmado ? `<div class="extra-desc" style="color:#b00020;font-style:normal;font-weight:600;">${LANG==='es'?'Ya firmado':'Already signed'}</div>` : ''}
         ${sublines.length ? sublines.map(s => {
           const sname = LANG==='es' ? s.name_es : s.name_en;
           const sdesc = LANG==='es' ? (s.desc_es||'') : (s.desc_en||'');
@@ -795,14 +773,14 @@ function renderTable(tbodyId, items, areaKey) {
       </td>
       <td style="text-align:center">
         <input type="number" class="inp inp-qty" min="0" value="${qty}"
-          data-id="${item.id}" data-area="${areaKey}"
+          data-id="${item.id}" data-area="${areaKey}" ${firmado ? 'disabled' : ''}
           oninput="onQty(this)">
       </td>
       <td style="text-align:right">
         <input type="number" class="inp inp-price" min="0" step="1"
           value="${displayPrice}"
           placeholder="${isConsultar ? (LANG==='es'?'Precio…':'Price…') : ''}"
-          data-id="${item.id}" data-area="${areaKey}"
+          data-id="${item.id}" data-area="${areaKey}" ${firmado ? 'disabled' : ''}
           oninput="onPrice(this)">
       </td>
       <td style="text-align:right">
@@ -816,10 +794,10 @@ function renderTable(tbodyId, items, areaKey) {
       </td>
       <td>
         <input type="text" class="inp inp-notes" placeholder="${LANG==='es'?'Observación…':'Note…'}"
-          data-id="${item.id}" value="${note}" oninput="onNote(this)">
+          data-id="${item.id}" value="${note}" ${firmado ? 'disabled' : ''} oninput="onNote(this)">
       </td>
       <td style="text-align:center">
-        ${ESTADO[item.id] === 'Firmado' ? `<input type="checkbox" data-id="${item.id}" ${ELIMINAR[item.id] ? 'checked' : ''} onchange="onEliminar(this)">` : ''}
+        ${firmado ? `<input type="checkbox" data-id="${item.id}" ${ELIMINAR[item.id] ? 'checked' : ''} onchange="onEliminar(this)">` : ''}
       </td>`;
     tbody.appendChild(tr);
   });
@@ -832,19 +810,21 @@ function renderCustomRows(tbody, areaKey) {
   CUSTOM[areaKey].forEach((c, idx) => {
     const tr = document.createElement('tr');
     tr.className = 'custom-row';
+    const firmado = c.estado === 'Firmado';
+    if (firmado) tr.style.opacity = '.65';
     const total = c.price && c.qty ? c.price * c.qty : 0;
     tr.innerHTML = `
       <td>
-        <div class="custom-row-label">${LANG==='es'?'Extra personalizado':'Custom extra'}</div>
+        <div class="custom-row-label">${LANG==='es'?'Extra personalizado':'Custom extra'}${firmado ? ' · <span style="color:#b00020;font-weight:600;">'+(LANG==='es'?'Ya firmado':'Already signed')+'</span>' : ''}</div>
         <input type="text" class="inp inp-name" placeholder="${LANG==='es'?'Nombre del extra…':'Extra name…'}"
-          value="${c.name||''}" oninput="onCustomName('${areaKey}',${idx},this)">
+          value="${c.name||''}" ${firmado ? 'disabled' : ''} oninput="onCustomName('${areaKey}',${idx},this)">
       </td>
       <td style="text-align:center">
-        <input type="number" class="inp inp-qty" min="0" value="${c.qty||0}"
+        <input type="number" class="inp inp-qty" min="0" value="${c.qty||0}" ${firmado ? 'disabled' : ''}
           oninput="onCustomQty('${areaKey}',${idx},this)">
       </td>
       <td style="text-align:right">
-        <input type="number" class="inp inp-price" min="0" step="1" value="${c.price||''}"
+        <input type="number" class="inp inp-price" min="0" step="1" value="${c.price||''}" ${firmado ? 'disabled' : ''}
           placeholder="0" oninput="onCustomPrice('${areaKey}',${idx},this)">
       </td>
       <td style="text-align:right">
@@ -853,18 +833,18 @@ function renderCustomRows(tbody, areaKey) {
         </span>
       </td>
       <td style="text-align:center;vertical-align:middle">
-        <select class="inp" style="font-size:9px;padding:4px 6px;text-transform:uppercase;width:100%"
+        <select class="inp" style="font-size:9px;padding:4px 6px;text-transform:uppercase;width:100%" ${firmado ? 'disabled' : ''}
           onchange="onCustomOficio('${areaKey}',${idx},this)">
           <option value="">${LANG==='es'?'Oficio…':'Trade…'}</option>
           ${OFICIOS.map(o=>`<option value="${o}"${c.oficio===o?' selected':''}>${o}</option>`).join('')}
         </select>
       </td>
       <td>
-        <input type="text" class="inp inp-notes" placeholder="${LANG==='es'?'Observación…':'Note…'}"
+        <input type="text" class="inp inp-notes" placeholder="${LANG==='es'?'Observación…':'Note…'}" ${firmado ? 'disabled' : ''}
           value="${c.notes||''}" oninput="onCustomNote('${areaKey}',${idx},this)">
       </td>
       <td style="text-align:center">
-        ${c.estado === 'Firmado' ? `<input type="checkbox" data-id="${c.id}" ${ELIMINAR[c.id] ? 'checked' : ''} onchange="onEliminar(this)">` : ''}
+        ${firmado ? `<input type="checkbox" data-id="${c.id}" ${ELIMINAR[c.id] ? 'checked' : ''} onchange="onEliminar(this)">` : ''}
       </td>`;
     tbody.appendChild(tr);
   });
@@ -1333,7 +1313,8 @@ function submitSigned() {
       post_entrega: POST_ENTREGA ? 'TRUE' : 'FALSE',
       pdf_firmado: signedPdfBase64
     })
-  }).then(() => {
+  }).then(r => {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
     if (btn) {
       btn.textContent = LANG==='es'?'✓ Documento enviado':'✓ Document sent';
       btn.style.background = '#2d7a2d';
@@ -1344,7 +1325,11 @@ function submitSigned() {
     btn.parentNode.insertBefore(chip, btn.nextSibling);
   }).catch(e => {
     console.error('Error:', e);
-    if (btn) { btn.textContent = LANG==='es'?'Error — reintentar':'Error — retry'; btn.classList.add('active'); }
+    if (btn) {
+      btn.textContent = LANG==='es'?'✗ Error — pulse para reintentar':'✗ Error — click to retry';
+      btn.style.background = '#b00020';
+      btn.classList.add('active');
+    }
   });
 }
 
@@ -1409,14 +1394,19 @@ function submitDocs() {
       lang: LANG,
       documentos: docsFiles.map(f => ({ nombre: f.name, pdf: f.base64 }))
     })
-  }).then(() => {
+  }).then(r => {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
     if (btn) {
       btn.textContent = `✓ ${docsFiles.length} ${LANG==='es'?'documento(s) enviado(s)':'document(s) sent'}`;
       btn.style.background = '#2d7a2d';
     }
   }).catch(e => {
     console.error('Error docs:', e);
-    if (btn) { btn.textContent = LANG==='es'?'Error — reintentar':'Error — retry'; btn.classList.add('active'); }
+    if (btn) {
+      btn.textContent = LANG==='es'?'✗ Error — pulse para reintentar':'✗ Error — click to retry';
+      btn.style.background = '#b00020';
+      btn.classList.add('active');
+    }
   });
 }
 
@@ -1540,6 +1530,21 @@ function submitExtras() {
     });
   });
 
+  // Protección: si la vivienda ya tenía extras guardados y este envío se queda
+  // sin ninguna línea real (ni nuevas ni de catálogo, solo posibles 'sustituir'),
+  // confirmar explícitamente — evita vaciar por accidente lo ya guardado.
+  const tieneLineasReales = extrasPayload.some(e => e.accion !== 'sustituir');
+  if (HAD_PREVIOUS_EXTRAS && !tieneLineasReales) {
+    const ok = confirm(LANG === 'es'
+      ? 'Esta vivienda ya tenía extras guardados y este envío se va a quedar sin ningún extra. Esto BORRARÁ los extras guardados (los ya firmados no se verán afectados). ¿Continuar?'
+      : 'This property already had saved extras and this submission has none. This WILL DELETE the saved extras (signed ones are not affected). Continue?');
+    if (!ok) {
+      const btnSubmit = document.querySelector('.btn-submit');
+      if (btnSubmit) { btnSubmit.disabled = false; }
+      return;
+    }
+  }
+
   const payload = {
     promocion: promo,
     lang: LANG,
@@ -1568,7 +1573,10 @@ function submitExtras() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   })
-  .then(r => r.json())
+  .then(r => {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  })
   .then(data => {
     // Navigate to step 13
     const confirmStep = document.getElementById('step-' + (TOTAL_STEPS - 1));
@@ -1591,14 +1599,18 @@ function submitExtras() {
         : '⚠ Could not get PDF link. Check the client email.';
     }
   })
-  .catch(() => {
-    // If Make doesn't respond (e.g. local test), still go to step 13
-    document.querySelector(`.snav-item[data-step="${TOTAL_STEPS - 1}"]`)?.classList.add('done');
-    goTo(TOTAL_STEPS);
-    const generating = document.getElementById('firma-generating');
-    if (generating) generating.textContent = LANG==='es'
-      ? '⚠ Sin conexión — el documento se procesará en breve.'
-      : '⚠ No connection — the document will be processed shortly.';
+  .catch(e => {
+    // Fallo real (red caída o Make devolvió error) — NO avanzamos a confirmación,
+    // dejamos el formulario tal cual para que se pueda reintentar.
+    console.error('Error submitExtras:', e);
+    if (btnSubmit) {
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = LANG==='es' ? '✗ Error — pulse para reintentar' : '✗ Error — click to retry';
+      btnSubmit.style.background = '#b00020';
+    }
+    alert(LANG==='es'
+      ? 'No se ha podido enviar la selección. Compruebe su conexión e inténtelo de nuevo.'
+      : 'Could not submit the selection. Please check your connection and try again.');
   });
 }
 
@@ -1613,8 +1625,6 @@ function setLang(lang) {
   if (vsSub) vsSub.textContent = lang === 'es' ? 'Selector de extras · Seleccione vivienda' : 'Extras selector · Select property';
   const vsBtn = document.getElementById('vs-btn');
   if (vsBtn) vsBtn.textContent = lang === 'es' ? 'Continuar →' : 'Continue →';
-  const vsNewBtn = document.getElementById('vs-new-btn');
-  if (vsNewBtn) vsNewBtn.textContent = lang === 'es' ? 'Nueva selección (borrar datos)' : 'New selection (clear data)';
   const vsLblPromo = document.getElementById('vs-lbl-promo');
   if (vsLblPromo) vsLblPromo.textContent = lang === 'es' ? 'Promoción' : 'Development';
   const vsLblViv = document.getElementById('vs-lbl-viv');
