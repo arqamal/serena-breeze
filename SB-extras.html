@@ -1421,33 +1421,35 @@ function submitExtras() {
   if (!name || !email) { alert(LANG==='es'?'Introduzca nombre y email.':'Please enter name and email.'); return; }
 
   // Build extras payload
-  const extrasPayload = [];
+  const extrasPayload = [];     // controla qué se escribe/actualiza en _datos
+  const extrasPdfPayload = [];  // controla qué se muestra en el PDF (acumulativo: firmados + nuevos)
   let grandTotal = 0;
 
   AREAS.forEach(area => {
     const items = getAllItems(area);
     items.forEach(item => {
-      // Extras ya FIRMADOS: no se reescriben en cada envío.
-      // Si el usuario marca "eliminar", se envía una entrada mínima con accion:'sustituir'
-      // para que Make pase esa fila (y sus sublíneas de desglose) a estado=Sustituido.
-      // Si no se marca, no se incluye nada — la fila firmada se queda intacta tal cual está.
-      if (ESTADO[item.id] === 'Firmado') {
-        if (ELIMINAR[item.id]) {
-          extrasPayload.push({
-            area: area.label_es,
-            area_en: area.label_en,
-            id: item.id,
-            accion: 'sustituir'
-          });
-        }
+      const isFirmado  = ESTADO[item.id] === 'Firmado';
+      const isEliminar = isFirmado && ELIMINAR[item.id];
+
+      // Marcado para eliminar un extra ya firmado: solo se envía la orden de
+      // sustituir (para Sheets); no entra en _datos como línea normal ni en el PDF.
+      if (isEliminar) {
+        extrasPayload.push({
+          area: area.label_es,
+          area_en: area.label_en,
+          id: item.id,
+          accion: 'sustituir'
+        });
         return;
       }
+
       const qty = QTY[item.id] || 0;
-      if (qty === 0 && !NOTES[item.id]) return;
+      if (qty === 0 && !NOTES[item.id]) return; // inactivo, nada que hacer
+
       const p = PRICE[item.id] !== undefined ? PRICE[item.id] : item.price;
       const total = p !== null ? p * qty : null;
       if (total) grandTotal += total;
-      extrasPayload.push({
+      const obj = {
         area: area.label_es,
         area_en: area.label_en,
         id: item.id,
@@ -1466,11 +1468,17 @@ function submitExtras() {
         nota_extra_en: item.comment_en || '',
         comentario: NOTES[item.id] || '',
         tipo: ''
-      });
+      };
+
+      // El PDF siempre lo lleva si está activo (sea firmado-mantenido o nuevo/modificado).
+      extrasPdfPayload.push(obj);
+      // _datos solo se reescribe si NO está ya firmado (un firmado mantenido no se reescribe).
+      if (!isFirmado) extrasPayload.push(obj);
+
       // Desglose del pack: cada sublínea se guarda como fila propia en _datos
       // (tipo:'desglose'), sin precio/cantidad propios — solo para listados por oficio.
-      // No se incluyen en el PDF de presupuesto.
-      if (qty > 0 && item.sublines && item.sublines.length) {
+      // No se incluyen en el PDF de presupuesto (independientemente de si está firmado o no).
+      if (qty > 0 && item.sublines && item.sublines.length && !isFirmado) {
         item.sublines.forEach((sub, subIdx) => {
           extrasPayload.push({
             area: area.label_es,
@@ -1496,21 +1504,22 @@ function submitExtras() {
       }
     });
     (CUSTOM[area.key] || []).forEach(c => {
-      if (c.estado === 'Firmado') {
-        if (ELIMINAR[c.id]) {
-          extrasPayload.push({
-            area: area.label_es,
-            area_en: area.label_en,
-            id: c.id,
-            accion: 'sustituir'
-          });
-        }
+      const isFirmado  = c.estado === 'Firmado';
+      const isEliminar = isFirmado && ELIMINAR[c.id];
+
+      if (isEliminar) {
+        extrasPayload.push({
+          area: area.label_es,
+          area_en: area.label_en,
+          id: c.id,
+          accion: 'sustituir'
+        });
         return;
       }
       if (!c.name && !c.qty) return;
       const total = c.price && c.qty ? c.price * c.qty : null;
       if (total) grandTotal += total;
-      extrasPayload.push({
+      const obj = {
         area: area.label_es,
         area_en: area.label_en,
         id: c.id || '',
@@ -1526,7 +1535,9 @@ function submitExtras() {
         nota_extra: '', nota_extra_en: '',
         comentario: c.notes || '',
         tipo: ''
-      });
+      };
+      extrasPdfPayload.push(obj);
+      if (!isFirmado) extrasPayload.push(obj);
     });
   });
 
@@ -1560,6 +1571,7 @@ function submitExtras() {
     iva_rate: IVA_RATE,
     post_entrega: POST_ENTREGA ? 'TRUE' : 'FALSE',
     extras: JSON.stringify(extrasPayload),
+    extras_pdf: JSON.stringify(extrasPdfPayload),
     estado: 'Enviado'
   };
 
