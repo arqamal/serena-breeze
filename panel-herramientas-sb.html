@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serena Breeze — Panel de herramientas</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #FFFFFF;
+    --off-white: #F7F6F4;
+    --border: #E0DDD8;
+    --mid: #B0AA9F;
+    --slate-gray: #6B7280;
+    --text: #2A2520;
+    --black: #111111;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 14px; font-weight: 400; }
+
+  .hero { padding: 64px 48px 48px; border-bottom: 1px solid var(--border); }
+  .hero-eyebrow { font-family: 'Roboto', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 16px; }
+  .hero h1 { font-family: 'Oswald', sans-serif; font-size: clamp(32px, 4.5vw, 52px); font-weight: 400; text-transform: uppercase; color: var(--black); line-height: 1.05; margin-bottom: 18px; max-width: 760px; }
+  .hero-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.8; max-width: 540px; }
+
+  main { max-width: 1240px; margin: 0 auto; padding: 56px 48px 96px; }
+
+  .section-label { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 56px; }
+
+  .tile { background: var(--white); padding: 32px 28px; display: flex; flex-direction: column; min-height: 220px; text-decoration: none; color: inherit; transition: background .15s; position: relative; }
+  .tile:hover { background: var(--off-white); }
+  .tile-cat { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 14px; }
+  .tile-title { font-family: 'Oswald', sans-serif; font-size: 21px; font-weight: 400; text-transform: uppercase; letter-spacing: .5px; color: var(--black); line-height: 1.2; margin-bottom: 12px; }
+  .tile-desc { font-family: 'Roboto', sans-serif; font-size: 13px; font-weight: 300; color: var(--slate-gray); line-height: 1.6; flex-grow: 1; }
+  .tile-cta { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--black); margin-top: 20px; display: flex; align-items: center; gap: 8px; }
+  .tile-cta .arrow { transition: transform .15s; }
+  .tile:hover .tile-cta .arrow { transform: translateX(4px); }
+
+  .tile.empty { background: var(--off-white); border: 1px dashed var(--border); cursor: default; }
+  .tile.empty:hover { background: var(--off-white); }
+  .tile.empty .tile-cat { color: var(--mid); }
+  .tile.empty .tile-title { color: var(--mid); font-style: normal; }
+  .tile.empty .tile-desc { color: var(--mid); }
+  .tile.empty .plus { font-family: 'Oswald', sans-serif; font-size: 28px; color: var(--mid); margin-bottom: 12px; line-height: 1; }
+
+  footer { border-top: 1px solid var(--border); padding: 28px 48px; }
+  footer p { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--mid); letter-spacing: .5px; }
+
+  @media (max-width: 768px) {
+    header, main, .hero { padding-left: 24px; padding-right: 24px; }
+    footer { padding-left: 24px; padding-right: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-eyebrow">Uso interno — Amal Inmobiliaria</div>
+  <h1>Herramientas Serena Breeze</h1>
+  <p class="hero-desc">Acceso centralizado a los selectores y formularios web de las promociones Serena Breeze 2 y 3. Cada herramienta se abre en una pestaña nueva.</p>
+</div>
+
+<main>
+
+  <div class="section-label">Herramientas activas</div>
+  <div class="grid">
+
+    <a class="tile" href="https://www.amalconsult.com/eleccion-de-materiales-sb" target="_blank" rel="noopener">
+      <div class="tile-cat">Materiales</div>
+      <div class="tile-title">Selector de materiales<br>Villas</div>
+      <div class="tile-desc">Elección de acabados de interior y exterior para las villas de Serena Breeze 2 y 3.</div>
+      <div class="tile-cta">Abrir <span class="arrow">→</span></div>
+    </a>
+
+    <a class="tile" href="https://www.amalconsult.com/eleccion-de-materiales-apt-sb" target="_blank" rel="noopener">
+      <div class="tile-cat">Materiales</div>
+      <div class="tile-title">Selector de materiales<br>Apartamentos</div>
+      <div class="tile-desc">Elección de acabados para los apartamentos de Serena Breeze 2 y 3.</div>
+      <div class="tile-cta">Abrir <span class="arrow">→</span></div>
+    </a>
+
+    <a class="tile" href="https://arqamal.github.io/serena-breeze/SB-extras.html" target="_blank" rel="noopener">
+      <div class="tile-cat">Extras</div>
+      <div class="tile-title">Selector de extras</div>
+      <div class="tile-desc">Elección y presupuesto de extras por vivienda, generación de PDF y firma digital.</div>
+      <div class="tile-cta">Abrir <span class="arrow">→</span></div>
+    </a>
+
+    <a class="tile" href="https://www.amalconsult.com/aftersale-form" target="_blank" rel="noopener">
+      <div class="tile-cat">Postventa</div>
+      <div class="tile-title">Aviso de incidencias</div>
+      <div class="tile-desc">Reporte de incidencias del cliente tras la entrega, con seguimiento en Trello.</div>
+      <div class="tile-cta">Abrir <span class="arrow">→</span></div>
+    </a>
+
+  </div>
+
+  <div class="section-label">Próximas herramientas</div>
+  <div class="grid">
+
+    <div class="tile empty"><div class="plus">+</div><div class="tile-title">Próximamente</div></div>
+    <div class="tile empty"><div class="plus">+</div><div class="tile-title">Próximamente</div></div>
+    <div class="tile empty"><div class="plus">+</div><div class="tile-title">Próximamente</div></div>
+    <div class="tile empty"><div class="plus">+</div><div class="tile-title">Próximamente</div></div>
+
+  </div>
+
+</main>
+
+</body>
+</html>
