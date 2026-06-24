@@ -633,7 +633,7 @@ const AREAS = [
     desc_en:'Aluminium carpentry and shutters.',
     items:[
       { id:'cpa_01', name_es:'Carpintería de aluminio enrasada a suelo', name_en:'Floor-flush aluminium glazing', desc_es:'', desc_en:'', price:500, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
-      { id:'cpa_02', name_es:'Persiana en ventana', name_en:'Window shutter', desc_es:'', desc_en:'', price:750, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cpa_02', name_es:'Persiana en ventana', name_en:'Window shutter', desc_es:'', desc_en:'', price:875, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
     ]},
   // ── EXTERIORES ────────────────────────────────────────────────────────
   { key:'exteriores', step:8,
@@ -717,15 +717,22 @@ const TOTAL_STEPS = 13; // 11 areas + confirm + firma
 const VIVIENDAS = {
   'Serena Breeze 2': [
     '2SB1 — Villa 1','2SB2 — Villa 2','2SB3 — Villa 3','2SB4 — Villa 4',
-    '2SB101','2SB102','2SB103','2SB201','2SB202','2SB203',
-    '2SB301','2SB302','2SB303',
+    '2SB101','2SB102','2SB103','2SB104','2SB105',
+    '2SB111','2SB112','2SB113','2SB114','2SB115',
+    '2SB121','2SB122',
   ],
   'Serena Breeze 3': [
     '3SB1 — Villa 1','3SB2 — Villa 2','3SB3 — Villa 3','3SB4 — Villa 4',
     '3SB5 — Villa 5','3SB6 — Villa 6','3SB7 — Villa 7',
-    '3SB101','3SB102','3SB103','3SB104',
+    '3SB101','3SB102','3SB103','3SB104','3SB105','3SB106',
+    '3SB111','3SB112','3SB113','3SB114','3SB115','3SB116',
+    '3SB121','3SB122','3SB123','3SB124',
     '3SB201','3SB202','3SB203','3SB204',
+    '3SB211','3SB212','3SB213','3SB214',
+    '3SB221','3SB222',
     '3SB301','3SB302','3SB303','3SB304',
+    '3SB311','3SB312','3SB313','3SB314',
+    '3SB321','3SB322','3SB323',
   ]
 };
 
@@ -866,6 +873,11 @@ function onQty(input) {
   const qty = Math.max(0, parseInt(input.value) || 0);
   input.value = qty;
   QTY[id] = qty;
+  if (qty === 0) {
+    delete NOTES[id];
+    const noteInput = document.querySelector('.inp-notes[data-id="' + id + '"]');
+    if (noteInput) noteInput.value = '';
+  }
   refreshTotal(id);
   refreshAreaTotal(input.dataset.area);
 }
@@ -952,6 +964,11 @@ function onCustomQty(areaKey, idx, input) {
   const qty = Math.max(0, parseInt(input.value)||0);
   input.value = qty;
   CUSTOM[areaKey][idx].qty = qty;
+  if (qty === 0) {
+    CUSTOM[areaKey][idx].notes = '';
+    const noteInput = input.closest('tr')?.querySelector('.inp-notes');
+    if (noteInput) noteInput.value = '';
+  }
   const el = document.getElementById(`ctot-${areaKey}-${idx}`);
   const c = CUSTOM[areaKey][idx];
   if (el) el.textContent = (c.price && c.qty) ? fmtEur(c.price * c.qty) : '—';
@@ -1164,6 +1181,10 @@ function buildDOM() {
       renderTable('tbody-' + area.key, area.items, area.key);
     }
   });
+
+  // Recalcular totales de área (necesario al cargar un presupuesto existente,
+  // ya que refreshAreaTotal() solo se disparaba antes con eventos oninput)
+  AREAS.forEach(area => refreshAreaTotal(area.key));
 }
 
 // ─── NAVIGATION ─────────────────────────────────────────────────────
