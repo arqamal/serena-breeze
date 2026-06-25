@@ -271,7 +271,7 @@
       <label class="login-label">Contraseña</label>
       <input class="login-input" id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password">
     </div>
-    <button class="login-btn" onclick="doLogin()">Acceder →</button>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Acceder →</button>
     <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
   </div>
 </div>
@@ -323,7 +323,7 @@
 
 <script>
 // ─── LOGIN ───────────────────────────────────────────────────────────
-const CREDENTIALS = { user: 'ventas', pass: 'Amal2026*' };
+const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzd1hVVtt2I5-7Jkf3QbcDmA8mNdzCU0I4WaoEcAIAP-5HOFSYk7_nObCKNe2A6qKM_/exec';
 
 // ─── WEBHOOKS ────────────────────────────────────────────────────────
 const WEBHOOK_SUBMIT  = 'https://hook.eu1.make.com/1o69ejvny1ecqirrvqcewxho8l7s7vcd';
@@ -339,12 +339,30 @@ let IVA_RATE       = 0.10;
 function doLogin() {
   const u = document.getElementById('login-user').value.trim();
   const p = document.getElementById('login-pass').value;
-  if (u === CREDENTIALS.user && p === CREDENTIALS.pass) {
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('vivienda-screen').classList.add('visible');
-  } else {
-    document.getElementById('login-error').style.display = 'block';
-  }
+  const btn = document.getElementById('login-btn');
+  const errorEl = document.getElementById('login-error');
+  errorEl.style.display = 'none';
+  if (btn) { btn.disabled = true; }
+
+  fetch(LOGIN_URL, {
+    method: 'POST',
+    body: JSON.stringify({ accion: 'login', user: u, pass: p })
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('vivienda-screen').classList.add('visible');
+      } else {
+        errorEl.textContent = (LANG === 'es' ? 'Usuario o contraseña incorrectos' : 'Incorrect username or password');
+        errorEl.style.display = 'block';
+      }
+    })
+    .catch(() => {
+      errorEl.textContent = (LANG === 'es' ? 'No se pudo comprobar el acceso. Inténtalo de nuevo.' : 'Could not verify access. Please try again.');
+      errorEl.style.display = 'block';
+    })
+    .finally(() => { if (btn) { btn.disabled = false; } });
 }
 
 // ─── VIVIENDA SEARCH SCREEN ──────────────────────────────────────────
