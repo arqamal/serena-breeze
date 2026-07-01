@@ -170,6 +170,7 @@
 const APP_URL = 'https://script.google.com/macros/s/AKfycbzwJbVWrpxVoUPOWhQwZ77Fi2vcBIS5h3zO3HkaALYOaFq2G539KQIo7fuiqf2ILVe3/exec';
 
 let SESSION_USER = null; // nombre del usuario conectado
+let SESSION_EMAIL = null; // email del usuario conectado
 
 document.addEventListener('DOMContentLoaded', () => {
 
@@ -191,6 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(data => {
         if (data.ok) {
           SESSION_USER = data.nombre || u;
+          SESSION_EMAIL = data.email || '';
           document.getElementById('hero-user-name').textContent = SESSION_USER;
           document.getElementById('login-screen').style.display = 'none';
           document.getElementById('app-wrapper').style.display = 'block';
@@ -228,7 +230,8 @@ document.addEventListener('DOMContentLoaded', () => {
       accion: 'guardar',
       obra: document.getElementById('obra').value,
       decision: document.getElementById('decision').value.trim(),
-      usuario: SESSION_USER
+      usuario: SESSION_USER,
+      email: SESSION_EMAIL
     };
 
     try {
