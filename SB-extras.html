@@ -260,6 +260,11 @@
 </style>
 </head>
 <body>
+<datalist id="notes-options">
+  <option value="OFRECIDO AGENCIA"></option>
+  <option value="OFRECIDO PROMOTOR"></option>
+  <option value="INCLUIDO CONTRATO"></option>
+</datalist>
 
 <div id="login-screen">
   <div class="login-box">
@@ -826,7 +831,7 @@ function renderTable(tbodyId, items, areaKey) {
         ${sublines.length ? sublines.map(s => `<div style="margin-top:5px"><span class="oficio-badge">${s.oficio}</span></div>`).join('') : ''}
       </td>
       <td>
-        <input type="text" class="inp inp-notes" placeholder="${LANG==='es'?'Observación…':'Note…'}"
+        <input type="text" class="inp inp-notes" list="notes-options" placeholder="${LANG==='es'?'Observación…':'Note…'}"
           data-id="${item.id}" value="${note}" ${firmado ? 'disabled' : ''} oninput="onNote(this)">
       </td>
       <td style="text-align:center">
@@ -873,7 +878,7 @@ function renderCustomRows(tbody, areaKey) {
         </select>
       </td>
       <td>
-        <input type="text" class="inp inp-notes" placeholder="${LANG==='es'?'Observación…':'Note…'}" ${firmado ? 'disabled' : ''}
+        <input type="text" class="inp inp-notes" list="notes-options" placeholder="${LANG==='es'?'Observación…':'Note…'}" ${firmado ? 'disabled' : ''}
           value="${c.notes||''}" oninput="onCustomNote('${areaKey}',${idx},this)">
       </td>
       <td style="text-align:center">
