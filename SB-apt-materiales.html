@@ -19,7 +19,8 @@
     --black: #111111;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 14px; font-weight: 400; }
+  html { overflow-x: hidden; }
+  body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 14px; font-weight: 400; overflow-x: hidden; overflow-y: visible; }
 
   /* ── HEADER (solo preview) ── */
   header { border-bottom: 1px solid var(--border); padding: 0 48px; height: 64px; display: flex; align-items: center; justify-content: space-between; background: var(--white); position: sticky; top: 0; z-index: 100; }
@@ -35,7 +36,7 @@
   .hero-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.8; max-width: 480px; }
 
   /* ── STEP NAV ── */
-  .step-nav-wrap { border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+  .step-nav-wrap { border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; position: sticky; top: 0; z-index: 50; background: var(--white); }
   .step-nav-wrap::-webkit-scrollbar { display: none; }
   .step-nav { display: flex; padding: 0 48px; min-width: max-content; }
   .snav-item { padding: 14px 20px; font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .2s; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
@@ -46,7 +47,7 @@
   .snav-item.done .snav-dot { display: block; }
 
   /* ── MAIN ── */
-  main { max-width: 1080px; margin: 0 auto; padding: 56px 48px 80px; }
+  main { max-width: 1080px; margin: 0 auto; padding: 56px 48px 80px; overflow-x: hidden; }
   .sec-eyebrow { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 10px; }
   .sec-title { font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 400; text-transform: uppercase; color: var(--black); margin-bottom: 12px; letter-spacing: 1px; }
   .sec-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.7; max-width: 600px; margin-bottom: 40px; }
@@ -130,217 +131,230 @@
     .summary-grid { grid-template-columns: 1fr; }
   }
 
-  .card-swatch { background-size: cover !important; background-position: center !important; }
-  .cswatch { background-size: cover !important; background-position: center !important; }
-
-  .card-swatch { background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; }
-  .cswatch { background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; }
-
   .card-swatch { background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; }
   .cswatch { background-size: cover !important; background-position: center !important; background-repeat: no-repeat !important; }
   /* ── SELECT ── */
   select.finput { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; }
+
+  /* ── LANG TOGGLE ── */
+  .lang-toggle { position:fixed; top:52px; right:16px; z-index:1000; display:flex; gap:0; border:1px solid var(--border); border-radius:4px; overflow:hidden; background:white; }
+  .lang-btn { font-family:'Roboto',sans-serif; font-size:11px; letter-spacing:1px; padding:6px 12px; cursor:pointer; border:none; background:transparent; color:var(--slate-gray); transition:all .2s; }
+  .lang-btn.active { background:var(--black); color:white; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-es" onclick="setLang('es')">ES</button>
+  <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+</div>
 <div class="step-nav-wrap">
   <div class="step-nav">
-    <div class="snav-item active" onclick="goTo(1)" data-step="1"><div class="snav-dot"></div>01 · Pav. interior y terrazas</div>
-    <div class="snav-item" onclick="goTo(2)" data-step="2"><div class="snav-dot"></div>02 · Alicatado</div>
-    <div class="snav-item" onclick="goTo(3)" data-step="3"><div class="snav-dot"></div>03 · Baño 1 (Suite)</div>
-    <div class="snav-item" onclick="goTo(4)" data-step="4"><div class="snav-dot"></div>04 · Baño 2</div>
-    <div class="snav-item" onclick="goTo(5)" data-step="5"><div class="snav-dot"></div>05 · Muebles cocina</div>
-    <div class="snav-item" onclick="goTo(6)" data-step="6"><div class="snav-dot"></div>06 · Encimera</div>
-    <div class="snav-item" onclick="goTo(7)" data-step="7"><div class="snav-dot"></div>07 · Confirmar</div>
+    <div class="snav-item active" onclick="goTo(1)" data-step="1"><div class="snav-dot"></div><span data-i18n="nav1">01 · Pav. interior</span></div>
+    <div class="snav-item" onclick="goTo(2)" data-step="2"><div class="snav-dot"></div><span data-i18n="nav2">02 · Alicatado</span></div>
+    <div class="snav-item" onclick="goTo(3)" data-step="3"><div class="snav-dot"></div><span data-i18n="nav3">03 · Baño 1 (Suite)</span></div>
+    <div class="snav-item" onclick="goTo(4)" data-step="4"><div class="snav-dot"></div><span data-i18n="nav4">04 · Baño 2</span></div>
+    <div class="snav-item" onclick="goTo(5)" data-step="5"><div class="snav-dot"></div><span data-i18n="nav5">05 · Muebles cocina</span></div>
+    <div class="snav-item" onclick="goTo(6)" data-step="6"><div class="snav-dot"></div><span data-i18n="nav6">06 · Encimera</span></div>
+    <div class="snav-item" onclick="goTo(7)" data-step="7"><div class="snav-dot"></div><span data-i18n="nav7">07 · Confirmar</span></div>
   </div>
+</div>
 <main>
 <div class="step active" id="step-1">
-  <div class="sec-eyebrow">01 — Pavimentos</div>
-  <h2 class="sec-title">Pavimento interior y terrazas</h2>
-  <p class="sec-desc">Solado con baldosas de gres porcelánico 60×60 cm en interior y terrazas.</p>
-  <div class="note">Los áticos llevan el formato 100×100 cm con los mismos materiales.</div>
+  <div class="sec-eyebrow" data-i18n="ey1">01 — Pavimentos</div>
+  <h2 class="sec-title" data-i18n="t1">Pavimento interior y terrazas</h2>
+  <p class="sec-desc" data-i18n="d1">Solado con baldosas de gres porcelánico 60×60 cm en interior y terrazas.</p>
+  <div class="note" data-i18n="note1">Los áticos llevan el formato 100×100 cm con los mismos materiales.</div>
+  <img src="https://arqamal.github.io/serena-breeze/img/intapart/Pavimento%20int%20apart.jpg" alt="Plano pavimento interior" style="width:100%;display:block;margin-bottom:24px;" onload="sendHeight()">
   <div class="grid">
-    <div class="card" onclick="sel('pav_int','Unik Stone 60×60',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/int/unik-stone.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Stone</div><div class="card-dims">60 × 60 cm</div></div></div>
-    <div class="card" onclick="sel('pav_int','Unik Mink 60×60',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/int/unik-mink.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Mink</div><div class="card-dims">60 × 60 cm</div></div></div>
-    <div class="card" onclick="sel('pav_int','Unik Grey 60×60',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/int/unik-grey.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Grey</div><div class="card-dims">60 × 60 cm</div></div></div>
+    <div class="card" onclick="sel('pav_int','Unik Stone 60×60',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/intapart/UNIK%20Stone.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Stone</div><div class="card-dims">60 × 60 cm</div></div></div>
+    <div class="card" onclick="sel('pav_int','Unik Mink 60×60',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/intapart/UNIK%20Mink.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Mink</div><div class="card-dims">60 × 60 cm</div></div></div>
+    <div class="card" onclick="sel('pav_int','Unik Grey 60×60',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/intapart/UNIK%20Grey.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Grey</div><div class="card-dims">60 × 60 cm</div></div></div>
   </div>
-  <div class="nav-btns"><div></div><button class="btn btn-next" onclick="next(1)">Siguiente →</button></div>
+  <div class="nav-btns"><div></div><button class="btn btn-next" onclick="next(1)" data-i18n="btn_next">Siguiente →</button></div>
 </div>
 
 
 
 <div class="step" id="step-2">
-  <div class="sec-eyebrow">02 — Alicatado</div>
-  <h2 class="sec-title">Alicatado de baños</h2>
-  <p class="sec-desc">Gres porcelánico o pasta blanca rectificada 60×120 cm. Puede elegir una opción diferente para cada espacio.</p>
-  <div class="sub-label">Baño 1 (Suite)</div>
+  <div class="sec-eyebrow" data-i18n="ey2">02 — Alicatado</div>
+  <h2 class="sec-title" data-i18n="t2">Alicatado de baños</h2>
+  <p class="sec-desc" data-i18n="d2">Gres porcelánico o pasta blanca rectificada 60×120 cm. Puede elegir una opción diferente para cada espacio.</p>
+  <div class="sub-label" data-i18n="sl_b1">Baño 1 (Suite)</div>
+  <img src="https://arqamal.github.io/serena-breeze/img/banoapart/Alicatado%20ba%C3%B1o%201%20apart.jpg" alt="Plano alicatado Baño 1" style="width:100%;display:block;margin-bottom:16px;" onload="sendHeight()">
   <div class="grid" id="g-b1">
-    <div class="card" onclick="selG('alic_bano1','Unik Stone 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/unik-stone.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Stone</div><div class="card-dims">60 × 120 cm</div></div></div>
-    <div class="card" onclick="selG('alic_bano1','Unik Mink 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/unik-mink.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Mink</div><div class="card-dims">60 × 120 cm</div></div></div>
-    <div class="card" onclick="selG('alic_bano1','Unik Grey 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/unik-grey.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Grey</div><div class="card-dims">60 × 120 cm</div></div></div>
-    <div class="card" onclick="selG('alic_bano1','Tholos 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/tholos.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Tholos</div><div class="card-dims">60 × 120 cm</div></div></div>
-    <div class="card" onclick="selG('alic_bano1','Inlay Natural 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/inlay-natural.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Inlay Natural</div><div class="card-dims">60 × 120 cm</div></div></div>
-    <div class="card" onclick="selG('alic_bano1','Flodsten Smoke 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/flodsten-smoke.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Flodsten Smoke</div><div class="card-dims">60 × 120 cm</div></div></div>
-    <div class="card" onclick="selG('alic_bano1','Flodsten Snow 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/flodsten-snow.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Flodsten Snow</div><div class="card-dims">60 × 120 cm</div></div></div>
+    <div class="card" onclick="selG('alic_bano1','Unik Stone 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alicapart/UNIK%20Stone%2060x120.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Stone</div><div class="card-dims">60 × 120 cm</div></div></div>
+    <div class="card" onclick="selG('alic_bano1','Unik Mink 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alicapart/UNIK%20Mink%2060x120.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Mink</div><div class="card-dims">60 × 120 cm</div></div></div>
+    <div class="card" onclick="selG('alic_bano1','Unik Grey 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alicapart/UNIK%20Grey%2060x120.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Grey</div><div class="card-dims">60 × 120 cm</div></div></div>
+    <div class="card" onclick="selG('alic_bano1','Tholos 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alicapart/Tholos%2060x120.png') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Tholos</div><div class="card-dims">60 × 120 cm</div></div></div>
+    <div class="card" onclick="selG('alic_bano1','Inlay Natural 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alicapart/INLAY%2060x120.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Inlay Natural</div><div class="card-dims">60 × 120 cm</div></div></div>
+    <div class="card" onclick="selG('alic_bano1','Flodsten Smoke 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alicapart/Flodsten%20Smoke%2060x120.png') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Flodsten Smoke</div><div class="card-dims">60 × 120 cm</div></div></div>
+    <div class="card" onclick="selG('alic_bano1','Flodsten Snow 60×120',this,'g-b1')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alicapart/Flodsten%20Snow%2060x120.png') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Flodsten Snow</div><div class="card-dims">60 × 120 cm</div></div></div>
   </div>
-  <div class="sub-label">Baño 2</div>
+  <div class="sub-label" data-i18n="sl_b2">Baño 2</div>
+  <img src="https://arqamal.github.io/serena-breeze/img/banoapart/Alicatado%20ba%C3%B1o%202%20apart.jpg" alt="Plano alicatado Baño 2" style="width:100%;display:block;margin-bottom:16px;" onload="sendHeight()">
   <div class="grid" id="g-b2">
-    <div class="card" onclick="selG('alic_bano2','Unik Stone 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/unik-stone.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Stone</div><div class="card-dims">60 × 120 cm</div></div></div>
-    <div class="card" onclick="selG('alic_bano2','Unik Mink 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/unik-mink.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Mink</div><div class="card-dims">60 × 120 cm</div></div></div>
-    <div class="card" onclick="selG('alic_bano2','Unik Grey 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/unik-grey.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Grey</div><div class="card-dims">60 × 120 cm</div></div></div>
-    <div class="card" onclick="selG('alic_bano2','Tholos 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/tholos.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Tholos</div><div class="card-dims">60 × 120 cm</div></div></div>
-    <div class="card" onclick="selG('alic_bano2','Inlay Natural 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/inlay-natural.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Inlay Natural</div><div class="card-dims">60 × 120 cm</div></div></div>
-    <div class="card" onclick="selG('alic_bano2','Flodsten Smoke 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/flodsten-smoke.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Flodsten Smoke</div><div class="card-dims">60 × 120 cm</div></div></div>
-    <div class="card" onclick="selG('alic_bano2','Flodsten Snow 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/flodsten-snow.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Flodsten Snow</div><div class="card-dims">60 × 120 cm</div></div></div>
+    <div class="card" onclick="selG('alic_bano2','Unik Stone 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alicapart/UNIK%20Stone%2060x120.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Stone</div><div class="card-dims">60 × 120 cm</div></div></div>
+    <div class="card" onclick="selG('alic_bano2','Unik Mink 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alicapart/UNIK%20Mink%2060x120.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Mink</div><div class="card-dims">60 × 120 cm</div></div></div>
+    <div class="card" onclick="selG('alic_bano2','Unik Grey 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alicapart/UNIK%20Grey%2060x120.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Unik Grey</div><div class="card-dims">60 × 120 cm</div></div></div>
+    <div class="card" onclick="selG('alic_bano2','Tholos 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alicapart/Tholos%2060x120.png') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Tholos</div><div class="card-dims">60 × 120 cm</div></div></div>
+    <div class="card" onclick="selG('alic_bano2','Inlay Natural 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alicapart/INLAY%2060x120.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Inlay Natural</div><div class="card-dims">60 × 120 cm</div></div></div>
+    <div class="card" onclick="selG('alic_bano2','Flodsten Smoke 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alicapart/Flodsten%20Smoke%2060x120.png') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Flodsten Smoke</div><div class="card-dims">60 × 120 cm</div></div></div>
+    <div class="card" onclick="selG('alic_bano2','Flodsten Snow 60×120',this,'g-b2')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alicapart/Flodsten%20Snow%2060x120.png') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Flodsten Snow</div><div class="card-dims">60 × 120 cm</div></div></div>
   </div>
-  <div class="nav-btns"><button class="btn btn-back" onclick="prev(2)">← Anterior</button><button class="btn btn-next" onclick="next(2)">Siguiente →</button></div>
+  <div class="nav-btns"><button class="btn btn-back" onclick="prev(2)" data-i18n="btn_back">← Anterior</button><button class="btn btn-next" onclick="next(2)" data-i18n="btn_next">Siguiente →</button></div>
 </div>
 
 
 
 <div class="step" id="step-3">
-  <div class="sec-eyebrow">03 — Baño 1 (Suite)</div>
-  <h2 class="sec-title">Mueble de baño — Oslo</h2>
-  <p class="sec-desc">Mueble suspendido Oslo con cajón y lavabo cerámico Onix New. Elija el acabado.</p>
+  <div class="sec-eyebrow" data-i18n="ey3a">03 — Baño 1 (Suite)</div>
+  <h2 class="sec-title" data-i18n="t3">Mueble de baño — Oslo</h2>
+  <p class="sec-desc" data-i18n="d3">Mueble suspendido Oslo 80 cm con cajón y lavabo cerámico Onix New. Elija el acabado.</p>
   <div class="cocina-layout" style="margin-bottom:0;">
     <div class="cocina-ref">
-      <img src="https://arqamal.github.io/serena-breeze/img/banoapart/oslo-ref.jpg" alt="Mueble Oslo" style="width:100%;border:1px solid var(--border);display:block;">
+      <div id="bano1-ref-wrap" style="border:1px solid var(--border); overflow:hidden; background:var(--off-white); display:flex; align-items:center; justify-content:center; min-height:280px;">
+        <p style="font-family:'Roboto',sans-serif; font-size:13px; color:var(--mid); text-align:center; padding:40px;" data-i18n="ph_bano1">Seleccione el acabado para ver el mueble</p>
+      </div>
+      <div class="cocina-ref-caption" data-i18n="cap3">La imagen muestra el mueble Oslo 80 cm con lavabo Onix New en el acabado seleccionado.</div>
     </div>
     <div>
       <div class="cgrid" id="cg-bano1">
-        <div class="ccard" onclick="selG('bano1_enc','27 Blanco Mate',this,'cg-bano1')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/banoapart/oslo-blanco-mate.jpg') center/cover no-repeat;"></div><div class="clabel">27 Blanco Mate</div></div>
-    <div class="ccard" onclick="selG('bano1_enc','24 Roble Natural',this,'cg-bano1')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/banoapart/oslo-roble-natural.jpg') center/cover no-repeat;"></div><div class="clabel">24 Roble Natural</div></div>
-    <div class="ccard" onclick="selG('bano1_enc','84 Nogal Vera',this,'cg-bano1')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/banoapart/oslo-nogal-vera.jpg') center/cover no-repeat;"></div><div class="clabel">84 Nogal Vera</div></div>
-    <div class="ccard" onclick="selG('bano1_enc','46 Moka Mate',this,'cg-bano1')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/banoapart/oslo-moka-mate.jpg') center/cover no-repeat;"></div><div class="clabel">46 Moka Mate</div></div>
-    <div class="ccard" onclick="selG('bano1_enc','75 Mist Mate',this,'cg-bano1')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/banoapart/oslo-mist-mate.jpg') center/cover no-repeat;"></div><div class="clabel">75 Mist Mate</div></div>
+        <div class="ccard" onclick="selBanoApt('bano1_enc','Blanco Mate','bano1',this,'cg-bano1')"><div class="cswatch" style="height:64px;background:#fefefe;border-bottom:1px solid var(--border);"></div><div class="clabel">27 Blanco Mate</div></div>
+        <div class="ccard" onclick="selBanoApt('bano1_enc','Moka Mate','bano1',this,'cg-bano1')"><div class="cswatch" style="height:64px;background:#bcb4a9;"></div><div class="clabel">46 Moka Mate</div></div>
+        <div class="ccard" onclick="selBanoApt('bano1_enc','Mist Mate','bano1',this,'cg-bano1')"><div class="cswatch" style="height:64px;background:#909394;"></div><div class="clabel">75 Mist Mate</div></div>
+        <div class="ccard" onclick="selBanoApt('bano1_enc','Roble Natural','bano1',this,'cg-bano1')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/banoapart/roble-natural.jpg') center/cover no-repeat;"></div><div class="clabel">24 Roble Natural</div></div>
+        <div class="ccard" onclick="selBanoApt('bano1_enc','Nogal Vera','bano1',this,'cg-bano1')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/banoapart/nogal-vera.jpg') center/cover no-repeat;"></div><div class="clabel">84 Nogal Vera</div></div>
       </div>
     </div>
   </div>
-  <div class="nav-btns"><button class="btn btn-back" onclick="prev(3)">← Anterior</button><button class="btn btn-next" onclick="next(3)">Siguiente →</button></div>
+  <div class="nav-btns"><button class="btn btn-back" onclick="prev(3)" data-i18n="btn_back">← Anterior</button><button class="btn btn-next" onclick="next(3)" data-i18n="btn_next">Siguiente →</button></div>
 </div>
 
 
 
 <div class="step" id="step-4">
-  <div class="sec-eyebrow">04 — Baño 2</div>
-  <h2 class="sec-title">Mueble de baño — Oslo</h2>
-  <p class="sec-desc">Mueble suspendido Oslo con cajón y lavabo cerámico Onix New. Elija el acabado.</p>
+  <div class="sec-eyebrow" data-i18n="ey4a">04 — Baño 2</div>
+  <h2 class="sec-title" data-i18n="t4">Mueble de baño — Oslo</h2>
+  <p class="sec-desc" data-i18n="d4">Mueble suspendido Oslo 80 cm con cajón y lavabo cerámico Onix New. Elija el acabado.</p>
   <div class="cocina-layout" style="margin-bottom:0;">
     <div class="cocina-ref">
-      <img src="https://arqamal.github.io/serena-breeze/img/banoapart/oslo-ref.jpg" alt="Mueble Oslo" style="width:100%;border:1px solid var(--border);display:block;">
+      <div id="bano2-ref-wrap" style="border:1px solid var(--border); overflow:hidden; background:var(--off-white); display:flex; align-items:center; justify-content:center; min-height:280px;">
+        <p style="font-family:'Roboto',sans-serif; font-size:13px; color:var(--mid); text-align:center; padding:40px;" data-i18n="ph_bano1">Seleccione el acabado para ver el mueble</p>
+      </div>
+      <div class="cocina-ref-caption" data-i18n="cap3">La imagen muestra el mueble Oslo 80 cm con lavabo Onix New en el acabado seleccionado.</div>
     </div>
     <div>
       <div class="cgrid" id="cg-oslo">
-        <div class="ccard" onclick="selG('mueble_bano2','27 Blanco Mate',this,'cg-oslo')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/banoapart/oslo-blanco-mate.jpg') center/cover no-repeat;"></div><div class="clabel">27 Blanco Mate</div></div>
-    <div class="ccard" onclick="selG('mueble_bano2','24 Roble Natural',this,'cg-oslo')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/banoapart/oslo-roble-natural.jpg') center/cover no-repeat;"></div><div class="clabel">24 Roble Natural</div></div>
-    <div class="ccard" onclick="selG('mueble_bano2','84 Nogal Vera',this,'cg-oslo')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/banoapart/oslo-nogal-vera.jpg') center/cover no-repeat;"></div><div class="clabel">84 Nogal Vera</div></div>
-    <div class="ccard" onclick="selG('mueble_bano2','46 Moka Mate',this,'cg-oslo')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/banoapart/oslo-moka-mate.jpg') center/cover no-repeat;"></div><div class="clabel">46 Moka Mate</div></div>
-    <div class="ccard" onclick="selG('mueble_bano2','75 Mist Mate',this,'cg-oslo')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/banoapart/oslo-mist-mate.jpg') center/cover no-repeat;"></div><div class="clabel">75 Mist Mate</div></div>
+        <div class="ccard" onclick="selBanoApt('mueble_bano2','Blanco Mate','bano2',this,'cg-oslo')"><div class="cswatch" style="height:64px;background:#fefefe;border-bottom:1px solid var(--border);"></div><div class="clabel">27 Blanco Mate</div></div>
+        <div class="ccard" onclick="selBanoApt('mueble_bano2','Moka Mate','bano2',this,'cg-oslo')"><div class="cswatch" style="height:64px;background:#bcb4a9;"></div><div class="clabel">46 Moka Mate</div></div>
+        <div class="ccard" onclick="selBanoApt('mueble_bano2','Mist Mate','bano2',this,'cg-oslo')"><div class="cswatch" style="height:64px;background:#909394;"></div><div class="clabel">75 Mist Mate</div></div>
+        <div class="ccard" onclick="selBanoApt('mueble_bano2','Roble Natural','bano2',this,'cg-oslo')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/banoapart/roble-natural.jpg') center/cover no-repeat;"></div><div class="clabel">24 Roble Natural</div></div>
+        <div class="ccard" onclick="selBanoApt('mueble_bano2','Nogal Vera','bano2',this,'cg-oslo')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/banoapart/nogal-vera.jpg') center/cover no-repeat;"></div><div class="clabel">84 Nogal Vera</div></div>
       </div>
     </div>
   </div>
-  <div class="nav-btns"><button class="btn btn-back" onclick="prev(4)">← Anterior</button><button class="btn btn-next" onclick="next(4)">Siguiente →</button></div>
+  <div class="nav-btns"><button class="btn btn-back" onclick="prev(4)" data-i18n="btn_back">← Anterior</button><button class="btn btn-next" onclick="next(4)" data-i18n="btn_next">Siguiente →</button></div>
 </div>
 
 
 
 <div class="step" id="step-5">
-  <div class="sec-eyebrow">05 — Cocina</div>
-  <h2 class="sec-title">Muebles de cocina</h2>
-  <p class="sec-desc">Puede elegir acabados diferentes para los interiores, la Zona A (frentes de armario) y la Zona B (trasera de península y vinoteca).</p>
+  <div class="sec-eyebrow" data-i18n="ey5">05 — Cocina</div>
+  <h2 class="sec-title" data-i18n="t5">Muebles de cocina</h2>
+  <p class="sec-desc" data-i18n="d5">Puede elegir acabados diferentes para los interiores, la Zona A (frentes de armario) y la Zona B (trasera de península y vinoteca).</p>
 
   <!-- Imagen referencia -->
-  <img src="https://arqamal.github.io/serena-breeze/img/cocina/cocina-ref.jpg" alt="Cocina Serena Breeze" style="width:100%;border:1px solid var(--border);display:block;margin-bottom:40px;">
+  <img src="https://arqamal.github.io/serena-breeze/img/cocinaapart/Interiores%20apart.jpg" alt="Referencia Interiores" style="width:100%;display:block;margin-bottom:20px;" onload="sendHeight()">
 
   <!-- Interiores -->
-  <div class="cocina-zone-title">Interiores</div>
+  <div class="cocina-zone-title" data-i18n="cz_int">Interiores</div>
   <div class="cgrid" id="cg-int">
-          <div class="ccard" onclick="selG('interior','Blanco',this,'cg-int')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/int/int-blanco.jpg') center/cover no-repeat;"></div><div class="clabel">Blanco</div></div>
-          <div class="ccard" onclick="selG('interior','Antracita',this,'cg-int')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/int/int-antracita.jpg') center/cover no-repeat;"></div><div class="clabel">Antracita</div></div>
-          <div class="ccard" onclick="selG('interior','Coco',this,'cg-int')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/int/int-coco.jpg') center/cover no-repeat;"></div><div class="clabel">Coco</div></div>
-          <div class="ccard" onclick="selG('interior','Roble NK206',this,'cg-int')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/int/int-roble-nk206.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK206</div></div>
-          <div class="ccard" onclick="selG('interior','Roble NK207',this,'cg-int')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/int/int-roble-nk207.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK207</div></div>
-          <div class="ccard" onclick="selG('interior','Roble NK208',this,'cg-int')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/int/int-roble-nk208.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK208</div></div>
+          <div class="ccard" onclick="selG('interior','Blanco',this,'cg-int')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20BLANCO%20SNOW.jpg') center/cover no-repeat;"></div><div class="clabel">Blanco</div></div>
+          <div class="ccard" onclick="selG('interior','Antracita',this,'cg-int')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20ANTRACITA.jpg') center/cover no-repeat;"></div><div class="clabel">Antracita</div></div>
+          <div class="ccard" onclick="selG('interior','Coco',this,'cg-int')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20COCO.jpg') center/cover no-repeat;"></div><div class="clabel">Coco</div></div>
+          <div class="ccard" onclick="selG('interior','Roble NK206',this,'cg-int')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20ROBLE%20NK206.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK206</div></div>
+          <div class="ccard" onclick="selG('interior','Roble NK207',this,'cg-int')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20ROBLE%20NK207.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK207</div></div>
+          <div class="ccard" onclick="selG('interior','Roble NK208',this,'cg-int')"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20ROBLE%20NK208.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK208</div></div>
         </div>
 
   <!-- Zona A -->
-  <div class="cocina-zone-title" style="margin-top:40px;">Zona A — Frentes de armario</div>
-  
+  <div class="cocina-zone-title" style="margin-top:40px;" data-i18n="cz_a">Zona A — Frentes de armario</div>
+  <img src="https://arqamal.github.io/serena-breeze/img/cocinaapart/Zona%20A%20apart.jpg" alt="Referencia Zona A" style="width:100%;display:block;margin-bottom:20px;" onload="sendHeight()">
         <div class="sub-label" style="margin-top:20px;margin-bottom:16px;">Aluplas</div>
         <div class="cgrid" id="cg-ca-a">
-          <div class="ccard" onclick="selAll('mueble_a','Blanco Snow',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-blanco-snow.jpg') center/cover no-repeat;"></div><div class="clabel">Blanco Snow</div></div>
-          <div class="ccard" onclick="selAll('mueble_a','Coco',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-coco.jpg') center/cover no-repeat;"></div><div class="clabel">Coco</div></div>
-          <div class="ccard" onclick="selAll('mueble_a','Antracita',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-antracita.jpg') center/cover no-repeat;"></div><div class="clabel">Antracita</div></div>
-          <div class="ccard" onclick="selAll('mueble_a','Aguamarina NF209',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-aguamarina-nf209.jpg') center/cover no-repeat;"></div><div class="clabel">Aguamarina NF209</div></div>
-          <div class="ccard" onclick="selAll('mueble_a','Ámbar NF213',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-ambar-nf213.jpg') center/cover no-repeat;"></div><div class="clabel">Ámbar NF213</div></div>
-          <div class="ccard" onclick="selAll('mueble_a','Menta NF210',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-menta-nf210.jpg') center/cover no-repeat;"></div><div class="clabel">Menta NF210</div></div>
-          <div class="ccard" onclick="selAll('mueble_a','Oliva NF212',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-oliva-nf212.jpg') center/cover no-repeat;"></div><div class="clabel">Oliva NF212</div></div>
-          <div class="ccard" onclick="selAll('mueble_a','Terra NF214',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-terra-nf214.jpg') center/cover no-repeat;"></div><div class="clabel">Terra NF214</div></div>
-          <div class="ccard" onclick="selAll('mueble_a','Carbón NK204',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-carbon-nk204.jpg') center/cover no-repeat;"></div><div class="clabel">Carbón NK204</div></div>
-          <div class="ccard" onclick="selAll('mueble_a','Roble NF111',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-roble-nf111.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NF111</div></div>
-          <div class="ccard" onclick="selAll('mueble_a','Roble NK206',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-roble-nk206.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK206</div></div>
-          <div class="ccard" onclick="selAll('mueble_a','Roble NK207',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-roble-nk207.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK207</div></div>
-          <div class="ccard" onclick="selAll('mueble_a','Roble NK208',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-roble-nk208.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK208</div></div>
-          <div class="ccard" onclick="selAll('mueble_a','Nogal NF116',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-nogal-nf116.jpg') center/cover no-repeat;"></div><div class="clabel">Nogal NF116</div></div>
-          <div class="ccard" onclick="selAll('mueble_a','Nogal NF217',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-nogal-nf217.jpg') center/cover no-repeat;"></div><div class="clabel">Nogal NF217</div></div>
-          <div class="ccard" onclick="selAll('mueble_a','Olmo NK201',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-olmo-nk201.jpg') center/cover no-repeat;"></div><div class="clabel">Olmo NK201</div></div>
+          <div class="ccard" onclick="selAll('mueble_a','Blanco Snow',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20BLANCO%20SNOW.jpg') center/cover no-repeat;"></div><div class="clabel">Blanco Snow</div></div>
+          <div class="ccard" onclick="selAll('mueble_a','Coco',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20COCO.jpg') center/cover no-repeat;"></div><div class="clabel">Coco</div></div>
+          <div class="ccard" onclick="selAll('mueble_a','Antracita',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20ANTRACITA.jpg') center/cover no-repeat;"></div><div class="clabel">Antracita</div></div>
+          <div class="ccard" onclick="selAll('mueble_a','Aguamarina NF209',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20AGUAMARINA.jpg') center/cover no-repeat;"></div><div class="clabel">Aguamarina NF209</div></div>
+          <div class="ccard" onclick="selAll('mueble_a','Ámbar NF213',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20AMBAR.jpg') center/cover no-repeat;"></div><div class="clabel">Ámbar NF213</div></div>
+          <div class="ccard" onclick="selAll('mueble_a','Menta NF210',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20MENTA.jpg') center/cover no-repeat;"></div><div class="clabel">Menta NF210</div></div>
+          <div class="ccard" onclick="selAll('mueble_a','Oliva NF212',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20OLIVA.jpg') center/cover no-repeat;"></div><div class="clabel">Oliva NF212</div></div>
+          <div class="ccard" onclick="selAll('mueble_a','Terra NF214',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20TERRA.jpg') center/cover no-repeat;"></div><div class="clabel">Terra NF214</div></div>
+          <div class="ccard" onclick="selAll('mueble_a','Carbón NK204',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20CARBON%20NK204.jpg') center/cover no-repeat;"></div><div class="clabel">Carbón NK204</div></div>
+          <div class="ccard" onclick="selAll('mueble_a','Roble NF111',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20ROBLE%20NF111.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NF111</div></div>
+          <div class="ccard" onclick="selAll('mueble_a','Roble NK206',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20ROBLE%20NK206.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK206</div></div>
+          <div class="ccard" onclick="selAll('mueble_a','Roble NK207',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20ROBLE%20NK207.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK207</div></div>
+          <div class="ccard" onclick="selAll('mueble_a','Roble NK208',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20ROBLE%20NK208.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK208</div></div>
+          <div class="ccard" onclick="selAll('mueble_a','Nogal NF116',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20NOGAL%20NF116.jpg') center/cover no-repeat;"></div><div class="clabel">Nogal NF116</div></div>
+          <div class="ccard" onclick="selAll('mueble_a','Nogal NF217',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20NOGAL%20NF217.jpg') center/cover no-repeat;"></div><div class="clabel">Nogal NF217</div></div>
+          <div class="ccard" onclick="selAll('mueble_a','Olmo NK201',this,['cg-ca-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20OLMO%20NK201.jpg') center/cover no-repeat;"></div><div class="clabel">Olmo NK201</div></div>
         </div>
 
   <!-- Zona B -->
-  <div class="cocina-zone-title" style="margin-top:40px;">Zona B — Trasera de península y vinoteca</div>
-  
+  <div class="cocina-zone-title" style="margin-top:40px;" data-i18n="cz_b">Zona B — Trasera de península y vinoteca</div>
+  <img src="https://arqamal.github.io/serena-breeze/img/cocinaapart/Zona%20B%20apart.jpg" alt="Referencia Zona B" style="width:100%;display:block;margin-bottom:20px;" onload="sendHeight()">
         <div class="sub-label" style="margin-top:20px;margin-bottom:16px;">Aluplas</div>
         <div class="cgrid" id="cg-cb-a">
-          <div class="ccard" onclick="selAll('mueble_b','Blanco Snow',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-blanco-snow.jpg') center/cover no-repeat;"></div><div class="clabel">Blanco Snow</div></div>
-          <div class="ccard" onclick="selAll('mueble_b','Coco',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-coco.jpg') center/cover no-repeat;"></div><div class="clabel">Coco</div></div>
-          <div class="ccard" onclick="selAll('mueble_b','Antracita',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-antracita.jpg') center/cover no-repeat;"></div><div class="clabel">Antracita</div></div>
-          <div class="ccard" onclick="selAll('mueble_b','Aguamarina NF209',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-aguamarina-nf209.jpg') center/cover no-repeat;"></div><div class="clabel">Aguamarina NF209</div></div>
-          <div class="ccard" onclick="selAll('mueble_b','Ámbar NF213',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-ambar-nf213.jpg') center/cover no-repeat;"></div><div class="clabel">Ámbar NF213</div></div>
-          <div class="ccard" onclick="selAll('mueble_b','Menta NF210',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-menta-nf210.jpg') center/cover no-repeat;"></div><div class="clabel">Menta NF210</div></div>
-          <div class="ccard" onclick="selAll('mueble_b','Oliva NF212',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-oliva-nf212.jpg') center/cover no-repeat;"></div><div class="clabel">Oliva NF212</div></div>
-          <div class="ccard" onclick="selAll('mueble_b','Terra NF214',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-terra-nf214.jpg') center/cover no-repeat;"></div><div class="clabel">Terra NF214</div></div>
-          <div class="ccard" onclick="selAll('mueble_b','Carbón NK204',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-carbon-nk204.jpg') center/cover no-repeat;"></div><div class="clabel">Carbón NK204</div></div>
-          <div class="ccard" onclick="selAll('mueble_b','Roble NF111',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-roble-nf111.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NF111</div></div>
-          <div class="ccard" onclick="selAll('mueble_b','Roble NK206',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-roble-nk206.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK206</div></div>
-          <div class="ccard" onclick="selAll('mueble_b','Roble NK207',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-roble-nk207.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK207</div></div>
-          <div class="ccard" onclick="selAll('mueble_b','Roble NK208',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-roble-nk208.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK208</div></div>
-          <div class="ccard" onclick="selAll('mueble_b','Nogal NF116',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-nogal-nf116.jpg') center/cover no-repeat;"></div><div class="clabel">Nogal NF116</div></div>
-          <div class="ccard" onclick="selAll('mueble_b','Nogal NF217',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-nogal-nf217.jpg') center/cover no-repeat;"></div><div class="clabel">Nogal NF217</div></div>
-          <div class="ccard" onclick="selAll('mueble_b','Olmo NK201',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocina/aluplas-olmo-nk201.jpg') center/cover no-repeat;"></div><div class="clabel">Olmo NK201</div></div>
+          <div class="ccard" onclick="selAll('mueble_b','Blanco Snow',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20BLANCO%20SNOW.jpg') center/cover no-repeat;"></div><div class="clabel">Blanco Snow</div></div>
+          <div class="ccard" onclick="selAll('mueble_b','Coco',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20COCO.jpg') center/cover no-repeat;"></div><div class="clabel">Coco</div></div>
+          <div class="ccard" onclick="selAll('mueble_b','Antracita',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20ANTRACITA.jpg') center/cover no-repeat;"></div><div class="clabel">Antracita</div></div>
+          <div class="ccard" onclick="selAll('mueble_b','Aguamarina NF209',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20AGUAMARINA.jpg') center/cover no-repeat;"></div><div class="clabel">Aguamarina NF209</div></div>
+          <div class="ccard" onclick="selAll('mueble_b','Ámbar NF213',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20AMBAR.jpg') center/cover no-repeat;"></div><div class="clabel">Ámbar NF213</div></div>
+          <div class="ccard" onclick="selAll('mueble_b','Menta NF210',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20MENTA.jpg') center/cover no-repeat;"></div><div class="clabel">Menta NF210</div></div>
+          <div class="ccard" onclick="selAll('mueble_b','Oliva NF212',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20OLIVA.jpg') center/cover no-repeat;"></div><div class="clabel">Oliva NF212</div></div>
+          <div class="ccard" onclick="selAll('mueble_b','Terra NF214',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20TERRA.jpg') center/cover no-repeat;"></div><div class="clabel">Terra NF214</div></div>
+          <div class="ccard" onclick="selAll('mueble_b','Carbón NK204',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20CARBON%20NK204.jpg') center/cover no-repeat;"></div><div class="clabel">Carbón NK204</div></div>
+          <div class="ccard" onclick="selAll('mueble_b','Roble NF111',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20ROBLE%20NF111.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NF111</div></div>
+          <div class="ccard" onclick="selAll('mueble_b','Roble NK206',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20ROBLE%20NK206.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK206</div></div>
+          <div class="ccard" onclick="selAll('mueble_b','Roble NK207',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20ROBLE%20NK207.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK207</div></div>
+          <div class="ccard" onclick="selAll('mueble_b','Roble NK208',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20ROBLE%20NK208.jpg') center/cover no-repeat;"></div><div class="clabel">Roble NK208</div></div>
+          <div class="ccard" onclick="selAll('mueble_b','Nogal NF116',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20NOGAL%20NF116.jpg') center/cover no-repeat;"></div><div class="clabel">Nogal NF116</div></div>
+          <div class="ccard" onclick="selAll('mueble_b','Nogal NF217',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20NOGAL%20NF217.jpg') center/cover no-repeat;"></div><div class="clabel">Nogal NF217</div></div>
+          <div class="ccard" onclick="selAll('mueble_b','Olmo NK201',this,['cg-cb-a'])"><div class="cswatch" style="height:64px;background:url('https://arqamal.github.io/serena-breeze/img/cocinaapart/aluplas/ALUPLAS%20OLMO%20NK201.jpg') center/cover no-repeat;"></div><div class="clabel">Olmo NK201</div></div>
         </div>
         
-  <div class="nav-btns"><button class="btn btn-back" onclick="prev(5)">← Anterior</button><button class="btn btn-next" onclick="next(5)">Siguiente →</button></div>
+  <div class="nav-btns"><button class="btn btn-back" onclick="prev(5)" data-i18n="btn_back">← Anterior</button><button class="btn btn-next" onclick="next(5)" data-i18n="btn_next">Siguiente →</button></div>
 </div>
 
 
 
 <div class="step" id="step-6">
-  <div class="sec-eyebrow">06 — Cocina</div>
-  <h2 class="sec-title">Encimera de cocina</h2>
-  <p class="sec-desc">Elija el material y acabado de la encimera.</p>
-  <div class="sub-label">Compac (cuarzo)</div>
+  <div class="sec-eyebrow" data-i18n="ey6">06 — Cocina</div>
+  <h2 class="sec-title" data-i18n="t6">Encimera de cocina</h2>
+  <p class="sec-desc" data-i18n="d6">Elija el material y acabado de la encimera.</p>
+  <div class="sub-label" data-i18n="sl_compac">Compac (cuarzo)</div>
   <div class="grid" id="grid-compac">
-    <div class="card" onclick="selEnc('encimera','Luna',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/encimera/compac-luna.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Luna</div><div class="card-dims">Compac</div></div></div>
-    <div class="card" onclick="selEnc('encimera','Ceniza',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/encimera/compac-ceniza.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Ceniza</div><div class="card-dims">Compac</div></div></div>
-    <div class="card" onclick="selEnc('encimera','Arena',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/encimera/compac-arena.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Arena</div><div class="card-dims">Compac</div></div></div>
-    <div class="card" onclick="selEnc('encimera','Plomo',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/encimera/compac-plomo.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Plomo</div><div class="card-dims">Compac</div></div></div>
+    <div class="card" onclick="selEnc('encimera','Luna',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/encimeraapart/compac/compac-luna-pulido-cabecera.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Luna</div><div class="card-dims">Compac</div></div></div>
+    <div class="card" onclick="selEnc('encimera','Ceniza',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/encimeraapart/compac/compac-ceniza-pulido-cabecera.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Ceniza</div><div class="card-dims">Compac</div></div></div>
+    <div class="card" onclick="selEnc('encimera','Arena',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/encimeraapart/compac/compac-arena-pulido-cabecera.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Arena</div><div class="card-dims">Compac</div></div></div>
+    <div class="card" onclick="selEnc('encimera','Plomo',this)"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/encimeraapart/compac/compac-plomo-pulido-cabecera.jpg') center/cover;"></div><div class="card-info"><div class="card-name">Plomo</div><div class="card-dims">Compac</div></div></div>
   </div>
-  <div class="nav-btns"><button class="btn btn-back" onclick="prev(6)">← Anterior</button><button class="btn btn-next" onclick="next(6)">Siguiente →</button></div>
+  <div class="nav-btns"><button class="btn btn-back" onclick="prev(6)" data-i18n="btn_back">← Anterior</button><button class="btn btn-next" onclick="next(6)" data-i18n="btn_next">Siguiente →</button></div>
 </div>
 
 
 
 <div class="step" id="step-7">
-  <div class="sec-eyebrow">07 — Confirmación</div>
-  <h2 class="sec-title">Resumen de su elección</h2>
-  <p class="sec-desc">Revise sus selecciones antes de confirmar. Recibirá una copia por email.</p>
+  <div class="sec-eyebrow" data-i18n="ey7">07 — Confirmación</div>
+  <h2 class="sec-title" data-i18n="t7">Resumen de su elección</h2>
+  <p class="sec-desc" data-i18n="d7">Revise sus selecciones antes de confirmar. Recibirá una copia por email.</p>
   <div class="summary-grid" id="summaryGrid"></div>
   <div class="form-block">
-    <div class="form-title">Sus datos</div>
+    <div class="form-title" data-i18n="ft">Sus datos</div>
     <div class="form-row">
       <div class="fgroup">
-        <label class="flabel">Promoción</label>
+        <label class="flabel" data-i18n="fl_promo">Promoción</label>
         <select class="finput" id="cPromo" onchange="updateViviendas()">
           <option value="">Seleccione promoción…</option>
           <option value="Serena Breeze 2">Serena Breeze 2</option>
@@ -348,48 +362,76 @@
         </select>
       </div>
       <div class="fgroup">
-        <label class="flabel">Vivienda</label>
+        <label class="flabel" data-i18n="fl_unit">Vivienda</label>
         <select class="finput" id="cUnit" disabled onchange="buildSummary()">
           <option value="">Seleccione primero la promoción…</option>
         </select>
       </div>
     </div>
     <div class="form-row">
-      <div class="fgroup"><label class="flabel">Nombre completo</label><input class="finput" id="cName" type="text" placeholder="Nombre y apellidos"></div>
-      <div class="fgroup"><label class="flabel">Email</label><input class="finput" id="cEmail" type="email" placeholder="correo@ejemplo.com"></div>
+      <div class="fgroup"><label class="flabel" data-i18n="fl_name">Nombre completo</label><input class="finput" id="cName" type="text" placeholder="Nombre y apellidos"></div>
+      <div class="fgroup"><label class="flabel" data-i18n="fl_email">Email</label><input class="finput" id="cEmail" type="email" placeholder="correo@ejemplo.com"></div>
     </div>
     <div class="form-row">
-      <div class="fgroup"><label class="flabel">Teléfono</label><input class="finput" id="cPhone" type="tel" placeholder="+34 600 000 000"></div>
-      <div class="fgroup"><label class="flabel">Observaciones (opcional)</label><input class="finput" id="cNotes" type="text" placeholder="Comentarios adicionales"></div>
+      <div class="fgroup"><label class="flabel" data-i18n="fl_phone">Teléfono</label><input class="finput" id="cPhone" type="tel" placeholder="+34 600 000 000"></div>
+      <div class="fgroup"><label class="flabel" data-i18n="fl_notes">Observaciones (opcional)</label><input class="finput" id="cNotes" type="text" placeholder="Comentarios adicionales"></div>
     </div>
   </div>
   <div class="nav-btns">
-    <button class="btn btn-back" onclick="prev(7)">← Anterior</button>
-    <button class="btn btn-submit" onclick="submit()">Confirmar elección →</button>
+    <button class="btn btn-back" onclick="prev(7)" data-i18n="btn_back">← Anterior</button>
+    <button class="btn btn-submit" onclick="submit()" data-i18n="btn_submit">Confirmar elección →</button>
   </div>
 </div>
 
 <div class="success" id="success">
   <div class="success-line"></div>
-  <h2>Elección confirmada</h2>
-  <p>Hemos recibido su selección de materiales.<br>En breve recibirá un email de confirmación.<br>Si no lo recibe, póngase en contacto con jose@amalconsult.com.</p>
+  <h2 data-i18n="suc_t">Elección confirmada</h2>
+  <p data-i18n="suc_p" data-i18n-attr="html">Hemos recibido su selección de materiales.<br>En breve recibirá un email de confirmación.<br>Si no lo recibe, póngase en contacto con jose@amalconsult.com.</p>
 </main>
 <script>
 
   const S = {};
+  let LANG = 'es';
+
+  // Mapa imágenes Oslo apartamentos
+  const OSLO_IMGS = {
+    'Blanco Mate': 'oslo-80-Blanco.png.jpg',
+    'Moka Mate':   'oslo-80-Moka.png.jpg',
+    'Mist Mate':   'oslo-80-Mist.png.jpg',
+    'Roble Natural': 'oslo-80-Roble.png.jpg',
+    'Nogal Vera':  'oslo-80-Nogal.png.jpg'
+  };
+  const OSLO_BASE = 'https://arqamal.github.io/serena-breeze/img/banoapart/';
+
+  function selBanoApt(key, nombre, bano, el, gid) {
+    const OSLO_LABELS = {'Blanco Mate':'27 Blanco Mate','Roble Natural':'24 Roble Natural','Nogal Vera':'84 Nogal Vera','Moka Mate':'46 Moka Mate','Mist Mate':'75 Mist Mate'};
+    S[key] = 'Oslo ' + (OSLO_LABELS[nombre] || nombre);
+    document.getElementById(gid).querySelectorAll('.ccard').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+    const wrap = document.getElementById(bano + '-ref-wrap');
+    const file = OSLO_IMGS[nombre];
+    if (file) {
+      wrap.innerHTML = '<img src="' + OSLO_BASE + file + '" alt="Oslo ' + nombre + '" style="width:100%;display:block;" onload="sendHeight()">';
+    }
+    tick();
+  }
 
   // Orden canónico de pasos para el resumen
-  const LABELS = [
-    ['pav_int',     'Pavimento interior y terrazas'],
-    ['alic_bano1',  'Alicatado Baño 1 (Suite)'],
-    ['alic_bano2',  'Alicatado Baño 2'],
-    ['bano1_enc',   'Mueble Baño 1 (Suite)'],
-    ['mueble_bano2','Mueble Baño 2 (Oslo)'],
-    ['interior',    'Interiores cocina'],
-    ['mueble_a',    'Mueble cocina Zona A'],
-    ['mueble_b',    'Mueble cocina Zona B'],
-    ['encimera',    'Encimera cocina']
-  ];
+  const LABELS_I18N = {
+    pav_int:      { es:'Pavimento interior y terrazas',  en:'Interior and terrace flooring' },
+    alic_bano1:   { es:'Alicatado Baño 1 (Suite)',         en:'Wall tiles Bathroom 1 (Suite)' },
+    alic_bano2:   { es:'Alicatado Baño 2',                 en:'Wall tiles Bathroom 2' },
+    bano1_enc:    { es:'Mueble Baño 1 (Suite)',            en:'Vanity Bathroom 1 (Suite)' },
+    mueble_bano2: { es:'Mueble Baño 2 (Oslo)',             en:'Vanity Bathroom 2 (Oslo)' },
+    interior:     { es:'Interiores cocina',                en:'Kitchen interiors' },
+    mueble_a:     { es:'Mueble cocina Zona A',             en:'Kitchen cabinet Zone A' },
+    mueble_b:     { es:'Mueble cocina Zona B',             en:'Kitchen cabinet Zone B' },
+    encimera:     { es:'Encimera cocina',                  en:'Kitchen countertop' }
+  };
+  function getLABELS() {
+    return Object.entries(LABELS_I18N).map(([k,v]) => [k, v[LANG]]);
+  }
+  const LABELS = Object.entries(LABELS_I18N).map(([k,v]) => [k, v.es]);
 
   // Opciones de vivienda por promoción
   const VIVIENDAS = {
@@ -416,12 +458,12 @@
     const sel = document.getElementById('cUnit');
     sel.innerHTML = '';
     if (!promo) {
-      sel.innerHTML = '<option value="">Seleccione primero la promoción…</option>';
+      sel.innerHTML = '<option value="">' + (LANG==='es' ? 'Seleccione primero la promoción…' : 'Select a development first…') + '</option>';
       sel.disabled = true;
       return;
     }
     sel.disabled = false;
-    sel.innerHTML = '<option value="">Seleccione vivienda…</option>' +
+    sel.innerHTML = '<option value="">' + (LANG==='es' ? 'Seleccione vivienda…' : 'Select property…') + '</option>' +
       VIVIENDAS[promo].map(v => `<option value="${v}">${v}</option>`).join('');
   }
 
@@ -431,12 +473,7 @@
     el.classList.add('selected');
     tick();
   }
-  function selPool(val, el) {
-    // Pool step removed for apartments - kept as stub
-    S['piscina'] = val;
-    el.classList.add('selected');
-    tick();
-  }
+
   function selAll(key, val, el, gids) {
     S[key] = val;
     gids.forEach(gid => {
@@ -459,10 +496,7 @@
     tick();
   }
   function tick() {
-    const pc = document.getElementById('progressCount');
-    if (pc) pc.textContent = Object.keys(S).length + ' / 7';
-    const hm = document.querySelector('.header-meta');
-    if (hm) hm.innerHTML = 'Elección de materiales &nbsp;·&nbsp; <strong>' + Object.keys(S).length + ' / 7</strong> completados';
+    // no header-meta ni progressCount en este selector
   }
   function goTo(n) {
     document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
@@ -488,10 +522,11 @@
     return val;
   }
   function buildSummary() {
-    document.getElementById('summaryGrid').innerHTML = LABELS.map(([k, l]) => {
+    document.getElementById('summaryGrid').innerHTML = getLABELS().map(([k, l]) => {
       let v = S[k];
       if (k === 'pav_int') v = pavDisplay(v);
-      return `<div class="sum-item"><div class="sum-label">${l}</div><div class="${v ? 'sum-val' : 'sum-empty'}">${v || 'Sin elegir'}</div></div>`;
+      const empty = LANG === 'es' ? 'Sin elegir' : 'Not selected';
+      return `<div class="sum-item"><div class="sum-label">${l}</div><div class="${v ? 'sum-val' : 'sum-empty'}">${v || empty}</div></div>`;
     }).join('');
   }
   function generatePDF() {
@@ -622,11 +657,11 @@
     const unit  = document.getElementById('cUnit').value;
 
     if (!name || !email) {
-      alert('Por favor, introduzca su nombre y email antes de confirmar.');
+      alert(LANG==='es' ? 'Por favor, introduzca su nombre y email antes de confirmar.' : 'Please enter your name and email before confirming.');
       return;
     }
     if (!promo || !unit) {
-      alert('Por favor, seleccione la promoción y la vivienda antes de confirmar.');
+      alert(LANG==='es' ? 'Por favor, seleccione la promoción y la vivienda antes de confirmar.' : 'Please select the development and property before confirming.');
       return;
     }
 
@@ -680,6 +715,95 @@
 
   document.addEventListener('DOMContentLoaded', buildSummary);
 
+
+  // ═══ TRANSLATIONS ═══
+  const T = {
+    nav1: { es:'01 · Pav. interior',    en:'01 · Int. flooring' },
+    nav2: { es:'02 · Alicatado',        en:'02 · Wall tiles' },
+    nav3: { es:'03 · Baño 1 (Suite)',   en:'03 · Bathroom 1 (Suite)' },
+    nav4: { es:'04 · Baño 2',           en:'04 · Bathroom 2' },
+    nav5: { es:'05 · Muebles cocina',   en:'05 · Kitchen cabinets' },
+    nav6: { es:'06 · Encimera',         en:'06 · Countertop' },
+    nav7: { es:'07 · Confirmar',        en:'07 · Confirm' },
+    ey1:  { es:'01 — Pavimentos',       en:'01 — Flooring' },
+    ey2:  { es:'02 — Alicatado',        en:'02 — Wall tiles' },
+    ey3a: { es:'03 — Baño 1 (Suite)',   en:'03 — Bathroom 1 (Suite)' },
+    ey4a: { es:'04 — Baño 2',           en:'04 — Bathroom 2' },
+    ey5:  { es:'05 — Cocina',           en:'05 — Kitchen' },
+    ey6:  { es:'06 — Cocina',           en:'06 — Kitchen' },
+    ey7:  { es:'07 — Confirmación',     en:'07 — Confirmation' },
+    t1:   { es:'Pavimento interior y terrazas',   en:'Interior and terrace flooring' },
+    t2:   { es:'Alicatado de baños',              en:'Bathroom wall tiles' },
+    t3:   { es:'Mueble de baño — Oslo',           en:'Vanity unit — Oslo' },
+    t4:   { es:'Mueble de baño — Oslo',           en:'Vanity unit — Oslo' },
+    t5:   { es:'Muebles de cocina',               en:'Kitchen cabinets' },
+    t6:   { es:'Encimera de cocina',              en:'Kitchen countertop' },
+    t7:   { es:'Resumen de su elección',          en:'Summary of your selection' },
+    d1:   { es:'Solado con baldosas de gres porcelánico 60×60 cm en interior y terrazas.',
+            en:'Porcelain stoneware floor tiles 60×60 cm for interior and terraces.' },
+    d2:   { es:'Gres porcelánico o pasta blanca rectificada 60×120 cm. Puede elegir una opción diferente para cada espacio.',
+            en:'Rectified porcelain stoneware or white body tiles 60×120 cm. You may choose a different option for each area.' },
+    d3:   { es:'Mueble suspendido Oslo 80 cm con cajón y lavabo cerámico Onix New. Elija el acabado.',
+            en:'Wall-mounted Oslo 80 cm vanity unit with Onix New ceramic washbasin. Choose the finish.' },
+    d4:   { es:'Mueble suspendido Oslo 80 cm con cajón y lavabo cerámico Onix New. Elija el acabado.',
+            en:'Wall-mounted Oslo 80 cm vanity unit with Onix New ceramic washbasin. Choose the finish.' },
+    d5:   { es:'Puede elegir acabados diferentes para los interiores, la Zona A (frentes de armario) y la Zona B (trasera de península y vinoteca).',
+            en:'You may choose different finishes for the interiors, Zone A (cabinet fronts) and Zone B (peninsula back panel and wine cabinet).' },
+    d6:   { es:'Elija el material y acabado de la encimera.',
+            en:'Choose the countertop material and finish.' },
+    d7:   { es:'Revise sus selecciones antes de confirmar. Recibirá una copia por email.',
+            en:'Review your selections before confirming. You will receive a copy by email.' },
+    note1:{ es:'Los áticos llevan el formato 100×100 cm con los mismos materiales.',
+            en:'Penthouses use 100×100 cm format with the same materials.' },
+    sl_b1:{ es:'Baño 1 (Suite)', en:'Bathroom 1 (Suite)' },
+    sl_b2:{ es:'Baño 2',         en:'Bathroom 2' },
+    ph_bano1: { es:'Seleccione el acabado para ver el mueble', en:'Select the finish to see the vanity unit' },
+    cap3: { es:'La imagen muestra el mueble Oslo 80 cm con lavabo Onix New en el acabado seleccionado.',
+            en:'The image shows the Oslo 80 cm vanity unit with Onix New washbasin in the selected finish.' },
+    cz_int: { es:'Interiores', en:'Interiors' },
+    cz_a: { es:'Zona A — Frentes de armario',           en:'Zone A — Cabinet fronts' },
+    cz_b: { es:'Zona B — Trasera de península y vinoteca', en:'Zone B — Peninsula back panel and wine cabinet' },
+    sl_compac: { es:'Compac (cuarzo)', en:'Compac (quartz)' },
+    ft:       { es:'Sus datos',                en:'Your details' },
+    fl_promo: { es:'Promoción',               en:'Development' },
+    fl_unit:  { es:'Vivienda',                en:'Property' },
+    fl_name:  { es:'Nombre completo',         en:'Full name' },
+    fl_email: { es:'Email',                   en:'Email' },
+    fl_phone: { es:'Teléfono',               en:'Phone' },
+    fl_notes: { es:'Observaciones (opcional)',en:'Comments (optional)' },
+    opt_promo:{ es:'Seleccione promoción…',   en:'Select development…' },
+    btn_next:   { es:'Siguiente →', en:'Next →' },
+    btn_back:   { es:'← Anterior',  en:'← Back' },
+    btn_submit: { es:'Confirmar elección →', en:'Confirm selection →' },
+    suc_t: { es:'Elección confirmada', en:'Selection confirmed' },
+    suc_p: { es:'Hemos recibido su selección de materiales.<br>En breve recibirá un email de confirmación.<br>Si no lo recibe, póngase en contacto con jose@amalconsult.com.',
+             en:'We have received your material selection.<br>You will shortly receive a confirmation email.<br>If you don\'t receive it, please contact jose@amalconsult.com.' }
+  };
+
+  function setLang(lang) {
+    LANG = lang;
+    document.getElementById('btn-es').classList.toggle('active', lang==='es');
+    document.getElementById('btn-en').classList.toggle('active', lang==='en');
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.dataset.i18n;
+      if (!T[key]) return;
+      const attr = el.dataset.i18nAttr;
+      if (attr === 'placeholder') el.placeholder = T[key][lang];
+      else if (attr === 'html') el.innerHTML = T[key][lang];
+      else el.textContent = T[key][lang];
+    });
+    const promoSel = document.getElementById('cPromo');
+    if (promoSel.options[0] && !promoSel.options[0].value) {
+      promoSel.options[0].textContent = T.opt_promo[lang];
+    }
+    const unitSel = document.getElementById('cUnit');
+    if (unitSel.disabled && unitSel.options[0]) {
+      unitSel.options[0].textContent = lang==='es' ? 'Seleccione primero la promoción…' : 'Select a development first…';
+    } else if (!unitSel.disabled && unitSel.options[0] && !unitSel.options[0].value) {
+      unitSel.options[0].textContent = lang==='es' ? 'Seleccione vivienda…' : 'Select property…';
+    }
+    buildSummary();
+  }
 
   function sendHeight() {
     window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, '*');
