@@ -259,7 +259,7 @@
         <div class="ccard" onclick="selBano1Lavabo('Blanco',this)"><div class="cswatch" style="height:64px;background:#ffffff;border:1px solid #ccc;"></div><div class="clabel">06 Blanco</div></div>
         <div class="ccard" onclick="selBano1Lavabo('Negro azabache',this)"><div class="cswatch" style="height:64px;background:#454343;"></div><div class="clabel">02 Negro Azabache</div></div>
         <div class="ccard" onclick="selBano1Lavabo('Moka',this)"><div class="cswatch" style="height:64px;background:#bcb4a9;"></div><div class="clabel">19 Moka</div></div>
-        <div class="ccard" onclick="selBano1Lavabo('Tropic',this)"><div class="cswatch" style="height:64px;background:#8d9889;"></div><div class="clabel">25 Leaf</div></div>
+        <div class="ccard" onclick="selBano1Lavabo('Leaf',this)"><div class="cswatch" style="height:64px;background:#8d9889;"></div><div class="clabel">25 Leaf</div></div>
       </div>
     </div>
   </div>
@@ -289,7 +289,7 @@
         <div class="ccard" onclick="selBano2Lavabo('Blanco',this)"><div class="cswatch" style="height:64px;background:#ffffff;border:1px solid #ccc;"></div><div class="clabel">06 Blanco</div></div>
         <div class="ccard" onclick="selBano2Lavabo('Negro azabache',this)"><div class="cswatch" style="height:64px;background:#454343;"></div><div class="clabel">02 Negro Azabache</div></div>
         <div class="ccard" onclick="selBano2Lavabo('Moka',this)"><div class="cswatch" style="height:64px;background:#bcb4a9;"></div><div class="clabel">19 Moka</div></div>
-        <div class="ccard" onclick="selBano2Lavabo('Tropic',this)"><div class="cswatch" style="height:64px;background:#8d9889;"></div><div class="clabel">25 Leaf</div></div>
+        <div class="ccard" onclick="selBano2Lavabo('Leaf',this)"><div class="cswatch" style="height:64px;background:#8d9889;"></div><div class="clabel">25 Leaf</div></div>
       </div>
     </div>
   </div>
@@ -524,7 +524,7 @@
 
   // ── Nombres actualizados (para etiquetas visibles y payload). Las claves internas de imagen/lógica no cambian. ──
   const FLOW_LABELS   = {'Roble Natural':'24 Roble Natural','Moka Mate':'74 Moka Mate'};
-  const MASAI_LABELS  = {'Blanco':'06 Blanco','Negro azabache':'02 Negro Azabache','Moka':'19 Moka','Tropic':'25 Leaf'};
+  const MASAI_LABELS  = {'Blanco':'06 Blanco','Negro azabache':'02 Negro Azabache','Moka':'19 Moka','Leaf':'25 Leaf'};
   const LAMBDA_LABELS = {'Blanco':'04 Blanco','Negro Azabache':'02 Negro Azabache','Moka':'19 Moka','Leaf':'25 Leaf','Roble Natural':'24 Roble Natural'};
 
   // ── Baño 1 (Suite): FLOW + MASAI ──
@@ -533,11 +533,11 @@
     'RN_Blanco':'FLOW_RN_MASAI_Blanco.jpg',
     'RN_Moka':'FLOW_RN_MASAI_Moka.jpg',
     'RN_Negro azabache':'FLOW_RN_MASAI_Negro_azabache.jpg',
-    'RN_Tropic':'FLOW_RN_MASAI_Tropic.jpg',
+    'RN_Leaf':'FLOW_RN_MASAI_Leaf.jpg',
     'MM_Blanco':'FLOW_MM_MASAI_Blanco.jpg',
     'MM_Moka':'FLOW_MM_MASAI_Moka.jpg',
     'MM_Negro azabache':'FLOW_MM_MASAI_Negro_azabache.jpg',
-    'MM_Tropic':'FLOW_MM_MASAI_Tropic.jpg'
+    'MM_Leaf':'FLOW_MM_MASAI_Leaf.jpg'
   };
   let bano1Mueble = '';
   let bano1Lavabo = '';
@@ -585,23 +585,23 @@
     'Blanco_blanco':'LAMBDA_Blanco_MASAI_blanco.jpg',
     'Blanco_moka':'LAMBDA_Blanco_MASAI_moka.jpg',
     'Blanco_negro':'LAMBDA_Blanco_MASAI_negro.jpg',
-    'Blanco_tropic':'LAMBDA_Blanco_MASAI_tropic.jpg',
+    'Blanco_leaf':'LAMBDA_Blanco_MASAI_leaf.jpg',
     'Leaf_blanco':'LAMBDA_Leaf_MASAI_blanco.jpg',
     'Leaf_moka':'LAMBDA_Leaf_MASAI_moka.jpg',
     'Leaf_negro':'LAMBDA_Leaf_MASAI_negro.jpg',
-    'Leaf_tropic':'LAMBDA_Leaf_MASAI_tropic.jpg',
+    'Leaf_leaf':'LAMBDA_Leaf_MASAI_leaf.jpg',
     'Moka_blanco':'LAMBDA_Moka_MASAI_blanco.jpg',
     'Moka_moka':'LAMBDA_Moka_MASAI_moka.jpg',
     'Moka_negro':'LAMBDA_Moka_MASAI_negro.jpg',
-    'Moka_tropic':'LAMBDA_Moka_MASAI_tropic.jpg',
+    'Moka_leaf':'LAMBDA_Moka_MASAI_leaf.jpg',
     'Negro_blanco':'LAMBDA_Negro_MASAI_blanco.jpg',
     'Negro_moka':'LAMBDA_Negro_MASAI_moka.jpg',
     'Negro_negro':'LAMBDA_Negro_MASAI_negro.jpg',
-    'Negro_tropic':'LAMBDA_Negro_MASAI_tropic.jpg',
+    'Negro_leaf':'LAMBDA_Negro_MASAI_leaf.jpg',
     'RN_blanco':'LAMBDA_RN_MASAI_blanco.jpg',
     'RN_moka':'LAMBDA_RN_MASAI_moka.jpg',
     'RN_negro':'LAMBDA_RN_MASAI_negro.jpg',
-    'RN_tropic':'LAMBDA_RN_MASAI_tropic.jpg'
+    'RN_leaf':'LAMBDA_RN_MASAI_leaf.jpg'
   };
   let bano2Frente = '';
   let bano2Lavabo = '';
