@@ -1456,7 +1456,10 @@ function especialItemBlockHTML(id) {
           <input class="finput especial-uds-input" type="number" min="1" value="1">
         </div>
       </div>
-      <div class="upload-zone especial-upload-zone" onclick="this.querySelector('input[type=file]').click()">
+      <div class="upload-zone especial-upload-zone" onclick="this.querySelector('input[type=file]').click()"
+           ondragover="event.preventDefault(); event.stopPropagation(); if(!this.classList.contains('has-file')) this.style.borderColor='var(--black)'"
+           ondragleave="event.stopPropagation(); if(!this.classList.contains('has-file')) this.style.borderColor=''"
+           ondrop="event.stopPropagation(); handleEspecialDrop(event, ${id})">
         <input type="file" class="especial-file-input" accept=".jpg,.jpeg,.pdf" style="display:none" onchange="onEspecialItemUpload(${id}, this)">
         <label class="upload-zone-label especial-upload-label">${LANG==='es'?'Haz clic o arrastra aquí una foto o PDF (opcional)':'Click or drag a photo or PDF here (optional)'}</label>
         <div class="upload-zone-hint especial-upload-hint">${LANG==='es'?'JPG o PDF':'JPG or PDF'}</div>
@@ -1478,6 +1481,22 @@ function removeEspecialItemBlock(id) {
   delete especialItemFiles[id];
   const container = document.getElementById('especial-items-container');
   if (container && !container.children.length) addEspecialItemBlock();
+}
+
+function handleEspecialDrop(event, id) {
+  event.preventDefault();
+  event.stopPropagation();
+  const zone = event.currentTarget;
+  if (!zone.classList.contains('has-file')) zone.style.borderColor = '';
+  const files = Array.from(event.dataTransfer.files).filter(f => f.type === 'application/pdf' || f.type === 'image/jpeg');
+  if (!files.length) return;
+  const block = document.getElementById('especial-item-' + id);
+  const input = block?.querySelector('.especial-file-input');
+  if (!input) return;
+  const dt = new DataTransfer();
+  dt.items.add(files[0]);
+  input.files = dt.files;
+  onEspecialItemUpload(id, input);
 }
 
 function onEspecialItemUpload(id, input) {
@@ -1582,7 +1601,7 @@ function renderEspecialesList() {
     const detalle = listo ? `
       <div class="form-row" style="margin-top:10px">
         <div class="fgroup"><label class="flabel">${LANG==='es'?'Precio unit. (€)':'Unit price (€)'}</label><input class="finput" value="${item.precio_unitario ?? ''}" readonly style="background:var(--off-white)"></div>
-        <div class="fgroup"><label class="flabel">${LANG==='es'?'Total (€)':'Total (€)'}</label><input class="finput" value="${item.precio_total ?? ''}" readonly style="background:var(--off-white)"></div>
+        <div class="fgroup"><label class="flabel">${LANG==='es'?'Total (€)':'Total (€)'}</label><input class="finput" value="${(item.precio_unitario && item.unidades) ? (item.precio_unitario*item.unidades) : ''}" readonly style="background:var(--off-white)"></div>
       </div>
       <div class="form-row">
         <div class="fgroup"><label class="flabel">${LANG==='es'?'Oficio':'Trade'}</label><input class="finput" value="${item.oficio || ''}" readonly style="background:var(--off-white)"></div>
@@ -1594,7 +1613,7 @@ function renderEspecialesList() {
     return `
       <div class="docs-file-item" style="flex-direction:column;align-items:stretch;gap:6px;padding:16px">
         <div style="display:flex;justify-content:space-between;align-items:center">
-          <span>${item.descripcion} · ${item.unidades} ${LANG==='es'?'uds.':'units'}${item.adjunto_nombre ? ' · 📎 '+item.adjunto_nombre : ''}</span>
+          <span>${item.descripcion} · ${item.unidades} ${LANG==='es'?'uds.':'units'}${item.adjunto_url ? ' · <a href="'+item.adjunto_url+'" target="_blank" rel="noopener">📎 '+(LANG==='es'?'adjunto':'attachment')+'</a>' : (item.adjunto_nombre ? ' · 📎 '+item.adjunto_nombre : '')}</span>
           ${chip}
         </div>
         ${detalle}
