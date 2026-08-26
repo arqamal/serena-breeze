@@ -136,6 +136,9 @@
   .docs-file-item { display: flex; align-items: center; justify-content: space-between; background: var(--off-white); border: 1px solid var(--border); padding: 8px 12px; font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--text); }
   .docs-file-item .remove-btn { font-size: 16px; cursor: pointer; color: var(--mid); background: none; border: none; padding: 0 4px; line-height: 1; }
   .docs-file-item .remove-btn:hover { color: var(--black); }
+  .especial-item-block { border: 1px solid var(--border); padding: 24px 44px 20px 24px; margin-bottom: 16px; position: relative; }
+  .especial-item-block .remove-btn { position: absolute; top: 12px; right: 14px; font-size: 20px; cursor: pointer; color: var(--mid); background: none; border: none; padding: 0 4px; line-height: 1; }
+  .especial-item-block .remove-btn:hover { color: var(--black); }
   .btn-enviar-docs { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; padding: 14px 48px; background: var(--black); color: white; border: none; transition: all .2s; margin-top: 24px; opacity: 0.4; pointer-events: none; }
   .btn-enviar-docs.active { opacity: 1; pointer-events: auto; }
   .btn-enviar-docs.active:hover { background: #333; }
@@ -336,6 +339,7 @@ const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzd1hVVtt2I5-7Jkf3Qbc
 const WEBHOOK_SUBMIT  = 'https://hook.eu1.make.com/1o69ejvny1ecqirrvqcewxho8l7s7vcd';
 const WEBHOOK_CONSULTA = 'https://hook.eu1.make.com/i989c4dnkdndhgcb78ebh3kyq1kb5ypx';
 const WEBHOOK_DOCS     = 'https://hook.eu1.make.com/yqscv41yimka3bu886yr6039ar5jnajq';
+const WEBHOOK_ESPECIALES = 'https://hook.eu1.make.com/8lvllh4jbogdw84bqi6av9xlpv6rjfqx';
 
 // Fixed vivienda code for the session
 let SESSION_CODIGO = null;
@@ -420,6 +424,7 @@ async function vsCheckVivienda() {
     const data = await res.json();
     const extras = Array.isArray(data) ? data : (data.extras || []);
     const found  = extras.filter(e => (e.qty || 0) > 0).length;
+    document.getElementById('vs-btn')._cachedEspeciales = (Array.isArray(data) ? [] : (data.especiales || []));
 
     if (found > 0) {
       info.className = 'vsearch-info visible found';
@@ -440,6 +445,7 @@ async function vsCheckVivienda() {
       ? 'No se pudo conectar. Se iniciará una selección nueva.'
       : 'Could not connect. Starting a new selection.';
     document.getElementById('vs-btn')._cachedExtras = [];
+    document.getElementById('vs-btn')._cachedEspeciales = [];
   }
 }
 
@@ -456,6 +462,7 @@ function vsConfirm() {
 
   // Load cached extras into state
   const extras = document.getElementById('vs-btn')._cachedExtras || [];
+  ESPECIALES = document.getElementById('vs-btn')._cachedEspeciales || [];
   HAD_PREVIOUS_EXTRAS = extras.some(e => (Number(e.qty) || 0) > 0 || (e.notes && e.notes !== ''));
   extras.forEach(e => {
     if (e.id && String(e.id).indexOf('custom_') === 0) {
@@ -743,6 +750,12 @@ const OFICIOS = ["ALBA\u00d1ILERIA", "Carpinteria MADERA", "Carpinteria METALICA
 let LANG = 'es';
 let currentStep = 1;
 const TOTAL_STEPS = 13; // 11 areas + confirm + firma
+const STEP_ESPECIALES = 14; // paso independiente, no participa en la aritmética de TOTAL_STEPS
+
+// Extras especiales: solicitudes de precio para extras fuera de catálogo
+let ESPECIALES = []; // [{id, descripcion, unidades, adjunto_nombre, estado:'Pendiente'|'Listo', precio_unitario, precio_total, oficio, area, comentario}]
+let especialItemCounter = 0; // id incremental de cada bloque visible en pantalla
+let especialItemFiles = {}; // id → {name, base64}
 
 // ─── VIVIENDAS ──────────────────────────────────────────────────────
 const VIVIENDAS = {
@@ -1062,6 +1075,13 @@ function buildDOM() {
   firmaDiv.onclick = () => goTo(TOTAL_STEPS);
   firmaDiv.innerHTML = `<div class="snav-dot"></div><span id="nav-firma">${LANG==='es'?'13 · Firma':'13 · Signature'}</span>`;
   nav.appendChild(firmaDiv);
+  // Step 14 — Extras especiales
+  const especialDiv = document.createElement('div');
+  especialDiv.className = 'snav-item';
+  especialDiv.dataset.step = STEP_ESPECIALES;
+  especialDiv.onclick = () => goTo(STEP_ESPECIALES);
+  especialDiv.innerHTML = `<div class="snav-dot"></div><span id="nav-especiales">${LANG==='es'?'14 · Extras especiales':'14 · Special extras'}</span>`;
+  nav.appendChild(especialDiv);
 
   // Steps
   const container = document.getElementById('stepsContainer');
@@ -1203,6 +1223,39 @@ function buildDOM() {
       </button>
     </div>`;
   container.appendChild(firmaStep);
+
+  // ── Step 14 — Extras especiales ─────────────────────────────────
+  const especialStep = document.createElement('div');
+  especialStep.className = 'step';
+  especialStep.id = 'step-' + STEP_ESPECIALES;
+  especialStep.innerHTML = `
+    <div class="sec-eyebrow">14 — ${LANG==='es'?'Extras especiales':'Special extras'}</div>
+    <h2 class="sec-title" id="especial-step-title">${LANG==='es'?'Solicitar precio para un extra especial':'Request a price for a special extra'}</h2>
+    <p class="sec-desc" id="especial-step-desc">${LANG==='es'?'Úsalo para extras que no están en el listado o que necesitan un precio especial. Se enviará un aviso a arquitectura, que fijará el precio y la sección; después aparecerá aquí como lista para incluir en el presupuesto.':'Use this for extras that are not in the list or need a special price. A notice will be sent to the architecture team, who will set the price and section; it will then appear here as ready to include in the quote.'}</p>
+
+    <div class="form-block">
+      <div class="form-title" id="especial-form-title">${LANG==='es'?'Nueva solicitud':'New request'}</div>
+
+      <div id="especial-items-container"></div>
+
+      <button class="btn-enviar-firmado active" id="btn-add-especial" style="margin-top:8px;background:var(--white);color:var(--black);border:1px solid var(--border)" onclick="addEspecialItemBlock()">
+        ${LANG==='es'?'+ Añadir otro extra':'+ Add another extra'}
+      </button>
+
+      <button class="btn-enviar-firmado active" id="btn-enviar-especial" style="margin-top:20px" onclick="submitEspecial()">
+        ${LANG==='es'?'Enviar solicitud →':'Send request →'}
+      </button>
+    </div>
+
+    <div id="especiales-list-wrap">
+      <div class="form-title" id="especial-lista-title">${LANG==='es'?'Solicitudes de esta vivienda':'Requests for this property'}</div>
+      <div id="especiales-list"></div>
+    </div>
+    `;
+  container.appendChild(especialStep);
+
+  addEspecialItemBlock();
+  renderEspecialesList();
 
   // Render all tables
   AREAS.forEach(area => {
@@ -1386,6 +1439,169 @@ function submitSigned() {
 }
 
 // ─── DOCS UPLOAD ─────────────────────────────────────────────────────
+// ─── EXTRAS ESPECIALES ──────────────────────────────────────────────
+function especialItemBlockHTML(id) {
+  return `
+    <div class="especial-item-block" id="especial-item-${id}" data-id="${id}">
+      <button type="button" class="remove-btn" onclick="removeEspecialItemBlock(${id})" title="${LANG==='es'?'Eliminar':'Remove'}">×</button>
+      <div class="form-row">
+        <div class="fgroup" style="grid-column:1/-1">
+          <label class="flabel especial-lbl-desc">${LANG==='es'?'Descripción':'Description'}</label>
+          <input class="finput especial-desc-input" type="text" placeholder="${LANG==='es'?'Describe el extra solicitado':'Describe the requested extra'}">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="fgroup">
+          <label class="flabel especial-lbl-uds">${LANG==='es'?'Unidades':'Units'}</label>
+          <input class="finput especial-uds-input" type="number" min="1" value="1">
+        </div>
+      </div>
+      <div class="upload-zone especial-upload-zone" onclick="this.querySelector('input[type=file]').click()">
+        <input type="file" class="especial-file-input" accept=".jpg,.jpeg,.pdf" style="display:none" onchange="onEspecialItemUpload(${id}, this)">
+        <label class="upload-zone-label especial-upload-label">${LANG==='es'?'Haz clic o arrastra aquí una foto o PDF (opcional)':'Click or drag a photo or PDF here (optional)'}</label>
+        <div class="upload-zone-hint especial-upload-hint">${LANG==='es'?'JPG o PDF':'JPG or PDF'}</div>
+        <div class="upload-zone-filename especial-filename"></div>
+      </div>
+    </div>`;
+}
+
+function addEspecialItemBlock() {
+  especialItemCounter++;
+  const id = especialItemCounter;
+  const container = document.getElementById('especial-items-container');
+  if (container) container.insertAdjacentHTML('beforeend', especialItemBlockHTML(id));
+}
+
+function removeEspecialItemBlock(id) {
+  const el = document.getElementById('especial-item-' + id);
+  if (el) el.remove();
+  delete especialItemFiles[id];
+  const container = document.getElementById('especial-items-container');
+  if (container && !container.children.length) addEspecialItemBlock();
+}
+
+function onEspecialItemUpload(id, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const okType = file.type === 'application/pdf' || file.type === 'image/jpeg';
+  if (!okType) {
+    alert(LANG==='es' ? 'Solo se admiten archivos JPG o PDF.' : 'Only JPG or PDF files are allowed.');
+    input.value = '';
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    especialItemFiles[id] = { name: file.name, base64: e.target.result.split(',')[1] };
+    const block = document.getElementById('especial-item-' + id);
+    const fn = block?.querySelector('.especial-filename');
+    if (fn) fn.textContent = '📎 ' + file.name;
+    const zone = block?.querySelector('.especial-upload-zone');
+    if (zone) zone.classList.add('has-file');
+  };
+  reader.readAsDataURL(file);
+}
+
+function submitEspecial() {
+  const container = document.getElementById('especial-items-container');
+  const blocks = container ? Array.from(container.querySelectorAll('.especial-item-block')) : [];
+  const items = [];
+  blocks.forEach(block => {
+    const id = block.dataset.id;
+    const descripcion = block.querySelector('.especial-desc-input')?.value.trim() || '';
+    const unidades = Number(block.querySelector('.especial-uds-input')?.value || 0);
+    if (!descripcion || !unidades || unidades < 1) return;
+    const file = especialItemFiles[id];
+    items.push({
+      descripcion, unidades,
+      adjunto_nombre: file ? file.name : '',
+      adjunto_base64: file ? file.base64 : ''
+    });
+  });
+
+  if (!items.length) {
+    alert(LANG==='es' ? 'Rellena al menos un extra con descripción y unidades.' : 'Fill in at least one extra with description and units.');
+    return;
+  }
+  if (!WEBHOOK_ESPECIALES) {
+    alert(LANG==='es' ? 'Esta función todavía no está conectada al backend.' : 'This feature is not yet connected to the backend.');
+    return;
+  }
+
+  const btn = document.getElementById('btn-enviar-especial');
+  if (btn) { btn.textContent = LANG==='es'?'Enviando…':'Sending…'; btn.disabled = true; }
+
+  fetch(WEBHOOK_ESPECIALES, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      vivienda: SESSION_CODIGO,
+      promocion: SESSION_PROMO,
+      post_entrega: POST_ENTREGA ? 'TRUE' : 'FALSE',
+      lang: LANG,
+      solicitudes: JSON.stringify(items)
+    })
+  }).then(r => {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    items.forEach(it => {
+      ESPECIALES.push({
+        id: 'pend_' + Date.now() + '_' + Math.floor(Math.random()*10000),
+        descripcion: it.descripcion,
+        unidades: it.unidades,
+        adjunto_nombre: it.adjunto_nombre,
+        estado: 'Pendiente'
+      });
+    });
+    renderEspecialesList();
+    // Reset form: vaciar bloques y dejar uno nuevo en blanco
+    if (container) container.innerHTML = '';
+    especialItemFiles = {};
+    especialItemCounter = 0;
+    addEspecialItemBlock();
+    if (btn) { btn.textContent = LANG==='es'?'Enviar solicitud →':'Send request →'; btn.disabled = false; }
+  }).catch(e => {
+    console.error('Error extra especial:', e);
+    if (btn) {
+      btn.textContent = LANG==='es'?'✗ Error — pulse para reintentar':'✗ Error — click to retry';
+      btn.disabled = false;
+    }
+  });
+}
+
+function renderEspecialesList() {
+  const list = document.getElementById('especiales-list');
+  if (!list) return;
+  if (!ESPECIALES.length) {
+    list.innerHTML = `<p class="sec-desc">${LANG==='es'?'Todavía no se ha solicitado ningún extra especial para esta vivienda.':'No special extras have been requested for this property yet.'}</p>`;
+    return;
+  }
+  list.innerHTML = ESPECIALES.map(item => {
+    const listo = item.estado === 'Listo';
+    const chip = listo
+      ? `<span class="status-chip chip-firmado">${LANG==='es'?'Listo':'Ready'}</span>`
+      : `<span class="status-chip chip-enviado">${LANG==='es'?'Pendiente':'Pending'}</span>`;
+    const detalle = listo ? `
+      <div class="form-row" style="margin-top:10px">
+        <div class="fgroup"><label class="flabel">${LANG==='es'?'Precio unit. (€)':'Unit price (€)'}</label><input class="finput" value="${item.precio_unitario ?? ''}" readonly style="background:var(--off-white)"></div>
+        <div class="fgroup"><label class="flabel">${LANG==='es'?'Total (€)':'Total (€)'}</label><input class="finput" value="${item.precio_total ?? ''}" readonly style="background:var(--off-white)"></div>
+      </div>
+      <div class="form-row">
+        <div class="fgroup"><label class="flabel">${LANG==='es'?'Oficio':'Trade'}</label><input class="finput" value="${item.oficio || ''}" readonly style="background:var(--off-white)"></div>
+        <div class="fgroup"><label class="flabel">${LANG==='es'?'Sección':'Section'}</label><input class="finput" value="${item.area || ''}" readonly style="background:var(--off-white)"></div>
+      </div>
+      <div class="form-row">
+        <div class="fgroup" style="grid-column:1/-1"><label class="flabel">${LANG==='es'?'Comentario':'Comment'}</label><input class="finput" value="${item.comentario || ''}" readonly style="background:var(--off-white)"></div>
+      </div>` : '';
+    return `
+      <div class="docs-file-item" style="flex-direction:column;align-items:stretch;gap:6px;padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span>${item.descripcion} · ${item.unidades} ${LANG==='es'?'uds.':'units'}${item.adjunto_nombre ? ' · 📎 '+item.adjunto_nombre : ''}</span>
+          ${chip}
+        </div>
+        ${detalle}
+      </div>`;
+  }).join('');
+}
+
 const docsFiles = []; // [{name, base64}]
 
 function onDocsUpload(input) {
@@ -1707,6 +1923,7 @@ function setLang(lang) {
     if (!span) return;
     if (step === TOTAL_STEPS - 1) { span.textContent = lang === 'es' ? '12 · Confirmar' : '12 · Confirm'; return; }
     if (step === TOTAL_STEPS)     { span.textContent = lang === 'es' ? '13 · Firma' : '13 · Signature'; return; }
+    if (step === STEP_ESPECIALES) { span.textContent = lang === 'es' ? '14 · Extras especiales' : '14 · Special extras'; return; }
     const area = AREAS.find(a => a.step === step);
     if (area) span.textContent = lang === 'es' ? area.nav_es : area.nav_en;
   });
@@ -1788,6 +2005,28 @@ function setLang(lang) {
     const dz = document.getElementById('lbl-docs-zone');    if (dz) dz.textContent = lang==='es'?'Haz clic o arrastra aquí los PDFs':'Click or drag PDF files here';
     const dh = document.getElementById('lbl-docs-hint');    if (dh) dh.textContent = lang==='es'?'Solo archivos PDF · Puedes añadir varios':'PDF files only · Multiple files allowed';
     const db = document.getElementById('btn-enviar-docs');  if (db && !db.style.background) db.textContent = lang==='es'?'Enviar documentación →':'Send documents →';
+  }
+
+  // Extras especiales step
+  const especialEl = document.getElementById('step-' + STEP_ESPECIALES);
+  if (especialEl) {
+    const t = document.getElementById('especial-step-title'); if (t) t.textContent = lang==='es'?'Solicitar precio para un extra especial':'Request a price for a special extra';
+    const d = document.getElementById('especial-step-desc');  if (d) d.textContent = lang==='es'?'Úsalo para extras que no están en el listado o que necesitan un precio especial. Se enviará un aviso a arquitectura, que fijará el precio y la sección; después aparecerá aquí como lista para incluir en el presupuesto.':'Use this for extras that are not in the list or need a special price. A notice will be sent to the architecture team, who will set the price and section; it will then appear here as ready to include in the quote.';
+    const ft = document.getElementById('especial-form-title'); if (ft) ft.textContent = lang==='es'?'Nueva solicitud':'New request';
+    document.querySelectorAll('#especial-items-container .especial-lbl-desc').forEach(el => el.textContent = lang==='es'?'Descripción':'Description');
+    document.querySelectorAll('#especial-items-container .especial-lbl-uds').forEach(el => el.textContent = lang==='es'?'Unidades':'Units');
+    document.querySelectorAll('#especial-items-container .especial-desc-input').forEach(el => el.placeholder = lang==='es'?'Describe el extra solicitado':'Describe the requested extra');
+    document.querySelectorAll('#especial-items-container .especial-upload-label').forEach(el => {
+      const block = el.closest('.especial-item-block');
+      const hasFile = block && block.querySelector('.especial-filename')?.textContent;
+      if (!hasFile) el.textContent = lang==='es'?'Haz clic o arrastra aquí una foto o PDF (opcional)':'Click or drag a photo or PDF here (optional)';
+    });
+    document.querySelectorAll('#especial-items-container .especial-upload-hint').forEach(el => el.textContent = lang==='es'?'JPG o PDF':'JPG or PDF');
+    document.querySelectorAll('#especial-items-container .remove-btn').forEach(el => el.title = lang==='es'?'Eliminar':'Remove');
+    const bad = document.getElementById('btn-add-especial'); if (bad) bad.textContent = lang==='es'?'+ Añadir otro extra':'+ Add another extra';
+    const beb = document.getElementById('btn-enviar-especial'); if (beb && !beb.disabled) beb.textContent = lang==='es'?'Enviar solicitud →':'Send request →';
+    const lt = document.getElementById('especial-lista-title'); if (lt) lt.textContent = lang==='es'?'Solicitudes de esta vivienda':'Requests for this property';
+    renderEspecialesList();
   }
 
   // Rebuild all tables
