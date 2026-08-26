@@ -409,7 +409,11 @@ function vsUpdateApts() {
 async function vsCheckVivienda() {
   const raw    = document.getElementById('vs-unit').value;
   const info   = document.getElementById('vs-info');
+  const btn    = document.getElementById('vs-btn');
   if (!raw) { info.className = 'vsearch-info'; return; }
+
+  vsChecking = true;
+  if (btn) btn.disabled = true;
   const codigo = raw.includes('—') ? raw.split('—')[0].trim() : raw;
 
   info.className = 'vsearch-info visible';
@@ -446,10 +450,17 @@ async function vsCheckVivienda() {
       : 'Could not connect. Starting a new selection.';
     document.getElementById('vs-btn')._cachedExtras = [];
     document.getElementById('vs-btn')._cachedEspeciales = [];
+  } finally {
+    vsChecking = false;
+    if (btn) btn.disabled = false;
   }
 }
 
 function vsConfirm() {
+  if (vsChecking) {
+    alert(LANG === 'es' ? 'Espera a que termine de comprobar los datos existentes.' : 'Wait for the existing-data check to finish.');
+    return;
+  }
   const raw    = document.getElementById('vs-unit').value;
   const promo  = document.getElementById('vs-promo').value;
   if (!raw || !promo) {
@@ -748,6 +759,7 @@ const CUSTOM = {}; // areaKey → [{name, price, qty, oficio, notes}]
 const OFICIOS = ["ALBA\u00d1ILERIA", "Carpinteria MADERA", "Carpinteria METALICA", "CLIMA", "COCINAS", "CRISTALERO", "ELECTRICISTA", "ELECTRODOMESTICOS", "FONTANERO", "ILUMINACION", "JACUZZI", "JARDINERO", "MOBILIARIO", "MOBILIARIO Estores", "OTROS PISCINA", "PISCINA", "TOLDOS"];
 
 let LANG = 'es';
+let vsChecking = false; // true mientras vsCheckVivienda() está comprobando datos existentes — bloquea "Continuar"
 let currentStep = 1;
 const TOTAL_STEPS = 13; // 11 areas + confirm + firma
 const STEP_ESPECIALES = 14; // paso independiente, no participa en la aritmética de TOTAL_STEPS
@@ -1474,6 +1486,7 @@ function addEspecialItemBlock() {
   const id = especialItemCounter;
   const container = document.getElementById('especial-items-container');
   if (container) container.insertAdjacentHTML('beforeend', especialItemBlockHTML(id));
+  sendHeight();
 }
 
 function removeEspecialItemBlock(id) {
@@ -1482,6 +1495,7 @@ function removeEspecialItemBlock(id) {
   delete especialItemFiles[id];
   const container = document.getElementById('especial-items-container');
   if (container && !container.children.length) addEspecialItemBlock();
+  sendHeight();
 }
 
 function handleEspecialDrop(event, id) {
@@ -1523,6 +1537,7 @@ function onEspecialItemUpload(id, input) {
     if (zone) zone.classList.add('has-file');
     especialFilesReading--;
     updateEspecialSendButtonState();
+    sendHeight();
   };
   reader.onerror = () => {
     if (fn) fn.textContent = LANG==='es' ? '✗ Error al leer el archivo' : '✗ Error reading file';
@@ -1621,6 +1636,7 @@ function renderEspecialesList() {
   if (!list) return;
   if (!ESPECIALES.length) {
     list.innerHTML = `<p class="sec-desc">${LANG==='es'?'Todavía no se ha solicitado ningún extra especial para esta vivienda.':'No special extras have been requested for this property yet.'}</p>`;
+    sendHeight();
     return;
   }
   list.innerHTML = ESPECIALES.map(item => {
@@ -1649,6 +1665,7 @@ function renderEspecialesList() {
         ${detalle}
       </div>`;
   }).join('');
+  sendHeight();
 }
 
 const docsFiles = []; // [{name, base64}]
