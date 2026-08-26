@@ -756,6 +756,7 @@ const STEP_ESPECIALES = 14; // paso independiente, no participa en la aritmétic
 let ESPECIALES = []; // [{id, descripcion, unidades, adjunto_nombre, estado:'Pendiente'|'Listo', precio_unitario, precio_total, oficio, area, comentario}]
 let especialItemCounter = 0; // id incremental de cada bloque visible en pantalla
 let especialItemFiles = {}; // id → {name, base64}
+let especialFilesReading = 0; // nº de adjuntos aún leyéndose (bloquea el envío mientras > 0)
 
 // ─── VIVIENDAS ──────────────────────────────────────────────────────
 const VIVIENDAS = {
@@ -1508,19 +1509,46 @@ function onEspecialItemUpload(id, input) {
     input.value = '';
     return;
   }
+  const block = document.getElementById('especial-item-' + id);
+  const fn = block?.querySelector('.especial-filename');
+  if (fn) fn.textContent = LANG==='es' ? '⏳ Leyendo…' : '⏳ Reading…';
+  especialFilesReading++;
+  updateEspecialSendButtonState();
+
   const reader = new FileReader();
   reader.onload = e => {
     especialItemFiles[id] = { name: file.name, base64: e.target.result.split(',')[1] };
-    const block = document.getElementById('especial-item-' + id);
-    const fn = block?.querySelector('.especial-filename');
     if (fn) fn.textContent = '📎 ' + file.name;
     const zone = block?.querySelector('.especial-upload-zone');
     if (zone) zone.classList.add('has-file');
+    especialFilesReading--;
+    updateEspecialSendButtonState();
+  };
+  reader.onerror = () => {
+    if (fn) fn.textContent = LANG==='es' ? '✗ Error al leer el archivo' : '✗ Error reading file';
+    especialFilesReading--;
+    updateEspecialSendButtonState();
   };
   reader.readAsDataURL(file);
 }
 
+function updateEspecialSendButtonState() {
+  const btn = document.getElementById('btn-enviar-especial');
+  if (!btn) return;
+  if (especialFilesReading > 0) {
+    btn.disabled = true;
+    btn.textContent = LANG==='es' ? 'Esperando adjunto(s)…' : 'Waiting for attachment(s)…';
+  } else if (!btn.dataset.sending) {
+    btn.disabled = false;
+    btn.textContent = LANG==='es'?'Enviar solicitud →':'Send request →';
+  }
+}
+
 function submitEspecial() {
+  if (especialFilesReading > 0) {
+    alert(LANG==='es' ? 'Espera a que termine de cargar el adjunto antes de enviar.' : 'Wait for the attachment to finish loading before sending.');
+    return;
+  }
   const container = document.getElementById('especial-items-container');
   const blocks = container ? Array.from(container.querySelectorAll('.especial-item-block')) : [];
   const items = [];
@@ -1547,7 +1575,7 @@ function submitEspecial() {
   }
 
   const btn = document.getElementById('btn-enviar-especial');
-  if (btn) { btn.textContent = LANG==='es'?'Enviando…':'Sending…'; btn.disabled = true; }
+  if (btn) { btn.textContent = LANG==='es'?'Enviando…':'Sending…'; btn.disabled = true; btn.dataset.sending = '1'; }
 
   fetch(WEBHOOK_ESPECIALES, {
     method: 'POST',
@@ -1575,13 +1603,15 @@ function submitEspecial() {
     if (container) container.innerHTML = '';
     especialItemFiles = {};
     especialItemCounter = 0;
+    especialFilesReading = 0;
     addEspecialItemBlock();
-    if (btn) { btn.textContent = LANG==='es'?'Enviar solicitud →':'Send request →'; btn.disabled = false; }
+    if (btn) { btn.textContent = LANG==='es'?'Enviar solicitud →':'Send request →'; btn.disabled = false; delete btn.dataset.sending; }
   }).catch(e => {
     console.error('Error extra especial:', e);
     if (btn) {
       btn.textContent = LANG==='es'?'✗ Error — pulse para reintentar':'✗ Error — click to retry';
       btn.disabled = false;
+      delete btn.dataset.sending;
     }
   });
 }
