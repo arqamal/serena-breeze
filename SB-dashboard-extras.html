@@ -295,6 +295,15 @@ function renderDashboard() {
     const postEntrega = g.extras.some(e => String(e.post_entrega).toUpperCase() === 'TRUE')
                       || g.especiales.some(e => String(e.post_entrega).toUpperCase() === 'TRUE');
 
+    // Ids que son padre de un pack: existe al menos una sublínea con
+    // id = "{esteId}_subN" entre los extras de esta misma vivienda.
+    const idsPadreDePack = new Set(
+      g.extras
+        .map(e => String(e.id || '').match(/^(.+)_sub\d+$/))
+        .filter(Boolean)
+        .map(m => m[1])
+    );
+
     const filasExtras = g.extras.map(e => {
       const firmado = e.estado === 'Firmado';
       const chip = firmado
@@ -302,6 +311,7 @@ function renderDashboard() {
         : '<span class="status-chip chip-enviado">Enviado</span>';
       const total = (Number(e.qty)||0) * (Number(e.price)||0);
       const isSub = /^.+_sub\d+$/.test(String(e.id || ''));
+      const esPadreDePack = idsPadreDePack.has(String(e.id || ''));
       const nameClass = 'extra-name' + (isSub ? ' is-sub' : '');
       const tickChecked = (campo) => String(e[campo]).toUpperCase() === 'TRUE' ? 'checked' : '';
       const disabled = firmado ? '' : 'disabled';
@@ -310,6 +320,10 @@ function renderDashboard() {
         `data-vivienda="${escapeAttr(v)}" data-id="${escapeAttr(e.id || '')}" ` +
         `data-post="${escapeAttr(e.post_entrega || 'FALSE')}" data-promo="${escapeAttr(CURRENT_PROMO)}" ` +
         `data-accion="${accion}"`;
+      const celdaTick = (campo, accion) => esPadreDePack ? '' : `
+            <input type="checkbox" class="planos-check" data-campo="${campo}" ${attrs(accion)}
+              ${tickChecked(campo)} ${disabled} ${title}
+              onchange="toggleTick(this)">`;
       return `
         <tr>
           <td class="${nameClass}">${escapeHtml(e.extra || e.id || '')}${e.oficio ? '<span class="extra-oficio">'+escapeHtml(e.oficio)+'</span>' : ''}</td>
@@ -317,16 +331,8 @@ function renderDashboard() {
           <td class="tr">${fmtEur(e.price)}</td>
           <td class="tr">${fmtEur(total)}</td>
           <td class="ts">${chip}</td>
-          <td class="tp">
-            <input type="checkbox" class="planos-check" data-campo="revisado_arquitectura" ${attrs('marcar_planos')}
-              ${tickChecked('revisado_arquitectura')} ${disabled} ${title}
-              onchange="toggleTick(this)">
-          </td>
-          <td class="tp">
-            <input type="checkbox" class="planos-check" data-campo="pedido_realizado" ${attrs('marcar_pedido')}
-              ${tickChecked('pedido_realizado')} ${disabled} ${title}
-              onchange="toggleTick(this)">
-          </td>
+          <td class="tp">${celdaTick('revisado_arquitectura', 'marcar_planos')}</td>
+          <td class="tp">${celdaTick('pedido_realizado', 'marcar_pedido')}</td>
         </tr>`;
     }).join('');
 
