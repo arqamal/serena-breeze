@@ -473,7 +473,10 @@ function vsConfirm() {
 
   // Load cached extras into state
   const extras = document.getElementById('vs-btn')._cachedExtras || [];
-  ESPECIALES = document.getElementById('vs-btn')._cachedEspeciales || [];
+  // Filtramos los "bundles" vacíos que Make devuelve cuando el aggregator no tiene
+  // ninguna fila real que agregar (plantilla ejecutada igual, con todo en blanco).
+  ESPECIALES = (document.getElementById('vs-btn')._cachedEspeciales || [])
+    .filter(it => it && (it.descripcion || '').trim() !== '');
   HAD_PREVIOUS_EXTRAS = extras.some(e => (Number(e.qty) || 0) > 0 || (e.notes && e.notes !== ''));
   extras.forEach(e => {
     if (e.id && String(e.id).indexOf('custom_') === 0) {
