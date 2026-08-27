@@ -150,8 +150,7 @@
       <div class="search-field">
         <input class="search-input" id="search-input" type="text" placeholder="Buscar vivienda (ej. 2SB-A12)…" oninput="renderDashboard()">
       </div>
-      <button class="refresh-btn" onclick="colapsarTodo()">▴ Contraer todo</button>
-      <button class="refresh-btn" onclick="desplegarTodo()">▾ Desplegar todo</button>
+      <button class="refresh-btn" id="toggle-todo-btn" onclick="toggleTodo()">▴ Contraer todo</button>
       <button class="refresh-btn" onclick="if (CURRENT_PROMO) loadPromo(CURRENT_PROMO, true)">↻ Actualizar</button>
     </div>
 
@@ -306,6 +305,7 @@ function renderDashboard() {
       ? 'Ninguna vivienda coincide con la búsqueda.'
       : 'No hay viviendas con extras para esta promoción.';
     empty.style.display = 'block';
+    actualizarBotonTodo();
     return;
   }
   empty.style.display = 'none';
@@ -399,6 +399,7 @@ function renderDashboard() {
         </div>
       </div>`;
   }).join('');
+  actualizarBotonTodo();
 }
 
 function toggleCard(v) {
@@ -406,14 +407,19 @@ function toggleCard(v) {
   renderDashboard();
 }
 
-function colapsarTodo() {
-  Object.keys(agruparPorVivienda()).forEach(v => COLLAPSED[v] = true);
+function toggleTodo() {
+  const viviendas = Object.keys(agruparPorVivienda());
+  const todosColapsados = viviendas.length > 0 && viviendas.every(v => COLLAPSED[v]);
+  viviendas.forEach(v => COLLAPSED[v] = !todosColapsados);
   renderDashboard();
 }
 
-function desplegarTodo() {
-  Object.keys(agruparPorVivienda()).forEach(v => COLLAPSED[v] = false);
-  renderDashboard();
+function actualizarBotonTodo() {
+  const btn = document.getElementById('toggle-todo-btn');
+  if (!btn) return;
+  const viviendas = Object.keys(agruparPorVivienda());
+  const todosColapsados = viviendas.length > 0 && viviendas.every(v => COLLAPSED[v]);
+  btn.textContent = todosColapsados ? '▾ Desplegar todo' : '▴ Contraer todo';
 }
 
 function descargarPDFVivienda(ev, v) {
