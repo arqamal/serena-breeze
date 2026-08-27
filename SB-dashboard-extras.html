@@ -144,7 +144,7 @@
 
     <div class="topbar">
       <div class="promo-tabs">
-        <button class="promo-tab active" id="tab-2sb" onclick="switchPromo('2SB')">Serena Breeze 2</button>
+        <button class="promo-tab" id="tab-2sb" onclick="switchPromo('2SB')">Serena Breeze 2</button>
         <button class="promo-tab" id="tab-3sb" onclick="switchPromo('3SB')">Serena Breeze 3</button>
       </div>
       <div class="search-field">
@@ -152,7 +152,7 @@
       </div>
       <button class="refresh-btn" onclick="colapsarTodo()">▴ Contraer todo</button>
       <button class="refresh-btn" onclick="desplegarTodo()">▾ Desplegar todo</button>
-      <button class="refresh-btn" onclick="loadPromo(CURRENT_PROMO, true)">↻ Actualizar</button>
+      <button class="refresh-btn" onclick="if (CURRENT_PROMO) loadPromo(CURRENT_PROMO, true)">↻ Actualizar</button>
     </div>
 
     <div id="load-indicator"></div>
@@ -185,7 +185,7 @@ function doLogin() {
       if (data.ok) {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-wrapper').style.display = 'block';
-        loadPromo(CURRENT_PROMO);
+        mostrarEstadoSinPromo();
       } else {
         errorEl.textContent = 'Usuario o contraseña incorrectos';
         errorEl.style.display = 'block';
@@ -218,10 +218,18 @@ function doLogin() {
 // 05_WEBHOOK_DASHBOARD-configuracion.md que acompaña a este HTML.
 const WEBHOOK_DASHBOARD = 'https://hook.eu1.make.com/xfzc3ke7gfet737pmwwn8sptn3m1awj5';
 
-let CURRENT_PROMO = '2SB';
+let CURRENT_PROMO = null;
 let DATA_EXTRAS = [];
 let DATA_ESPECIALES = [];
 const COLLAPSED = {};
+
+function mostrarEstadoSinPromo() {
+  document.getElementById('load-indicator').style.display = 'none';
+  document.getElementById('cards-container').innerHTML = '';
+  const empty = document.getElementById('empty-state');
+  empty.textContent = 'Elige Serena Breeze 2 o Serena Breeze 3 arriba para cargar sus extras.';
+  empty.style.display = 'block';
+}
 
 function switchPromo(promo) {
   if (promo === CURRENT_PROMO) return;
@@ -294,6 +302,9 @@ function renderDashboard() {
 
   if (!viviendas.length) {
     cards.innerHTML = '';
+    empty.textContent = q
+      ? 'Ninguna vivienda coincide con la búsqueda.'
+      : 'No hay viviendas con extras para esta promoción.';
     empty.style.display = 'block';
     return;
   }
