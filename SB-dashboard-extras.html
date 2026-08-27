@@ -273,7 +273,7 @@ function renderDashboard() {
     grupos[e.vivienda].especiales.push(e);
   });
 
-  let viviendas = Object.keys(grupos).sort();
+  let viviendas = Object.keys(grupos).sort(compareViviendas);
   if (q) viviendas = viviendas.filter(v => v.toUpperCase().includes(q));
 
   if (!viviendas.length) {
@@ -408,6 +408,25 @@ function togglePlanos(checkbox) {
 }
 
 function cssId(s) { return String(s).replace(/[^a-zA-Z0-9_-]/g, '_'); }
+
+// Villas primero (número corto, 1-2 dígitos: 2SB1, 2SB35...), luego
+// apartamentos (número de 3 dígitos: 2SB101...), cada grupo ordenado
+// numéricamente. Si no encaja el patrón, cae al final por orden alfabético.
+function compareViviendas(a, b) {
+  const ka = viviendaSortKey(a);
+  const kb = viviendaSortKey(b);
+  if (ka[0] !== kb[0]) return ka[0] - kb[0];
+  if (ka[1] !== kb[1]) return ka[1] - kb[1];
+  return String(a).localeCompare(String(b));
+}
+function viviendaSortKey(v) {
+  const rest = String(v).replace(/^(2SB|3SB)/i, '');
+  const m = rest.match(/^(\d+)/);
+  if (!m) return [2, 0]; // no reconocido: al final
+  const num = parseInt(m[1], 10);
+  const isApartamento = m[1].length >= 3;
+  return [isApartamento ? 1 : 0, num];
+}
 function fmtEur(n) { n = Number(n); return isNaN(n) ? '' : n.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €'; }
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function escapeAttr(s) { return escapeHtml(s); }
