@@ -70,6 +70,9 @@
   .extras-table td.tr { text-align: right; font-family: 'Oswald', sans-serif; font-size: 13px; }
   .extras-table td.ts { text-align: center; }
   .extras-table td.tp { text-align: center; }
+  .extras-table td.extra-name { }
+  .extras-table td.extra-name.is-sub { padding-left: 26px; position: relative; color: var(--slate-gray); font-size: 12.5px; }
+  .extras-table td.extra-name.is-sub::before { content: "↳"; position: absolute; left: 8px; color: var(--mid); font-size: 12px; }
   .extra-oficio { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--mid); background: var(--off-white); border: 1px solid var(--border); padding: 1px 5px; margin-left: 4px; border-radius: 2px; }
   .planos-check { width: 17px; height: 17px; cursor: pointer; accent-color: var(--black); }
   .planos-check:disabled { cursor: not-allowed; opacity: .35; }
@@ -296,9 +299,11 @@ function renderDashboard() {
       const checked = String(e.en_planos).toUpperCase() === 'TRUE' ? 'checked' : '';
       const disabled = firmado ? '' : 'disabled';
       const title = firmado ? '' : 'title="Solo se puede pasar a planos un extra ya Firmado"';
+      const isSub = /^.+_sub\d+$/.test(String(e.id || ''));
+      const nameClass = 'extra-name' + (isSub ? ' is-sub' : '');
       return `
         <tr>
-          <td>${escapeHtml(e.extra || e.id || '')}${e.oficio ? '<span class="extra-oficio">'+escapeHtml(e.oficio)+'</span>' : ''}</td>
+          <td class="${nameClass}">${escapeHtml(e.extra || e.id || '')}${e.oficio ? '<span class="extra-oficio">'+escapeHtml(e.oficio)+'</span>' : ''}</td>
           <td class="tc">${e.qty ?? ''}</td>
           <td class="tr">${fmtEur(e.price)}</td>
           <td class="tr">${fmtEur(total)}</td>
