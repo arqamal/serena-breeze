@@ -49,6 +49,8 @@
   .vivienda-code { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 1px; color: var(--black); }
   .vivienda-meta { display: flex; align-items: center; gap: 8px; }
   .count-pill { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--slate-gray); background: var(--white); border: 1px solid var(--border); padding: 3px 9px; border-radius: 2px; }
+  .pdf-btn { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); background: var(--white); border: 1px solid var(--border); padding: 3px 10px; border-radius: 2px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+  .pdf-btn:hover { border-color: var(--black); color: var(--black); }
   .caret { font-size: 11px; color: var(--mid); transition: transform .15s; }
   .vivienda-card.collapsed .caret { transform: rotate(-90deg); }
   .vivienda-body { padding: 4px 20px 18px; }
@@ -148,6 +150,8 @@
       <div class="search-field">
         <input class="search-input" id="search-input" type="text" placeholder="Buscar vivienda (ej. 2SB-A12)…" oninput="renderDashboard()">
       </div>
+      <button class="refresh-btn" onclick="colapsarTodo()">▴ Contraer todo</button>
+      <button class="refresh-btn" onclick="desplegarTodo()">▾ Desplegar todo</button>
       <button class="refresh-btn" onclick="loadPromo(CURRENT_PROMO, true)">↻ Actualizar</button>
     </div>
 
@@ -157,6 +161,8 @@
   </main>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
 // ─── LOGIN (idéntico a SB-extras.html) ──────────────────────────────
 const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzd1hVVtt2I5-7Jkf3QbcDmA8mNdzCU0I4WaoEcAIAP-5HOFSYk7_nObCKNe2A6qKM_/exec';
@@ -258,12 +264,8 @@ function loadPromo(promo, forced) {
     });
 }
 
-function renderDashboard() {
-  const cards = document.getElementById('cards-container');
-  const empty = document.getElementById('empty-state');
-  const q = (document.getElementById('search-input').value || '').trim().toUpperCase();
-
-  // Agrupar por vivienda (solo viviendas con algún extra o especial;
+function agruparPorVivienda() {
+  // Agrupa por vivienda (solo viviendas con algún extra o especial;
   // se descartan aquí las filas fantasma sin vivienda, que pueden venir
   // del rango completo de la hoja aunque estén vacías)
   const grupos = {};
@@ -277,6 +279,15 @@ function renderDashboard() {
     if (!grupos[e.vivienda]) grupos[e.vivienda] = { extras: [], especiales: [] };
     grupos[e.vivienda].especiales.push(e);
   });
+  return grupos;
+}
+
+function renderDashboard() {
+  const cards = document.getElementById('cards-container');
+  const empty = document.getElementById('empty-state');
+  const q = (document.getElementById('search-input').value || '').trim().toUpperCase();
+
+  const grupos = agruparPorVivienda();
 
   let viviendas = Object.keys(grupos).sort(compareViviendas);
   if (q) viviendas = viviendas.filter(v => v.toUpperCase().includes(q));
@@ -358,6 +369,7 @@ function renderDashboard() {
           <div class="vivienda-code">${escapeHtml(v)}${postEntrega ? '<span class="post-badge">Post-entrega</span>' : ''}</div>
           <div class="vivienda-meta">
             <span class="count-pill">${totalItems} extra${totalItems===1?'':'s'}</span>
+            <button class="pdf-btn" onclick="descargarPDFVivienda(event, '${v.replace(/'/g,"\\'")}')" title="Descargar PDF de esta vivienda">⤓ PDF</button>
             <span class="caret">▾</span>
           </div>
         </div>
@@ -381,6 +393,120 @@ function renderDashboard() {
 function toggleCard(v) {
   COLLAPSED[v] = !COLLAPSED[v];
   renderDashboard();
+}
+
+function colapsarTodo() {
+  Object.keys(agruparPorVivienda()).forEach(v => COLLAPSED[v] = true);
+  renderDashboard();
+}
+
+function desplegarTodo() {
+  Object.keys(agruparPorVivienda()).forEach(v => COLLAPSED[v] = false);
+  renderDashboard();
+}
+
+function descargarPDFVivienda(ev, v) {
+  ev.stopPropagation(); // no disparar también el toggle de colapsar/expandir
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    alert('No se ha podido cargar el generador de PDF (jsPDF). Comprueba la conexión y vuelve a intentarlo.');
+    return;
+  }
+  const g = agruparPorVivienda()[v];
+  if (!g) return;
+
+  const idsPadreDePack = new Set(
+    g.extras.map(e => String(e.id || '').match(/^(.+)_sub\d+$/)).filter(Boolean).map(m => m[1])
+  );
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Cabecera estilo Amal: banda negra, título en blanco, subtítulo gris
+  doc.setFillColor(26, 26, 26); // #1A1A1A
+  doc.rect(0, 0, pageWidth, 24, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.text('SERENA BREEZE — EXTRAS ' + v, 14, 12);
+  doc.setTextColor(204, 204, 204); // #CCCCCC
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  const promoLabel = CURRENT_PROMO === '2SB' ? 'Serena Breeze 2' : 'Serena Breeze 3';
+  const fecha = new Date().toLocaleDateString('es-ES', {day:'2-digit',month:'2-digit',year:'numeric'});
+  doc.text(promoLabel + '  ·  Generado el ' + fecha, 14, 19);
+
+  let cursorY = 32;
+
+  if (g.extras.length) {
+    doc.setTextColor(51, 51, 51);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('EXTRAS (' + g.extras.length + ')', 14, cursorY);
+    cursorY += 4;
+
+    const filas = g.extras.map(e => {
+      const isSub = /^.+_sub\d+$/.test(String(e.id || ''));
+      const esPadreDePack = idsPadreDePack.has(String(e.id || ''));
+      const nombre = (isSub ? '   ↳ ' : '') + (e.extra || e.id || '');
+      const total = (Number(e.qty)||0) * (Number(e.price)||0);
+      return [
+        nombre,
+        e.qty ?? '',
+        fmtEur(e.price),
+        fmtEur(total),
+        e.estado === 'Firmado' ? 'Firmado' : 'Enviado',
+        esPadreDePack ? '—' : (String(e.revisado_arquitectura).toUpperCase() === 'TRUE' ? 'Sí' : 'No'),
+        esPadreDePack ? '—' : (String(e.pedido_realizado).toUpperCase() === 'TRUE' ? 'Sí' : 'No')
+      ];
+    });
+
+    doc.autoTable({
+      startY: cursorY,
+      head: [['Extra', 'Uds.', 'Precio', 'Total', 'Estado', 'Rev. Arq.', 'Pedido']],
+      body: filas,
+      theme: 'plain',
+      styles: { font: 'helvetica', fontSize: 8.5, textColor: [42, 37, 32], cellPadding: 2 },
+      headStyles: { fillColor: [17, 17, 17], textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [242, 242, 242] },
+      columnStyles: {
+        1: { halign: 'center', cellWidth: 14 },
+        2: { halign: 'right', cellWidth: 22 },
+        3: { halign: 'right', cellWidth: 22 },
+        4: { halign: 'center', cellWidth: 20 },
+        5: { halign: 'center', cellWidth: 20 },
+        6: { halign: 'center', cellWidth: 18 }
+      }
+    });
+    cursorY = doc.lastAutoTable.finalY + 10;
+  }
+
+  if (g.especiales.length) {
+    if (cursorY > 260) { doc.addPage(); cursorY = 20; }
+    doc.setTextColor(51, 51, 51);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('EXTRAS ESPECIALES (' + g.especiales.length + ')', 14, cursorY);
+    cursorY += 4;
+
+    const filasEsp = g.especiales.map(e => [
+      e.descripcion || '',
+      e.unidades ?? 0,
+      e.estado === 'Listo' ? 'Listo' : 'Pendiente'
+    ]);
+    doc.autoTable({
+      startY: cursorY,
+      head: [['Descripción', 'Uds.', 'Estado']],
+      body: filasEsp,
+      theme: 'plain',
+      styles: { font: 'helvetica', fontSize: 8.5, textColor: [42, 37, 32], cellPadding: 2 },
+      headStyles: { fillColor: [17, 17, 17], textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [242, 242, 242] },
+      columnStyles: { 1: { halign: 'center', cellWidth: 20 }, 2: { halign: 'center', cellWidth: 30 } }
+    });
+  }
+
+  doc.save(v + '_extras.pdf');
 }
 
 function toggleTick(checkbox) {
