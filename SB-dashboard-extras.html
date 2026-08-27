@@ -255,13 +255,17 @@ function renderDashboard() {
   const empty = document.getElementById('empty-state');
   const q = (document.getElementById('search-input').value || '').trim().toUpperCase();
 
-  // Agrupar por vivienda (solo viviendas con algún extra o especial)
+  // Agrupar por vivienda (solo viviendas con algún extra o especial;
+  // se descartan aquí las filas fantasma sin vivienda, que pueden venir
+  // del rango completo de la hoja aunque estén vacías)
   const grupos = {};
   DATA_EXTRAS.forEach(e => {
+    if (!e.vivienda) return;
     if (!grupos[e.vivienda]) grupos[e.vivienda] = { extras: [], especiales: [] };
     grupos[e.vivienda].extras.push(e);
   });
   DATA_ESPECIALES.forEach(e => {
+    if (!e.vivienda) return;
     if (!grupos[e.vivienda]) grupos[e.vivienda] = { extras: [], especiales: [] };
     grupos[e.vivienda].especiales.push(e);
   });
