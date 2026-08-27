@@ -234,6 +234,7 @@ function loadPromo(promo, forced) {
 
   fetch(WEBHOOK_DASHBOARD, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ accion: 'consultar', promocion: promo })
   })
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
@@ -379,6 +380,7 @@ function togglePlanos(checkbox) {
 
   fetch(WEBHOOK_DASHBOARD, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ accion: 'marcar_planos', promocion, vivienda, post_entrega, id, valor })
   })
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
