@@ -62,7 +62,8 @@
   .extras-table th.tc { text-align: center; width: 60px; }
   .extras-table th.tr { text-align: right; width: 100px; }
   .extras-table th.ts { width: 110px; text-align: center; }
-  .extras-table th.tp { width: 66px; text-align: center; }
+  .extras-table th.tp { width: 74px; text-align: center; }
+  .extras-table th.tp small { display: block; font-size: 8px; letter-spacing: .5px; color: var(--mid); text-transform: none; }
   .extras-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 13px; }
   .extras-table tr:last-child td { border-bottom: none; }
   .extras-table tr:hover td { background: var(--off-white); }
@@ -78,6 +79,7 @@
   .planos-check:disabled { cursor: not-allowed; opacity: .35; }
   .planos-check.saving { opacity: .4; pointer-events: none; }
   .planos-check.err-flash { outline: 2px solid #c0392b; outline-offset: 2px; }
+  .tick-cell { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 
   /* ESPECIALES */
   .especial-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
@@ -199,10 +201,13 @@ function doLogin() {
   });
 });
 
-// ─── WEBHOOK (PENDIENTE DE CREAR EN MAKE) ───────────────────────────
-// Un único escenario nuevo, no toca los 4 existentes. Router por "accion":
+// ─── WEBHOOK (en producción) ─────────────────────────────────────────
+// Un único escenario, no toca los 4 anteriores. Router por "accion":
 //   accion:"consultar"      → lectura de todas las viviendas de una promo
-//   accion:"marcar_planos"  → tick "pasado a planos" de una línea concreta
+//   accion:"marcar_planos"  → tick "Revisado Arquitectura" de una línea
+//   accion:"marcar_pedido"  → tick "Pedido" de una línea (independiente)
+// Ambos ticks solo se pueden marcar con estado Firmado (bloqueado también
+// en el propio escenario de Make, no solo en este HTML).
 // Contrato completo (request/response, módulos Make) en el documento
 // 05_WEBHOOK_DASHBOARD-configuracion.md que acompaña a este HTML.
 const WEBHOOK_DASHBOARD = 'https://hook.eu1.make.com/xfzc3ke7gfet737pmwwn8sptn3m1awj5';
@@ -296,11 +301,15 @@ function renderDashboard() {
         ? '<span class="status-chip chip-firmado">Firmado</span>'
         : '<span class="status-chip chip-enviado">Enviado</span>';
       const total = (Number(e.qty)||0) * (Number(e.price)||0);
-      const checked = String(e.en_planos).toUpperCase() === 'TRUE' ? 'checked' : '';
-      const disabled = firmado ? '' : 'disabled';
-      const title = firmado ? '' : 'title="Solo se puede pasar a planos un extra ya Firmado"';
       const isSub = /^.+_sub\d+$/.test(String(e.id || ''));
       const nameClass = 'extra-name' + (isSub ? ' is-sub' : '');
+      const tickChecked = (campo) => String(e[campo]).toUpperCase() === 'TRUE' ? 'checked' : '';
+      const disabled = firmado ? '' : 'disabled';
+      const title = firmado ? '' : 'title="Solo se puede marcar en un extra ya Firmado"';
+      const attrs = (accion) =>
+        `data-vivienda="${escapeAttr(v)}" data-id="${escapeAttr(e.id || '')}" ` +
+        `data-post="${escapeAttr(e.post_entrega || 'FALSE')}" data-promo="${escapeAttr(CURRENT_PROMO)}" ` +
+        `data-accion="${accion}"`;
       return `
         <tr>
           <td class="${nameClass}">${escapeHtml(e.extra || e.id || '')}${e.oficio ? '<span class="extra-oficio">'+escapeHtml(e.oficio)+'</span>' : ''}</td>
@@ -309,13 +318,14 @@ function renderDashboard() {
           <td class="tr">${fmtEur(total)}</td>
           <td class="ts">${chip}</td>
           <td class="tp">
-            <input type="checkbox" class="planos-check"
-              data-vivienda="${escapeAttr(v)}"
-              data-id="${escapeAttr(e.id || '')}"
-              data-post="${escapeAttr(e.post_entrega || 'FALSE')}"
-              data-promo="${escapeAttr(CURRENT_PROMO)}"
-              ${checked} ${disabled} ${title}
-              onchange="togglePlanos(this)">
+            <input type="checkbox" class="planos-check" data-campo="revisado_arquitectura" ${attrs('marcar_planos')}
+              ${tickChecked('revisado_arquitectura')} ${disabled} ${title}
+              onchange="toggleTick(this)">
+          </td>
+          <td class="tp">
+            <input type="checkbox" class="planos-check" data-campo="pedido_realizado" ${attrs('marcar_pedido')}
+              ${tickChecked('pedido_realizado')} ${disabled} ${title}
+              onchange="toggleTick(this)">
           </td>
         </tr>`;
     }).join('');
@@ -350,7 +360,7 @@ function renderDashboard() {
             <div class="block-label">Extras (${g.extras.length})</div>
             <table class="extras-table">
               <thead><tr>
-                <th>Extra</th><th class="tc">Uds.</th><th class="tr">Precio</th><th class="tr">Total</th><th class="ts">Estado</th><th class="tp">Planos</th>
+                <th>Extra</th><th class="tc">Uds.</th><th class="tr">Precio</th><th class="tr">Total</th><th class="ts">Estado</th><th class="tp">Revisado<small>Arquitectura</small></th><th class="tp">Pedido</th>
               </tr></thead>
               <tbody>${filasExtras}</tbody>
             </table>` : ''}
@@ -367,11 +377,13 @@ function toggleCard(v) {
   renderDashboard();
 }
 
-function togglePlanos(checkbox) {
+function toggleTick(checkbox) {
   const vivienda = checkbox.dataset.vivienda;
   const id = checkbox.dataset.id;
   const post_entrega = checkbox.dataset.post;
   const promocion = checkbox.dataset.promo;
+  const accion = checkbox.dataset.accion;   // 'marcar_planos' | 'marcar_pedido'
+  const campo = checkbox.dataset.campo;     // 'revisado_arquitectura' | 'pedido_realizado'
   const valor = checkbox.checked ? 'TRUE' : 'FALSE';
 
   if (WEBHOOK_DASHBOARD === 'PENDIENTE_CREAR_EN_MAKE') {
@@ -385,12 +397,12 @@ function togglePlanos(checkbox) {
 
   // Reflejar el cambio en memoria al instante (optimista)
   const extra = DATA_EXTRAS.find(e => e.vivienda === vivienda && e.id === id && String(e.post_entrega).toUpperCase() === post_entrega.toUpperCase());
-  if (extra) extra.en_planos = valor;
+  if (extra) extra[campo] = valor;
 
   fetch(WEBHOOK_DASHBOARD, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ accion: 'marcar_planos', promocion, vivienda, post_entrega, id, valor })
+    body: JSON.stringify({ accion, promocion, vivienda, post_entrega, id, valor })
   })
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => {
@@ -398,11 +410,11 @@ function togglePlanos(checkbox) {
       checkbox.classList.remove('saving');
     })
     .catch(e => {
-      console.error('Error al guardar tick de planos:', e);
+      console.error('Error al guardar tick (' + campo + '):', e);
       checkbox.classList.remove('saving');
       checkbox.classList.add('err-flash');
       checkbox.checked = !checkbox.checked; // revertir
-      if (extra) extra.en_planos = checkbox.checked ? 'TRUE' : 'FALSE';
+      if (extra) extra[campo] = checkbox.checked ? 'TRUE' : 'FALSE';
       setTimeout(() => checkbox.classList.remove('err-flash'), 2000);
     });
 }
