@@ -196,6 +196,7 @@ function doLogin() {
     .then(data => {
       if (data.ok) {
         USER_ROL = data.rol || null;
+        document.getElementById('oficio-select').style.display = (USER_ROL === 'tec') ? '' : 'none';
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-wrapper').style.display = 'block';
         mostrarEstadoSinPromo();
