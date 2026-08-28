@@ -416,9 +416,9 @@ function renderDashboard() {
           <td class="${nameClass}">${escapeHtml(e.extra || e.id || '')}</td>
           <td class="dim-text">${escapeHtml(e.descripcion || '')}</td>
           <td class="dim-text">${escapeHtml(e.nota_extra || '')}</td>
-          <td class="dim-text">${escapeHtml(e.notes || '')}</td>
+          <td class="tc dim-text">${escapeHtml(e.notes || '')}</td>
           <td class="tc">${e.qty ?? ''}</td>
-          <td>${e.oficio ? '<span class="extra-oficio oficio-standalone">'+escapeHtml(e.oficio)+'</span>' : ''}</td>
+          <td class="tc">${e.oficio ? '<span class="extra-oficio oficio-standalone">'+escapeHtml(e.oficio)+'</span>' : ''}</td>
           <td class="ts">${chip}</td>
           <td class="tp">${celdaTick('revisado_arquitectura', 'marcar_planos')}</td>
           <td class="tp">${celdaTick('pedido_realizado', 'marcar_pedido')}</td>
@@ -438,7 +438,7 @@ function renderDashboard() {
     }).join('');
 
     const cabeceraExtras = esTec
-      ? '<th>Extra</th><th>Descripción</th><th>Nota extra</th><th>Notas</th><th class="tc">Uds.</th><th>Oficio</th><th class="ts">Estado</th><th class="tp">Revisado<small>Arquitectura</small></th><th class="tp">Pedido</th>'
+      ? '<th>Extra</th><th>Descripción</th><th>Nota extra</th><th class="tc">Notas</th><th class="tc">Uds.</th><th class="tc">Oficio</th><th class="ts">Estado</th><th class="tp">Revisado<small>Arquitectura</small></th><th class="tp">Pedido</th>'
       : '<th>Extra</th><th class="tc">Uds.</th><th class="tr">Precio</th><th class="tr">Total</th><th class="ts">Estado</th><th class="tp">Revisado<small>Arquitectura</small></th><th class="tp">Pedido</th>';
 
     const filasEspeciales = g.especiales.map(e => {
