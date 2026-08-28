@@ -417,7 +417,7 @@ function renderDashboard() {
           <td class="dim-text">${escapeHtml(e.descripcion || '')}</td>
           <td class="dim-text">${escapeHtml(e.nota_extra || '')}</td>
           <td class="tc dim-text">${escapeHtml(e.notes || '')}</td>
-          <td class="tc">${e.qty ?? ''}</td>
+          <td class="tc">${isSub ? '' : (e.qty ?? '')}</td>
           <td class="tc">${e.oficio ? '<span class="extra-oficio oficio-standalone">'+escapeHtml(e.oficio)+'</span>' : ''}</td>
           <td class="ts">${chip}</td>
           <td class="tp">${celdaTick('revisado_arquitectura', 'marcar_planos')}</td>
@@ -428,9 +428,9 @@ function renderDashboard() {
       return `
         <tr>
           <td class="${nameClass}">${escapeHtml(e.extra || e.id || '')}${e.oficio ? '<span class="extra-oficio">'+escapeHtml(e.oficio)+'</span>' : ''}</td>
-          <td class="tc">${e.qty ?? ''}</td>
-          <td class="tr">${fmtEur(e.price)}</td>
-          <td class="tr">${fmtEur(total)}</td>
+          <td class="tc">${isSub ? '' : (e.qty ?? '')}</td>
+          <td class="tr">${isSub ? '' : fmtEur(e.price)}</td>
+          <td class="tr">${isSub ? '' : fmtEur(total)}</td>
           <td class="ts">${chip}</td>
           <td class="tp">${celdaTick('revisado_arquitectura', 'marcar_planos')}</td>
           <td class="tp">${celdaTick('pedido_realizado', 'marcar_pedido')}</td>
@@ -557,7 +557,7 @@ function descargarPDFVivienda(ev, v) {
           e.descripcion || '',
           e.nota_extra || '',
           e.notes || '',
-          e.qty ?? '',
+          isSub ? '' : (e.qty ?? ''),
           e.oficio || '',
           e.estado === 'Firmado' ? 'Firmado' : 'Enviado',
           esPadreDePack ? '—' : (String(e.revisado_arquitectura).toUpperCase() === 'TRUE' ? 'Sí' : 'No'),
@@ -587,9 +587,9 @@ function descargarPDFVivienda(ev, v) {
         const total = (Number(e.qty)||0) * (Number(e.price)||0);
         return [
           nombre,
-          e.qty ?? '',
-          fmtEur(e.price),
-          fmtEur(total),
+          isSub ? '' : (e.qty ?? ''),
+          isSub ? '' : fmtEur(e.price),
+          isSub ? '' : fmtEur(total),
           e.estado === 'Firmado' ? 'Firmado' : 'Enviado',
           esPadreDePack ? '—' : (String(e.revisado_arquitectura).toUpperCase() === 'TRUE' ? 'Sí' : 'No'),
           esPadreDePack ? '—' : (String(e.pedido_realizado).toUpperCase() === 'TRUE' ? 'Sí' : 'No')
