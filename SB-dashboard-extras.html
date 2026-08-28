@@ -79,6 +79,8 @@
   .extras-table td.extra-name.is-sub { padding-left: 26px; position: relative; color: var(--slate-gray); font-size: 12.5px; }
   .extras-table td.extra-name.is-sub::before { content: "↳"; position: absolute; left: 8px; color: var(--mid); font-size: 12px; }
   .extra-oficio { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--mid); background: var(--off-white); border: 1px solid var(--border); padding: 1px 5px; margin-left: 4px; border-radius: 2px; }
+  .extra-oficio.oficio-standalone { margin-left: 0; }
+  .extras-table td.dim-text { color: var(--mid); }
   .planos-check { position: absolute; opacity: 0; width: 18px; height: 18px; margin: 0; cursor: pointer; }
   .planos-check:disabled { cursor: not-allowed; }
   .tick-wrap { position: relative; display: inline-flex; width: 18px; height: 18px; vertical-align: middle; }
@@ -412,11 +414,11 @@ function renderDashboard() {
         return `
         <tr>
           <td class="${nameClass}">${escapeHtml(e.extra || e.id || '')}</td>
-          <td>${escapeHtml(e.descripcion || '')}</td>
-          <td>${escapeHtml(e.nota_extra || '')}</td>
-          <td>${escapeHtml(e.notes || '')}</td>
+          <td class="dim-text">${escapeHtml(e.descripcion || '')}</td>
+          <td class="dim-text">${escapeHtml(e.nota_extra || '')}</td>
+          <td class="dim-text">${escapeHtml(e.notes || '')}</td>
           <td class="tc">${e.qty ?? ''}</td>
-          <td>${escapeHtml(e.oficio || '')}</td>
+          <td>${e.oficio ? '<span class="extra-oficio oficio-standalone">'+escapeHtml(e.oficio)+'</span>' : ''}</td>
           <td class="ts">${chip}</td>
           <td class="tp">${celdaTick('revisado_arquitectura', 'marcar_planos')}</td>
           <td class="tp">${celdaTick('pedido_realizado', 'marcar_pedido')}</td>
