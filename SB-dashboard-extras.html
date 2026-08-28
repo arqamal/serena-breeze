@@ -182,6 +182,7 @@ function doLogin() {
     .then(r => r.json())
     .then(data => {
       if (data.ok) {
+        USER_ROL = data.rol || null;
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-wrapper').style.display = 'block';
         mostrarEstadoSinPromo();
@@ -218,6 +219,18 @@ function doLogin() {
 const WEBHOOK_DASHBOARD = 'https://hook.eu1.make.com/xfzc3ke7gfet737pmwwn8sptn3m1awj5';
 
 let CURRENT_PROMO = null;
+let USER_ROL = null;
+
+// Permisos por rol: qué ticks puede editar cada uno. Rol desconocido → sin
+// permisos (fallback seguro: se ve todo, no se puede tocar nada).
+const PERMISOS_TICKS = {
+  arquitectura:  { revisado_arquitectura: true,  pedido_realizado: true },
+  tec2:          { revisado_arquitectura: false, pedido_realizado: true },
+  ventas:        { revisado_arquitectura: false, pedido_realizado: false }
+};
+function puedeEditarTick(campo) {
+  return !!(PERMISOS_TICKS[USER_ROL] || {})[campo];
+}
 let DATA_EXTRAS = [];
 let DATA_ESPECIALES = [];
 const COLLAPSED = {};
@@ -336,16 +349,21 @@ function renderDashboard() {
       const esPadreDePack = idsPadreDePack.has(String(e.id || ''));
       const nameClass = 'extra-name' + (isSub ? ' is-sub' : '');
       const tickChecked = (campo) => String(e[campo]).toUpperCase() === 'TRUE' ? 'checked' : '';
-      const disabled = firmado ? '' : 'disabled';
-      const title = firmado ? '' : 'title="Solo se puede marcar en un extra ya Firmado"';
       const attrs = (accion) =>
         `data-vivienda="${escapeAttr(v)}" data-id="${escapeAttr(e.id || '')}" ` +
         `data-post="${escapeAttr(e.post_entrega || 'FALSE')}" data-promo="${escapeAttr(CURRENT_PROMO)}" ` +
         `data-accion="${accion}"`;
-      const celdaTick = (campo, accion) => esPadreDePack ? '' : `
-            <input type="checkbox" class="planos-check" data-campo="${campo}" ${attrs(accion)}
+      const celdaTick = (campo, accion) => {
+        if (esPadreDePack) return '';
+        const permitido = puedeEditarTick(campo);
+        const disabled = (firmado && permitido) ? '' : 'disabled';
+        const title = !firmado
+          ? 'title="Solo se puede marcar en un extra ya Firmado"'
+          : (!permitido ? 'title="Tu usuario no tiene permiso para editar este campo"' : '');
+        return `            <input type="checkbox" class="planos-check" data-campo="${campo}" ${attrs(accion)}
               ${tickChecked(campo)} ${disabled} ${title}
               onchange="toggleTick(this)">`;
+      };
       return `
         <tr>
           <td class="${nameClass}">${escapeHtml(e.extra || e.id || '')}${e.oficio ? '<span class="extra-oficio">'+escapeHtml(e.oficio)+'</span>' : ''}</td>
