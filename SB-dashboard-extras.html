@@ -34,6 +34,8 @@
   .search-field { flex: 1; min-width: 220px; max-width: 320px; }
   .search-input { width: 100%; border: 1px solid var(--border); padding: 11px 14px; font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); background: var(--white); outline: none; border-radius: 0; }
   .search-input:focus { border-color: var(--black); }
+  .oficio-select { border: 1px solid var(--border); padding: 11px 12px; font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); background: var(--white); outline: none; border-radius: 0; min-width: 160px; }
+  .oficio-select:focus { border-color: var(--black); }
 
   .refresh-btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 11px 18px; background: transparent; color: var(--slate-gray); border: 1px solid var(--border); transition: all .15s; }
   .refresh-btn:hover { border-color: var(--black); color: var(--black); }
@@ -156,6 +158,9 @@
       <div class="search-field">
         <input class="search-input" id="search-input" type="text" placeholder="Buscar vivienda (ej. 2SB-A12)…" oninput="renderDashboard()">
       </div>
+      <select class="oficio-select" id="oficio-select" onchange="renderDashboard()">
+        <option value="">Todos los oficios</option>
+      </select>
       <button class="refresh-btn" id="toggle-todo-btn" onclick="toggleTodo()">▴ Contraer todo</button>
       <button class="refresh-btn" onclick="if (CURRENT_PROMO) loadPromo(CURRENT_PROMO, true)">↻ Actualizar</button>
     </div>
@@ -232,7 +237,8 @@ let USER_ROL = null;
 const PERMISOS_TICKS = {
   arquitectura:  { revisado_arquitectura: true,  pedido_realizado: true },
   tec2:          { revisado_arquitectura: false, pedido_realizado: true },
-  ventas:        { revisado_arquitectura: false, pedido_realizado: false }
+  ventas:        { revisado_arquitectura: false, pedido_realizado: false },
+  tec:           { revisado_arquitectura: false, pedido_realizado: false }
 };
 function puedeEditarTick(campo) {
   return !!(PERMISOS_TICKS[USER_ROL] || {})[campo];
@@ -282,12 +288,25 @@ function loadPromo(promo, forced) {
       DATA_EXTRAS = data.extras || [];
       DATA_ESPECIALES = data.especiales || [];
       ind.style.display = 'none';
+      poblarSelectorOficios();
       renderDashboard();
     })
     .catch(e => {
       ind.className = 'err';
       ind.textContent = 'Error al cargar los datos: ' + e.message;
     });
+}
+
+function poblarSelectorOficios() {
+  const sel = document.getElementById('oficio-select');
+  const actual = sel.value; // conservar selección si el oficio sigue existiendo
+  const oficios = new Set();
+  DATA_EXTRAS.forEach(e => { if (e.oficio) oficios.add(e.oficio); });
+  DATA_ESPECIALES.forEach(e => { if (e.oficio) oficios.add(e.oficio); });
+  const lista = Array.from(oficios).sort((a, b) => a.localeCompare(b));
+  sel.innerHTML = '<option value="">Todos los oficios</option>' +
+    lista.map(o => `<option value="${escapeAttr(o)}">${escapeHtml(o)}</option>`).join('');
+  if (lista.includes(actual)) sel.value = actual;
 }
 
 function agruparPorVivienda() {
@@ -312,16 +331,32 @@ function renderDashboard() {
   const cards = document.getElementById('cards-container');
   const empty = document.getElementById('empty-state');
   const q = (document.getElementById('search-input').value || '').trim().toUpperCase();
+  const oficioSel = document.getElementById('oficio-select').value;
 
   const grupos = agruparPorVivienda();
 
   let viviendas = Object.keys(grupos).sort(compareViviendas);
   if (q) viviendas = viviendas.filter(v => v.toUpperCase().includes(q));
 
+  // Filtro por oficio: nos quedamos solo con las líneas de ese oficio
+  // (extras y especiales) y descartamos viviendas que, tras filtrar,
+  // se quedan sin nada que mostrar.
+  let gruposMostrar = grupos;
+  if (oficioSel) {
+    gruposMostrar = {};
+    viviendas.forEach(v => {
+      const g = grupos[v];
+      const extrasF = g.extras.filter(e => (e.oficio || '') === oficioSel);
+      const especialesF = g.especiales.filter(e => (e.oficio || '') === oficioSel);
+      if (extrasF.length || especialesF.length) gruposMostrar[v] = { extras: extrasF, especiales: especialesF };
+    });
+    viviendas = viviendas.filter(v => v in gruposMostrar);
+  }
+
   if (!viviendas.length) {
     cards.innerHTML = '';
-    empty.textContent = q
-      ? 'Ninguna vivienda coincide con la búsqueda.'
+    empty.textContent = (q || oficioSel)
+      ? 'Ninguna vivienda coincide con el filtro.'
       : 'No hay viviendas con extras para esta promoción.';
     empty.style.display = 'block';
     actualizarBotonTodo();
@@ -330,7 +365,7 @@ function renderDashboard() {
   empty.style.display = 'none';
 
   cards.innerHTML = viviendas.map(v => {
-    const g = grupos[v];
+    const g = gruposMostrar[v];
     const collapsed = COLLAPSED[v] ? ' collapsed' : '';
     const totalItems = g.extras.length + g.especiales.length;
     const postEntrega = g.extras.some(e => String(e.post_entrega).toUpperCase() === 'TRUE')
@@ -344,6 +379,9 @@ function renderDashboard() {
         .filter(Boolean)
         .map(m => m[1])
     );
+
+    // Rol 'tec': columnas propias (sin precio/total, con descripción/notas/oficio).
+    const esTec = USER_ROL === 'tec';
 
     const filasExtras = g.extras.map(e => {
       const firmado = e.estado === 'Firmado';
@@ -369,6 +407,22 @@ function renderDashboard() {
         return `<label class="tick-wrap" ${title}><input type="checkbox" class="planos-check" data-campo="${campo}" ${attrs(accion)}
               ${tickChecked(campo)} ${disabled} onchange="toggleTick(this)"><span class="tick-box"></span></label>`;
       };
+
+      if (esTec) {
+        return `
+        <tr>
+          <td class="${nameClass}">${escapeHtml(e.extra || e.id || '')}</td>
+          <td>${escapeHtml(e.descripcion || '')}</td>
+          <td>${escapeHtml(e.nota_extra || '')}</td>
+          <td>${escapeHtml(e.notes || '')}</td>
+          <td class="tc">${e.qty ?? ''}</td>
+          <td>${escapeHtml(e.oficio || '')}</td>
+          <td class="ts">${chip}</td>
+          <td class="tp">${celdaTick('revisado_arquitectura', 'marcar_planos')}</td>
+          <td class="tp">${celdaTick('pedido_realizado', 'marcar_pedido')}</td>
+        </tr>`;
+      }
+
       return `
         <tr>
           <td class="${nameClass}">${escapeHtml(e.extra || e.id || '')}${e.oficio ? '<span class="extra-oficio">'+escapeHtml(e.oficio)+'</span>' : ''}</td>
@@ -380,6 +434,10 @@ function renderDashboard() {
           <td class="tp">${celdaTick('pedido_realizado', 'marcar_pedido')}</td>
         </tr>`;
     }).join('');
+
+    const cabeceraExtras = esTec
+      ? '<th>Extra</th><th>Descripción</th><th>Nota extra</th><th>Notas</th><th class="tc">Uds.</th><th>Oficio</th><th class="ts">Estado</th><th class="tp">Revisado<small>Arquitectura</small></th><th class="tp">Pedido</th>'
+      : '<th>Extra</th><th class="tc">Uds.</th><th class="tr">Precio</th><th class="tr">Total</th><th class="ts">Estado</th><th class="tp">Revisado<small>Arquitectura</small></th><th class="tp">Pedido</th>';
 
     const filasEspeciales = g.especiales.map(e => {
       const listo = e.estado === 'Listo';
@@ -412,7 +470,7 @@ function renderDashboard() {
             <div class="block-label">Extras (${g.extras.length})</div>
             <table class="extras-table">
               <thead><tr>
-                <th>Extra</th><th class="tc">Uds.</th><th class="tr">Precio</th><th class="tr">Total</th><th class="ts">Estado</th><th class="tp">Revisado<small>Arquitectura</small></th><th class="tp">Pedido</th>
+                ${cabeceraExtras}
               </tr></thead>
               <tbody>${filasExtras}</tbody>
             </table>` : ''}
@@ -485,39 +543,74 @@ function descargarPDFVivienda(ev, v) {
     doc.text('EXTRAS (' + g.extras.length + ')', 14, cursorY);
     cursorY += 4;
 
-    const filas = g.extras.map(e => {
-      const isSub = /^.+_sub\d+$/.test(String(e.id || ''));
-      const esPadreDePack = idsPadreDePack.has(String(e.id || ''));
-      const nombre = (isSub ? '   ↳ ' : '') + (e.extra || e.id || '');
-      const total = (Number(e.qty)||0) * (Number(e.price)||0);
-      return [
-        nombre,
-        e.qty ?? '',
-        fmtEur(e.price),
-        fmtEur(total),
-        e.estado === 'Firmado' ? 'Firmado' : 'Enviado',
-        esPadreDePack ? '—' : (String(e.revisado_arquitectura).toUpperCase() === 'TRUE' ? 'Sí' : 'No'),
-        esPadreDePack ? '—' : (String(e.pedido_realizado).toUpperCase() === 'TRUE' ? 'Sí' : 'No')
-      ];
-    });
+    const esTec = USER_ROL === 'tec';
 
-    doc.autoTable({
-      startY: cursorY,
-      head: [['Extra', 'Uds.', 'Precio', 'Total', 'Estado', 'Rev. Arq.', 'Pedido']],
-      body: filas,
-      theme: 'plain',
-      styles: { font: 'helvetica', fontSize: 8.5, textColor: [42, 37, 32], cellPadding: 2 },
-      headStyles: { fillColor: [17, 17, 17], textColor: [255, 255, 255], fontStyle: 'bold' },
-      alternateRowStyles: { fillColor: [242, 242, 242] },
-      columnStyles: {
-        1: { halign: 'center', cellWidth: 14 },
-        2: { halign: 'right', cellWidth: 22 },
-        3: { halign: 'right', cellWidth: 22 },
-        4: { halign: 'center', cellWidth: 20 },
-        5: { halign: 'center', cellWidth: 20 },
-        6: { halign: 'center', cellWidth: 18 }
-      }
-    });
+    if (esTec) {
+      const filas = g.extras.map(e => {
+        const isSub = /^.+_sub\d+$/.test(String(e.id || ''));
+        const esPadreDePack = idsPadreDePack.has(String(e.id || ''));
+        const nombre = (isSub ? '   ↳ ' : '') + (e.extra || e.id || '');
+        return [
+          nombre,
+          e.descripcion || '',
+          e.nota_extra || '',
+          e.notes || '',
+          e.qty ?? '',
+          e.oficio || '',
+          e.estado === 'Firmado' ? 'Firmado' : 'Enviado',
+          esPadreDePack ? '—' : (String(e.revisado_arquitectura).toUpperCase() === 'TRUE' ? 'Sí' : 'No'),
+          esPadreDePack ? '—' : (String(e.pedido_realizado).toUpperCase() === 'TRUE' ? 'Sí' : 'No')
+        ];
+      });
+      doc.autoTable({
+        startY: cursorY,
+        head: [['Extra', 'Descripción', 'Nota extra', 'Notas', 'Uds.', 'Oficio', 'Estado', 'Rev. Arq.', 'Pedido']],
+        body: filas,
+        theme: 'plain',
+        styles: { font: 'helvetica', fontSize: 7.5, textColor: [42, 37, 32], cellPadding: 1.6 },
+        headStyles: { fillColor: [17, 17, 17], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [242, 242, 242] },
+        columnStyles: {
+          4: { halign: 'center', cellWidth: 12 },
+          6: { halign: 'center', cellWidth: 16 },
+          7: { halign: 'center', cellWidth: 16 },
+          8: { halign: 'center', cellWidth: 14 }
+        }
+      });
+    } else {
+      const filas = g.extras.map(e => {
+        const isSub = /^.+_sub\d+$/.test(String(e.id || ''));
+        const esPadreDePack = idsPadreDePack.has(String(e.id || ''));
+        const nombre = (isSub ? '   ↳ ' : '') + (e.extra || e.id || '');
+        const total = (Number(e.qty)||0) * (Number(e.price)||0);
+        return [
+          nombre,
+          e.qty ?? '',
+          fmtEur(e.price),
+          fmtEur(total),
+          e.estado === 'Firmado' ? 'Firmado' : 'Enviado',
+          esPadreDePack ? '—' : (String(e.revisado_arquitectura).toUpperCase() === 'TRUE' ? 'Sí' : 'No'),
+          esPadreDePack ? '—' : (String(e.pedido_realizado).toUpperCase() === 'TRUE' ? 'Sí' : 'No')
+        ];
+      });
+      doc.autoTable({
+        startY: cursorY,
+        head: [['Extra', 'Uds.', 'Precio', 'Total', 'Estado', 'Rev. Arq.', 'Pedido']],
+        body: filas,
+        theme: 'plain',
+        styles: { font: 'helvetica', fontSize: 8.5, textColor: [42, 37, 32], cellPadding: 2 },
+        headStyles: { fillColor: [17, 17, 17], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [242, 242, 242] },
+        columnStyles: {
+          1: { halign: 'center', cellWidth: 14 },
+          2: { halign: 'right', cellWidth: 22 },
+          3: { halign: 'right', cellWidth: 22 },
+          4: { halign: 'center', cellWidth: 20 },
+          5: { halign: 'center', cellWidth: 20 },
+          6: { halign: 'center', cellWidth: 18 }
+        }
+      });
+    }
     cursorY = doc.lastAutoTable.finalY + 10;
   }
 
