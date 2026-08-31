@@ -176,8 +176,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
-// ─── LOGIN (idéntico a SB-extras.html) ──────────────────────────────
-const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzd1hVVtt2I5-7Jkf3QbcDmA8mNdzCU0I4WaoEcAIAP-5HOFSYk7_nObCKNe2A6qKM_/exec';
+// ─── LOGIN (migrado a AuthUsuarios.gs — login centralizado) ─────────
+const LOGIN_URL = 'https://script.google.com/a/macros/amalconsult.com/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
 
 function doLogin() {
   const u = document.getElementById('login-user').value.trim();
@@ -190,15 +190,20 @@ function doLogin() {
 
   fetch(LOGIN_URL, {
     method: 'POST',
-    body: JSON.stringify({ accion: 'login', user: u, pass: p })
+    body: JSON.stringify({ accion: 'login', usuario: u, pass: p, herramienta: 'dashboard' })
   })
     .then(r => r.json())
     .then(data => {
       if (data.ok) {
         USER_ROL = data.rol || null;
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('app-wrapper').style.display = 'block';
-        mostrarEstadoSinPromo();
+        return cargarRoles().then(() => {
+          document.getElementById('login-screen').style.display = 'none';
+          document.getElementById('app-wrapper').style.display = 'block';
+          mostrarEstadoSinPromo();
+        });
+      } else if (data.motivo === 'sin_acceso') {
+        errorEl.textContent = 'Tu usuario no tiene acceso al dashboard.';
+        errorEl.style.display = 'block';
       } else {
         errorEl.textContent = 'Usuario o contraseña incorrectos';
         errorEl.style.display = 'block';
@@ -234,16 +239,51 @@ const WEBHOOK_DASHBOARD = 'https://hook.eu1.make.com/xfzc3ke7gfet737pmwwn8sptn3m
 let CURRENT_PROMO = null;
 let USER_ROL = null;
 
-// Permisos por rol: qué ticks puede editar cada uno. Rol desconocido → sin
-// permisos (fallback seguro: se ve todo, no se puede tocar nada).
-const PERMISOS_TICKS = {
-  arquitectura:  { revisado_arquitectura: true,  pedido_realizado: true },
-  tec2:          { revisado_arquitectura: false, pedido_realizado: true },
-  ventas:        { revisado_arquitectura: false, pedido_realizado: false },
-  tec:           { revisado_arquitectura: false, pedido_realizado: false }
+// URL del Web App AuthUsuarios.gs (mismo endpoint que LOGIN_URL — accion 'roles').
+const AUTH_ROLES_URL = 'https://script.google.com/a/macros/amalconsult.com/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
+
+// Fallback si el fetch de roles falla (Sheet caída, URL sin desplegar, etc.):
+// misma tabla que antes vivía hardcodeada aquí, para no dejar el dashboard
+// sin permisos por un fallo de red.
+const PERMISOS_TICKS_FALLBACK = {
+  arquitectura:  { edita_revisado_arquitectura: true,  edita_pedido: true,  ve_precio_total: true },
+  tec2:          { edita_revisado_arquitectura: false, edita_pedido: true,  ve_precio_total: true },
+  ventas:        { edita_revisado_arquitectura: false, edita_pedido: false, ve_precio_total: true },
+  tec:           { edita_revisado_arquitectura: false, edita_pedido: false, ve_precio_total: false }
 };
+let ROLES_MAP = PERMISOS_TICKS_FALLBACK;
+
+function cargarRoles() {
+  return fetch(AUTH_ROLES_URL, {
+    method: 'POST',
+    body: JSON.stringify({ accion: 'roles' })
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok && data.roles && Object.keys(data.roles).length) {
+        ROLES_MAP = data.roles;
+      } else {
+        console.warn('Respuesta de roles vacía o inválida, usando fallback local.');
+        ROLES_MAP = PERMISOS_TICKS_FALLBACK;
+      }
+    })
+    .catch(() => {
+      console.warn('No se pudo cargar _roles desde AuthUsuarios.gs, usando fallback local.');
+      ROLES_MAP = PERMISOS_TICKS_FALLBACK;
+    });
+}
+
 function puedeEditarTick(campo) {
-  return !!(PERMISOS_TICKS[USER_ROL] || {})[campo];
+  const permisosRol = ROLES_MAP[USER_ROL] || {};
+  const campoMap = { revisado_arquitectura: 'edita_revisado_arquitectura', pedido_realizado: 'edita_pedido' };
+  return !!permisosRol[campoMap[campo] || campo];
+}
+
+function veTecActual() {
+  // true si el rol actual NO ve precio/total → activa el layout de columnas "tec"
+  const permisosRol = ROLES_MAP[USER_ROL];
+  if (permisosRol) return !permisosRol.ve_precio_total;
+  return USER_ROL === 'tec'; // fallback si el rol no está en el mapa
 }
 let DATA_EXTRAS = [];
 let DATA_ESPECIALES = [];
@@ -383,7 +423,7 @@ function renderDashboard() {
     );
 
     // Rol 'tec': columnas propias (sin precio/total, con descripción/notas/oficio).
-    const esTec = USER_ROL === 'tec';
+    const esTec = veTecActual();
 
     const filasExtras = g.extras.map(e => {
       const firmado = e.estado === 'Firmado';
@@ -545,7 +585,7 @@ function descargarPDFVivienda(ev, v) {
     doc.text('EXTRAS (' + g.extras.length + ')', 14, cursorY);
     cursorY += 4;
 
-    const esTec = USER_ROL === 'tec';
+    const esTec = veTecActual();
 
     if (esTec) {
       const filas = g.extras.map(e => {
