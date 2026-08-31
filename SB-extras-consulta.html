@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serena Breeze — Consulta de extras</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #FFFFFF;
+    --off-white: #F7F6F4;
+    --border: #E0DDD8;
+    --mid: #B0AA9F;
+    --slate-gray: #6B7280;
+    --text: #2A2520;
+    --black: #111111;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 14px; }
+
+  .step-nav-wrap { border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; position: sticky; top: 0; z-index: 100; background: var(--white); }
+  .step-nav-wrap::-webkit-scrollbar { display: none; }
+  .step-nav { display: flex; padding: 0 48px; min-width: max-content; }
+  .snav-item { padding: 14px 20px; font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all .2s; white-space: nowrap; display: flex; align-items: center; gap: 8px; }
+  .snav-item:hover { color: var(--text); }
+  .snav-item.active { color: var(--black); border-bottom-color: var(--black); }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 48px 48px 80px; }
+  .sec-eyebrow { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 10px; }
+  .sec-title { font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 400; text-transform: uppercase; color: var(--black); margin-bottom: 12px; letter-spacing: 1px; }
+  .sec-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.7; max-width: 600px; margin-bottom: 36px; }
+
+  /* TABLE */
+  .extras-table { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+  .extras-table th { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate-gray); text-align: left; padding: 10px 10px; border-bottom: 1px solid var(--border); font-weight: 400; white-space: nowrap; }
+  .extras-table th.tr { text-align: right; width: 140px; }
+  .extras-table td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .extras-table tr:last-child td { border-bottom: none; }
+  .extras-table tr:hover td { background: var(--off-white); }
+  .extra-name { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); font-weight: 400; }
+  .extra-subline { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--slate-gray); margin-top: 3px; padding-left: 8px; }
+  .extra-desc { font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--slate-gray); font-weight: 300; }
+  .extra-comment { font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--text); font-weight: 300; }
+  .extra-price { font-family: 'Oswald', sans-serif; font-size: 14px; color: var(--black); text-align: right; display: block; }
+  .extra-price.consultar { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--mid); font-style: italic; }
+
+  /* NAV */
+  .nav-btns { display: flex; justify-content: space-between; align-items: center; margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--border); }
+  .btn { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; padding: 14px 32px; border: none; transition: all .2s; }
+  .btn-back { background: transparent; color: var(--slate-gray); border: 1px solid var(--border); }
+  .btn-back:hover { border-color: var(--black); color: var(--black); }
+  .btn-next { background: var(--black); color: white; }
+  .btn-next:hover { background: #333; }
+
+  .step { display: none; }
+  .step.active { display: block; }
+
+  .lang-toggle { position: fixed; top: 52px; right: 16px; z-index: 10000; display: none; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; background: white; }
+  .lang-toggle.visible { display: flex; }
+  .lang-btn { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 1px; padding: 6px 12px; cursor: pointer; border: none; background: transparent; color: var(--slate-gray); transition: all .2s; }
+  .lang-btn.active { background: var(--black); color: white; }
+
+  @media (max-width: 768px) {
+    main { padding-left: 16px; padding-right: 16px; }
+    .step-nav { padding: 0 16px; }
+  }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    position: fixed; inset: 0; background: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+  }
+  .login-box {
+    width: 100%; max-width: 380px; padding: 48px 40px;
+    border: 1px solid var(--border);
+  }
+  .login-logo {
+    font-family: 'Oswald', sans-serif; font-size: 18px;
+    letter-spacing: 3px; text-transform: uppercase; color: var(--black);
+    margin-bottom: 6px;
+  }
+  .login-sub {
+    font-family: 'Roboto', sans-serif; font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--mid);
+    margin-bottom: 40px;
+  }
+  .login-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+  .login-label {
+    font-family: 'Roboto', sans-serif; font-size: 10px;
+    letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray);
+  }
+  .login-input {
+    border: 1px solid var(--border); padding: 12px 14px;
+    font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300;
+    color: var(--text); background: var(--white); outline: none;
+    transition: border-color .2s; border-radius: 0; width: 100%;
+  }
+  .login-input:focus { border-color: var(--black); }
+  .login-btn {
+    width: 100%; margin-top: 8px;
+    font-family: 'Oswald', sans-serif; font-size: 12px;
+    letter-spacing: 3px; text-transform: uppercase;
+    background: var(--black); color: white; border: none;
+    padding: 14px; cursor: pointer; transition: background .2s;
+  }
+  .login-btn:hover { background: #333; }
+  .login-btn:disabled { opacity: .55; cursor: default; }
+  .login-btn:disabled:hover { background: var(--black); }
+  .login-error {
+    font-family: 'Roboto', sans-serif; font-size: 12px;
+    color: #c0392b; margin-top: 14px; text-align: center;
+    display: none;
+  }
+  #app-wrapper { display: none; }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Serena Breeze</div>
+    <div class="login-sub">Consulta de precios de extras · Uso interno</div>
+    <div class="login-field">
+      <label class="login-label">Usuario</label>
+      <input class="login-input" id="login-user" type="text" placeholder="Usuario" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Contraseña</label>
+      <input class="login-input" id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Acceder →</button>
+    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
+  </div>
+</div>
+
+<div class="lang-toggle">
+  <button class="lang-btn active" id="btn-es" onclick="setLang('es')">ES</button>
+  <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
+</div>
+
+<div id="app-wrapper">
+
+<div class="step-nav-wrap">
+  <div class="step-nav" id="stepNav"></div>
+</div>
+
+<main>
+  <div id="stepsContainer"></div>
+</main>
+
+</div><!-- /app-wrapper -->
+
+<script>
+// ─── LOGIN ───────────────────────────────────────────────────────────
+const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzd1hVVtt2I5-7Jkf3QbcDmA8mNdzCU0I4WaoEcAIAP-5HOFSYk7_nObCKNe2A6qKM_/exec';
+
+let LANG = 'es';
+let currentStep = 1;
+
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const btn = document.getElementById('login-btn');
+  const errorEl = document.getElementById('login-error');
+  errorEl.style.display = 'none';
+  const textoOriginal = btn ? btn.textContent : '';
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = (LANG === 'es' ? 'Comprobando…' : 'Checking…');
+  }
+
+  fetch(LOGIN_URL, {
+    method: 'POST',
+    body: JSON.stringify({ accion: 'login', user: u, pass: p })
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-wrapper').style.display = 'block';
+        document.querySelector('.lang-toggle').classList.add('visible');
+        buildDOM();
+        sendHeight();
+      } else {
+        errorEl.textContent = (LANG === 'es' ? 'Usuario o contraseña incorrectos' : 'Incorrect username or password');
+        errorEl.style.display = 'block';
+      }
+    })
+    .catch(() => {
+      errorEl.textContent = (LANG === 'es' ? 'No se pudo comprobar el acceso. Inténtalo de nuevo.' : 'Could not verify access. Please try again.');
+      errorEl.style.display = 'block';
+    })
+    .finally(() => {
+      if (btn) { btn.disabled = false; btn.textContent = textoOriginal; }
+    });
+}
+
+// ─── CATÁLOGO DE EXTRAS ────────────────────────────────────────────
+const AREAS = [
+  // ── CLIMATIZACIÓN Y CALEFACCIÓN ──────────────────────────────────────
+  { key:'clima', step:1,
+    label_es:'Climatización y calefacción', label_en:'Climate control & heating',
+    nav_es:'01 · Climatización', nav_en:'01 · Climate ctrl.',
+    desc_es:'Aire acondicionado, aerotermia, suelo radiante y toalleros.',
+    desc_en:'Air conditioning, aerothermics, underfloor heating and towel rails.',
+    items:[
+      { id:'cli_01', name_es:'Máquina de A/A para conductos de 8900 frigorías', name_en:'A/C unit 8900 kcal/h', desc_es:'Villa', desc_en:'Villa', price:3900, oficio:'CLIMA', pedido:true, comment_es:'', comment_en:'' },
+      { id:'cli_02', name_es:'Máquina de A/A para conductos de 8900 frigorías', name_en:'A/C unit 8900 kcal/h', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:3900, oficio:'CLIMA', pedido:true, comment_es:'', comment_en:'' },
+      { id:'cli_03', name_es:'Máquina de A/A para conductos de 6000 frigorías', name_en:'A/C unit 6000 kcal/h', desc_es:'Apartamento 2 dorm.', desc_en:'2-bed apartment', price:3600, oficio:'CLIMA', pedido:true, comment_es:'', comment_en:'' },
+      { id:'cli_04', name_es:'Sistema de Airzone', name_en:'Airzone system', desc_es:'Villa', desc_en:'Villa', price:4200, oficio:'CLIMA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cli_05', name_es:'Sistema de Airzone', name_en:'Airzone system', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:4200, oficio:'CLIMA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cli_06', name_es:'Sistema de Airzone', name_en:'Airzone system', desc_es:'Apartamento 2 dorm.', desc_en:'2-bed apartment', price:3300, oficio:'CLIMA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cli_07', name_es:'Calefacción suelo radiante + ACS aerotermia', name_en:'Underfloor heating + DHW aerothermics', desc_es:'Villa — instalación para PB', desc_en:'Villa — ground floor installation', price:18500, oficio:'CLIMA', pedido:false, comment_es:'No incluye A/A. Descontada aerotermia de serie', comment_en:'A/C not included. Aerothermics deducted' },
+      { id:'cli_08', name_es:'Calefacción suelo radiante + ACS aerotermia', name_en:'Underfloor heating + DHW aerothermics', desc_es:'Apartamento ático 2SB', desc_en:'2SB penthouse apartment', price:25875, oficio:'CLIMA', pedido:false, comment_es:'No incluye A/A. Descontada aerotermia de serie', comment_en:'A/C not included. Aerothermics deducted' },
+      { id:'cli_09', name_es:'Suelo radiante eléctrico baño', name_en:'Electric underfloor heating bathroom', desc_es:'Apartamento / Villa', desc_en:'Apartment / Villa', price:1200, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cli_10', name_es:'Instalación de toallero eléctrico 80×50', name_en:'Electric towel rail 80×50', desc_es:'', desc_en:'', price:900, oficio:'ELECTRICISTA', pedido:true, comment_es:'', comment_en:'' },
+      { id:'cli_11', name_es:'Instalación de toallero eléctrico 120×50', name_en:'Electric towel rail 120×50', desc_es:'', desc_en:'', price:900, oficio:'ELECTRICISTA', pedido:true, comment_es:'', comment_en:'' },
+    ]},
+  // ── COCINA ────────────────────────────────────────────────────────────
+  { key:'cocina', step:2,
+    label_es:'Cocina', label_en:'Kitchen',
+    nav_es:'02 · Cocina', nav_en:'02 · Kitchen',
+    desc_es:'Electrodomésticos y equipamiento de cocina.',
+    desc_en:'Kitchen appliances and equipment.',
+    items:[
+      { id:'coc_01', name_es:'Electrodomésticos BOSCH', name_en:'BOSCH appliances', desc_es:'Pack', desc_en:'Pack', price:4210, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_02', name_es:'Secadora libre instalación BOSCH', name_en:'BOSCH freestanding dryer', desc_es:'', desc_en:'', price:1055, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_03', name_es:'Lava-secadora integración BOSCH', name_en:'BOSCH washer-dryer integrated', desc_es:'', desc_en:'', price:1518, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_04', name_es:'Lava-secadora libre instalación BOSCH', name_en:'BOSCH washer-dryer freestanding', desc_es:'', desc_en:'', price:1076, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_05', name_es:'Electrodomésticos JOHNSON', name_en:'JOHNSON appliances', desc_es:'Pack', desc_en:'Pack', price:3100, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_06', name_es:'Secadora libre instalación JOHNSON', name_en:'JOHNSON freestanding dryer', desc_es:'', desc_en:'', price:533, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_07', name_es:'Lava-secadora integración JOHNSON', name_en:'JOHNSON washer-dryer integrated', desc_es:'', desc_en:'', price:794, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_08', name_es:'Lava-secadora libre instalación JOHNSON', name_en:'JOHNSON washer-dryer freestanding', desc_es:'', desc_en:'', price:871, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_09', name_es:'Cambio de encimera de cocina a porcelánico', name_en:'Kitchen countertop upgrade to porcelain', desc_es:'Apartamentos y áticos de esquina', desc_en:'Corner apartments and penthouses', price:1200, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_10', name_es:'Cambio de encimera de cocina a porcelánico', name_en:'Kitchen countertop upgrade to porcelain', desc_es:'Apartamentos ático central', desc_en:'Central penthouse apartment', price:1700, oficio:'ELECTRODOMESTICOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_11', name_es:'Mueble de limpieza', name_en:'Utility cabinet', desc_es:'Apartamentos (incluye enchufe interior)', desc_en:'Apartments (includes internal socket)', price:1025, oficio:'COCINAS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'coc_12', name_es:'Quoker', name_en:'Quooker', desc_es:'', desc_en:'', price:null, oficio:'COCINAS', pedido:false, comment_es:'Consultar precio según modelo', comment_en:'Price on request depending on model' },
+    ]},
+  // ── EQUIPAMIENTO INTERIOR ─────────────────────────────────────────────
+  { key:'equipamiento', step:3,
+    label_es:'Equipamiento interior', label_en:'Interior equipment',
+    nav_es:'03 · Equipamiento', nav_en:'03 · Furnishings',
+    desc_es:'Packs de equipamiento, estores, mosquiteras e iluminación.',
+    desc_en:'Equipment packs, blinds, mosquito screens and lighting.',
+    items:[
+      { id:'equ_00', name_es:'Iluminación General', name_en:'General Lighting', desc_es:'Iluminación de serie incluida en la vivienda', desc_en:'Standard lighting included with the property', price:0, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_01', name_es:'FULL EQUIP PACK — Villa', name_en:'FULL EQUIP PACK — Villa', desc_es:'Estores · electrodomésticos · A/A · mobiliario', desc_en:'Blinds · appliances · A/C · furniture', price:19990, oficio:null, pedido:false, comment_es:'Incluye regalo colgante de salón. Resto spotlight', comment_en:'Includes living room pendant as gift. Rest spotlight',
+        sublines:[{name_es:'Estores Villa',name_en:'Blinds Villa',oficio:'MOBILIARIO Estores',desc_es:'Corredera Salón / Fijo salón / Fijo Pasillo / Dormitorio 1 / Dormitorio 2 / Dormitorio 3',desc_en:'Sliding living / Fixed living / Fixed hallway / Bedroom 1 / Bedroom 2 / Bedroom 3'},{name_es:'Electrodomésticos BOSCH',name_en:'BOSCH Appliances',oficio:'ELECTRODOMESTICOS',desc_es:'',desc_en:''},{name_es:'Aire acondicionado Villa',name_en:'A/C Villa',oficio:'CLIMA',pedido:true,desc_es:'8900',desc_en:'8900'},{name_es:'Mobiliario Villa',name_en:'Furniture Villa',oficio:'MOBILIARIO',desc_es:'',desc_en:''}]},
+      { id:'equ_02', name_es:'FULL EQUIP PACK — Apto. 2 dorm.', name_en:'FULL EQUIP PACK — 2-bed apt.', desc_es:'Estores · electrodomésticos · A/A · mobiliario', desc_en:'Blinds · appliances · A/C · furniture', price:15600, oficio:null, pedido:false, comment_es:'Incluye regalo colgante de salón. Resto spotlight', comment_en:'Includes living room pendant as gift. Rest spotlight',
+        sublines:[{name_es:'Estores Apto. 2 dorm.',name_en:'Blinds 2-bed apt.',oficio:'MOBILIARIO Estores',desc_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2',desc_en:'Sliding living / Bedroom 1 / Bedroom 2'},{name_es:'Electrodomésticos BOSCH',name_en:'BOSCH Appliances',oficio:'ELECTRODOMESTICOS',desc_es:'',desc_en:''},{name_es:'Aire acondicionado Apto. 2 dorm.',name_en:'A/C 2-bed apt.',oficio:'CLIMA',pedido:true,desc_es:'6000',desc_en:'6000'},{name_es:'Mobiliario Apto. 2 dorm.',name_en:'Furniture 2-bed apt.',oficio:'MOBILIARIO',desc_es:'',desc_en:''}]},
+      { id:'equ_03', name_es:'FULL EQUIP PACK — Apto. 3 dorm.', name_en:'FULL EQUIP PACK — 3-bed apt.', desc_es:'Estores · electrodomésticos · A/A · mobiliario', desc_en:'Blinds · appliances · A/C · furniture', price:17500, oficio:null, pedido:false, comment_es:'Incluye regalo colgante de salón. Resto spotlight', comment_en:'Includes living room pendant as gift. Rest spotlight',
+        sublines:[{name_es:'Estores Apto. 3 dorm.',name_en:'Blinds 3-bed apt.',oficio:'MOBILIARIO Estores',desc_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2 / Dormitorio 3',desc_en:'Sliding living / Bedroom 1 / Bedroom 2 / Bedroom 3'},{name_es:'Electrodomésticos BOSCH',name_en:'BOSCH Appliances',oficio:'ELECTRODOMESTICOS',desc_es:'',desc_en:''},{name_es:'Aire acondicionado Apto. 3 dorm.',name_en:'A/C 3-bed apt.',oficio:'CLIMA',pedido:true,desc_es:'8900',desc_en:'8900'},{name_es:'Mobiliario Apto. 3 dorm.',name_en:'Furniture 3-bed apt.',oficio:'MOBILIARIO',desc_es:'',desc_en:''}]},
+      { id:'equ_04', name_es:'Muebles + estores — Villa', name_en:'Furniture + blinds — Villa', desc_es:'Villa', desc_en:'Villa', price:12500, oficio:null, pedido:false, comment_es:'', comment_en:'',
+        sublines:[{name_es:'Estores Villa',name_en:'Blinds Villa',oficio:'MOBILIARIO Estores',desc_es:'Corredera Salón / Fijo salón / Fijo Pasillo / Dormitorio 1 / Dormitorio 2 / Dormitorio 3',desc_en:'Sliding living / Fixed living / Fixed hallway / Bedroom 1 / Bedroom 2 / Bedroom 3'},{name_es:'Mobiliario Villa',name_en:'Furniture Villa',oficio:'MOBILIARIO',desc_es:'',desc_en:''}]},
+      { id:'equ_05', name_es:'Muebles + estores — Apto. 2 dorm.', name_en:'Furniture + blinds — 2-bed apt.', desc_es:'Apartamento 2 dorm.', desc_en:'2-bed apartment', price:9300, oficio:null, pedido:false, comment_es:'', comment_en:'',
+        sublines:[{name_es:'Estores Apto. 2 dorm.',name_en:'Blinds 2-bed apt.',oficio:'MOBILIARIO Estores',desc_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2',desc_en:'Sliding living / Bedroom 1 / Bedroom 2'},{name_es:'Mobiliario Apto. 2 dorm.',name_en:'Furniture 2-bed apt.',oficio:'MOBILIARIO',desc_es:'',desc_en:''}]},
+      { id:'equ_06', name_es:'Muebles + estores — Apto. 3 dorm.', name_en:'Furniture + blinds — 3-bed apt.', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:10900, oficio:null, pedido:false, comment_es:'', comment_en:'',
+        sublines:[{name_es:'Estores Apto. 3 dorm.',name_en:'Blinds 3-bed apt.',oficio:'MOBILIARIO Estores',desc_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2 / Dormitorio 3',desc_en:'Sliding living / Bedroom 1 / Bedroom 2 / Bedroom 3'},{name_es:'Mobiliario Apto. 3 dorm.',name_en:'Furniture 3-bed apt.',oficio:'MOBILIARIO',desc_es:'',desc_en:''}]},
+      { id:'equ_07', name_es:'Pack mobiliario — Villa', name_en:'Furniture pack — Villa', desc_es:'Villa', desc_en:'Villa', price:10100, oficio:'MOBILIARIO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_08', name_es:'Pack mobiliario — Apto. 2 dorm.', name_en:'Furniture pack — 2-bed apt.', desc_es:'Apartamento 2 dorm.', desc_en:'2-bed apartment', price:7200, oficio:'MOBILIARIO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_09', name_es:'Pack mobiliario — Apto. 3 dorm.', name_en:'Furniture pack — 3-bed apt.', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:8280, oficio:'MOBILIARIO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_10', name_es:'Estores eléctricos pack (6) — Villa', name_en:'Electric blinds pack (6) — Villa', desc_es:'Villa', desc_en:'Villa', price:3600, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'Corredera Salón / Fijo salón / Fijo Pasillo / Dormitorio 1 / Dormitorio 2 / Dormitorio 3', comment_en:'Sliding living room / Fixed living room / Fixed hallway / Bedroom 1 / Bedroom 2 / Bedroom 3' },
+      { id:'equ_11', name_es:'Estores eléctricos pack (3) — Apto. 2 hab.', name_en:'Electric blinds pack (3) — 2-bed apt.', desc_es:'Apartamento 2 habitaciones', desc_en:'2-bed apartment', price:2800, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2', comment_en:'Sliding living room / Bedroom 1 / Bedroom 2' },
+      { id:'equ_12', name_es:'Estores eléctricos pack (4) — Apto. 3 hab.', name_en:'Electric blinds pack (4) — 3-bed apt.', desc_es:'Apartamento 3 habitaciones', desc_en:'3-bed apartment', price:3080, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2 / Dormitorio 3', comment_en:'Sliding living room / Bedroom 1 / Bedroom 2 / Bedroom 3' },
+      { id:'equ_13', name_es:'Pack mosquiteras — Villa', name_en:'Mosquito screen pack — Villa', desc_es:'Villa', desc_en:'Villa', price:4863, oficio:'Carpinteria METALICA', pedido:false, comment_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2 / Dormitorio 3 / Baño 1 / Baño 2', comment_en:'Sliding living room / Bedroom 1 / Bedroom 2 / Bedroom 3 / Bathroom 1 / Bathroom 2' },
+      { id:'equ_14', name_es:'Pack mosquiteras — Apto. 2 hab.', name_en:'Mosquito screen pack — 2-bed apt.', desc_es:'Apartamento 2 habitaciones', desc_en:'2-bed apartment', price:2700, oficio:'Carpinteria METALICA', pedido:false, comment_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2', comment_en:'Sliding living room / Bedroom 1 / Bedroom 2' },
+      { id:'equ_15', name_es:'Pack mosquiteras — Apto. 3 dorm.', name_en:'Mosquito screen pack — 3-bed apt.', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:2860, oficio:'Carpinteria METALICA', pedido:false, comment_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2 / Dormitorio 3', comment_en:'Sliding living room / Bedroom 1 / Bedroom 2 / Bedroom 3' },
+      { id:'equ_16', name_es:'Pack mosquiteras — Apto. 3 dorm. con baño exterior', name_en:'Mosquito screen pack — 3-bed apt. with exterior bathroom', desc_es:'Apartamento 3 dorm. con baño exterior', desc_en:'3-bed apt. with exterior bathroom', price:3100, oficio:'Carpinteria METALICA', pedido:false, comment_es:'Corredera Salón / Dormitorio 1 / Dormitorio 2 / Dormitorio 3 / Baño 2', comment_en:'Sliding living room / Bedroom 1 / Bedroom 2 / Bedroom 3 / Bathroom 2' },
+      { id:'equ_17', name_es:'Pack iluminación', name_en:'Lighting pack', desc_es:'Colgantes en dormitorios y salón (iguales a villa piloto)', desc_en:'Pendants in bedrooms and living room (as show villa)', price:900, oficio:'ELECTRICISTA', pedido:true, comment_es:'1×Salón / 2×Dormitorio 1 / 2×Dormitorio 2 / 2×Dormitorio 3', comment_en:'1×Living room / 2×Bedroom 1 / 2×Bedroom 2 / 2×Bedroom 3' },
+      { id:'equ_18', name_es:'Estor corredera salón — Villa', name_en:'Sliding blind living room — Villa', desc_es:'Villa', desc_en:'Villa', price:750, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_19', name_es:'Estor fijo salón — Villa', name_en:'Fixed blind living room — Villa', desc_es:'Villa', desc_en:'Villa', price:1117, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_20', name_es:'Estor corredera suite — Villa', name_en:'Sliding blind suite — Villa', desc_es:'Villa', desc_en:'Villa', price:728, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_21', name_es:'Estor corredera dorm 2 — Villa', name_en:'Sliding blind bedroom 2 — Villa', desc_es:'Villa', desc_en:'Villa', price:700, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_22', name_es:'Estor corredera dorm 3 — Villa', name_en:'Sliding blind bedroom 3 — Villa', desc_es:'Villa', desc_en:'Villa', price:700, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_23', name_es:'Estor fijo pasillo — Villa', name_en:'Fixed blind hallway — Villa', desc_es:'Villa', desc_en:'Villa', price:550, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_24', name_es:'Estor baño 1 — Villa', name_en:'Blind bathroom 1 — Villa', desc_es:'Villa', desc_en:'Villa', price:550, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_25', name_es:'Estor baño 2 — Villa', name_en:'Blind bathroom 2 — Villa', desc_es:'Villa', desc_en:'Villa', price:550, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_26', name_es:'Estor corredera salón — Apartamento', name_en:'Sliding blind living room — Apartment', desc_es:'Apartamento 2 y 3 dorm.', desc_en:'2 and 3-bed apartment', price:850, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_27', name_es:'Estor fijo salón (esquina) — Apartamento', name_en:'Fixed blind living room (corner) — Apartment', desc_es:'Apartamento 2 y 3 dorm.', desc_en:'2 and 3-bed apartment', price:550, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_28', name_es:'Estor corredera suite — Apartamento', name_en:'Sliding blind suite — Apartment', desc_es:'Apartamento 2 y 3 dorm.', desc_en:'2 and 3-bed apartment', price:700, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_29', name_es:'Estor corredera dorm 2 — Apartamento', name_en:'Sliding blind bedroom 2 — Apartment', desc_es:'Apartamento 2 y 3 dorm.', desc_en:'2 and 3-bed apartment', price:700, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_30', name_es:'Estor corredera dorm 3 — Apto. 3 dorm.', name_en:'Sliding blind bedroom 3 — 3-bed apt.', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:650, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_31', name_es:'Estor baño 2 — Apto. 3 dorm.', name_en:'Blind bathroom 2 — 3-bed apt.', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:550, oficio:'MOBILIARIO Estores', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_32', name_es:'Mosquitera corredera salón (plisada) — Villa', name_en:'Sliding mosquito screen living room (pleated) — Villa', desc_es:'Villa', desc_en:'Villa', price:1755, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_33', name_es:'Mosquitera corredera suite (plisada) — Villa', name_en:'Sliding mosquito screen suite (pleated) — Villa', desc_es:'Villa', desc_en:'Villa', price:1148, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_34', name_es:'Mosquitera corredera dorm 2 (plisada) — Villa', name_en:'Sliding mosquito screen bedroom 2 (pleated) — Villa', desc_es:'Villa', desc_en:'Villa', price:878, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_35', name_es:'Mosquitera corredera dorm 3 (plisada) — Villa', name_en:'Sliding mosquito screen bedroom 3 (pleated) — Villa', desc_es:'Villa', desc_en:'Villa', price:878, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_36', name_es:'Mosquitera baño 1 (enrollable) — Villa', name_en:'Roller mosquito screen bathroom 1 — Villa', desc_es:'Villa', desc_en:'Villa', price:297, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_37', name_es:'Mosquitera baño 2 (enrollable) — Villa', name_en:'Roller mosquito screen bathroom 2 — Villa', desc_es:'Villa', desc_en:'Villa', price:297, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_38', name_es:'Mosquitera corredera salón (plisada) — Apartamento', name_en:'Sliding mosquito screen living room (pleated) — Apartment', desc_es:'Apartamento 2 y 3 dorm.', desc_en:'2 and 3-bed apartment', price:1593, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_39', name_es:'Mosquitera corredera dorm 1 (plisada) — Apartamento', name_en:'Sliding mosquito screen bedroom 1 (pleated) — Apartment', desc_es:'Apartamento 2 y 3 dorm.', desc_en:'2 and 3-bed apartment', price:945, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_40', name_es:'Mosquitera corredera dorm 2 (plisada) — Apartamento', name_en:'Sliding mosquito screen bedroom 2 (pleated) — Apartment', desc_es:'Apartamento 2 y 3 dorm.', desc_en:'2 and 3-bed apartment', price:945, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_41', name_es:'Mosquitera corredera dorm 3 (plisada) — Apto. 3 dorm.', name_en:'Sliding mosquito screen bedroom 3 (pleated) — 3-bed apt.', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:378, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'equ_42', name_es:'Mosquitera baño 2 (enrollable) — Apto. 3 dorm.', name_en:'Roller mosquito screen bathroom 2 — 3-bed apt.', desc_es:'Apartamento 3 dorm.', desc_en:'3-bed apartment', price:297, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+    ]},
+  // ── FONTANERÍA Y BAÑOS ────────────────────────────────────────────────
+  { key:'fontaneria', step:4,
+    label_es:'Fontanería y baños', label_en:'Plumbing and bathrooms',
+    nav_es:'04 · Fontanería', nav_en:'04 · Plumbing',
+    desc_es:'Instalaciones de agua, griferías y mamparas.',
+    desc_en:'Water installations, taps and shower screens.',
+    items:[
+      { id:'fon_01', name_es:'Punto de agua fría', name_en:'Cold water point', desc_es:'Punto agua fría', desc_en:'Cold water point', price:390, oficio:'FONTANERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'fon_02', name_es:'Instalación de ósmosis', name_en:'Osmosis installation', desc_es:'Osmosis Midea Eco 4000', desc_en:'Midea Eco 4000 osmosis unit', price:750, oficio:'FONTANERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'fon_03', name_es:'Instalación de descalcificador', name_en:'Water softener installation', desc_es:'Descalcificador ATH Robosoft 180', desc_en:'ATH Robosoft 180 water softener', price:2100, oficio:'FONTANERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'fon_04', name_es:'Punto agua caliente para ducha piscina', name_en:'Hot water point pool shower', desc_es:'Villa', desc_en:'Villa', price:390, oficio:'FONTANERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'fon_05', name_es:'Ducha con agua fría y caliente en solarium', name_en:'Hot and cold shower in solarium', desc_es:'Apartamento ático', desc_en:'Penthouse apartment', price:1050, oficio:'FONTANERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'fon_06', name_es:'Pasamanos en ducha', name_en:'Shower grab rail', desc_es:'', desc_en:'', price:390, oficio:'FONTANERO', pedido:true, comment_es:'Cromo', comment_en:'Chrome' },
+      { id:'fon_07', name_es:'Preinstalación para descalcificador', name_en:'Pre-installation for water softener', desc_es:'Villas y áticos', desc_en:'Villas and penthouses', price:500, oficio:'FONTANERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'fon_08', name_es:'Cambio de altura de muebles de baño', name_en:'Bathroom cabinet height change', desc_es:'', desc_en:'', price:300, oficio:'FONTANERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'fon_09', name_es:'Griferías en negro', name_en:'Black taps and fittings', desc_es:'', desc_en:'', price:500, oficio:'FONTANERO', pedido:true, comment_es:'', comment_en:'' },
+      { id:'fon_10', name_es:'Cambio de mamparas fijas a correderas', name_en:'Fixed to sliding shower screen upgrade', desc_es:'', desc_en:'', price:600, oficio:'CRISTALERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'fon_11', name_es:'Cambio de vidrios en mamparas a traslúcidos', name_en:'Shower screen glass to translucent', desc_es:'', desc_en:'', price:300, oficio:'CRISTALERO', pedido:false, comment_es:'', comment_en:'' },
+    ]},
+  // ── ELECTRICIDAD Y FOTOVOLTAICA ───────────────────────────────────────
+  { key:'electricidad', step:5,
+    label_es:'Electricidad y fotovoltaica', label_en:'Electrical & solar',
+    nav_es:'05 · Electricidad', nav_en:'05 · Electrical',
+    desc_es:'Puntos de luz, mecanismos, cargadores y placas solares.',
+    desc_en:'Light points, mechanisms, chargers and solar panels.',
+    items:[
+      { id:'ele_01', name_es:'Añadir enchufe', name_en:'Add socket', desc_es:'A línea existente', desc_en:'To existing circuit', price:290, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_02', name_es:'Añadir punto iluminación', name_en:'Add light point', desc_es:'A circuito existente', desc_en:'To existing circuit', price:290, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_03', name_es:'Mecanismos negros', name_en:'Black mechanisms', desc_es:'Villa — instalación de mecanismos negros', desc_en:'Villa — black mechanism installation', price:1000, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_04', name_es:'Internet + 2 enchufes', name_en:'Internet + 2 sockets', desc_es:'Villa', desc_en:'Villa', price:870, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_05', name_es:'Cargador coche eléctrico', name_en:'EV charger', desc_es:'Villa', desc_en:'Villa', price:2400, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_06', name_es:'Instalación de fotovoltaica', name_en:'Solar PV installation', desc_es:'Fotovoltaica 4 kW 1PH LB0 inversor 4040 WP FT 18.324', desc_en:'Solar PV 4 kW 1PH LB0 inverter 4040 WP FT 18.324', price:8900, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_07', name_es:'Instalación de fotovoltaica', name_en:'Solar PV installation', desc_es:'Fotovoltaica 3,6 kW 1PH LB0 inversor 3030 WP FT 18.325', desc_en:'Solar PV 3.6 kW 1PH LB0 inverter 3030 WP FT 18.325', price:8200, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_08', name_es:'Mecanismos negros', name_en:'Black mechanisms', desc_es:'Apartamento — instalación de mecanismos negros', desc_en:'Apartment — black mechanism installation', price:535, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_09', name_es:'Cargador coche eléctrico', name_en:'EV charger', desc_es:'Apartamento', desc_en:'Apartment', price:2900, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_10', name_es:'Circuito dimmer', name_en:'Dimmer circuit', desc_es:'', desc_en:'', price:950, oficio:'ELECTRICISTA', pedido:false, comment_es:'Incluye cambio de tipo de iluminación', comment_en:'Includes lighting type change' },
+      { id:'ele_11', name_es:'Añadir RJ45 en solarium', name_en:'Add RJ45 in solarium', desc_es:'', desc_en:'', price:350, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ele_12', name_es:'Cambio de temperatura de color de la iluminación', name_en:'Lighting colour temperature change', desc_es:'', desc_en:'', price:500, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+    ]},
+  // ── CARPINTERÍA DE MADERA ─────────────────────────────────────────────
+  { key:'carp_madera', step:6,
+    label_es:'Carpintería de madera', label_en:'Wood carpentry',
+    nav_es:'06 · Carp. madera', nav_en:'06 · Woodwork',
+    desc_es:'Puertas y herrajes.',
+    desc_en:'Doors and fittings.',
+    items:[
+      { id:'cpm_01', name_es:'Puertas lacadas en RAL distinto a blanco', name_en:'Doors lacquered in RAL other than white', desc_es:'', desc_en:'', price:600, oficio:'Carpinteria MADERA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cpm_02', name_es:'Cambio color herrajes de cromo a negro', name_en:'Chrome to black fittings upgrade', desc_es:'', desc_en:'', price:400, oficio:'Carpinteria MADERA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cpm_03', name_es:'Pestillo en puerta', name_en:'Door latch', desc_es:'', desc_en:'', price:190, oficio:'Carpinteria MADERA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cpm_04', name_es:'Cerradura en puerta de paso', name_en:'Lock on internal door', desc_es:'', desc_en:'', price:300, oficio:'Carpinteria MADERA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cpm_05', name_es:'Puerta de paso abatible', name_en:'Hinged internal door', desc_es:'', desc_en:'', price:700, oficio:'Carpinteria MADERA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cpm_06', name_es:'Puerta de paso corredera', name_en:'Sliding internal door', desc_es:'', desc_en:'', price:1200, oficio:'Carpinteria MADERA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cpm_07', name_es:'Cambio de puerta de paso abatible a corredera', name_en:'Hinged to sliding door upgrade', desc_es:'', desc_en:'', price:500, oficio:'Carpinteria MADERA', pedido:false, comment_es:'', comment_en:'' },
+    ]},
+  // ── CARPINTERÍA DE ALUMINIO ───────────────────────────────────────────
+  { key:'carp_aluminio', step:7,
+    label_es:'Carpintería de aluminio', label_en:'Aluminum glazing',
+    nav_es:'07 · Carp. aluminio', nav_en:'07 · Glazing',
+    desc_es:'Carpintería de aluminio y persianas.',
+    desc_en:'Aluminium carpentry and shutters.',
+    items:[
+      { id:'cpa_01', name_es:'Carpintería de aluminio enrasada a suelo', name_en:'Floor-flush aluminium glazing', desc_es:'', desc_en:'', price:500, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'cpa_02', name_es:'Persiana en ventana', name_en:'Window shutter', desc_es:'', desc_en:'', price:875, oficio:'Carpinteria METALICA', pedido:false, comment_es:'', comment_en:'' },
+    ]},
+  // ── EXTERIORES ────────────────────────────────────────────────────────
+  { key:'exteriores', step:8,
+    label_es:'Exteriores', label_en:'Outdoors',
+    nav_es:'08 · Exteriores', nav_en:'08 · Outdoors',
+    desc_es:'Toldos, pérgola, solarium y mobiliario exterior.',
+    desc_en:'Awnings, pergola, solarium and outdoor furniture.',
+    items:[
+      { id:'ext_01', name_es:'Toldo automático — hab. corredera', name_en:'Motorised awning — bedroom sliding', desc_es:'Villa · blanco 3.70 m × 3.25 m · brazos invisibles motorizados', desc_en:'Villa · white 3.70 m × 3.25 m · concealed motorised arms', price:3330, oficio:'TOLDOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ext_02', name_es:'Toldo automático — salón corredera', name_en:'Motorised awning — living sliding', desc_es:'Villa · blanco 4.45 m × 3.25 m · brazos invisibles motorizados', desc_en:'Villa · white 4.45 m × 3.25 m · concealed motorised arms', price:4500, oficio:'TOLDOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ext_03', name_es:'Toldo automático — salón fijo', name_en:'Motorised awning — living fixed', desc_es:'Villa · blanco 4.70 m × 3.25 m · brazos invisibles motorizados', desc_en:'Villa · white 4.70 m × 3.25 m · concealed motorised arms', price:4200, oficio:'TOLDOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ext_04', name_es:'Pérgola con toldo palillería (no apto paneles solares)', name_en:'Pergola with louvred awning (not suitable for solar panels)', desc_es:'Villa · solarium · herraje RAL 8014 texturado', desc_en:'Villa · solarium · RAL 8014 textured fitting', price:3900, oficio:'TOLDOS', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ext_05', name_es:'Pérgola para paneles solares', name_en:'Pergola for solar panels', desc_es:'Apartamentos ático · herraje RAL 8014 texturado', desc_en:'Penthouse apartments · RAL 8014 textured fitting', price:null, oficio:'TOLDOS', pedido:false, comment_es:'Consultar precio según dimensiones', comment_en:'Price on request depending on dimensions' },
+      { id:'ext_06', name_es:'Solarium', name_en:'Solarium', desc_es:'Villa · incluye cocina exterior', desc_en:'Villa · includes outdoor kitchen', price:19990, oficio:'ALBAÑILERIA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ext_07', name_es:'Cocina exterior', name_en:'Outdoor kitchen', desc_es:'', desc_en:'', price:4500, oficio:'ALBAÑILERIA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'ext_08', name_es:'Mobiliario exterior', name_en:'Outdoor furniture', desc_es:'Precio según catálogo IREL', desc_en:'Price per IREL catalogue', price:null, oficio:'MOBILIARIO', pedido:false, comment_es:'', comment_en:'' },
+    ]},
+  // ── PISCINA ───────────────────────────────────────────────────────────
+  { key:'piscina', step:9,
+    label_es:'Piscina', label_en:'Pool',
+    nav_es:'09 · Piscina', nav_en:'09 · Pool',
+    desc_es:'Equipamiento e instalaciones para la piscina.',
+    desc_en:'Pool equipment and installations.',
+    items:[
+      { id:'pis_01', name_es:'Bomba de calor + cubierta térmica', name_en:'Heat pump + thermal cover', desc_es:'Villa · ECO ELYO 15 kW + cubierta térmica y enrollador', desc_en:'Villa · ECO ELYO 15 kW + thermal cover and roller', price:5900, oficio:'PISCINA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'pis_02', name_es:'Cañón de agua', name_en:'Water cannon', desc_es:'Villa · chorro presión con pulsador + motor 0.75 CV', desc_en:'Villa · pressure jet with push button + 0.75 HP motor', price:1575, oficio:'PISCINA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'pis_03', name_es:'Cascada en piscina', name_en:'Pool waterfall', desc_es:'Villa · pulsador piezoeléctrico + motor 0.75 CV', desc_en:'Villa · piezoelectric push button + 0.75 HP motor', price:2700, oficio:'PISCINA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'pis_04', name_es:'Jacuzzi en bancada', name_en:'Jacuzzi in bench', desc_es:'Villa · bomba aire soplante Astral 1.5 CV', desc_en:'Villa · Astral air blower pump 1.5 HP', price:2400, oficio:'PISCINA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'pis_05', name_es:'Sistema de cloración salina', name_en:'Salt chlorination system', desc_es:'Villa · regulador automático de pH', desc_en:'Villa · automatic pH regulator', price:2900, oficio:'PISCINA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'pis_06', name_es:'Jacuzzi prefabricado 6 pax', name_en:'Prefab jacuzzi 6 pax', desc_es:'Villas y apartamentos con solarium', desc_en:'Villas and apartments with solarium', price:7800, oficio:'JACUZZI', pedido:false, comment_es:'Natuspa M6/67 o similar', comment_en:'Natuspa M6/67 or similar' },
+      { id:'pis_07', name_es:'Jacuzzi prefabricado 5 pax', name_en:'Prefab jacuzzi 5 pax', desc_es:'Villas y apartamentos con solarium', desc_en:'Villas and apartments with solarium', price:6750, oficio:'JACUZZI', pedido:false, comment_es:'Natuspa S5/52 o similar', comment_en:'Natuspa S5/52 or similar' },
+      { id:'pis_08', name_es:'Jacuzzi prefabricado 3 pax', name_en:'Prefab jacuzzi 3 pax', desc_es:'Villas y apartamentos con solarium', desc_en:'Villas and apartments with solarium', price:5750, oficio:'JACUZZI', pedido:false, comment_es:'Natuspa SX3/35 o similar', comment_en:'Natuspa SX3/35 or similar' },
+      { id:'pis_09', name_es:'Ampliación de dimensiones de piscina', name_en:'Pool size extension', desc_es:'Villa · precio por m² extra', desc_en:'Villa · price per extra m²', price:750, oficio:'PISCINA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'pis_10', name_es:'Vallado de seguridad para piscina', name_en:'Pool safety fence', desc_es:'Villa', desc_en:'Villa', price:null, oficio:'OTROS PISCINA', pedido:false, comment_es:'Consultar precio', comment_en:'On request' },
+      { id:'pis_11', name_es:'Cambio a iluminación RGB en piscina', name_en:'Pool lighting upgrade to RGB', desc_es:'Villa', desc_en:'Villa', price:600, oficio:'PISCINA', pedido:false, comment_es:'', comment_en:'' },
+    ]},
+  // ── JARDINERÍA ────────────────────────────────────────────────────────
+  { key:'jardineria', step:10,
+    label_es:'Jardinería', label_en:'Gardening',
+    nav_es:'10 · Jardinería', nav_en:'10 · Gardening',
+    desc_es:'Palmeras e iluminación en vegetación.',
+    desc_en:'Palm trees and vegetation lighting.',
+    items:[
+      { id:'jar_01', name_es:'Palmera adicional 3 m', name_en:'Additional palm tree 3 m', desc_es:'Villa · alcorque + palmera 3 m', desc_en:'Villa · tree pit + palm tree 3 m', price:600, oficio:'JARDINERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'jar_02', name_es:'Palmera adicional 4 m', name_en:'Additional palm tree 4 m', desc_es:'Villa · alcorque + palmera 4 m', desc_en:'Villa · tree pit + palm tree 4 m', price:850, oficio:'JARDINERO', pedido:false, comment_es:'', comment_en:'' },
+      { id:'jar_03', name_es:'Iluminación puntual en vegetación', name_en:'Spot lighting in vegetation', desc_es:'', desc_en:'', price:400, oficio:'ELECTRICISTA', pedido:false, comment_es:'', comment_en:'' },
+    ]},
+  // ── ALBAÑILERÍA ───────────────────────────────────────────────────────
+  { key:'albanileria', step:11,
+    label_es:'Albañilería', label_en:'Masonry',
+    nav_es:'11 · Albañilería', nav_en:'11 · Masonry',
+    desc_es:'Cambios de pavimento y actuaciones en zonas exteriores.',
+    desc_en:'Flooring changes and exterior area works.',
+    items:[
+      { id:'alb_01', name_es:'Cambio de pavimento 100×100 — Apartamento 2H', name_en:'Flooring upgrade 100×100 — 2-bed apt.', desc_es:'Apartamento — cambio de pavimento 100×100', desc_en:'Apartment — flooring upgrade 100×100', price:2100, oficio:'ALBAÑILERIA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'alb_02', name_es:'Cambio de pavimento 100×100 — Ático', name_en:'Flooring upgrade 100×100 — Penthouse', desc_es:'Apartamento — cambio de pavimento 100×100', desc_en:'Apartment — flooring upgrade 100×100', price:2700, oficio:'ALBAÑILERIA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'alb_03', name_es:'Ampliación de pavimento en zona jardinera', name_en:'Flooring extension garden area', desc_es:'m²', desc_en:'m²', price:200, oficio:'ALBAÑILERIA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'alb_04', name_es:'Quitar césped, poner porcelánico', name_en:'Remove lawn, install porcelain', desc_es:'m²', desc_en:'m²', price:135, oficio:'ALBAÑILERIA', pedido:false, comment_es:'', comment_en:'' },
+      { id:'alb_05', name_es:'Quitar porcelánico, poner césped', name_en:'Remove porcelain, install lawn', desc_es:'m²', desc_en:'m²', price:75, oficio:'ALBAÑILERIA', pedido:true, comment_es:'', comment_en:'' },
+    ]},
+];
+
+// ─── RENDER ────────────────────────────────────────────────────────
+function fmtEur(n) {
+  return n.toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' €';
+}
+
+function buildDOM() {
+  // Nav
+  const nav = document.getElementById('stepNav');
+  nav.innerHTML = '';
+  AREAS.forEach(area => {
+    const div = document.createElement('div');
+    div.className = 'snav-item' + (area.step === 1 ? ' active' : '');
+    div.dataset.step = area.step;
+    div.onclick = () => goTo(area.step);
+    div.innerHTML = `<span data-navkey="${area.key}">${LANG==='es'?area.nav_es:area.nav_en}</span>`;
+    nav.appendChild(div);
+  });
+
+  // Steps
+  const container = document.getElementById('stepsContainer');
+  container.innerHTML = '';
+  AREAS.forEach(area => {
+    const div = document.createElement('div');
+    div.className = 'step' + (area.step === 1 ? ' active' : '');
+    div.id = 'step-' + area.step;
+
+    const theadRow = `<thead><tr>
+      <th>${LANG==='es'?'Descripción':'Description'}</th>
+      <th>${LANG==='es'?'Notas':'Notes'}</th>
+      <th>${LANG==='es'?'Notas extra':'Extra notes'}</th>
+      <th class="tr">${LANG==='es'?'Precio unit. (€)':'Unit price (€)'}</th>
+    </tr></thead>`;
+
+    let rowsHTML = '';
+    area.items.forEach(item => {
+      const name = LANG === 'es' ? item.name_es : item.name_en;
+      const desc = LANG === 'es' ? item.desc_es : item.desc_en;
+      const comment = LANG === 'es' ? (item.comment_es || '') : (item.comment_en || '');
+      const isConsultar = item.price === null || item.price === undefined;
+      const sublines = item.sublines || [];
+      rowsHTML += `
+      <tr>
+        <td>
+          <div class="extra-name">${name}</div>
+          ${sublines.length ? sublines.map(s => {
+            const sname = LANG==='es' ? s.name_es : s.name_en;
+            const sdesc = LANG==='es' ? (s.desc_es||'') : (s.desc_en||'');
+            return `<div class="extra-subline">↳ ${sname}${sdesc ? `<span class="extra-desc" style="display:inline;margin-left:6px;">${sdesc}</span>` : ''}</div>`;
+          }).join('') : ''}
+        </td>
+        <td><span class="extra-desc">${desc || '—'}</span></td>
+        <td><span class="extra-comment">${comment || '—'}</span></td>
+        <td>
+          <span class="extra-price ${isConsultar?'consultar':''}">
+            ${isConsultar ? (LANG==='es'?'Consultar precio':'Price on request') : fmtEur(item.price)}
+          </span>
+        </td>
+      </tr>`;
+    });
+
+    const isFirst = area.step === 1;
+    const isLast = area.step === AREAS.length;
+
+    div.innerHTML = `
+      <div class="sec-eyebrow">${String(area.step).padStart(2,'0')} — ${LANG==='es'?'Extras':'Extras'}</div>
+      <h2 class="sec-title">${LANG==='es'?area.label_es:area.label_en}</h2>
+      <p class="sec-desc">${LANG==='es'?area.desc_es:area.desc_en}</p>
+      <table class="extras-table">${theadRow}<tbody>${rowsHTML}</tbody></table>
+      <div class="nav-btns">
+        ${!isFirst ? `<button class="btn btn-back" onclick="prev(${area.step})">${LANG==='es'?'← Anterior':'← Back'}</button>` : '<div></div>'}
+        ${!isLast ? `<button class="btn btn-next" onclick="next(${area.step})">${LANG==='es'?'Siguiente →':'Next →'}</button>` : '<div></div>'}
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+// ─── NAVIGATION ─────────────────────────────────────────────────────
+function goTo(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  const t = document.getElementById('step-' + n);
+  if (t) t.classList.add('active');
+  document.querySelectorAll('.snav-item').forEach(i => {
+    i.classList.remove('active');
+    if (parseInt(i.dataset.step) === n) i.classList.add('active');
+  });
+  currentStep = n;
+  sendHeight();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function next(step) { goTo(step + 1); }
+function prev(step) { goTo(step - 1); }
+
+// ─── LANG ────────────────────────────────────────────────────────────
+function setLang(lang) {
+  LANG = lang;
+  document.getElementById('btn-es').classList.toggle('active', lang === 'es');
+  document.getElementById('btn-en').classList.toggle('active', lang === 'en');
+  const wasStep = currentStep;
+  buildDOM();
+  goTo(wasStep);
+}
+
+// ─── UTILS ──────────────────────────────────────────────────────────
+function sendHeight() {
+  window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, '*');
+}
+window.addEventListener('resize', sendHeight);
+</script>
+</body>
+</html>
