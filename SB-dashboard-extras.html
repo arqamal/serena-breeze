@@ -177,7 +177,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
 // ─── LOGIN (migrado a AuthUsuarios.gs — login centralizado) ─────────
-const LOGIN_URL = 'https://script.google.com/a/macros/amalconsult.com/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
+const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
 
 function doLogin() {
   const u = document.getElementById('login-user').value.trim();
@@ -240,7 +240,7 @@ let CURRENT_PROMO = null;
 let USER_ROL = null;
 
 // URL del Web App AuthUsuarios.gs (mismo endpoint que LOGIN_URL — accion 'roles').
-const AUTH_ROLES_URL = 'https://script.google.com/a/macros/amalconsult.com/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
+const AUTH_ROLES_URL = 'https://script.google.com/macros/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
 
 // Fallback si el fetch de roles falla (Sheet caída, URL sin desplegar, etc.):
 // misma tabla que antes vivía hardcodeada aquí, para no dejar el dashboard
