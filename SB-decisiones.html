@@ -165,8 +165,9 @@
 
 <script>
 // ─── CONFIGURACIÓN ──────────────────────────────────────────────────
-// Pegar aquí la URL de despliegue del Apps Script "GeneradorDecisiones.gs"
-// (Implementar > Nueva implementación > Aplicación web > Acceso: Cualquiera)
+// LOGIN_URL: login centralizado (AuthUsuarios.gs).
+// APP_URL: GeneradorDecisiones.gs — sigue guardando las decisiones, no toca usuarios.
+const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
 const APP_URL = 'https://script.google.com/macros/s/AKfycbzwJbVWrpxVoUPOWhQwZ77Fi2vcBIS5h3zO3HkaALYOaFq2G539KQIo7fuiqf2ILVe3/exec';
 
 let SESSION_USER = null; // nombre del usuario conectado
@@ -184,9 +185,9 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.disabled = true;
     btn.textContent = 'Comprobando…';
 
-    fetch(APP_URL, {
+    fetch(LOGIN_URL, {
       method: 'POST',
-      body: JSON.stringify({ accion: 'login', user: u, pass: p })
+      body: JSON.stringify({ accion: 'login', usuario: u, pass: p, herramienta: 'decisiones' })
     })
       .then(r => r.json())
       .then(data => {
@@ -197,6 +198,9 @@ document.addEventListener('DOMContentLoaded', () => {
           document.getElementById('login-screen').style.display = 'none';
           document.getElementById('app-wrapper').style.display = 'block';
           sendHeight();
+        } else if (data.motivo === 'sin_acceso') {
+          errorEl.textContent = 'Tu usuario no tiene acceso al registro de decisiones.';
+          errorEl.style.display = 'block';
         } else {
           errorEl.textContent = 'Usuario o contraseña incorrectos';
           errorEl.style.display = 'block';
