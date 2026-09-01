@@ -551,8 +551,16 @@ function descargarPDFVivienda(ev, v) {
     alert('No se ha podido cargar el generador de PDF (jsPDF). Comprueba la conexión y vuelve a intentarlo.');
     return;
   }
-  const g = agruparPorVivienda()[v];
+  let g = agruparPorVivienda()[v];
   if (!g) return;
+
+  const oficioSel = document.getElementById('oficio-select').value;
+  if (oficioSel) {
+    g = {
+      extras: g.extras.filter(e => (e.oficio || '') === oficioSel),
+      especiales: g.especiales.filter(e => (e.oficio || '') === oficioSel)
+    };
+  }
 
   const idsPadreDePack = new Set(
     g.extras.map(e => String(e.id || '').match(/^(.+)_sub\d+$/)).filter(Boolean).map(m => m[1])
