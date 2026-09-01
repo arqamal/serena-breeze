@@ -18,36 +18,41 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 14px; overscroll-behavior-y: contain; }
 
-  main { max-width: 1080px; margin: 0 auto; padding: 40px 48px 80px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 40px 48px 80px; }
   .sec-eyebrow { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 10px; }
   .sec-title { font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 400; text-transform: uppercase; color: var(--black); margin-bottom: 12px; letter-spacing: 1px; }
   .sec-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.7; max-width: 640px; margin-bottom: 28px; }
 
-  /* BREADCRUMB */
-  .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 28px; font-family: 'Roboto', sans-serif; font-size: 12px; letter-spacing: .5px; }
-  .crumb { color: var(--slate-gray); cursor: pointer; text-transform: uppercase; letter-spacing: 1.5px; font-size: 11px; }
-  .crumb:hover { color: var(--black); text-decoration: underline; }
-  .crumb.current { color: var(--black); font-weight: 400; cursor: default; }
-  .crumb.current:hover { text-decoration: none; }
-  .crumb-sep { color: var(--mid); }
+  /* TOP BAR — selector de promoción, igual que el dashboard */
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+  .promo-tabs { display: flex; border: 1px solid var(--border); }
+  .promo-tab { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; padding: 12px 28px; cursor: pointer; background: var(--white); color: var(--slate-gray); border: none; border-right: 1px solid var(--border); transition: all .15s; }
+  .promo-tab:last-child { border-right: none; }
+  .promo-tab.active { background: var(--black); color: white; }
+  .promo-tab:hover:not(.active) { background: var(--off-white); color: var(--text); }
+  .refresh-btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 11px 18px; background: transparent; color: var(--slate-gray); border: 1px solid var(--border); transition: all .15s; }
+  .refresh-btn:hover { border-color: var(--black); color: var(--black); }
 
-  /* LOAD / EMPTY / READONLY BANNER */
   #load-indicator { display: none; font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--slate-gray); padding: 8px 16px; background: var(--off-white); border: 1px solid var(--border); margin-bottom: 20px; letter-spacing: .5px; }
   #load-indicator.err { color: #c0392b; background: #fdf0ee; border-color: #f0c4bc; }
   .readonly-banner { display: none; font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--slate-gray); padding: 10px 16px; background: var(--off-white); border: 1px solid var(--border); margin-bottom: 24px; letter-spacing: .3px; }
   .readonly-banner.show { display: block; }
+  #empty-state { display: none; font-family: 'Roboto', sans-serif; font-size: 14px; color: var(--slate-gray); padding: 32px; text-align: center; border: 1px solid var(--border); }
 
-  /* NIVEL 1 — TARJETAS DE PROMOCIÓN */
-  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 8px; }
-  .level-card { border: 1px solid var(--border); background: var(--white); }
-  .level-card-head { padding: 18px 22px; background: var(--off-white); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-  .level-card-title { font-family: 'Oswald', sans-serif; font-size: 20px; letter-spacing: 1px; color: var(--black); text-transform: uppercase; }
-  .level-card-nav { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--slate-gray); background: var(--white); border: 1px solid var(--border); padding: 7px 14px; cursor: pointer; white-space: nowrap; }
-  .level-card-nav:hover { border-color: var(--black); color: var(--black); }
-  .level-card-body { padding: 18px 22px 22px; }
+  .block-title { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin: 36px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .block-title:first-of-type { margin-top: 0; }
 
-  /* GRID DE CAMPOS (label + valor/input) */
-  .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+  /* BLOQUE 1 — CABECERA DE PROMOCIÓN */
+  .promo-box { border: 1px solid var(--border); }
+  .promo-box-head { padding: 20px 24px; background: var(--off-white); border-bottom: 1px solid var(--border); display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+  .promo-name { font-family: 'Oswald', sans-serif; font-size: 24px; letter-spacing: 1px; color: var(--black); text-transform: uppercase; }
+  .promo-counts { display: flex; align-items: center; gap: 18px; font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--slate-gray); }
+  .promo-counts .count-item { display: flex; align-items: center; gap: 6px; }
+  .promo-counts input.field-input { width: 64px; text-align: center; }
+  .promo-box-body { padding: 20px 24px 24px; }
+
+  /* GRID DE CAMPOS (label + valor/input), fila horizontal */
+  .field-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px 20px; }
   .field-item { display: flex; flex-direction: column; gap: 5px; }
   .field-label { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--slate-gray); }
   .field-value { font-family: 'Roboto', sans-serif; font-size: 14px; color: var(--text); padding: 8px 0; min-height: 20px; }
@@ -58,24 +63,25 @@
   .field-input.err-flash { border-color: #c0392b; outline: 2px solid #f0c4bc; outline-offset: 1px; }
   .field-input.saved-flash { border-color: #2d7a2d; }
 
-  /* NIVEL 3 — TABLA DE VIVIENDAS */
-  .vivienda-table-wrap { border: 1px solid var(--border); }
-  .vivienda-table { width: 100%; border-collapse: collapse; }
-  .vivienda-table th { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--off-white); font-weight: 400; white-space: nowrap; }
-  .vivienda-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  .vivienda-table tr:last-child td { border-bottom: none; }
-  .vivienda-table td.vcode { font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: .5px; color: var(--black); white-space: nowrap; }
-  .vivienda-table input.field-input { min-width: 130px; }
+  /* BLOQUE 2 — TABLA VILLAS/APARTAMENTOS (resumen de bloque) */
+  .bloques-table-wrap, .viviendas-table-wrap { border: 1px solid var(--border); overflow-x: auto; }
+  table.data-table { width: 100%; border-collapse: collapse; min-width: 640px; }
+  table.data-table th { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--off-white); font-weight: 400; white-space: nowrap; }
+  table.data-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.data-table tr:last-child td { border-bottom: none; }
+  table.data-table td.rowlabel { font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: .5px; color: var(--black); white-space: nowrap; }
+  table.data-table input.field-input { min-width: 120px; }
 
+  /* BLOQUE 3 — VIVIENDAS */
+  .viviendas-group { margin-bottom: 28px; }
+  .viviendas-group-title { font-family: 'Oswald', sans-serif; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); padding: 12px 16px; background: var(--off-white); border: 1px solid var(--border); border-bottom: none; }
   .add-vivienda-row { display: flex; align-items: flex-end; gap: 10px; padding: 16px 12px; border-top: 1px solid var(--border); background: var(--off-white); flex-wrap: wrap; }
   .add-vivienda-row .field-item { min-width: 140px; }
   .add-vivienda-btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; background: var(--black); color: white; border: none; padding: 10px 20px; cursor: pointer; height: 36px; }
   .add-vivienda-btn:hover { background: #333; }
   .add-vivienda-btn:disabled { opacity: .5; cursor: default; }
 
-  #empty-state { display: none; font-family: 'Roboto', sans-serif; font-size: 14px; color: var(--slate-gray); padding: 32px; text-align: center; border: 1px solid var(--border); }
-
-  /* LOGIN (idéntico al resto de herramientas SB) */
+  /* LOGIN */
   #login-screen { position: fixed; inset: 0; background: var(--white); display: flex; align-items: center; justify-content: center; z-index: 9999; }
   .login-box { width: 100%; max-width: 380px; padding: 48px 40px; border: 1px solid var(--border); }
   .login-logo { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 3px; text-transform: uppercase; color: var(--black); margin-bottom: 6px; }
@@ -94,7 +100,6 @@
 
   @media (max-width: 768px) {
     main { padding-left: 16px; padding-right: 16px; }
-    .field-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -123,23 +128,25 @@
     <div class="sec-title">Seguimiento de fechas</div>
     <div class="sec-desc">Fechas clave de cada promoción, bloque y vivienda: licencia, inicio, bloqueos de extras y entregas.</div>
 
-    <div class="breadcrumb" id="breadcrumb"></div>
+    <div class="topbar">
+      <div class="promo-tabs">
+        <button class="promo-tab" id="tab-2sb" onclick="switchPromo('2SB')">2SB</button>
+        <button class="promo-tab" id="tab-3sb" onclick="switchPromo('3SB')">3SB</button>
+      </div>
+      <button class="refresh-btn" onclick="if (CURRENT_PROMO) cargarDatos()">↻ Actualizar</button>
+    </div>
+
     <div id="load-indicator"></div>
     <div class="readonly-banner" id="readonly-banner">Tu usuario solo puede consultar esta pantalla, no editar fechas.</div>
-    <div id="empty-state"></div>
+    <div id="empty-state">Elige Serena Breeze 2 o Serena Breeze 3 arriba para ver sus fechas.</div>
 
-    <div id="view-nivel1" class="card-grid"></div>
-    <div id="view-nivel2" class="card-grid" style="display:none"></div>
-    <div id="view-nivel3" style="display:none"></div>
+    <div id="content" style="display:none"></div>
   </main>
 </div>
 
 <script>
 // ─── LOGIN ─────────────────────────────────────────────────────
-// Mismo Web App que el resto de herramientas (AuthUsuarios.gs), login centralizado.
 const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
-
-// URL del Web App nuevo GeneradorFechas.gs — sustituir tras desplegarlo.
 const FECHAS_URL = 'https://script.google.com/macros/s/AKfycbynWrDgP-fyWwQHuQ26LqFU0LYujR6ngtXpCmjvY_IsJRP5qf8lduWO9LcX-jZS31z_Mw/exec';
 
 let USER_ROL = null;
@@ -163,8 +170,8 @@ function doLogin() {
         USER_ROL = data.rol || null;
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-wrapper').style.display = 'block';
-        document.getElementById('readonly-banner').classList.toggle('show', !puedeEditarNivel('promocion') && !puedeEditarNivel('bloque') && !puedeEditarNivel('vivienda'));
-        cargarDatos();
+        const puedeAlgo = puedeEditarNivel('promocion') || puedeEditarNivel('bloque') || puedeEditarNivel('vivienda');
+        document.getElementById('readonly-banner').classList.toggle('show', !puedeAlgo);
       } else if (data.motivo === 'sin_acceso') {
         errorEl.textContent = 'Tu usuario no tiene acceso a esta herramienta.';
         errorEl.style.display = 'block';
@@ -201,8 +208,6 @@ function puedeEditarNivel(nivel) {
 
 // ─── CAMPOS POR NIVEL ────────────────────────────────────────────
 const FIELDS_PROMOCION = [
-  { key: 'num_villas', label: 'Nº villas', type: 'number' },
-  { key: 'num_apartamentos', label: 'Nº apartamentos', type: 'number' },
   { key: 'fecha_licencia', label: 'Fecha licencia', type: 'date' },
   { key: 'fecha_inicio', label: 'Fecha inicio', type: 'date' },
   { key: 'fecha_fin_estimada', label: 'Fecha fin estimada', type: 'date' },
@@ -214,10 +219,10 @@ const FIELDS_BLOQUE = [
   { key: 'fecha_bloqueo_estructura', label: 'Bloqueo estructura', type: 'date' },
   { key: 'fecha_bloqueo_albanileria', label: 'Bloqueo albañilería', type: 'date' },
   { key: 'fecha_bloqueo_instalaciones', label: 'Bloqueo instalaciones', type: 'date' },
-  { key: 'fecha_bloqueo_materiales', label: 'Bloqueo elección materiales', type: 'date' },
+  { key: 'fecha_bloqueo_materiales', label: 'Bloqueo materiales', type: 'date' },
   { key: 'fecha_bloqueo_acabados', label: 'Bloqueo acabados', type: 'date' },
   { key: 'fecha_bloqueo_equipamiento', label: 'Bloqueo equipamiento', type: 'date' },
-  { key: 'fecha_entrega', label: 'Entrega de bloque', type: 'date' }
+  { key: 'fecha_entrega', label: 'Fecha entrega', type: 'date' }
 ];
 const FIELDS_VIVIENDA = [
   { key: 'fecha_inicio', label: 'Fecha inicio', type: 'date' },
@@ -226,33 +231,33 @@ const FIELDS_VIVIENDA = [
   { key: 'fecha_escritura', label: 'Fecha escritura', type: 'date' }
 ];
 
-const PROMOCIONES_FIJAS = [
-  { codigo: '2SB', nombre: 'Serena Breeze 2' },
-  { codigo: '3SB', nombre: 'Serena Breeze 3' }
-];
+const PROMOCIONES_FIJAS = { '2SB': 'Serena Breeze 2', '3SB': 'Serena Breeze 3' };
 const BLOQUES_FIJOS = ['Villas', 'Apartamentos'];
 
 // ─── ESTADO ──────────────────────────────────────────────────────
 let DATA_PROMOCIONES = [];
 let DATA_BLOQUES = [];
 let DATA_VIVIENDAS = [];
-let ESTADO = { promo: null, bloque: null };
+let CURRENT_PROMO = null;
+
+function switchPromo(promo) {
+  if (promo === CURRENT_PROMO) return;
+  CURRENT_PROMO = promo;
+  document.getElementById('tab-2sb').classList.toggle('active', promo === '2SB');
+  document.getElementById('tab-3sb').classList.toggle('active', promo === '3SB');
+  cargarDatos();
+}
 
 function cargarDatos() {
   const ind = document.getElementById('load-indicator');
+  const empty = document.getElementById('empty-state');
+  const content = document.getElementById('content');
+  empty.style.display = 'none';
+  content.style.display = 'none';
   ind.className = ''; ind.style.display = 'block';
-  ind.textContent = 'Cargando…';
+  ind.textContent = 'Cargando ' + CURRENT_PROMO + '…';
 
-  if (FECHAS_URL.indexOf('PENDIENTE_DESPLEGAR') === 0) {
-    ind.className = 'err';
-    ind.textContent = 'Falta desplegar GeneradorFechas.gs y sustituir FECHAS_URL en el código. Ver comentario junto a la constante.';
-    return;
-  }
-
-  fetch(FECHAS_URL, {
-    method: 'POST',
-    body: JSON.stringify({ accion: 'consultar' })
-  })
+  fetch(FECHAS_URL, { method: 'POST', body: JSON.stringify({ accion: 'consultar' }) })
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => {
       if (!data.ok) throw new Error(data.error || 'respuesta sin ok:true');
@@ -260,8 +265,8 @@ function cargarDatos() {
       DATA_BLOQUES = data.bloques || [];
       DATA_VIVIENDAS = data.viviendas || [];
       ind.style.display = 'none';
-      renderBreadcrumb();
-      renderNivel1();
+      content.style.display = 'block';
+      renderContenido();
     })
     .catch(e => {
       ind.className = 'err';
@@ -269,218 +274,170 @@ function cargarDatos() {
     });
 }
 
-// ─── NAVEGACIÓN ──────────────────────────────────────────────────
-function irANivel1() {
-  ESTADO = { promo: null, bloque: null };
-  mostrarSolo('view-nivel1');
-  renderBreadcrumb();
-  renderNivel1();
-}
-function irANivel2(promoCodigo) {
-  ESTADO.promo = promoCodigo;
-  ESTADO.bloque = null;
-  mostrarSolo('view-nivel2');
-  renderBreadcrumb();
-  renderNivel2();
-}
-function irANivel3(tipoBloque) {
-  ESTADO.bloque = tipoBloque;
-  mostrarSolo('view-nivel3');
-  renderBreadcrumb();
-  renderNivel3();
-}
-function mostrarSolo(idVisible) {
-  ['view-nivel1', 'view-nivel2', 'view-nivel3'].forEach(id => {
-    document.getElementById(id).style.display = (id === idVisible) ? (id === 'view-nivel3' ? 'block' : 'grid') : 'none';
-  });
+// ─── RENDER PRINCIPAL — todo lo de la promoción elegida, en una página ──
+function renderContenido() {
+  const cont = document.getElementById('content');
+  cont.innerHTML =
+    renderBloque1_Promocion() +
+    '<div class="block-title">Villas y apartamentos · fechas de bloque</div>' +
+    renderBloque2_Bloques() +
+    renderBloque3_Viviendas();
+
+  activarListeners();
 }
 
-function renderBreadcrumb() {
-  const el = document.getElementById('breadcrumb');
-  const promoNombre = ESTADO.promo ? (PROMOCIONES_FIJAS.find(p => p.codigo === ESTADO.promo) || {}).nombre : null;
-  let html = '<span class="crumb' + (!ESTADO.promo ? ' current' : '') + '" onclick="irANivel1()">Promociones</span>';
-  if (ESTADO.promo) {
-    html += '<span class="crumb-sep">/</span>';
-    html += '<span class="crumb' + (!ESTADO.bloque ? ' current' : '') + '" onclick="irANivel2(\'' + ESTADO.promo + '\')">' + escapeHtml(promoNombre || ESTADO.promo) + '</span>';
-  }
-  if (ESTADO.bloque) {
-    html += '<span class="crumb-sep">/</span>';
-    html += '<span class="crumb current">' + escapeHtml(ESTADO.bloque) + '</span>';
-  }
-  el.innerHTML = html;
-}
-
-// ─── NIVEL 1 — PROMOCIONES ─────────────────────────────────────
-function renderNivel1() {
-  const cont = document.getElementById('view-nivel1');
+// ── BLOQUE 1: cabecera de promoción ──────────────────────────────
+function renderBloque1_Promocion() {
   const puedeEditar = puedeEditarNivel('promocion');
-  cont.innerHTML = PROMOCIONES_FIJAS.map(p => {
-    const registro = DATA_PROMOCIONES.find(r => r.promocion === p.codigo) || { promocion: p.codigo };
-    return '' +
-      '<div class="level-card">' +
-        '<div class="level-card-head">' +
-          '<div class="level-card-title">' + escapeHtml(p.nombre) + '</div>' +
-          '<button class="level-card-nav" onclick="irANivel2(\'' + p.codigo + '\')">Ver bloques →</button>' +
-        '</div>' +
-        '<div class="level-card-body">' +
-          renderFieldGrid(FIELDS_PROMOCION, registro, puedeEditar, campos => guardarPromocion(p.codigo, campos)) +
-        '</div>' +
+  const registro = DATA_PROMOCIONES.find(r => r.promocion === CURRENT_PROMO) || { promocion: CURRENT_PROMO };
+
+  const numVillas = registro.num_villas;
+  const numApts = registro.num_apartamentos;
+
+  let countsHtml;
+  if (puedeEditar) {
+    countsHtml =
+      '<div class="promo-counts">' +
+        '<span class="count-item">Villas <input class="field-input" data-campo="num_villas" type="number" value="' + escapeAttr(numVillas) + '"></span>' +
+        '<span class="count-item">Apartamentos <input class="field-input" data-campo="num_apartamentos" type="number" value="' + escapeAttr(numApts) + '"></span>' +
       '</div>';
-  }).join('');
+  } else {
+    countsHtml =
+      '<div class="promo-counts">' +
+        '<span>' + (numVillas || numVillas === 0 ? numVillas : '—') + ' villas</span>' +
+        '<span>' + (numApts || numApts === 0 ? numApts : '—') + ' apartamentos</span>' +
+      '</div>';
+  }
+
+  return '' +
+    '<div class="promo-box" data-nivel="promocion">' +
+      '<div class="promo-box-head">' +
+        '<div class="promo-name">' + escapeHtml(PROMOCIONES_FIJAS[CURRENT_PROMO] || CURRENT_PROMO) + '</div>' +
+        countsHtml +
+      '</div>' +
+      '<div class="promo-box-body">' +
+        renderFieldRow(FIELDS_PROMOCION, registro, puedeEditar, campos => guardarPromocion(campos)) +
+      '</div>' +
+    '</div>';
 }
 
-function guardarPromocion(promoCodigo, campos) {
-  return llamarGuardar({ accion: 'guardar_promocion', rol: USER_ROL, promocion: promoCodigo, campos: campos })
+function guardarPromocion(campos) {
+  return llamarGuardar({ accion: 'guardar_promocion', rol: USER_ROL, promocion: CURRENT_PROMO, campos: campos })
     .then(() => {
-      let registro = DATA_PROMOCIONES.find(r => r.promocion === promoCodigo);
-      if (!registro) { registro = { promocion: promoCodigo }; DATA_PROMOCIONES.push(registro); }
+      let registro = DATA_PROMOCIONES.find(r => r.promocion === CURRENT_PROMO);
+      if (!registro) { registro = { promocion: CURRENT_PROMO }; DATA_PROMOCIONES.push(registro); }
       Object.assign(registro, campos);
     });
 }
 
-// ─── NIVEL 2 — BLOQUES (villas / apartamentos) ─────────────────
-function renderNivel2() {
-  const cont = document.getElementById('view-nivel2');
+// ── BLOQUE 2: tabla resumen Villas / Apartamentos ────────────────
+function renderBloque2_Bloques() {
   const puedeEditar = puedeEditarNivel('bloque');
-  cont.innerHTML = BLOQUES_FIJOS.map(tipo => {
-    const registro = DATA_BLOQUES.find(r => r.promocion === ESTADO.promo && r.tipo === tipo) || { promocion: ESTADO.promo, tipo: tipo };
-    return '' +
-      '<div class="level-card">' +
-        '<div class="level-card-head">' +
-          '<div class="level-card-title">' + escapeHtml(tipo) + '</div>' +
-          '<button class="level-card-nav" onclick="irANivel3(\'' + tipo + '\')">Ver viviendas →</button>' +
-        '</div>' +
-        '<div class="level-card-body">' +
-          renderFieldGrid(FIELDS_BLOQUE, registro, puedeEditar, campos => guardarBloque(tipo, campos)) +
-        '</div>' +
-      '</div>';
-  }).join('');
+  let html = '<div class="bloques-table-wrap"><table class="data-table"><thead><tr><th>Bloque</th>';
+  FIELDS_BLOQUE.forEach(f => { html += '<th>' + escapeHtml(f.label) + '</th>'; });
+  html += '</tr></thead><tbody>';
+
+  BLOQUES_FIJOS.forEach(tipo => {
+    const registro = DATA_BLOQUES.find(r => r.promocion === CURRENT_PROMO && r.bloque === tipo) || { promocion: CURRENT_PROMO, bloque: tipo };
+    html += '<tr data-nivel="bloque" data-tipo="' + escapeAttr(tipo) + '"><td class="rowlabel">' + escapeHtml(tipo) + '</td>';
+    FIELDS_BLOQUE.forEach(f => {
+      html += '<td>' + renderCampoCelda(f, registro[f.key], puedeEditar, f.key, { tipo: tipo }) + '</td>';
+    });
+    html += '</tr>';
+  });
+
+  html += '</tbody></table></div>';
+  return html;
 }
 
 function guardarBloque(tipo, campos) {
-  return llamarGuardar({ accion: 'guardar_bloque', rol: USER_ROL, promocion: ESTADO.promo, tipo: tipo, campos: campos })
+  return llamarGuardar({ accion: 'guardar_bloque', rol: USER_ROL, promocion: CURRENT_PROMO, tipo: tipo, campos: campos })
     .then(() => {
-      let registro = DATA_BLOQUES.find(r => r.promocion === ESTADO.promo && r.tipo === tipo);
-      if (!registro) { registro = { promocion: ESTADO.promo, tipo: tipo }; DATA_BLOQUES.push(registro); }
+      let registro = DATA_BLOQUES.find(r => r.promocion === CURRENT_PROMO && r.bloque === tipo);
+      if (!registro) { registro = { promocion: CURRENT_PROMO, bloque: tipo }; DATA_BLOQUES.push(registro); }
       Object.assign(registro, campos);
     });
 }
 
-// ─── NIVEL 3 — VIVIENDAS ─────────────────────────────────────
-function renderNivel3() {
-  const cont = document.getElementById('view-nivel3');
+// ── BLOQUE 3: viviendas, un grupo por tipo (Villas / Apartamentos) ─
+function renderBloque3_Viviendas() {
   const puedeEditar = puedeEditarNivel('vivienda');
-  const viviendas = DATA_VIVIENDAS
-    .filter(r => r.promocion === ESTADO.promo && r.bloque === ESTADO.bloque)
-    .sort((a, b) => String(a.vivienda).localeCompare(String(b.vivienda), 'es', { numeric: true }));
+  let html = '';
 
-  let html = '<div class="vivienda-table-wrap"><table class="vivienda-table"><thead><tr>';
-  html += '<th>Vivienda</th>';
-  FIELDS_VIVIENDA.forEach(f => { html += '<th>' + escapeHtml(f.label) + '</th>'; });
-  html += '</tr></thead><tbody id="vivienda-tbody">';
+  BLOQUES_FIJOS.forEach(tipo => {
+    const viviendas = DATA_VIVIENDAS
+      .filter(r => r.promocion === CURRENT_PROMO && r.bloque === tipo)
+      .sort((a, b) => String(a.vivienda).localeCompare(String(b.vivienda), 'es', { numeric: true }));
 
-  if (!viviendas.length) {
-    html += '<tr><td colspan="' + (FIELDS_VIVIENDA.length + 1) + '" style="color:var(--slate-gray); font-style:italic; padding:20px 12px;">Todavía no hay viviendas registradas en este bloque.</td></tr>';
-  } else {
-    viviendas.forEach(v => {
-      html += '<tr>';
-      html += '<td class="vcode">' + escapeHtml(v.vivienda) + '</td>';
-      FIELDS_VIVIENDA.forEach(f => {
-        html += '<td>' + renderCampoCelda(f, v[f.key], puedeEditar, campos => guardarVivienda(v.vivienda, campos)) + '</td>';
+    html += '<div class="viviendas-group">';
+    html += '<div class="viviendas-group-title">' + escapeHtml(tipo) + '</div>';
+    html += '<div class="viviendas-table-wrap"><table class="data-table"><thead><tr><th>Vivienda</th>';
+    FIELDS_VIVIENDA.forEach(f => { html += '<th>' + escapeHtml(f.label) + '</th>'; });
+    html += '</tr></thead><tbody>';
+
+    if (!viviendas.length) {
+      html += '<tr><td colspan="' + (FIELDS_VIVIENDA.length + 1) + '" style="color:var(--slate-gray); font-style:italic; padding:16px 12px;">Todavía no hay viviendas registradas.</td></tr>';
+    } else {
+      viviendas.forEach(v => {
+        html += '<tr data-nivel="vivienda" data-bloque="' + escapeAttr(tipo) + '" data-vivienda="' + escapeAttr(v.vivienda) + '"><td class="rowlabel">' + escapeHtml(v.vivienda) + '</td>';
+        FIELDS_VIVIENDA.forEach(f => {
+          html += '<td>' + renderCampoCelda(f, v[f.key], puedeEditar, f.key, { bloque: tipo, vivienda: v.vivienda }) + '</td>';
+        });
+        html += '</tr>';
       });
-      html += '</tr>';
-    });
-  }
-  html += '</tbody></table>';
+    }
+    html += '</tbody></table>';
 
-  if (puedeEditar) {
-    html += '' +
-      '<div class="add-vivienda-row">' +
-        '<div class="field-item"><label class="field-label">Nueva vivienda</label>' +
-          '<input class="field-input" id="nueva-vivienda-codigo" type="text" placeholder="p.ej. 2SB5"></div>' +
-        '<button class="add-vivienda-btn" onclick="anadirVivienda()">+ Añadir</button>' +
-      '</div>';
-  }
-  html += '</div>';
+    if (puedeEditar) {
+      html += '' +
+        '<div class="add-vivienda-row">' +
+          '<div class="field-item"><label class="field-label">Nueva vivienda</label>' +
+            '<input class="field-input" data-nueva-vivienda="' + escapeAttr(tipo) + '" type="text" placeholder="p.ej. ' + (tipo === 'Villas' ? '2SB5' : '2SB105') + '"></div>' +
+          '<button class="add-vivienda-btn" data-add-btn="' + escapeAttr(tipo) + '">+ Añadir</button>' +
+        '</div>';
+    }
+    html += '</div></div>';
+  });
 
-  cont.innerHTML = html;
+  return html;
 }
 
-function anadirVivienda() {
-  const input = document.getElementById('nueva-vivienda-codigo');
-  const codigo = (input.value || '').trim();
-  if (!codigo) { input.focus(); return; }
-  if (DATA_VIVIENDAS.some(r => r.promocion === ESTADO.promo && r.bloque === ESTADO.bloque && r.vivienda === codigo)) {
+function anadirVivienda(tipo, codigo) {
+  if (DATA_VIVIENDAS.some(r => r.promocion === CURRENT_PROMO && r.bloque === tipo && r.vivienda === codigo)) {
     alert('Esa vivienda ya existe en este bloque.');
-    return;
+    return Promise.resolve();
   }
-  const btn = document.querySelector('.add-vivienda-btn');
-  if (btn) btn.disabled = true;
-  llamarGuardar({ accion: 'guardar_vivienda', rol: USER_ROL, promocion: ESTADO.promo, bloque: ESTADO.bloque, vivienda: codigo, campos: {} })
+  return llamarGuardar({ accion: 'guardar_vivienda', rol: USER_ROL, promocion: CURRENT_PROMO, bloque: tipo, vivienda: codigo, campos: {} })
     .then(() => {
-      DATA_VIVIENDAS.push({ promocion: ESTADO.promo, bloque: ESTADO.bloque, vivienda: codigo });
-      renderNivel3();
-    })
-    .catch(e => alert('No se pudo añadir la vivienda: ' + e.message))
-    .finally(() => { if (btn) btn.disabled = false; });
+      DATA_VIVIENDAS.push({ promocion: CURRENT_PROMO, bloque: tipo, vivienda: codigo });
+      renderContenido();
+    });
 }
 
-function guardarVivienda(codigoVivienda, campos) {
-  return llamarGuardar({ accion: 'guardar_vivienda', rol: USER_ROL, promocion: ESTADO.promo, bloque: ESTADO.bloque, vivienda: codigoVivienda, campos: campos })
+function guardarVivienda(tipo, codigoVivienda, campos) {
+  return llamarGuardar({ accion: 'guardar_vivienda', rol: USER_ROL, promocion: CURRENT_PROMO, bloque: tipo, vivienda: codigoVivienda, campos: campos })
     .then(() => {
-      let registro = DATA_VIVIENDAS.find(r => r.promocion === ESTADO.promo && r.bloque === ESTADO.bloque && r.vivienda === codigoVivienda);
-      if (!registro) { registro = { promocion: ESTADO.promo, bloque: ESTADO.bloque, vivienda: codigoVivienda }; DATA_VIVIENDAS.push(registro); }
+      let registro = DATA_VIVIENDAS.find(r => r.promocion === CURRENT_PROMO && r.bloque === tipo && r.vivienda === codigoVivienda);
+      if (!registro) { registro = { promocion: CURRENT_PROMO, bloque: tipo, vivienda: codigoVivienda }; DATA_VIVIENDAS.push(registro); }
       Object.assign(registro, campos);
     });
 }
 
-// ─── RENDER DE CAMPOS (genérico, niveles 1 y 2) ─────────────────
-function renderFieldGrid(fields, registro, puedeEditar, onSave) {
-  let html = '<div class="field-grid">';
+// ─── RENDER DE CAMPOS ────────────────────────────────────────────
+function renderFieldRow(fields, registro, puedeEditar, onSave) {
+  let html = '<div class="field-row">';
   fields.forEach(f => {
     html += '<div class="field-item"><label class="field-label">' + escapeHtml(f.label) + '</label>';
-    html += renderCampoCelda(f, registro[f.key], puedeEditar, campos => onSave(campos));
+    html += renderCampoCelda(f, registro[f.key], puedeEditar, f.key, {});
     html += '</div>';
   });
   html += '</div>';
   return html;
 }
 
-// Devuelve el HTML de un único campo (input editable o texto plano),
-// con guardado on-blur/on-change y feedback visual de guardado/error.
-let CAMPO_SEQ = 0;
-function renderCampoCelda(field, valor, puedeEditar, onSave) {
-  const id = 'campo-' + (CAMPO_SEQ++);
-  if (!puedeEditar) {
-    const vacio = (valor === undefined || valor === null || valor === '');
-    return '<div class="field-value' + (vacio ? ' empty' : '') + '">' + (vacio ? 'Sin definir' : escapeHtml(formatearValorMostrado(field, valor))) + '</div>';
-  }
-  const valorAttr = (valor === undefined || valor === null) ? '' : escapeAttr(valor);
-  setTimeout(() => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.addEventListener(field.type === 'date' ? 'change' : 'blur', () => {
-      const nuevoValor = field.type === 'number' ? (el.value === '' ? '' : Number(el.value)) : el.value;
-      el.classList.add('saving');
-      el.classList.remove('err-flash', 'saved-flash');
-      const campos = {}; campos[field.key] = nuevoValor;
-      onSave(campos)
-        .then(() => {
-          el.classList.remove('saving');
-          el.classList.add('saved-flash');
-          setTimeout(() => el.classList.remove('saved-flash'), 1200);
-        })
-        .catch(e => {
-          console.error('Error al guardar ' + field.key + ':', e);
-          el.classList.remove('saving');
-          el.classList.add('err-flash');
-          setTimeout(() => el.classList.remove('err-flash'), 2500);
-        });
-    });
-  }, 0);
-  return '<input class="field-input" id="' + id + '" type="' + field.type + '" value="' + valorAttr + '">';
-}
-
+// Devuelve el HTML de un único campo. `ctx` lleva las claves necesarias
+// (tipo / bloque+vivienda) para que el listener sepa a qué guardar_* llamar;
+// se procesan todos juntos en activarListeners() con delegación de eventos.
 function formatearValorMostrado(field, valor) {
   if (field.type === 'date') return formatearFechaES(valor);
   return valor;
@@ -489,6 +446,82 @@ function formatearFechaES(iso) {
   if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(String(iso))) return iso || '';
   const [y, m, d] = String(iso).split('-');
   return d + '/' + m + '/' + y;
+}
+function renderCampoCelda(field, valor, puedeEditar, campoKey, ctx) {
+  if (!puedeEditar) {
+    const vacio = (valor === undefined || valor === null || valor === '');
+    return '<div class="field-value' + (vacio ? ' empty' : '') + '">' + (vacio ? 'Sin definir' : escapeHtml(formatearValorMostrado(field, valor))) + '</div>';
+  }
+  const valorAttr = (valor === undefined || valor === null) ? '' : escapeAttr(valor);
+  const ctxAttrs = 'data-campo="' + campoKey + '"' +
+    (ctx.tipo ? ' data-tipo="' + escapeAttr(ctx.tipo) + '"' : '') +
+    (ctx.bloque ? ' data-bloque="' + escapeAttr(ctx.bloque) + '"' : '') +
+    (ctx.vivienda ? ' data-vivienda="' + escapeAttr(ctx.vivienda) + '"' : '');
+  return '<input class="field-input" type="' + field.type + '" value="' + valorAttr + '" ' + ctxAttrs + '>';
+}
+
+// ─── LISTENERS (delegación: un solo listener por tipo de evento) ────
+function activarListeners() {
+  const cont = document.getElementById('content');
+
+  // Campos de la cabecera de promoción (nº villas / nº apartamentos)
+  cont.querySelectorAll('.promo-box[data-nivel="promocion"] .promo-counts input[data-campo]').forEach(el => {
+    el.addEventListener('blur', () => guardarCampoInput(el, campos => guardarPromocion(campos)));
+  });
+
+  // Campos de fecha/número de la promoción (bloque 1)
+  cont.querySelectorAll('.promo-box[data-nivel="promocion"] .promo-box-body input[data-campo]').forEach(el => {
+    el.addEventListener(el.type === 'date' ? 'change' : 'blur', () => guardarCampoInput(el, campos => guardarPromocion(campos)));
+  });
+
+  // Campos de las filas de bloque (Villas / Apartamentos)
+  cont.querySelectorAll('tr[data-nivel="bloque"] input[data-campo]').forEach(el => {
+    const tipo = el.closest('tr').dataset.tipo;
+    el.addEventListener(el.type === 'date' ? 'change' : 'blur', () => guardarCampoInput(el, campos => guardarBloque(tipo, campos)));
+  });
+
+  // Campos de las filas de vivienda
+  cont.querySelectorAll('tr[data-nivel="vivienda"] input[data-campo]').forEach(el => {
+    const fila = el.closest('tr');
+    const tipo = fila.dataset.bloque;
+    const vivienda = fila.dataset.vivienda;
+    el.addEventListener(el.type === 'date' ? 'change' : 'blur', () => guardarCampoInput(el, campos => guardarVivienda(tipo, vivienda, campos)));
+  });
+
+  // Botones "+ Añadir" vivienda
+  cont.querySelectorAll('[data-add-btn]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tipo = btn.dataset.addBtn;
+      const input = cont.querySelector('[data-nueva-vivienda="' + tipo + '"]');
+      const codigo = (input.value || '').trim();
+      if (!codigo) { input.focus(); return; }
+      btn.disabled = true;
+      anadirVivienda(tipo, codigo)
+        .catch(e => alert('No se pudo añadir la vivienda: ' + e.message))
+        .finally(() => { btn.disabled = false; });
+    });
+  });
+}
+
+function guardarCampoInput(el, onSave) {
+  const campo = el.dataset.campo;
+  const esNumero = el.type === 'number';
+  const nuevoValor = esNumero ? (el.value === '' ? '' : Number(el.value)) : el.value;
+  el.classList.add('saving');
+  el.classList.remove('err-flash', 'saved-flash');
+  const campos = {}; campos[campo] = nuevoValor;
+  onSave(campos)
+    .then(() => {
+      el.classList.remove('saving');
+      el.classList.add('saved-flash');
+      setTimeout(() => el.classList.remove('saved-flash'), 1200);
+    })
+    .catch(e => {
+      console.error('Error al guardar ' + campo + ':', e);
+      el.classList.remove('saving');
+      el.classList.add('err-flash');
+      setTimeout(() => el.classList.remove('err-flash'), 2500);
+    });
 }
 
 // ─── LLAMADA GENÉRICA DE GUARDADO ────────────────────────────────
