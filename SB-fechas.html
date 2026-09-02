@@ -231,7 +231,6 @@ const FIELDS_FASE = [
 ];
 const FIELDS_VIVIENDA = [
   { key: 'fecha_fin_estimada', label: 'Fecha fin estimada', type: 'month' },
-  { key: 'fecha_fin_real', label: 'Fecha fin real', type: 'date' },
   { key: 'fecha_cfo', label: 'CFO', type: 'date' },
   { key: 'fecha_entrega', label: 'Fecha entrega', type: 'month' },
   { key: 'fecha_escritura', label: 'Fecha escritura', type: 'date' }
@@ -299,8 +298,6 @@ function contarViviendas(fase) {
 }
 
 // Fecha más tardía de una lista de viviendas para un campo dado ('' si ninguna la tiene).
-// Usado para los campos calculados: entrega de fase (por fase) y fin
-// estimada/fin real de promoción (todas las viviendas de la promoción).
 function maxFechaVivienda_(viviendas, campo) {
   let mejor = null, mejorStr = '';
   viviendas.forEach(v => {
@@ -308,6 +305,17 @@ function maxFechaVivienda_(viviendas, campo) {
     if (d && (!mejor || d > mejor)) { mejor = d; mejorStr = v[campo]; }
   });
   return mejorStr;
+}
+
+// Igual, pero solo devuelve algo si TODAS las viviendas de la lista tienen
+// ese campo relleno — si falta una sola, devuelve '' (aún no está completo).
+// Usado para fin real de promoción (CFO) y entrega de fase: no tiene sentido
+// dar una fecha "final" mientras quede alguna vivienda sin la suya.
+function maxFechaViviendaCompleta_(viviendas, campo) {
+  if (!viviendas.length) return '';
+  const todasTienen = viviendas.every(v => v[campo]);
+  if (!todasTienen) return '';
+  return maxFechaVivienda_(viviendas, campo);
 }
 
 // ── BLOQUE 1: cabecera de promoción ──────────────────────────────
@@ -318,11 +326,12 @@ function renderBloque1_Promocion() {
   const nVillas = contarViviendas('Villas');
   const nApts = contarViviendas('Apartamentos');
 
-  // fecha_fin_estimada y fecha_fin_real de promoción son calculadas: la más
-  // tardía entre todas las viviendas (villas + apartamentos), no un dato propio.
+  // fecha_fin_estimada de promoción es calculada: la más tardía entre todas
+  // las viviendas. fecha_fin_real de promoción se calcula a partir de
+  // fecha_cfo de las viviendas (ya no existe fecha_fin_real a nivel vivienda).
   const valoresEfectivos = Object.assign({}, registro, {
-    fecha_fin_estimada: maxFechaVivienda_(viviendasPromo, 'fecha_fin_estimada'),
-    fecha_fin_real: maxFechaVivienda_(viviendasPromo, 'fecha_fin_real')
+    fecha_fin_estimada: maxFechaViviendaCompleta_(viviendasPromo, 'fecha_fin_estimada'),
+    fecha_fin_real: maxFechaViviendaCompleta_(viviendasPromo, 'fecha_cfo')
   });
 
   return '' +
@@ -356,7 +365,7 @@ function renderBloque2_Fases() {
     const base = DATA_FASES.find(r => r.promocion === CURRENT_PROMO && r.fase === fase) || { promocion: CURRENT_PROMO, fase: fase };
     const viviendasFase = DATA_VIVIENDAS.filter(r => r.promocion === CURRENT_PROMO && r.fase === fase);
     // fecha_entrega de fase es calculada: la más tardía de sus viviendas.
-    registros[fase] = Object.assign({}, base, { fecha_entrega: maxFechaVivienda_(viviendasFase, 'fecha_entrega') });
+    registros[fase] = Object.assign({}, base, { fecha_entrega: maxFechaViviendaCompleta_(viviendasFase, 'fecha_entrega') });
   });
 
   let html = '<div class="fase-table-wrap"><table class="data-table"><thead><tr><th>Campo</th>';
