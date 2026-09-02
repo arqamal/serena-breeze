@@ -259,12 +259,15 @@ const FIELDS_PROMOCION = [
 ];
 const FIELDS_FASE = [
   { key: 'fecha_inicio', label: 'Fecha inicio', type: 'date' },
-  { key: 'fecha_bloqueo_estructura', label: 'Bloqueo estructura', type: 'date' },
-  { key: 'fecha_bloqueo_albanileria', label: 'Bloqueo albañilería', type: 'date' },
-  { key: 'fecha_bloqueo_instalaciones', label: 'Bloqueo instalaciones', type: 'date' },
-  { key: 'fecha_bloqueo_materiales', label: 'Bloqueo elección materiales', type: 'date' },
-  { key: 'fecha_bloqueo_acabados', label: 'Bloqueo acabados', type: 'date' },
-  { key: 'fecha_bloqueo_equipamiento', label: 'Bloqueo equipamiento', type: 'date' },
+  { key: 'fecha_proyecto_ejecucion', label: 'Proyecto de Ejecución', type: 'date' },
+  { key: 'fecha_estructura', label: 'Estructura', type: 'date' },
+  { key: 'fecha_carpinterias', label: 'Carpinterías', type: 'date' },
+  { key: 'fecha_piscinas', label: 'Piscinas', type: 'date' },
+  { key: 'fecha_albanileria_tabiqueria', label: 'Albañilería y Tabiquería', type: 'date' },
+  { key: 'fecha_instalaciones_materiales', label: 'Instalaciones y Elección de Materiales', type: 'date' },
+  { key: 'fecha_jardineria', label: 'Jardinería', type: 'date' },
+  { key: 'fecha_mobiliario', label: 'Mobiliario - Estores - Pinturas - Cocina - Electrodomésticos', type: 'date' },
+  { key: 'fecha_vidrios', label: 'Vidrios', type: 'date' },
   { key: 'fecha_entrega', label: 'Entrega de fase', type: 'month', computed: true }
 ];
 const FIELDS_VIVIENDA = [
@@ -335,7 +338,7 @@ function renderContenido() {
   const cont = document.getElementById('content');
   cont.innerHTML =
     renderBloque1_Promocion() +
-    '<div class="block-title">Villas y apartamentos · fechas de fase</div>' +
+    '<div class="block-title">Fechas de bloqueo</div>' +
     renderBloque2_Fases() +
     renderBloque3_Viviendas();
 
