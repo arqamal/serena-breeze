@@ -156,6 +156,8 @@ const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzC9AI5br9PbD6cwCN0om
 const FECHAS_URL = 'https://script.google.com/macros/s/AKfycbynWrDgP-fyWwQHuQ26LqFU0LYujR6ngtXpCmjvY_IsJRP5qf8lduWO9LcX-jZS31z_Mw/exec';
 
 let USER_ROL = null;
+let USER_LOGIN = null; // usuario tal cual lo escribió — se manda en cada guardar_* para que el backend mire sus permisos en _usuarios
+let USER_PERMISOS = { promocion: false, fase: false, vivienda: false };
 
 function doLogin() {
   const u = document.getElementById('login-user').value.trim();
@@ -174,6 +176,14 @@ function doLogin() {
     .then(data => {
       if (data.ok) {
         USER_ROL = data.rol || null;
+        USER_LOGIN = u;
+        // Permisos tal cual los devuelve AuthUsuarios.gs desde _usuarios —
+        // aquí no hay ninguna tabla fija por rol, se confía en el servidor.
+        USER_PERMISOS = {
+          promocion: data.fechas_edita_promocion === true,
+          fase: data.fechas_edita_fase === true,
+          vivienda: data.fechas_edita_vivienda === true
+        };
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-wrapper').style.display = 'block';
         const puedeAlgo = puedeEditarNivel('promocion') || puedeEditarNivel('fase') || puedeEditarNivel('vivienda');
@@ -202,14 +212,12 @@ function doLogin() {
   });
 });
 
-// ─── PERMISOS POR ROL (mismos que valida GeneradorFechas.gs en servidor) ─
-const PERMISOS_NIVEL = {
-  promocion: ['arquitectura'],
-  fase: ['arquitectura', 'tec'],
-  vivienda: ['arquitectura']
-};
+// Los permisos de edición NO se calculan aquí — vienen ya resueltos del login
+// (AuthUsuarios.gs los lee de las columnas fechas_edita_* en _usuarios). El
+// servidor de GeneradorFechas.gs los vuelve a comprobar en cada guardado por
+// su cuenta, así que esto solo decide qué se pinta como input vs texto.
 function puedeEditarNivel(nivel) {
-  return (PERMISOS_NIVEL[nivel] || []).indexOf(USER_ROL) !== -1;
+  return USER_PERMISOS[nivel] === true;
 }
 
 // ─── CAMPOS POR NIVEL ────────────────────────────────────────────
@@ -230,7 +238,7 @@ const FIELDS_FASE = [
   { key: 'fecha_entrega', label: 'Entrega de fase', type: 'month', computed: true }
 ];
 const FIELDS_VIVIENDA = [
-  { key: 'fecha_fin_estimada', label: 'Fecha fin estimada', type: 'month' },
+  { key: 'fecha_fin_estimada', label: 'Fecha fin estimada', type: 'month', nivelPermiso: 'fase' }, // la edita quien edite Fase (arquitectura+tec), no solo Vivienda
   { key: 'fecha_cfo', label: 'CFO', type: 'date' },
   { key: 'fecha_entrega', label: 'Fecha entrega', type: 'month' },
   { key: 'fecha_escritura', label: 'Fecha escritura', type: 'date' }
@@ -347,7 +355,7 @@ function renderBloque1_Promocion() {
 }
 
 function guardarPromocion(campos) {
-  return llamarGuardar({ accion: 'guardar_promocion', rol: USER_ROL, promocion: CURRENT_PROMO, campos: campos })
+  return llamarGuardar({ accion: 'guardar_promocion', usuario: USER_LOGIN, promocion: CURRENT_PROMO, campos: campos })
     .then(() => {
       let registro = DATA_PROMOCIONES.find(r => r.promocion === CURRENT_PROMO);
       if (!registro) { registro = { promocion: CURRENT_PROMO }; DATA_PROMOCIONES.push(registro); }
@@ -385,7 +393,7 @@ function renderBloque2_Fases() {
 }
 
 function guardarFase(fase, campos) {
-  return llamarGuardar({ accion: 'guardar_fase', rol: USER_ROL, promocion: CURRENT_PROMO, fase: fase, campos: campos })
+  return llamarGuardar({ accion: 'guardar_fase', usuario: USER_LOGIN, promocion: CURRENT_PROMO, fase: fase, campos: campos })
     .then(() => {
       let registro = DATA_FASES.find(r => r.promocion === CURRENT_PROMO && r.fase === fase);
       if (!registro) { registro = { promocion: CURRENT_PROMO, fase: fase }; DATA_FASES.push(registro); }
@@ -395,7 +403,6 @@ function guardarFase(fase, campos) {
 
 // ── BLOQUE 3: viviendas predefinidas, un grupo por fase ─────────
 function renderBloque3_Viviendas() {
-  const puedeEditar = puedeEditarNivel('vivienda');
   let html = '';
 
   FASES_FIJAS.forEach(fase => {
@@ -415,7 +422,8 @@ function renderBloque3_Viviendas() {
       viviendas.forEach(v => {
         html += '<tr data-nivel="vivienda" data-fase="' + escapeAttr(fase) + '" data-vivienda="' + escapeAttr(v.vivienda) + '"><td class="vcode">' + escapeHtml(v.vivienda) + '</td>';
         FIELDS_VIVIENDA.forEach(f => {
-          html += '<td>' + renderCampoCelda(f, v[f.key], puedeEditar, f.key, { fase: fase, vivienda: v.vivienda }) + '</td>';
+          const puedeEditarCampo = puedeEditarNivel(f.nivelPermiso || 'vivienda');
+          html += '<td>' + renderCampoCelda(f, v[f.key], puedeEditarCampo, f.key, { fase: fase, vivienda: v.vivienda }) + '</td>';
         });
         html += '</tr>';
       });
@@ -427,7 +435,7 @@ function renderBloque3_Viviendas() {
 }
 
 function guardarVivienda(fase, codigoVivienda, campos) {
-  return llamarGuardar({ accion: 'guardar_vivienda', rol: USER_ROL, promocion: CURRENT_PROMO, fase: fase, vivienda: codigoVivienda, campos: campos })
+  return llamarGuardar({ accion: 'guardar_vivienda', usuario: USER_LOGIN, promocion: CURRENT_PROMO, fase: fase, vivienda: codigoVivienda, campos: campos })
     .then(() => {
       let registro = DATA_VIVIENDAS.find(r => r.promocion === CURRENT_PROMO && r.fase === fase && r.vivienda === codigoVivienda);
       if (registro) Object.assign(registro, campos);
