@@ -419,6 +419,10 @@ function guardarVivienda(fase, codigoVivienda, campos) {
     .then(() => {
       let registro = DATA_VIVIENDAS.find(r => r.promocion === CURRENT_PROMO && r.fase === fase && r.vivienda === codigoVivienda);
       if (registro) Object.assign(registro, campos);
+      // fecha_entrega/fecha_fin_estimada/fecha_fin_real de vivienda alimentan
+      // campos calculados en Fase y Promoción — se repintan al momento en vez
+      // de esperar a un refresco manual.
+      renderContenido();
     });
 }
 
