@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serena Breeze — Dashboard de Extras</title>
+
+<!-- PWA: instalable en móvil (Android/Chrome + iOS/Safari) -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1A1A1A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="SB Extras">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #FFFFFF;
+    --off-white: #F7F6F4;
+    --border: #E0DDD8;
+    --mid: #B0AA9F;
+    --slate-gray: #6B7280;
+    --text: #2A2520;
+    --black: #111111;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 14px; overscroll-behavior-y: contain; }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 40px 48px 80px; }
+  .sec-eyebrow { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 10px; }
+  .sec-title { font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 400; text-transform: uppercase; color: var(--black); margin-bottom: 12px; letter-spacing: 1px; }
+  .sec-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.7; max-width: 640px; margin-bottom: 28px; }
+
+  /* TOP BAR */
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+  .promo-tabs { display: flex; border: 1px solid var(--border); }
+  .promo-tab { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; padding: 12px 28px; cursor: pointer; background: var(--white); color: var(--slate-gray); border: none; border-right: 1px solid var(--border); transition: all .15s; }
+  .promo-tab:last-child { border-right: none; }
+  .promo-tab.active { background: var(--black); color: white; }
+  .promo-tab:hover:not(.active) { background: var(--off-white); color: var(--text); }
+
+  .search-field { flex: 1; min-width: 220px; max-width: 320px; }
+  .search-input { width: 100%; border: 1px solid var(--border); padding: 11px 14px; font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); background: var(--white); outline: none; border-radius: 0; }
+  .search-input:focus { border-color: var(--black); }
+  .oficio-select { border: 1px solid var(--border); padding: 11px 12px; font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); background: var(--white); outline: none; border-radius: 0; min-width: 160px; }
+  .oficio-select:focus { border-color: var(--black); }
+
+  .refresh-btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 11px 18px; background: transparent; color: var(--slate-gray); border: 1px solid var(--border); transition: all .15s; }
+  .refresh-btn:hover { border-color: var(--black); color: var(--black); }
+
+  /* LOAD */
+  #load-indicator { display: none; font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--slate-gray); padding: 8px 16px; background: var(--off-white); border: 1px solid var(--border); margin-bottom: 20px; letter-spacing: .5px; }
+  #load-indicator.err { color: #c0392b; background: #fdf0ee; border-color: #f0c4bc; }
+  #empty-state { display: none; font-family: 'Roboto', sans-serif; font-size: 14px; color: var(--slate-gray); padding: 32px; text-align: center; border: 1px solid var(--border); }
+
+  /* VIVIENDA CARD */
+  .vivienda-card { border: 1px solid var(--border); margin-bottom: 24px; }
+  .vivienda-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; background: var(--off-white); border-bottom: 1px solid var(--border); cursor: pointer; }
+  .vivienda-code { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 1px; color: var(--black); }
+  .vivienda-meta { display: flex; align-items: center; gap: 8px; }
+  .count-pill { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--slate-gray); background: var(--white); border: 1px solid var(--border); padding: 3px 9px; border-radius: 2px; }
+  .pdf-btn { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); background: var(--white); border: 1px solid var(--border); padding: 3px 10px; border-radius: 2px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+  .pdf-btn:hover { border-color: var(--black); color: var(--black); }
+  .caret { font-size: 11px; color: var(--mid); transition: transform .15s; }
+  .vivienda-card.collapsed .caret { transform: rotate(-90deg); }
+  .vivienda-body { padding: 4px 20px 18px; }
+  .vivienda-card.collapsed .vivienda-body { display: none; }
+
+  .block-label { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin: 18px 0 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+
+  /* TABLE (extras normales) */
+  .extras-table { width: 100%; border-collapse: collapse; }
+  .extras-table th { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--slate-gray); text-align: left; padding: 8px 8px; border-bottom: 1px solid var(--border); font-weight: 400; white-space: nowrap; }
+  .extras-table th.tc { text-align: center; width: 60px; }
+  .extras-table th.tr { text-align: right; width: 100px; }
+  .extras-table th.ts { width: 110px; text-align: center; }
+  .extras-table th.tp { width: 74px; text-align: center; }
+  .extras-table th.tp small { display: block; font-size: 8px; letter-spacing: .5px; color: var(--mid); text-transform: none; }
+  .extras-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; font-size: 13px; }
+  .extras-table tr:last-child td { border-bottom: none; }
+  .extras-table tr:hover td { background: var(--off-white); }
+  .extras-table td.tc { text-align: center; }
+  .extras-table td.tr { text-align: right; font-family: 'Oswald', sans-serif; font-size: 13px; }
+  .extras-table td.ts { text-align: center; }
+  .extras-table td.tp { text-align: center; }
+  .extras-table td.extra-name { }
+  .extras-table td.extra-name.is-sub { padding-left: 26px; position: relative; color: var(--slate-gray); font-size: 12.5px; }
+  .extras-table td.extra-name.is-sub::before { content: "↳"; position: absolute; left: 8px; color: var(--mid); font-size: 12px; }
+  .extra-oficio { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--mid); background: var(--off-white); border: 1px solid var(--border); padding: 1px 5px; margin-left: 4px; border-radius: 2px; }
+  .extra-oficio.oficio-standalone { margin-left: 0; }
+  .extras-table td.dim-text { color: var(--mid); }
+  .planos-check { position: absolute; opacity: 0; width: 18px; height: 18px; margin: 0; cursor: pointer; }
+  .planos-check:disabled { cursor: not-allowed; }
+  .tick-wrap { position: relative; display: inline-flex; width: 18px; height: 18px; vertical-align: middle; }
+  .tick-box { width: 18px; height: 18px; border: 1.5px solid var(--mid); border-radius: 3px; background: var(--white); display: inline-flex; align-items: center; justify-content: center; pointer-events: none; }
+  .planos-check:checked + .tick-box { background: var(--black); border-color: var(--black); }
+  .planos-check:checked + .tick-box::after { content: "✓"; color: #fff; font-size: 12px; line-height: 1; font-weight: bold; }
+  .planos-check:disabled:not(:checked) + .tick-box { background: #E4E1DC; border-color: var(--border); }
+  .planos-check:disabled:checked + .tick-box { background: var(--slate-gray); border-color: var(--slate-gray); }
+  .planos-check.saving + .tick-box { opacity: .5; }
+  .planos-check.err-flash + .tick-box { outline: 2px solid #c0392b; outline-offset: 2px; }
+  .tick-cell { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+
+  /* ESPECIALES */
+  .especial-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .especial-row:last-child { border-bottom: none; }
+  .especial-desc { color: var(--text); }
+  .especial-units { color: var(--slate-gray); font-size: 12px; }
+
+  .status-chip { display: inline-block; font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 10px; border-radius: 2px; vertical-align: middle; white-space: nowrap; }
+  .chip-enviado { background: #FEF3EA; color: #E87722; border: 1px solid #F5C89A; }
+  .chip-firmado { background: #f0faf0; color: #2d7a2d; border: 1px solid #b8ddb8; }
+  .post-badge { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: white; background: var(--black); padding: 1px 6px; margin-left: 8px; border-radius: 2px; vertical-align: middle; }
+
+  /* LOGIN (idéntico al selector de extras) */
+  #login-screen { position: fixed; inset: 0; background: var(--white); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+  .login-box { width: 100%; max-width: 380px; padding: 48px 40px; border: 1px solid var(--border); }
+  .login-logo { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 3px; text-transform: uppercase; color: var(--black); margin-bottom: 6px; }
+  .login-sub { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); margin-bottom: 40px; }
+  .login-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+  .login-label { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); }
+  .login-input { border: 1px solid var(--border); padding: 12px 14px; font-family: 'Roboto', sans-serif; font-size: 14px; color: var(--text); background: var(--white); outline: none; border-radius: 0; width: 100%; }
+  .login-input:focus { border-color: var(--black); }
+  .login-btn { width: 100%; margin-top: 8px; font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; background: var(--black); color: white; border: none; padding: 14px; cursor: pointer; transition: background .2s; }
+  .login-btn:hover { background: #333; }
+  .login-btn:disabled { opacity: .55; cursor: default; }
+  .login-btn:disabled:hover { background: var(--black); }
+  .login-error { font-family: 'Roboto', sans-serif; font-size: 12px; color: #c0392b; margin-top: 14px; text-align: center; display: none; }
+
+  #app-wrapper { display: none; }
+
+  @media (max-width: 768px) {
+    main { padding-left: 16px; padding-right: 16px; }
+    .extras-table th.ts, .extras-table td.ts { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Serena Breeze</div>
+    <div class="login-sub">Dashboard de extras · Uso interno</div>
+    <div class="login-field">
+      <label class="login-label">Usuario</label>
+      <input class="login-input" id="login-user" type="text" placeholder="Usuario" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Contraseña</label>
+      <input class="login-input" id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Acceder →</button>
+    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
+  </div>
+</div>
+
+<div id="app-wrapper">
+  <main>
+    <div class="sec-eyebrow">Serena Breeze · Aftersale</div>
+    <div class="sec-title">Extras por vivienda</div>
+    <div class="sec-desc">Listado de todas las viviendas con extras registrados (catálogo, personalizados y solicitudes de extras especiales), agrupados por vivienda. Solo se muestran viviendas con al menos un extra.</div>
+
+    <div class="topbar">
+      <div class="promo-tabs">
+        <button class="promo-tab" id="tab-2sb" onclick="switchPromo('2SB')">2SB</button>
+        <button class="promo-tab" id="tab-3sb" onclick="switchPromo('3SB')">3SB</button>
+      </div>
+      <div class="search-field">
+        <input class="search-input" id="search-input" type="text" placeholder="Buscar vivienda…" oninput="renderDashboard()">
+      </div>
+      <select class="oficio-select" id="oficio-select" onchange="renderDashboard()">
+        <option value="">Todos los oficios</option>
+      </select>
+      <button class="refresh-btn" id="toggle-todo-btn" onclick="toggleTodo()">▴ Contraer todo</button>
+      <button class="refresh-btn" onclick="if (CURRENT_PROMO) loadPromo(CURRENT_PROMO, true)">↻ Actualizar</button>
+    </div>
+
+    <div id="load-indicator"></div>
+    <div id="empty-state">No hay viviendas con extras para esta promoción.</div>
+    <div id="cards-container"></div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script>
+// ─── LOGIN (migrado a AuthUsuarios.gs — login centralizado) ─────────
+const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
+
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const btn = document.getElementById('login-btn');
+  const errorEl = document.getElementById('login-error');
+  errorEl.style.display = 'none';
+  const textoOriginal = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Comprobando…'; }
+
+  fetch(LOGIN_URL, {
+    method: 'POST',
+    body: JSON.stringify({ accion: 'login', usuario: u, pass: p, herramienta: 'dashboard' })
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        USER_PERMISOS_DASHBOARD = {
+          edita_revisado_arquitectura: data.dashboard_edita_revisado_arquitectura === true,
+          edita_pedido: data.dashboard_edita_pedido === true,
+          ve_precio_total: data.dashboard_ve_precio_total === true
+        };
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-wrapper').style.display = 'block';
+        mostrarEstadoSinPromo();
+      } else if (data.motivo === 'sin_acceso') {
+        errorEl.textContent = 'Tu usuario no tiene acceso al dashboard.';
+        errorEl.style.display = 'block';
+      } else {
+        errorEl.textContent = 'Usuario o contraseña incorrectos';
+        errorEl.style.display = 'block';
+      }
+    })
+    .catch(() => {
+      errorEl.textContent = 'No se pudo comprobar el acceso. Inténtalo de nuevo.';
+      errorEl.style.display = 'block';
+    })
+    .finally(() => {
+      if (btn) { btn.disabled = false; btn.textContent = textoOriginal; }
+    });
+}
+
+['login-user','login-pass'].forEach(id => {
+  document.addEventListener('DOMContentLoaded', () => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  });
+});
+
+// ─── WEBHOOK (en producción) ─────────────────────────────────────────
+// Un único escenario, no toca los 4 anteriores. Router por "accion":
+//   accion:"consultar"      → lectura de todas las viviendas de una promo
+//   accion:"marcar_planos"  → tick "Revisado Arquitectura" de una línea
+//   accion:"marcar_pedido"  → tick "Pedido" de una línea (independiente)
+// Ambos ticks solo se pueden marcar con estado Firmado (bloqueado también
+// en el propio escenario de Make, no solo en este HTML).
+// Contrato completo (request/response, módulos Make) en el documento
+// 05_WEBHOOK_DASHBOARD-configuracion.md que acompaña a este HTML.
+const WEBHOOK_DASHBOARD = 'https://hook.eu1.make.com/xfzc3ke7gfet737pmwwn8sptn3m1awj5';
+
+let CURRENT_PROMO = null;
+// Permisos de este usuario para el dashboard — llegan del login (columnas
+// dashboard_* en _usuarios), no de una tabla de roles ni de un "_roles" aparte.
+let USER_PERMISOS_DASHBOARD = { edita_revisado_arquitectura: false, edita_pedido: false, ve_precio_total: false };
+
+function puedeEditarTick(campo) {
+  const campoMap = { revisado_arquitectura: 'edita_revisado_arquitectura', pedido_realizado: 'edita_pedido' };
+  return !!USER_PERMISOS_DASHBOARD[campoMap[campo] || campo];
+}
+
+function veTecActual() {
+  // true si este usuario NO ve precio/total → activa el layout de columnas "tec"
+  return !USER_PERMISOS_DASHBOARD.ve_precio_total;
+}
+let DATA_EXTRAS = [];
+let DATA_ESPECIALES = [];
+const COLLAPSED = {};
+
+function mostrarEstadoSinPromo() {
+  document.getElementById('load-indicator').style.display = 'none';
+  document.getElementById('cards-container').innerHTML = '';
+  const empty = document.getElementById('empty-state');
+  empty.textContent = 'Elige Serena Breeze 2 o Serena Breeze 3 arriba para cargar sus extras.';
+  empty.style.display = 'block';
+}
+
+function switchPromo(promo) {
+  if (promo === CURRENT_PROMO) return;
+  CURRENT_PROMO = promo;
+  document.getElementById('tab-2sb').classList.toggle('active', promo === '2SB');
+  document.getElementById('tab-3sb').classList.toggle('active', promo === '3SB');
+  loadPromo(promo);
+}
+
+function loadPromo(promo, forced) {
+  const ind = document.getElementById('load-indicator');
+  const cards = document.getElementById('cards-container');
+  const empty = document.getElementById('empty-state');
+  empty.style.display = 'none';
+  ind.className = ''; ind.style.display = 'block';
+  ind.textContent = 'Cargando extras de ' + promo + '…';
+  cards.innerHTML = '';
+
+  if (WEBHOOK_DASHBOARD === 'PENDIENTE_CREAR_EN_MAKE') {
+    ind.className = 'err';
+    ind.textContent = 'Falta configurar WEBHOOK_DASHBOARD en Make (ver comentario en el código). Sustituye la constante por la URL real del escenario nuevo.';
+    return;
+  }
+
+  fetch(WEBHOOK_DASHBOARD, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ accion: 'consultar', promocion: promo })
+  })
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(data => {
+      DATA_EXTRAS = data.extras || [];
+      DATA_ESPECIALES = data.especiales || [];
+      ind.style.display = 'none';
+      poblarSelectorOficios();
+      renderDashboard();
+    })
+    .catch(e => {
+      ind.className = 'err';
+      ind.textContent = 'Error al cargar los datos: ' + e.message;
+    });
+}
+
+function poblarSelectorOficios() {
+  const sel = document.getElementById('oficio-select');
+  const actual = sel.value; // conservar selección si el oficio sigue existiendo
+  const oficios = new Set();
+  DATA_EXTRAS.forEach(e => { if (e.oficio) oficios.add(e.oficio); });
+  DATA_ESPECIALES.forEach(e => { if (e.oficio) oficios.add(e.oficio); });
+  const lista = Array.from(oficios).sort((a, b) => a.localeCompare(b));
+  sel.innerHTML = '<option value="">Todos los oficios</option>' +
+    lista.map(o => `<option value="${escapeAttr(o)}">${escapeHtml(o)}</option>`).join('');
+  if (lista.includes(actual)) sel.value = actual;
+}
+
+function agruparPorVivienda() {
+  // Agrupa por vivienda (solo viviendas con algún extra o especial;
+  // se descartan aquí las filas fantasma sin vivienda, que pueden venir
+  // del rango completo de la hoja aunque estén vacías)
+  const grupos = {};
+  DATA_EXTRAS.forEach(e => {
+    if (!e.vivienda) return;
+    if (!grupos[e.vivienda]) grupos[e.vivienda] = { extras: [], especiales: [] };
+    grupos[e.vivienda].extras.push(e);
+  });
+  DATA_ESPECIALES.forEach(e => {
+    if (!e.vivienda) return;
+    if (!grupos[e.vivienda]) grupos[e.vivienda] = { extras: [], especiales: [] };
+    grupos[e.vivienda].especiales.push(e);
+  });
+  return grupos;
+}
+
+function renderDashboard() {
+  const cards = document.getElementById('cards-container');
+  const empty = document.getElementById('empty-state');
+  const q = (document.getElementById('search-input').value || '').trim().toUpperCase();
+  const oficioSel = document.getElementById('oficio-select').value;
+
+  const grupos = agruparPorVivienda();
+
+  let viviendas = Object.keys(grupos).sort(compareViviendas);
+  if (q) viviendas = viviendas.filter(v => v.toUpperCase().includes(q));
+
+  // Filtro por oficio: nos quedamos solo con las líneas de ese oficio
+  // (extras y especiales) y descartamos viviendas que, tras filtrar,
+  // se quedan sin nada que mostrar.
+  let gruposMostrar = grupos;
+  if (oficioSel) {
+    gruposMostrar = {};
+    viviendas.forEach(v => {
+      const g = grupos[v];
+      const extrasF = g.extras.filter(e => (e.oficio || '') === oficioSel);
+      const especialesF = g.especiales.filter(e => (e.oficio || '') === oficioSel);
+      if (extrasF.length || especialesF.length) gruposMostrar[v] = { extras: extrasF, especiales: especialesF };
+    });
+    viviendas = viviendas.filter(v => v in gruposMostrar);
+  }
+
+  if (!viviendas.length) {
+    cards.innerHTML = '';
+    empty.textContent = (q || oficioSel)
+      ? 'Ninguna vivienda coincide con el filtro.'
+      : 'No hay viviendas con extras para esta promoción.';
+    empty.style.display = 'block';
+    actualizarBotonTodo();
+    return;
+  }
+  empty.style.display = 'none';
+
+  cards.innerHTML = viviendas.map(v => {
+    const g = gruposMostrar[v];
+    const collapsed = COLLAPSED[v] ? ' collapsed' : '';
+    const totalItems = g.extras.length + g.especiales.length;
+    const postEntrega = g.extras.some(e => String(e.post_entrega).toUpperCase() === 'TRUE')
+                      || g.especiales.some(e => String(e.post_entrega).toUpperCase() === 'TRUE');
+
+    // Ids que son padre de un pack: existe al menos una sublínea con
+    // id = "{esteId}_subN" entre los extras de esta misma vivienda.
+    const idsPadreDePack = new Set(
+      g.extras
+        .map(e => String(e.id || '').match(/^(.+)_sub\d+$/))
+        .filter(Boolean)
+        .map(m => m[1])
+    );
+
+    // Rol 'tec': columnas propias (sin precio/total, con descripción/notas/oficio).
+    const esTec = veTecActual();
+
+    const filasExtras = g.extras.map(e => {
+      const firmado = e.estado === 'Firmado';
+      const chip = firmado
+        ? '<span class="status-chip chip-firmado">Firmado</span>'
+        : '<span class="status-chip chip-enviado">Enviado</span>';
+      const total = (Number(e.qty)||0) * (Number(e.price)||0);
+      const isSub = /^.+_sub\d+$/.test(String(e.id || ''));
+      const esPadreDePack = idsPadreDePack.has(String(e.id || ''));
+      const nameClass = 'extra-name' + (isSub ? ' is-sub' : '');
+      const tickChecked = (campo) => String(e[campo]).toUpperCase() === 'TRUE' ? 'checked' : '';
+      const attrs = (accion) =>
+        `data-vivienda="${escapeAttr(v)}" data-id="${escapeAttr(e.id || '')}" ` +
+        `data-post="${escapeAttr(e.post_entrega || 'FALSE')}" data-promo="${escapeAttr(CURRENT_PROMO)}" ` +
+        `data-accion="${accion}"`;
+      const celdaTick = (campo, accion) => {
+        if (esPadreDePack) return '';
+        const permitido = puedeEditarTick(campo);
+        const disabled = (firmado && permitido) ? '' : 'disabled';
+        const title = !firmado
+          ? 'title="Solo se puede marcar en un extra ya Firmado"'
+          : (!permitido ? 'title="Tu usuario no tiene permiso para editar este campo"' : '');
+        return `<label class="tick-wrap" ${title}><input type="checkbox" class="planos-check" data-campo="${campo}" ${attrs(accion)}
+              ${tickChecked(campo)} ${disabled} onchange="toggleTick(this)"><span class="tick-box"></span></label>`;
+      };
+
+      if (esTec) {
+        return `
+        <tr>
+          <td class="${nameClass}">${escapeHtml(e.extra || e.id || '')}</td>
+          <td class="dim-text">${escapeHtml(e.descripcion || '')}</td>
+          <td class="dim-text">${escapeHtml(e.nota_extra || '')}</td>
+          <td class="tc dim-text">${escapeHtml(e.notes || '')}</td>
+          <td class="tc">${isSub ? '' : (e.qty ?? '')}</td>
+          <td class="tc">${e.oficio ? '<span class="extra-oficio oficio-standalone">'+escapeHtml(e.oficio)+'</span>' : ''}</td>
+          <td class="ts">${chip}</td>
+          <td class="tp">${celdaTick('revisado_arquitectura', 'marcar_planos')}</td>
+          <td class="tp">${celdaTick('pedido_realizado', 'marcar_pedido')}</td>
+        </tr>`;
+      }
+
+      return `
+        <tr>
+          <td class="${nameClass}">${escapeHtml(e.extra || e.id || '')}${e.oficio ? '<span class="extra-oficio">'+escapeHtml(e.oficio)+'</span>' : ''}</td>
+          <td class="tc">${isSub ? '' : (e.qty ?? '')}</td>
+          <td class="tr">${isSub ? '' : fmtEur(e.price)}</td>
+          <td class="tr">${isSub ? '' : fmtEur(total)}</td>
+          <td class="ts">${chip}</td>
+          <td class="tp">${celdaTick('revisado_arquitectura', 'marcar_planos')}</td>
+          <td class="tp">${celdaTick('pedido_realizado', 'marcar_pedido')}</td>
+        </tr>`;
+    }).join('');
+
+    const cabeceraExtras = esTec
+      ? '<th>Extra</th><th>Descripción</th><th>Nota extra</th><th class="tc">Notas</th><th class="tc">Uds.</th><th class="tc">Oficio</th><th class="ts">Estado</th><th class="tp">Revisado<small>Arquitectura</small></th><th class="tp">Pedido</th>'
+      : '<th>Extra</th><th class="tc">Uds.</th><th class="tr">Precio</th><th class="tr">Total</th><th class="ts">Estado</th><th class="tp">Revisado<small>Arquitectura</small></th><th class="tp">Pedido</th>';
+
+    const filasEspeciales = g.especiales.map(e => {
+      const listo = e.estado === 'Listo';
+      const chip = listo
+        ? '<span class="status-chip chip-firmado">Listo</span>'
+        : '<span class="status-chip chip-enviado">Pendiente</span>';
+      return `
+        <div class="especial-row">
+          <div>
+            <span class="especial-desc">${escapeHtml(e.descripcion || '')}</span>
+            <span class="especial-units"> · ${e.unidades ?? 0} uds.</span>
+            ${e.oficio ? '<span class="extra-oficio">'+escapeHtml(e.oficio)+'</span>' : ''}
+          </div>
+          ${chip}
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="vivienda-card${collapsed}" id="card-${cssId(v)}">
+        <div class="vivienda-head" onclick="toggleCard('${v.replace(/'/g,"\\'")}')">
+          <div class="vivienda-code">${escapeHtml(v)}${postEntrega ? '<span class="post-badge">Post-entrega</span>' : ''}</div>
+          <div class="vivienda-meta">
+            <span class="count-pill">${totalItems} extra${totalItems===1?'':'s'}</span>
+            <button class="pdf-btn" onclick="descargarPDFVivienda(event, '${v.replace(/'/g,"\\'")}')" title="Descargar PDF de esta vivienda">⤓ PDF</button>
+            <span class="caret">▾</span>
+          </div>
+        </div>
+        <div class="vivienda-body">
+          ${g.extras.length ? `
+            <div class="block-label">Extras (${g.extras.length})</div>
+            <table class="extras-table">
+              <thead><tr>
+                ${cabeceraExtras}
+              </tr></thead>
+              <tbody>${filasExtras}</tbody>
+            </table>` : ''}
+          ${g.especiales.length ? `
+            <div class="block-label">Extras especiales (${g.especiales.length})</div>
+            ${filasEspeciales}` : ''}
+        </div>
+      </div>`;
+  }).join('');
+  actualizarBotonTodo();
+}
+
+function toggleCard(v) {
+  COLLAPSED[v] = !COLLAPSED[v];
+  renderDashboard();
+}
+
+function toggleTodo() {
+  const viviendas = Object.keys(agruparPorVivienda());
+  const todosColapsados = viviendas.length > 0 && viviendas.every(v => COLLAPSED[v]);
+  viviendas.forEach(v => COLLAPSED[v] = !todosColapsados);
+  renderDashboard();
+}
+
+function actualizarBotonTodo() {
+  const btn = document.getElementById('toggle-todo-btn');
+  if (!btn) return;
+  const viviendas = Object.keys(agruparPorVivienda());
+  const todosColapsados = viviendas.length > 0 && viviendas.every(v => COLLAPSED[v]);
+  btn.textContent = todosColapsados ? '▾ Desplegar todo' : '▴ Contraer todo';
+}
+
+function descargarPDFVivienda(ev, v) {
+  ev.stopPropagation(); // no disparar también el toggle de colapsar/expandir
+  if (!window.jspdf || !window.jspdf.jsPDF) {
+    alert('No se ha podido cargar el generador de PDF (jsPDF). Comprueba la conexión y vuelve a intentarlo.');
+    return;
+  }
+  let g = agruparPorVivienda()[v];
+  if (!g) return;
+
+  const oficioSel = document.getElementById('oficio-select').value;
+  if (oficioSel) {
+    g = {
+      extras: g.extras.filter(e => (e.oficio || '') === oficioSel),
+      especiales: g.especiales.filter(e => (e.oficio || '') === oficioSel)
+    };
+  }
+
+  const idsPadreDePack = new Set(
+    g.extras.map(e => String(e.id || '').match(/^(.+)_sub\d+$/)).filter(Boolean).map(m => m[1])
+  );
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Cabecera estilo Amal: banda negra, título en blanco, subtítulo gris
+  doc.setFillColor(26, 26, 26); // #1A1A1A
+  doc.rect(0, 0, pageWidth, 24, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.text('SERENA BREEZE — EXTRAS ' + v, 14, 12);
+  doc.setTextColor(204, 204, 204); // #CCCCCC
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9);
+  const promoLabel = CURRENT_PROMO === '2SB' ? 'Serena Breeze 2' : 'Serena Breeze 3';
+  const fecha = new Date().toLocaleDateString('es-ES', {day:'2-digit',month:'2-digit',year:'numeric'});
+  doc.text(promoLabel + '  ·  Generado el ' + fecha, 14, 19);
+
+  let cursorY = 32;
+
+  if (g.extras.length) {
+    doc.setTextColor(51, 51, 51);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('EXTRAS (' + g.extras.length + ')', 14, cursorY);
+    cursorY += 4;
+
+    const esTec = veTecActual();
+
+    if (esTec) {
+      const filas = g.extras.map(e => {
+        const isSub = /^.+_sub\d+$/.test(String(e.id || ''));
+        const esPadreDePack = idsPadreDePack.has(String(e.id || ''));
+        const nombre = (isSub ? '   ↳ ' : '') + (e.extra || e.id || '');
+        return [
+          nombre,
+          e.descripcion || '',
+          e.nota_extra || '',
+          e.notes || '',
+          isSub ? '' : (e.qty ?? ''),
+          e.oficio || '',
+          e.estado === 'Firmado' ? 'Firmado' : 'Enviado',
+          esPadreDePack ? '—' : (String(e.revisado_arquitectura).toUpperCase() === 'TRUE' ? 'Sí' : 'No'),
+          esPadreDePack ? '—' : (String(e.pedido_realizado).toUpperCase() === 'TRUE' ? 'Sí' : 'No')
+        ];
+      });
+      doc.autoTable({
+        startY: cursorY,
+        head: [['Extra', 'Descripción', 'Nota extra', 'Notas', 'Uds.', 'Oficio', 'Estado', 'Rev. Arq.', 'Pedido']],
+        body: filas,
+        theme: 'plain',
+        styles: { font: 'helvetica', fontSize: 7.5, textColor: [42, 37, 32], cellPadding: 1.6 },
+        headStyles: { fillColor: [17, 17, 17], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [242, 242, 242] },
+        columnStyles: {
+          4: { halign: 'center', cellWidth: 12 },
+          6: { halign: 'center', cellWidth: 16 },
+          7: { halign: 'center', cellWidth: 16 },
+          8: { halign: 'center', cellWidth: 14 }
+        }
+      });
+    } else {
+      const filas = g.extras.map(e => {
+        const isSub = /^.+_sub\d+$/.test(String(e.id || ''));
+        const esPadreDePack = idsPadreDePack.has(String(e.id || ''));
+        const nombre = (isSub ? '   ↳ ' : '') + (e.extra || e.id || '');
+        const total = (Number(e.qty)||0) * (Number(e.price)||0);
+        return [
+          nombre,
+          isSub ? '' : (e.qty ?? ''),
+          isSub ? '' : fmtEur(e.price),
+          isSub ? '' : fmtEur(total),
+          e.estado === 'Firmado' ? 'Firmado' : 'Enviado',
+          esPadreDePack ? '—' : (String(e.revisado_arquitectura).toUpperCase() === 'TRUE' ? 'Sí' : 'No'),
+          esPadreDePack ? '—' : (String(e.pedido_realizado).toUpperCase() === 'TRUE' ? 'Sí' : 'No')
+        ];
+      });
+      doc.autoTable({
+        startY: cursorY,
+        head: [['Extra', 'Uds.', 'Precio', 'Total', 'Estado', 'Rev. Arq.', 'Pedido']],
+        body: filas,
+        theme: 'plain',
+        styles: { font: 'helvetica', fontSize: 8.5, textColor: [42, 37, 32], cellPadding: 2 },
+        headStyles: { fillColor: [17, 17, 17], textColor: [255, 255, 255], fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [242, 242, 242] },
+        columnStyles: {
+          1: { halign: 'center', cellWidth: 14 },
+          2: { halign: 'right', cellWidth: 22 },
+          3: { halign: 'right', cellWidth: 22 },
+          4: { halign: 'center', cellWidth: 20 },
+          5: { halign: 'center', cellWidth: 20 },
+          6: { halign: 'center', cellWidth: 18 }
+        }
+      });
+    }
+    cursorY = doc.lastAutoTable.finalY + 10;
+  }
+
+  if (g.especiales.length) {
+    if (cursorY > 260) { doc.addPage(); cursorY = 20; }
+    doc.setTextColor(51, 51, 51);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('EXTRAS ESPECIALES (' + g.especiales.length + ')', 14, cursorY);
+    cursorY += 4;
+
+    const filasEsp = g.especiales.map(e => [
+      e.descripcion || '',
+      e.unidades ?? 0,
+      e.estado === 'Listo' ? 'Listo' : 'Pendiente'
+    ]);
+    doc.autoTable({
+      startY: cursorY,
+      head: [['Descripción', 'Uds.', 'Estado']],
+      body: filasEsp,
+      theme: 'plain',
+      styles: { font: 'helvetica', fontSize: 8.5, textColor: [42, 37, 32], cellPadding: 2 },
+      headStyles: { fillColor: [17, 17, 17], textColor: [255, 255, 255], fontStyle: 'bold' },
+      alternateRowStyles: { fillColor: [242, 242, 242] },
+      columnStyles: { 1: { halign: 'center', cellWidth: 20 }, 2: { halign: 'center', cellWidth: 30 } }
+    });
+  }
+
+  doc.save(v + '_extras.pdf');
+}
+
+function toggleTick(checkbox) {
+  const vivienda = checkbox.dataset.vivienda;
+  const id = checkbox.dataset.id;
+  const post_entrega = checkbox.dataset.post;
+  const promocion = checkbox.dataset.promo;
+  const accion = checkbox.dataset.accion;   // 'marcar_planos' | 'marcar_pedido'
+  const campo = checkbox.dataset.campo;     // 'revisado_arquitectura' | 'pedido_realizado'
+  const valor = checkbox.checked ? 'TRUE' : 'FALSE';
+
+  if (WEBHOOK_DASHBOARD === 'PENDIENTE_CREAR_EN_MAKE') {
+    checkbox.checked = !checkbox.checked; // revertir, no hay backend aún
+    alert('Falta configurar WEBHOOK_DASHBOARD en Make. Este tick no se puede guardar todavía.');
+    return;
+  }
+
+  checkbox.classList.add('saving');
+  checkbox.classList.remove('err-flash');
+
+  // Reflejar el cambio en memoria al instante (optimista)
+  const extra = DATA_EXTRAS.find(e => e.vivienda === vivienda && e.id === id && String(e.post_entrega).toUpperCase() === post_entrega.toUpperCase());
+  if (extra) extra[campo] = valor;
+
+  fetch(WEBHOOK_DASHBOARD, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ accion, promocion, vivienda, post_entrega, id, valor })
+  })
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(data => {
+      if (!data || data.ok !== true) throw new Error('respuesta sin ok:true');
+      checkbox.classList.remove('saving');
+    })
+    .catch(e => {
+      console.error('Error al guardar tick (' + campo + '):', e);
+      checkbox.classList.remove('saving');
+      checkbox.classList.add('err-flash');
+      checkbox.checked = !checkbox.checked; // revertir
+      if (extra) extra[campo] = checkbox.checked ? 'TRUE' : 'FALSE';
+      setTimeout(() => checkbox.classList.remove('err-flash'), 2000);
+    });
+}
+
+function cssId(s) { return String(s).replace(/[^a-zA-Z0-9_-]/g, '_'); }
+
+// Villas primero (número corto, 1-2 dígitos: 2SB1, 2SB35...), luego
+// apartamentos (número de 3 dígitos: 2SB101...), cada grupo ordenado
+// numéricamente. Si no encaja el patrón, cae al final por orden alfabético.
+function compareViviendas(a, b) {
+  const ka = viviendaSortKey(a);
+  const kb = viviendaSortKey(b);
+  if (ka[0] !== kb[0]) return ka[0] - kb[0];
+  if (ka[1] !== kb[1]) return ka[1] - kb[1];
+  return String(a).localeCompare(String(b));
+}
+function viviendaSortKey(v) {
+  const rest = String(v).replace(/^(2SB|3SB)/i, '');
+  const m = rest.match(/^(\d+)/);
+  if (!m) return [2, 0]; // no reconocido: al final
+  const num = parseInt(m[1], 10);
+  const isApartamento = m[1].length >= 3;
+  return [isApartamento ? 1 : 0, num];
+}
+function fmtEur(n) { n = Number(n); return isNaN(n) ? '' : n.toLocaleString('es-ES', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €'; }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeHtml(s); }
+
+// Registro del service worker (PWA) — solo si el navegador lo soporta
+// (Android/Chrome lo necesita para el prompt de instalación; iOS lo ignora).
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => {
+      console.warn('No se pudo registrar el service worker:', err);
+    });
+  });
+}
+</script>
+</body>
+</html>
