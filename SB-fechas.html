@@ -35,8 +35,6 @@
 
   #load-indicator { display: none; font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--slate-gray); padding: 8px 16px; background: var(--off-white); border: 1px solid var(--border); margin-bottom: 20px; letter-spacing: .5px; }
   #load-indicator.err { color: #c0392b; background: #fdf0ee; border-color: #f0c4bc; }
-  .readonly-banner { display: none; font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--slate-gray); padding: 10px 16px; background: var(--off-white); border: 1px solid var(--border); margin-bottom: 24px; letter-spacing: .3px; }
-  .readonly-banner.show { display: block; }
   #empty-state { display: none; font-family: 'Roboto', sans-serif; font-size: 14px; color: var(--slate-gray); padding: 32px; text-align: center; border: 1px solid var(--border); }
 
   .block-title { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin: 36px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
@@ -143,7 +141,6 @@
     </div>
 
     <div id="load-indicator"></div>
-    <div class="readonly-banner" id="readonly-banner">Tu usuario solo puede consultar esta pantalla, no editar fechas.</div>
     <div id="empty-state">Elige Serena Breeze 2 o Serena Breeze 3 arriba para ver sus fechas.</div>
 
     <div id="content" style="display:none"></div>
@@ -186,8 +183,6 @@ function doLogin() {
         };
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app-wrapper').style.display = 'block';
-        const puedeAlgo = puedeEditarNivel('promocion') || puedeEditarNivel('fase') || puedeEditarNivel('vivienda');
-        document.getElementById('readonly-banner').classList.toggle('show', !puedeAlgo);
       } else if (data.motivo === 'sin_acceso') {
         errorEl.textContent = 'Tu usuario no tiene acceso a esta herramienta.';
         errorEl.style.display = 'block';
