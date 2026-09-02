@@ -262,7 +262,7 @@ function cargarDatos() {
   ind.className = ''; ind.style.display = 'block';
   ind.textContent = 'Cargando ' + CURRENT_PROMO + '…';
 
-  fetch(FECHAS_URL, { method: 'POST', body: JSON.stringify({ accion: 'consultar' }) })
+  fetch(FECHAS_URL, { method: 'POST', body: JSON.stringify({ accion: 'consultar', promocion: CURRENT_PROMO }) })
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => {
       if (!data.ok) throw new Error(data.error || 'respuesta sin ok:true');
