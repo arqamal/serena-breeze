@@ -472,7 +472,7 @@ function parseFechaValor_(iso) {
 // Verde: a más de 1 mes vista · Naranja: dentro del mes que viene · Rojo: fecha ya pasada.
 // Sin valor → sin color. fecha_licencia y fecha_inicio tampoco llevan color:
 // son el arranque de un plazo, no una fecha límite que pueda "vencer".
-const CAMPOS_SIN_SEMAFORO = ['fecha_licencia', 'fecha_inicio'];
+const CAMPOS_SIN_SEMAFORO = ['fecha_licencia', 'fecha_inicio', 'fecha_cfo'];
 function claseSemaforo(iso, campoKey) {
   if (CAMPOS_SIN_SEMAFORO.indexOf(campoKey) !== -1) return '';
   const fecha = parseFechaValor_(iso);
