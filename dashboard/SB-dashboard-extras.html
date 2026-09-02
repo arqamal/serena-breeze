@@ -71,6 +71,7 @@
   .block-label { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin: 18px 0 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
 
   /* TABLE (extras normales) */
+  .extras-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .extras-table { width: 100%; border-collapse: collapse; }
   .extras-table th { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--slate-gray); text-align: left; padding: 8px 8px; border-bottom: 1px solid var(--border); font-weight: 400; white-space: nowrap; }
   .extras-table th.tc { text-align: center; width: 60px; }
@@ -82,7 +83,7 @@
   .extras-table tr:last-child td { border-bottom: none; }
   .extras-table tr:hover td { background: var(--off-white); }
   .extras-table td.tc { text-align: center; }
-  .extras-table td.tr { text-align: right; font-family: 'Oswald', sans-serif; font-size: 13px; }
+  .extras-table td.tr { text-align: right; font-family: 'Oswald', sans-serif; font-size: 13px; white-space: nowrap; }
   .extras-table td.ts { text-align: center; }
   .extras-table td.tp { text-align: center; }
   .extras-table td.extra-name { }
@@ -134,6 +135,7 @@
   @media (max-width: 768px) {
     main { padding-left: 16px; padding-right: 16px; }
     .extras-table th.ts, .extras-table td.ts { display: none; }
+    .extras-table { min-width: 560px; }
   }
 </style>
 </head>
@@ -487,12 +489,14 @@ function renderDashboard() {
         <div class="vivienda-body">
           ${g.extras.length ? `
             <div class="block-label">Extras (${g.extras.length})</div>
-            <table class="extras-table">
-              <thead><tr>
-                ${cabeceraExtras}
-              </tr></thead>
-              <tbody>${filasExtras}</tbody>
-            </table>` : ''}
+            <div class="extras-table-wrap">
+              <table class="extras-table">
+                <thead><tr>
+                  ${cabeceraExtras}
+                </tr></thead>
+                <tbody>${filasExtras}</tbody>
+              </table>
+            </div>` : ''}
           ${g.especiales.length ? `
             <div class="block-label">Extras especiales (${g.especiales.length})</div>
             ${filasEspeciales}` : ''}
