@@ -152,7 +152,6 @@
 const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
 const FECHAS_URL = 'https://script.google.com/macros/s/AKfycbynWrDgP-fyWwQHuQ26LqFU0LYujR6ngtXpCmjvY_IsJRP5qf8lduWO9LcX-jZS31z_Mw/exec';
 
-let USER_ROL = null;
 let USER_LOGIN = null; // usuario tal cual lo escribió — se manda en cada guardar_* para que el backend mire sus permisos en _usuarios
 let USER_PERMISOS = { promocion: false, fase: false, vivienda: false };
 
@@ -172,7 +171,6 @@ function doLogin() {
     .then(r => r.json())
     .then(data => {
       if (data.ok) {
-        USER_ROL = data.rol || null;
         USER_LOGIN = u;
         // Permisos tal cual los devuelve AuthUsuarios.gs desde _usuarios —
         // aquí no hay ninguna tabla fija por rol, se confía en el servidor.

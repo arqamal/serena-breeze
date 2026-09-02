@@ -195,12 +195,14 @@ function doLogin() {
     .then(r => r.json())
     .then(data => {
       if (data.ok) {
-        USER_ROL = data.rol || null;
-        return cargarRoles().then(() => {
-          document.getElementById('login-screen').style.display = 'none';
-          document.getElementById('app-wrapper').style.display = 'block';
-          mostrarEstadoSinPromo();
-        });
+        USER_PERMISOS_DASHBOARD = {
+          edita_revisado_arquitectura: data.dashboard_edita_revisado_arquitectura === true,
+          edita_pedido: data.dashboard_edita_pedido === true,
+          ve_precio_total: data.dashboard_ve_precio_total === true
+        };
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-wrapper').style.display = 'block';
+        mostrarEstadoSinPromo();
       } else if (data.motivo === 'sin_acceso') {
         errorEl.textContent = 'Tu usuario no tiene acceso al dashboard.';
         errorEl.style.display = 'block';
@@ -237,54 +239,18 @@ function doLogin() {
 const WEBHOOK_DASHBOARD = 'https://hook.eu1.make.com/xfzc3ke7gfet737pmwwn8sptn3m1awj5';
 
 let CURRENT_PROMO = null;
-let USER_ROL = null;
-
-// URL del Web App AuthUsuarios.gs (mismo endpoint que LOGIN_URL — accion 'roles').
-const AUTH_ROLES_URL = 'https://script.google.com/macros/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
-
-// Fallback si el fetch de roles falla (Sheet caída, URL sin desplegar, etc.):
-// misma tabla que antes vivía hardcodeada aquí, para no dejar el dashboard
-// sin permisos por un fallo de red.
-const PERMISOS_TICKS_FALLBACK = {
-  arquitectura:  { edita_revisado_arquitectura: true,  edita_pedido: true,  ve_precio_total: true },
-  tec2:          { edita_revisado_arquitectura: false, edita_pedido: true,  ve_precio_total: true },
-  ventas:        { edita_revisado_arquitectura: false, edita_pedido: false, ve_precio_total: true },
-  tec:           { edita_revisado_arquitectura: false, edita_pedido: false, ve_precio_total: false },
-  obra:          { edita_revisado_arquitectura: false, edita_pedido: false, ve_precio_total: false }
-};
-let ROLES_MAP = PERMISOS_TICKS_FALLBACK;
-
-function cargarRoles() {
-  return fetch(AUTH_ROLES_URL, {
-    method: 'POST',
-    body: JSON.stringify({ accion: 'roles' })
-  })
-    .then(r => r.json())
-    .then(data => {
-      if (data.ok && data.roles && Object.keys(data.roles).length) {
-        ROLES_MAP = data.roles;
-      } else {
-        console.warn('Respuesta de roles vacía o inválida, usando fallback local.');
-        ROLES_MAP = PERMISOS_TICKS_FALLBACK;
-      }
-    })
-    .catch(() => {
-      console.warn('No se pudo cargar _roles desde AuthUsuarios.gs, usando fallback local.');
-      ROLES_MAP = PERMISOS_TICKS_FALLBACK;
-    });
-}
+// Permisos de este usuario para el dashboard — llegan del login (columnas
+// dashboard_* en _usuarios), no de una tabla de roles ni de un "_roles" aparte.
+let USER_PERMISOS_DASHBOARD = { edita_revisado_arquitectura: false, edita_pedido: false, ve_precio_total: false };
 
 function puedeEditarTick(campo) {
-  const permisosRol = ROLES_MAP[USER_ROL] || {};
   const campoMap = { revisado_arquitectura: 'edita_revisado_arquitectura', pedido_realizado: 'edita_pedido' };
-  return !!permisosRol[campoMap[campo] || campo];
+  return !!USER_PERMISOS_DASHBOARD[campoMap[campo] || campo];
 }
 
 function veTecActual() {
-  // true si el rol actual NO ve precio/total → activa el layout de columnas "tec"
-  const permisosRol = ROLES_MAP[USER_ROL];
-  if (permisosRol) return !permisosRol.ve_precio_total;
-  return USER_ROL === 'tec'; // fallback si el rol no está en el mapa
+  // true si este usuario NO ve precio/total → activa el layout de columnas "tec"
+  return !USER_PERMISOS_DASHBOARD.ve_precio_total;
 }
 let DATA_EXTRAS = [];
 let DATA_ESPECIALES = [];
