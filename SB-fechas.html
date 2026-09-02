@@ -62,8 +62,14 @@
   .field-input.err-flash { border-color: #c0392b; outline: 2px solid #f0c4bc; outline-offset: 1px; }
   .field-input.saved-flash { border-color: #2d7a2d; }
 
+  /* SEMÁFORO DE FECHAS — verde: en plazo (>1 mes) · naranja: a menos de 1 mes · rojo: vencida */
+  .field-input.due-green, .field-value.due-green { background: #E9F6EA; }
+  .field-input.due-orange, .field-value.due-orange { background: #FCEFD9; }
+  .field-input.due-red, .field-value.due-red { background: #FBE3E1; }
+
   /* BLOQUE 2 — TABLA DE FASE, TRANSPUESTA (campo en filas, Villas/Apartamentos en columnas) — cabe sin scroll lateral */
   .fase-table-wrap, .viviendas-table-wrap { border: 1px solid var(--border); }
+  .fase-table-wrap { margin-bottom: 28px; }
   table.data-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
   table.data-table th { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--off-white); font-weight: 400; }
   table.data-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
@@ -223,9 +229,9 @@ const FIELDS_FASE = [
   { key: 'fecha_entrega', label: 'Entrega de fase', type: 'date' }
 ];
 const FIELDS_VIVIENDA = [
-  { key: 'fecha_inicio', label: 'Fecha inicio', type: 'date' },
   { key: 'fecha_fin_estimada', label: 'Fecha fin estimada', type: 'date' },
   { key: 'fecha_fin_real', label: 'Fecha fin real', type: 'date' },
+  { key: 'fecha_entrega', label: 'Fecha entrega', type: 'date' },
   { key: 'fecha_escritura', label: 'Fecha escritura', type: 'date' }
 ];
 
@@ -414,16 +420,29 @@ function formatearFechaES(iso) {
   const [y, m, d] = String(iso).split('-');
   return d + '/' + m + '/' + y;
 }
+// Verde: a más de 1 mes vista · Naranja: dentro del mes que viene · Rojo: fecha ya pasada.
+// Sin valor → sin color (no hay nada que semaforizar).
+function claseSemaforo(iso) {
+  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(String(iso))) return '';
+  const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+  const fecha = new Date(iso + 'T00:00:00');
+  if (isNaN(fecha.getTime())) return '';
+  const diffDias = Math.round((fecha - hoy) / 86400000);
+  if (diffDias < 0) return 'due-red';
+  if (diffDias <= 30) return 'due-orange';
+  return 'due-green';
+}
 function renderCampoCelda(field, valor, puedeEditar, campoKey, ctx) {
+  const clase = field.type === 'date' ? claseSemaforo(valor) : '';
   if (!puedeEditar) {
     const vacio = (valor === undefined || valor === null || valor === '');
-    return '<div class="field-value' + (vacio ? ' empty' : '') + '">' + (vacio ? 'Sin definir' : escapeHtml(formatearValorMostrado(field, valor))) + '</div>';
+    return '<div class="field-value' + (vacio ? ' empty' : '') + (clase ? ' ' + clase : '') + '">' + (vacio ? 'Sin definir' : escapeHtml(formatearValorMostrado(field, valor))) + '</div>';
   }
   const valorAttr = (valor === undefined || valor === null) ? '' : escapeAttr(valor);
   const ctxAttrs = 'data-campo="' + campoKey + '"' +
     (ctx.fase ? ' data-fase="' + escapeAttr(ctx.fase) + '"' : '') +
     (ctx.vivienda ? ' data-vivienda="' + escapeAttr(ctx.vivienda) + '"' : '');
-  return '<input class="field-input" type="' + field.type + '" value="' + valorAttr + '" ' + ctxAttrs + '>';
+  return '<input class="field-input' + (clase ? ' ' + clase : '') + '" type="' + field.type + '" value="' + valorAttr + '" ' + ctxAttrs + '>';
 }
 
 // ─── LISTENERS (delegación: un solo listener por elemento generado) ────
@@ -456,6 +475,9 @@ function guardarCampoInput(el, onSave) {
   onSave(campos)
     .then(() => {
       el.classList.remove('saving');
+      el.classList.remove('due-green', 'due-orange', 'due-red');
+      const clase = claseSemaforo(nuevoValor);
+      if (clase) el.classList.add(clase);
       el.classList.add('saved-flash');
       setTimeout(() => el.classList.remove('saved-flash'), 1200);
     })
