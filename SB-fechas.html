@@ -106,6 +106,19 @@
 
   #app-wrapper { display: none; }
 
+  .help-section { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--border); }
+  .help-title { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 14px; }
+  .help-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .help-list li { font-family: 'Roboto', sans-serif; font-size: 13px; font-weight: 300; color: var(--slate-gray); line-height: 1.7; }
+  .help-sublist { list-style: none; display: flex; flex-direction: column; gap: 4px; margin: 8px 0 8px 18px; }
+  .help-sublist li { font-size: 12.5px; }
+  .help-list strong { font-weight: 400; color: var(--text); }
+  .help-list em { font-style: italic; }
+  .help-dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: middle; margin: 0 2px; border: 1px solid var(--border); }
+  .help-dot.due-green { background: #E9F6EA; }
+  .help-dot.due-orange { background: #FCEFD9; }
+  .help-dot.due-red { background: #FBE3E1; }
+
   @media (max-width: 768px) {
     main { padding-left: 16px; padding-right: 16px; }
     .fase-table-wrap table.data-table th:first-child, .fase-table-wrap table.data-table td:first-child { width: auto; }
@@ -150,6 +163,24 @@
     <div id="empty-state">Elige Serena Breeze 2 o Serena Breeze 3 arriba para ver sus fechas.</div>
 
     <div id="content" style="display:none"></div>
+
+    <div class="help-section">
+      <div class="help-title">Cómo funciona</div>
+      <ul class="help-list">
+        <li>Elige la promoción arriba (1SB / 2SB / 3SB). Cada una tiene su propia página con 3 niveles: <strong>Promoción</strong>, <strong>Fase</strong> (Villas y Apartamentos — en 3SB, además, por bloque) y <strong>Vivienda</strong>.</li>
+        <li>Los campos marcados <em>· calculado</em> no se editan directamente: se calculan solos a partir de las fechas de las viviendas (la más tardía), y se actualizan al momento en cuanto guardas algo.
+          <ul class="help-sublist">
+            <li><strong>Fecha fin estimada</strong> de Promoción = la <em>fecha fin estimada</em> más tardía entre todas las viviendas de esa promoción.</li>
+            <li><strong>Fecha fin real</strong> de Promoción = la <em>CFO</em> más tardía entre todas las viviendas de esa promoción.</li>
+            <li><strong>Entrega de fase</strong> = la <em>fecha entrega</em> más tardía entre las viviendas de esa fase (Villas y cada bloque de Apartamentos, por separado).</li>
+          </ul>
+          En los tres casos, mientras falte una sola vivienda por rellenar ese dato, el campo calculado se queda vacío.
+        </li>
+        <li>Los fondos de color son un semáforo de plazo: <span class="help-dot due-green"></span> verde a más de un mes, <span class="help-dot due-orange"></span> naranja dentro del último mes, <span class="help-dot due-red"></span> rojo si ya venció.</li>
+        <li>Si un campo aparece como texto en vez de como casilla editable, tu usuario no tiene permiso para tocarlo en ese nivel — puedes consultarlo, pero no cambiarlo.</li>
+        <li>Cada fecha se guarda sola al salir del campo, sin botón de guardar.</li>
+      </ul>
+    </div>
   </main>
 </div>
 
