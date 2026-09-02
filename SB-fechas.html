@@ -226,12 +226,12 @@ const FIELDS_FASE = [
   { key: 'fecha_bloqueo_materiales', label: 'Bloqueo elección materiales', type: 'date' },
   { key: 'fecha_bloqueo_acabados', label: 'Bloqueo acabados', type: 'date' },
   { key: 'fecha_bloqueo_equipamiento', label: 'Bloqueo equipamiento', type: 'date' },
-  { key: 'fecha_entrega', label: 'Entrega de fase', type: 'date' }
+  { key: 'fecha_entrega', label: 'Entrega de fase', type: 'month' }
 ];
 const FIELDS_VIVIENDA = [
-  { key: 'fecha_fin_estimada', label: 'Fecha fin estimada', type: 'date' },
+  { key: 'fecha_fin_estimada', label: 'Fecha fin estimada', type: 'month' },
   { key: 'fecha_fin_real', label: 'Fecha fin real', type: 'date' },
-  { key: 'fecha_entrega', label: 'Fecha entrega', type: 'date' },
+  { key: 'fecha_entrega', label: 'Fecha entrega', type: 'month' },
   { key: 'fecha_escritura', label: 'Fecha escritura', type: 'date' }
 ];
 
@@ -412,6 +412,7 @@ function renderFieldRow(fields, registro, puedeEditar) {
 }
 
 function formatearValorMostrado(field, valor) {
+  if (field.type === 'month') return formatearMesES(valor);
   if (field.type === 'date') return formatearFechaES(valor);
   return valor;
 }
@@ -420,23 +421,37 @@ function formatearFechaES(iso) {
   const [y, m, d] = String(iso).split('-');
   return d + '/' + m + '/' + y;
 }
+function formatearMesES(iso) {
+  if (!iso) return '';
+  const m6 = /^(\d{4})-(\d{2})/.exec(String(iso));
+  if (!m6) return iso;
+  return m6[2] + '/' + m6[1];
+}
+// Acepta 'YYYY-MM-DD' (date) o 'YYYY-MM' (month); para 'month' se compara
+// contra el día 1 de ese mes — aproximación razonable ya que no hay día exacto.
+function parseFechaValor_(iso) {
+  if (!iso) return null;
+  const s = String(iso);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(s + 'T00:00:00');
+  if (/^\d{4}-\d{2}$/.test(s)) return new Date(s + '-01T00:00:00');
+  return null;
+}
 // Verde: a más de 1 mes vista · Naranja: dentro del mes que viene · Rojo: fecha ya pasada.
 // Sin valor → sin color. fecha_licencia y fecha_inicio tampoco llevan color:
 // son el arranque de un plazo, no una fecha límite que pueda "vencer".
 const CAMPOS_SIN_SEMAFORO = ['fecha_licencia', 'fecha_inicio'];
 function claseSemaforo(iso, campoKey) {
   if (CAMPOS_SIN_SEMAFORO.indexOf(campoKey) !== -1) return '';
-  if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(String(iso))) return '';
+  const fecha = parseFechaValor_(iso);
+  if (!fecha) return '';
   const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
-  const fecha = new Date(iso + 'T00:00:00');
-  if (isNaN(fecha.getTime())) return '';
   const diffDias = Math.round((fecha - hoy) / 86400000);
   if (diffDias < 0) return 'due-red';
   if (diffDias <= 30) return 'due-orange';
   return 'due-green';
 }
 function renderCampoCelda(field, valor, puedeEditar, campoKey, ctx) {
-  const clase = field.type === 'date' ? claseSemaforo(valor, campoKey) : '';
+  const clase = (field.type === 'date' || field.type === 'month') ? claseSemaforo(valor, campoKey) : '';
   if (!puedeEditar) {
     const vacio = (valor === undefined || valor === null || valor === '');
     return '<div class="field-value' + (vacio ? ' empty' : '') + (clase ? ' ' + clase : '') + '">' + (vacio ? 'Sin definir' : escapeHtml(formatearValorMostrado(field, valor))) + '</div>';
@@ -453,19 +468,19 @@ function activarListeners() {
   const cont = document.getElementById('content');
 
   cont.querySelectorAll('.promo-box[data-nivel="promocion"] .promo-box-body input[data-campo]').forEach(el => {
-    el.addEventListener(el.type === 'date' ? 'change' : 'blur', () => guardarCampoInput(el, campos => guardarPromocion(campos)));
+    el.addEventListener((el.type === 'date' || el.type === 'month') ? 'change' : 'blur', () => guardarCampoInput(el, campos => guardarPromocion(campos)));
   });
 
   cont.querySelectorAll('.fase-table-wrap input[data-campo]').forEach(el => {
     const fase = el.dataset.fase;
-    el.addEventListener(el.type === 'date' ? 'change' : 'blur', () => guardarCampoInput(el, campos => guardarFase(fase, campos)));
+    el.addEventListener((el.type === 'date' || el.type === 'month') ? 'change' : 'blur', () => guardarCampoInput(el, campos => guardarFase(fase, campos)));
   });
 
   cont.querySelectorAll('tr[data-nivel="vivienda"] input[data-campo]').forEach(el => {
     const fila = el.closest('tr');
     const fase = fila.dataset.fase;
     const vivienda = fila.dataset.vivienda;
-    el.addEventListener(el.type === 'date' ? 'change' : 'blur', () => guardarCampoInput(el, campos => guardarVivienda(fase, vivienda, campos)));
+    el.addEventListener((el.type === 'date' || el.type === 'month') ? 'change' : 'blur', () => guardarCampoInput(el, campos => guardarVivienda(fase, vivienda, campos)));
   });
 }
 
