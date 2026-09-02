@@ -78,6 +78,8 @@
   table.data-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   table.data-table tr:last-child td { border-bottom: none; }
   table.data-table td.rowlabel { font-family: 'Roboto', sans-serif; font-size: 12.5px; color: var(--slate-gray); }
+  table.data-table tr.fila-limite-fase { background: var(--off-white); }
+  table.data-table tr.fila-limite-fase td.rowlabel { color: var(--black); font-weight: 400; }
   table.data-table td.vcode { font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: .5px; color: var(--black); white-space: nowrap; }
   .fase-table-wrap table.data-table th:first-child, .fase-table-wrap table.data-table td:first-child { width: 42%; }
   .fase-table-wrap.fase-table-ancha table.data-table th:first-child, .fase-table-wrap.fase-table-ancha table.data-table td:first-child { width: 190px; }
@@ -425,8 +427,10 @@ function renderBloque2_Fases() {
   fasesDePromo().forEach(fase => { html += '<th>' + escapeHtml(fase) + '</th>'; });
   html += '</tr></thead><tbody>';
 
+  const CAMPOS_LIMITE_FASE = ['fecha_inicio', 'fecha_entrega']; // inicio/fin de la fase, no un bloqueo — se resaltan distinto
   FIELDS_FASE.forEach(f => {
-    html += '<tr><td class="rowlabel">' + etiquetaCampo(f) + '</td>';
+    const esLimite = CAMPOS_LIMITE_FASE.indexOf(f.key) !== -1;
+    html += '<tr class="' + (esLimite ? 'fila-limite-fase' : '') + '"><td class="rowlabel">' + etiquetaCampo(f) + '</td>';
     fasesDePromo().forEach(fase => {
       html += '<td>' + renderCampoCelda(f, registros[fase][f.key], puedeEditar, f.key, { fase: fase }) + '</td>';
     });
