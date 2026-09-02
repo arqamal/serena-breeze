@@ -68,6 +68,11 @@
   /* BLOQUE 2 — TABLA DE FASE, TRANSPUESTA (campo en filas, Villas/Apartamentos en columnas) — cabe sin scroll lateral */
   .fase-table-wrap, .viviendas-table-wrap { border: 1px solid var(--border); }
   .fase-table-wrap { margin-bottom: 28px; }
+  /* Con más de 2 fases (3SB: Villas + 3 bloques de apartamentos) ya no cabe
+     sin scroll horizontal en pantallas estrechas — se acepta scroll solo
+     en ese caso, vía esta clase añadida desde JS. */
+  .fase-table-wrap.fase-table-ancha { overflow-x: auto; }
+  .fase-table-wrap.fase-table-ancha table.data-table { min-width: 640px; }
   table.data-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
   table.data-table th { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--off-white); font-weight: 400; }
   table.data-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
@@ -75,6 +80,7 @@
   table.data-table td.rowlabel { font-family: 'Roboto', sans-serif; font-size: 12.5px; color: var(--slate-gray); }
   table.data-table td.vcode { font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: .5px; color: var(--black); white-space: nowrap; }
   .fase-table-wrap table.data-table th:first-child, .fase-table-wrap table.data-table td:first-child { width: 42%; }
+  .fase-table-wrap.fase-table-ancha table.data-table th:first-child, .fase-table-wrap.fase-table-ancha table.data-table td:first-child { width: 190px; }
   .field-input { min-width: 0; }
 
   /* BLOQUE 3 — VIVIENDAS */
@@ -238,7 +244,19 @@ const FIELDS_VIVIENDA = [
 ];
 
 const PROMOCIONES_FIJAS = { '1SB': 'Serena Breeze 1', '2SB': 'Serena Breeze 2', '3SB': 'Serena Breeze 3' };
-const FASES_FIJAS = ['Villas', 'Apartamentos'];
+// Fases fijas por promoción — 3SB tiene 3 edificios de apartamentos
+// (Bloque 1/2/3), el resto solo uno. fasesDePromo() es la única fuente de
+// verdad de qué fases existen para la promoción actual; todo lo demás la usa.
+const FASES_POR_PROMO = {
+  '3SB': ['Villas', 'Apartamentos Bloque 1', 'Apartamentos Bloque 2', 'Apartamentos Bloque 3']
+};
+const FASES_DEFECTO = ['Villas', 'Apartamentos'];
+function fasesDePromo() {
+  return FASES_POR_PROMO[CURRENT_PROMO] || FASES_DEFECTO;
+}
+function esFaseApartamento(fase) {
+  return String(fase || '').indexOf('Apartamentos') === 0;
+}
 
 // ─── ESTADO ──────────────────────────────────────────────────────
 let DATA_PROMOCIONES = [];
@@ -325,7 +343,7 @@ function renderBloque1_Promocion() {
   const registro = DATA_PROMOCIONES.find(r => r.promocion === CURRENT_PROMO) || { promocion: CURRENT_PROMO };
   const viviendasPromo = DATA_VIVIENDAS.filter(r => r.promocion === CURRENT_PROMO);
   const nVillas = contarViviendas('Villas');
-  const nApts = contarViviendas('Apartamentos');
+  const nApts = DATA_VIVIENDAS.filter(r => r.promocion === CURRENT_PROMO && esFaseApartamento(r.fase)).length;
 
   // fecha_fin_estimada de promoción es calculada: la más tardía entre todas
   // las viviendas. fecha_fin_real de promoción se calcula a partir de
@@ -362,20 +380,20 @@ function guardarPromocion(campos) {
 function renderBloque2_Fases() {
   const puedeEditar = puedeEditarNivel('fase');
   const registros = {};
-  FASES_FIJAS.forEach(fase => {
+  fasesDePromo().forEach(fase => {
     const base = DATA_FASES.find(r => r.promocion === CURRENT_PROMO && r.fase === fase) || { promocion: CURRENT_PROMO, fase: fase };
     const viviendasFase = DATA_VIVIENDAS.filter(r => r.promocion === CURRENT_PROMO && r.fase === fase);
     // fecha_entrega de fase es calculada: la más tardía de sus viviendas.
     registros[fase] = Object.assign({}, base, { fecha_entrega: maxFechaViviendaCompleta_(viviendasFase, 'fecha_entrega') });
   });
 
-  let html = '<div class="fase-table-wrap"><table class="data-table"><thead><tr><th>Campo</th>';
-  FASES_FIJAS.forEach(fase => { html += '<th>' + escapeHtml(fase) + '</th>'; });
+  let html = '<div class="fase-table-wrap' + (fasesDePromo().length > 2 ? ' fase-table-ancha' : '') + '"><table class="data-table"><thead><tr><th>Campo</th>';
+  fasesDePromo().forEach(fase => { html += '<th>' + escapeHtml(fase) + '</th>'; });
   html += '</tr></thead><tbody>';
 
   FIELDS_FASE.forEach(f => {
     html += '<tr><td class="rowlabel">' + etiquetaCampo(f) + '</td>';
-    FASES_FIJAS.forEach(fase => {
+    fasesDePromo().forEach(fase => {
       html += '<td>' + renderCampoCelda(f, registros[fase][f.key], puedeEditar, f.key, { fase: fase }) + '</td>';
     });
     html += '</tr>';
@@ -398,7 +416,7 @@ function guardarFase(fase, campos) {
 function renderBloque3_Viviendas() {
   let html = '';
 
-  FASES_FIJAS.forEach(fase => {
+  fasesDePromo().forEach(fase => {
     const viviendas = DATA_VIVIENDAS
       .filter(r => r.promocion === CURRENT_PROMO && r.fase === fase)
       .sort((a, b) => String(a.vivienda).localeCompare(String(b.vivienda), 'es', { numeric: true }));
