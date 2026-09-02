@@ -215,8 +215,8 @@ function puedeEditarNivel(nivel) {
 const FIELDS_PROMOCION = [
   { key: 'fecha_licencia', label: 'Fecha licencia', type: 'date' },
   { key: 'fecha_inicio', label: 'Fecha inicio', type: 'date' },
-  { key: 'fecha_fin_estimada', label: 'Fecha fin estimada', type: 'date' },
-  { key: 'fecha_fin_real', label: 'Fecha fin real', type: 'date' }
+  { key: 'fecha_fin_estimada', label: 'Fecha fin estimada', type: 'month', computed: true },
+  { key: 'fecha_fin_real', label: 'Fecha fin real', type: 'date', computed: true }
 ];
 const FIELDS_FASE = [
   { key: 'fecha_inicio', label: 'Fecha inicio', type: 'date' },
@@ -226,7 +226,7 @@ const FIELDS_FASE = [
   { key: 'fecha_bloqueo_materiales', label: 'Bloqueo elección materiales', type: 'date' },
   { key: 'fecha_bloqueo_acabados', label: 'Bloqueo acabados', type: 'date' },
   { key: 'fecha_bloqueo_equipamiento', label: 'Bloqueo equipamiento', type: 'date' },
-  { key: 'fecha_entrega', label: 'Entrega de fase', type: 'month' }
+  { key: 'fecha_entrega', label: 'Entrega de fase', type: 'month', computed: true }
 ];
 const FIELDS_VIVIENDA = [
   { key: 'fecha_fin_estimada', label: 'Fecha fin estimada', type: 'month' },
@@ -295,12 +295,32 @@ function contarViviendas(fase) {
   return DATA_VIVIENDAS.filter(r => r.promocion === CURRENT_PROMO && r.fase === fase).length;
 }
 
+// Fecha más tardía de una lista de viviendas para un campo dado ('' si ninguna la tiene).
+// Usado para los campos calculados: entrega de fase (por fase) y fin
+// estimada/fin real de promoción (todas las viviendas de la promoción).
+function maxFechaVivienda_(viviendas, campo) {
+  let mejor = null, mejorStr = '';
+  viviendas.forEach(v => {
+    const d = parseFechaValor_(v[campo]);
+    if (d && (!mejor || d > mejor)) { mejor = d; mejorStr = v[campo]; }
+  });
+  return mejorStr;
+}
+
 // ── BLOQUE 1: cabecera de promoción ──────────────────────────────
 function renderBloque1_Promocion() {
   const puedeEditar = puedeEditarNivel('promocion');
   const registro = DATA_PROMOCIONES.find(r => r.promocion === CURRENT_PROMO) || { promocion: CURRENT_PROMO };
+  const viviendasPromo = DATA_VIVIENDAS.filter(r => r.promocion === CURRENT_PROMO);
   const nVillas = contarViviendas('Villas');
   const nApts = contarViviendas('Apartamentos');
+
+  // fecha_fin_estimada y fecha_fin_real de promoción son calculadas: la más
+  // tardía entre todas las viviendas (villas + apartamentos), no un dato propio.
+  const valoresEfectivos = Object.assign({}, registro, {
+    fecha_fin_estimada: maxFechaVivienda_(viviendasPromo, 'fecha_fin_estimada'),
+    fecha_fin_real: maxFechaVivienda_(viviendasPromo, 'fecha_fin_real')
+  });
 
   return '' +
     '<div class="promo-box" data-nivel="promocion">' +
@@ -309,7 +329,7 @@ function renderBloque1_Promocion() {
         '<div class="promo-counts"><b>' + nVillas + '</b> villas · <b>' + nApts + '</b> apartamentos</div>' +
       '</div>' +
       '<div class="promo-box-body">' +
-        renderFieldRow(FIELDS_PROMOCION, registro, puedeEditar) +
+        renderFieldRow(FIELDS_PROMOCION, valoresEfectivos, puedeEditar) +
       '</div>' +
     '</div>';
 }
@@ -330,7 +350,10 @@ function renderBloque2_Fases() {
   const puedeEditar = puedeEditarNivel('fase');
   const registros = {};
   FASES_FIJAS.forEach(fase => {
-    registros[fase] = DATA_FASES.find(r => r.promocion === CURRENT_PROMO && r.fase === fase) || { promocion: CURRENT_PROMO, fase: fase };
+    const base = DATA_FASES.find(r => r.promocion === CURRENT_PROMO && r.fase === fase) || { promocion: CURRENT_PROMO, fase: fase };
+    const viviendasFase = DATA_VIVIENDAS.filter(r => r.promocion === CURRENT_PROMO && r.fase === fase);
+    // fecha_entrega de fase es calculada: la más tardía de sus viviendas.
+    registros[fase] = Object.assign({}, base, { fecha_entrega: maxFechaVivienda_(viviendasFase, 'fecha_entrega') });
   });
 
   let html = '<div class="fase-table-wrap"><table class="data-table"><thead><tr><th>Campo</th>';
@@ -338,7 +361,7 @@ function renderBloque2_Fases() {
   html += '</tr></thead><tbody>';
 
   FIELDS_FASE.forEach(f => {
-    html += '<tr><td class="rowlabel">' + escapeHtml(f.label) + '</td>';
+    html += '<tr><td class="rowlabel">' + etiquetaCampo(f) + '</td>';
     FASES_FIJAS.forEach(fase => {
       html += '<td>' + renderCampoCelda(f, registros[fase][f.key], puedeEditar, f.key, { fase: fase }) + '</td>';
     });
@@ -400,10 +423,13 @@ function guardarVivienda(fase, codigoVivienda, campos) {
 }
 
 // ─── RENDER DE CAMPOS ────────────────────────────────────────────
+function etiquetaCampo(f) {
+  return f.label + (f.computed ? ' <span style="font-style:italic; text-transform:none; letter-spacing:0;">· calculado</span>' : '');
+}
 function renderFieldRow(fields, registro, puedeEditar) {
   let html = '<div class="field-row">';
   fields.forEach(f => {
-    html += '<div class="field-item"><label class="field-label">' + escapeHtml(f.label) + '</label>';
+    html += '<div class="field-item"><label class="field-label">' + etiquetaCampo(f) + '</label>';
     html += renderCampoCelda(f, registro[f.key], puedeEditar, f.key, {});
     html += '</div>';
   });
@@ -452,9 +478,11 @@ function claseSemaforo(iso, campoKey) {
 }
 function renderCampoCelda(field, valor, puedeEditar, campoKey, ctx) {
   const clase = (field.type === 'date' || field.type === 'month') ? claseSemaforo(valor, campoKey) : '';
-  if (!puedeEditar) {
+  const editable = puedeEditar && !field.computed;
+  if (!editable) {
     const vacio = (valor === undefined || valor === null || valor === '');
-    return '<div class="field-value' + (vacio ? ' empty' : '') + (clase ? ' ' + clase : '') + '">' + (vacio ? 'Sin definir' : escapeHtml(formatearValorMostrado(field, valor))) + '</div>';
+    const texto = vacio ? (field.computed ? 'Sin viviendas con fecha' : 'Sin definir') : escapeHtml(formatearValorMostrado(field, valor));
+    return '<div class="field-value' + (vacio ? ' empty' : '') + (clase ? ' ' + clase : '') + '">' + texto + '</div>';
   }
   const valorAttr = (valor === undefined || valor === null) ? '' : escapeAttr(valor);
   const ctxAttrs = 'data-campo="' + campoKey + '"' +
