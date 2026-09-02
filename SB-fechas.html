@@ -135,6 +135,7 @@
 
     <div class="topbar">
       <div class="promo-tabs">
+        <button class="promo-tab" id="tab-1sb" onclick="switchPromo('1SB')">1SB</button>
         <button class="promo-tab" id="tab-2sb" onclick="switchPromo('2SB')">2SB</button>
         <button class="promo-tab" id="tab-3sb" onclick="switchPromo('3SB')">3SB</button>
       </div>
@@ -236,7 +237,7 @@ const FIELDS_VIVIENDA = [
   { key: 'fecha_escritura', label: 'Fecha escritura', type: 'date' }
 ];
 
-const PROMOCIONES_FIJAS = { '2SB': 'Serena Breeze 2', '3SB': 'Serena Breeze 3' };
+const PROMOCIONES_FIJAS = { '1SB': 'Serena Breeze 1', '2SB': 'Serena Breeze 2', '3SB': 'Serena Breeze 3' };
 const FASES_FIJAS = ['Villas', 'Apartamentos'];
 
 // ─── ESTADO ──────────────────────────────────────────────────────
@@ -248,6 +249,7 @@ let CURRENT_PROMO = null;
 function switchPromo(promo) {
   if (promo === CURRENT_PROMO) return;
   CURRENT_PROMO = promo;
+  document.getElementById('tab-1sb').classList.toggle('active', promo === '1SB');
   document.getElementById('tab-2sb').classList.toggle('active', promo === '2SB');
   document.getElementById('tab-3sb').classList.toggle('active', promo === '3SB');
   cargarDatos();
