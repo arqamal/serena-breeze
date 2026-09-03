@@ -148,18 +148,25 @@
   .lang-btn.active { background:var(--black); color:white; }
 
   /* ── ACCESO INTERNO (staff) ── */
-  .staff-toggle { position:fixed; top:14px; right:16px; z-index:1000; font-family:'Roboto',sans-serif; font-size:11px; letter-spacing:1px; color:var(--slate-gray); background:white; border:1px solid var(--border); border-radius:4px; padding:6px 12px; cursor:pointer; }
+  .lang-toggle { top:14px; width:84px; }
+  .lang-btn { flex:1; text-align:center; padding:6px 0; }
+  .staff-toggle { position:fixed; top:51px; right:16px; z-index:1000; width:84px; text-align:center; font-family:'Roboto',sans-serif; font-size:11px; letter-spacing:1px; color:var(--slate-gray); background:white; border:1px solid var(--border); border-radius:4px; padding:6px 0; cursor:pointer; box-sizing:border-box; }
   .staff-toggle:hover { border-color:var(--black); color:var(--black); }
-  .staff-badge { position:fixed; top:14px; right:16px; z-index:1000; font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:white; background:var(--black); border-radius:4px; padding:7px 14px; }
-  .staff-overlay { display:none; position:fixed; inset:0; background:rgba(17,17,17,.55); z-index:2000; align-items:center; justify-content:center; padding:24px; }
+  .staff-badge { position:fixed; top:51px; right:16px; z-index:1000; font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:white; background:var(--black); border-radius:4px; padding:7px 14px; white-space:nowrap; }
+  .staff-overlay { display:none; position:fixed; top:0; left:0; width:100%; z-index:2000; justify-content:center; padding:96px 24px 24px; }
   .staff-overlay.active { display:flex; }
-  .staff-panel { background:white; width:100%; max-width:420px; padding:32px; border-radius:2px; }
-  .staff-panel h3 { font-family:'Oswald',sans-serif; font-size:18px; text-transform:uppercase; letter-spacing:1px; margin-bottom:20px; color:var(--black); }
-  .staff-panel .fgroup { margin-bottom:16px; }
-  .staff-error { font-family:'Roboto',sans-serif; font-size:12px; color:#B3261E; margin-top:4px; min-height:16px; }
-  .staff-actions { display:flex; justify-content:space-between; align-items:center; margin-top:24px; }
-  .staff-link { font-family:'Roboto',sans-serif; font-size:11px; color:var(--slate-gray); cursor:pointer; text-decoration:underline; }
-  .staff-loading { font-family:'Roboto',sans-serif; font-size:12px; color:var(--slate-gray); margin-top:10px; }
+  .staff-overlay::before { content:''; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(17,17,17,.55); z-index:-1; }
+  .staff-panel { background:white; width:100%; max-width:380px; padding:48px 40px; border:1px solid var(--border); max-height:calc(100vh - 120px); overflow-y:auto; }
+  .staff-panel h3 { font-family:'Oswald',sans-serif; font-size:18px; font-weight:400; text-transform:uppercase; letter-spacing:3px; margin-bottom:6px; color:var(--black); }
+  .staff-panel .staff-sub { font-family:'Roboto',sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--mid); margin-bottom:32px; }
+  .staff-panel .fgroup { display:flex; flex-direction:column; gap:7px; margin-bottom:18px; }
+  .staff-panel .flabel { font-family:'Roboto',sans-serif; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--slate-gray); }
+  .staff-panel .finput { width:100%; }
+  .staff-error { font-family:'Roboto',sans-serif; font-size:12px; color:#C0392B; margin-top:4px; min-height:16px; }
+  .staff-btn { width:100%; margin-top:8px; font-family:'Oswald',sans-serif; font-size:12px; letter-spacing:3px; text-transform:uppercase; background:var(--black); color:white; border:none; padding:14px; cursor:pointer; transition:background .2s; }
+  .staff-btn:hover { background:#333; }
+  .staff-link { display:block; text-align:center; font-family:'Roboto',sans-serif; font-size:11px; color:var(--slate-gray); cursor:pointer; text-decoration:underline; margin-top:16px; }
+  .staff-loading { font-family:'Roboto',sans-serif; font-size:12px; color:var(--slate-gray); margin-top:10px; text-align:center; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
@@ -175,22 +182,22 @@
   <div class="staff-panel">
     <div id="staffPanelLogin">
       <h3>Acceso interno</h3>
+      <div class="staff-sub">Serena Breeze · Materiales</div>
       <div class="fgroup">
         <label class="flabel">Usuario</label>
-        <input class="finput" id="staffUser" type="text" autocomplete="username">
+        <input class="finput" id="staffUser" type="text" placeholder="Usuario" autocomplete="username">
       </div>
       <div class="fgroup">
         <label class="flabel">Contraseña</label>
-        <input class="finput" id="staffPass" type="password" autocomplete="current-password">
+        <input class="finput" id="staffPass" type="password" placeholder="••••••••" autocomplete="current-password">
       </div>
+      <button class="staff-btn" onclick="loginStaff()">Acceder →</button>
       <div class="staff-error" id="staffLoginError"></div>
-      <div class="staff-actions">
-        <span class="staff-link" onclick="cerrarAccesoInterno()">Cancelar</span>
-        <button class="btn btn-next" onclick="loginStaff()">Entrar</button>
-      </div>
+      <span class="staff-link" onclick="cerrarAccesoInterno()">Cancelar</span>
     </div>
     <div id="staffPanelVivienda" style="display:none;">
       <h3>Seleccionar vivienda</h3>
+      <div class="staff-sub">Consultar o crear elección</div>
       <div class="fgroup">
         <label class="flabel">Promoción</label>
         <select class="finput" id="staffPromo" onchange="staffUpdateViviendas()">
@@ -205,12 +212,10 @@
           <option value="">Seleccione primero la promoción…</option>
         </select>
       </div>
+      <button class="staff-btn" onclick="staffCargarVivienda()">Cargar →</button>
       <div class="staff-error" id="staffViviendaError"></div>
       <div class="staff-loading" id="staffLoading" style="display:none;">Consultando…</div>
-      <div class="staff-actions">
-        <span class="staff-link" onclick="cerrarAccesoInterno()">Cancelar</span>
-        <button class="btn btn-next" onclick="staffCargarVivienda()">Cargar →</button>
-      </div>
+      <span class="staff-link" onclick="cerrarAccesoInterno()">Cancelar</span>
     </div>
   </div>
 </div>
@@ -623,6 +628,7 @@
 
     fetch(STAFF_WEBHOOK, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ accion: 'consulta', vivienda: codigo })
     })
       .then(r => r.json())
@@ -1139,6 +1145,7 @@
       };
       fetch(STAFF_WEBHOOK, {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       }).catch(e => console.error('Error webhook staff:', e));
 
