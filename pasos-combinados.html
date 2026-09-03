@@ -191,7 +191,7 @@
         <label class="flabel">Contraseña</label>
         <input class="finput" id="staffPass" type="password" placeholder="••••••••" autocomplete="current-password">
       </div>
-      <button class="staff-btn" onclick="loginStaff()">Acceder →</button>
+      <button class="staff-btn" id="staffLoginBtn" onclick="loginStaff()">Acceder →</button>
       <div class="staff-error" id="staffLoginError"></div>
       <span class="staff-link" onclick="cerrarAccesoInterno()">Cancelar</span>
     </div>
@@ -212,7 +212,7 @@
           <option value="">Seleccione primero la promoción…</option>
         </select>
       </div>
-      <button class="staff-btn" onclick="staffCargarVivienda()">Cargar →</button>
+      <button class="staff-btn" id="staffCargarBtn" onclick="staffCargarVivienda()">Cargar →</button>
       <div class="staff-error" id="staffViviendaError"></div>
       <div class="staff-loading" id="staffLoading" style="display:none;">Consultando…</div>
       <span class="staff-link" onclick="cerrarAccesoInterno()">Cancelar</span>
@@ -560,11 +560,14 @@
     const usuario = document.getElementById('staffUser').value.trim();
     const pass = document.getElementById('staffPass').value;
     const errEl = document.getElementById('staffLoginError');
+    const btn = document.getElementById('staffLoginBtn');
     errEl.textContent = '';
     if (!usuario || !pass) {
       errEl.textContent = 'Introduce usuario y contraseña.';
       return;
     }
+    btn.disabled = true;
+    btn.textContent = 'Comprobando…';
     fetch(AUTH_URL, {
       method: 'POST',
       body: JSON.stringify({ accion: 'login', usuario, pass, herramienta: 'materiales' })
@@ -581,8 +584,20 @@
         document.getElementById('staffPanelLogin').style.display = 'none';
         document.getElementById('staffPanelVivienda').style.display = 'block';
       })
-      .catch(() => { errEl.textContent = 'Error de conexión. Inténtalo de nuevo.'; });
+      .catch(() => { errEl.textContent = 'Error de conexión. Inténtalo de nuevo.'; })
+      .finally(() => {
+        btn.disabled = false;
+        btn.textContent = 'Acceder →';
+      });
   }
+
+  // Enter en usuario/contraseña dispara el login, sin necesidad de ratón.
+  document.addEventListener('DOMContentLoaded', () => {
+    ['staffUser', 'staffPass'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') loginStaff(); });
+    });
+  });
 
   function staffUpdateViviendas() {
     const promo = document.getElementById('staffPromo').value;
@@ -618,6 +633,7 @@
     const promo = document.getElementById('staffPromo').value;
     const unit = document.getElementById('staffUnit').value;
     const errEl = document.getElementById('staffViviendaError');
+    const btn = document.getElementById('staffCargarBtn');
     errEl.textContent = '';
     if (!promo || !unit) {
       errEl.textContent = 'Selecciona promoción y vivienda.';
@@ -625,6 +641,8 @@
     }
     const codigo = codigoDeVivienda(promo, unit);
     document.getElementById('staffLoading').style.display = 'block';
+    btn.disabled = true;
+    btn.textContent = 'Cargando…';
 
     fetch(STAFF_WEBHOOK, {
       method: 'POST',
@@ -664,6 +682,10 @@
       .catch(() => {
         document.getElementById('staffLoading').style.display = 'none';
         errEl.textContent = 'Error de conexión. Inténtalo de nuevo.';
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.textContent = 'Cargar →';
       });
   }
 
