@@ -159,7 +159,7 @@
     main { padding-left: 16px; padding-right: 16px; }
     .step-nav { padding: 0 16px; }
     .form-row { grid-template-columns: 1fr; }
-    .extras-table th.tn, .extras-table th.to, .extras-table td:nth-child(5), .extras-table td:nth-child(6) { display: none; }
+    .extras-table th.tn, .extras-table th.to, .extras-table td:nth-child(6), .extras-table td:nth-child(7) { display: none; }
   }
 
   /* ── LOGIN ── */
@@ -309,6 +309,10 @@
       <input type="checkbox" id="vs-post" onchange="togglePostEntrega()">
       <span class="vsearch-check-label" id="vs-post-label">Extras post-entrega</span>
     </label>
+    <label class="vsearch-check" id="vs-contrato-check">
+      <input type="checkbox" id="vs-contrato" onchange="toggleContrato()">
+      <span class="vsearch-check-label" id="vs-contrato-label">Extras de contrato</span>
+    </label>
     <button class="vsearch-btn" id="vs-btn" onclick="vsConfirm()">Continuar →</button>
   </div>
 </div>
@@ -345,6 +349,7 @@ const WEBHOOK_ESPECIALES = 'https://hook.eu1.make.com/8lvllh4jbogdw84bqi6av9xlpv
 let SESSION_CODIGO = null;
 let SESSION_PROMO  = null;
 let POST_ENTREGA   = false;
+let CONTRATO       = false; // placeholder: aún sin cablear a backend (ver aviso en chat)
 let IVA_RATE       = 0.10;
 
 function doLogin() {
@@ -395,6 +400,21 @@ function togglePostEntrega() {
   document.getElementById('vs-post-label').textContent = POST_ENTREGA
     ? (LANG === 'es' ? 'Extras post-entrega (IVA 21%)' : 'Post-delivery extras (VAT 21%)')
     : (LANG === 'es' ? 'Extras post-entrega' : 'Post-delivery extras');
+  // Exclusión mutua: si se marca post-entrega, se desmarca y bloquea contrato
+  const cbContrato = document.getElementById('vs-contrato');
+  if (POST_ENTREGA) { cbContrato.checked = false; CONTRATO = false; document.getElementById('vs-contrato-check').classList.remove('active'); }
+  cbContrato.disabled = POST_ENTREGA;
+}
+
+function toggleContrato() {
+  const cb = document.getElementById('vs-contrato');
+  const check = document.getElementById('vs-contrato-check');
+  CONTRATO = cb.checked;
+  check.classList.toggle('active', CONTRATO);
+  // Exclusión mutua: si se marca contrato, se desmarca y bloquea post-entrega
+  const cbPost = document.getElementById('vs-post');
+  if (CONTRATO) { cbPost.checked = false; POST_ENTREGA = false; IVA_RATE = 0.10; document.getElementById('vs-post-check').classList.remove('active'); document.getElementById('vs-post-label').textContent = (LANG === 'es' ? 'Extras post-entrega' : 'Post-delivery extras'); }
+  cbPost.disabled = CONTRATO;
 }
 
 function vsUpdateApts() {
@@ -493,6 +513,7 @@ function vsConfirm() {
           id: e.id,
           name: e.extra || '',
           price: e.price !== undefined && e.price !== null ? Number(e.price) : null,
+          descuento_pct: e.descuento_pct !== undefined && e.descuento_pct !== null ? Number(e.descuento_pct) : 0,
           qty: e.qty !== undefined && e.qty !== null ? Number(e.qty) : 0,
           notes: e.notes || '',
           oficio: e.oficio || '',
@@ -506,6 +527,7 @@ function vsConfirm() {
     if (!hasQty && !hasNote) return; // ítem inactivo (qty 0, sin nota) — no cargar nada, evita precio=0 fantasma
     if (hasQty) QTY[e.id] = Number(e.qty);
     if (e.price !== undefined && e.price !== null) PRICE[e.id] = Number(e.price);
+    if (e.descuento_pct !== undefined && e.descuento_pct !== null) DESCUENTO[e.id] = Number(e.descuento_pct);
     if (hasNote) NOTES[e.id] = e.notes;
     if (e.estado !== undefined && e.estado !== '') ESTADO[e.id] = e.estado;
   });
@@ -757,6 +779,7 @@ const AREAS = [
 // ─── STATE ─────────────────────────────────────────────────────────
 const QTY   = {}; // id → qty (number)
 const PRICE = {}; // id → price override (number)
+const DESCUENTO = {}; // id → % descuento (0-100), 0 = sin descuento
 const NOTES = {}; // id → string
 const ESTADO = {}; // id → 'Enviado' | 'Firmado' (del extra ya guardado, para mostrar checkbox de eliminar)
 const ELIMINAR = {}; // id → true si el usuario marcó "eliminar" un extra ya firmado
@@ -800,6 +823,14 @@ const VIVIENDAS = {
   ]
 };
 
+// Único punto de cálculo de total con descuento — reutilizado en pantalla,
+// resumen y payload para que no puedan desincronizarse entre sí.
+function calcTotal(precio, qty, descuentoPct) {
+  if (precio === null || precio === undefined) return null;
+  const pct = Number(descuentoPct) || 0;
+  return precio * qty * (1 - pct / 100);
+}
+
 // ─── RENDER ─────────────────────────────────────────────────────────
 function getAllItems(area) {
   if (area.subAreas) {
@@ -821,7 +852,8 @@ function renderTable(tbodyId, items, areaKey) {
     const isConsultar = unitPrice === null || unitPrice === undefined;
     const displayPrice = isConsultar ? (PRICE[item.id] !== undefined ? PRICE[item.id] : '') : unitPrice;
     const resolvedPrice = isConsultar ? (PRICE[item.id] !== undefined ? PRICE[item.id] : null) : unitPrice;
-    const totalVal = (resolvedPrice !== null && resolvedPrice !== undefined) ? resolvedPrice * qty : 0;
+    const descuentoPct = DESCUENTO[item.id] || 0;
+    const totalVal = calcTotal(resolvedPrice, qty, descuentoPct) || 0;
 
     const tr = document.createElement('tr');
     const firmado = ESTADO[item.id] === 'Firmado';
@@ -854,6 +886,12 @@ function renderTable(tbodyId, items, areaKey) {
           data-id="${item.id}" data-area="${areaKey}" ${firmado ? 'disabled' : ''}
           oninput="onPrice(this)">
       </td>
+      <td style="text-align:center">
+        <input type="number" class="inp inp-descuento" min="0" max="100" step="1"
+          value="${descuentoPct || ''}" placeholder="0"
+          data-id="${item.id}" data-area="${areaKey}" ${firmado ? 'disabled' : ''}
+          oninput="onDescuento(this)">
+      </td>
       <td style="text-align:right">
         <span class="inp-total" id="tot-${item.id}">
           ${totalVal > 0 ? fmtEur(totalVal) : '—'}
@@ -883,7 +921,7 @@ function renderCustomRows(tbody, areaKey) {
     tr.className = 'custom-row';
     const firmado = c.estado === 'Firmado';
     if (firmado) tr.style.opacity = '.65';
-    const total = c.price && c.qty ? c.price * c.qty : 0;
+    const total = calcTotal(c.price, c.qty, c.descuento_pct) || 0;
     tr.innerHTML = `
       <td>
         <div class="custom-row-label">${LANG==='es'?'Extra personalizado':'Custom extra'}${firmado ? ' · <span style="color:#b00020;font-weight:600;">'+(LANG==='es'?'Ya firmado':'Already signed')+'</span>' : ''}</div>
@@ -897,6 +935,10 @@ function renderCustomRows(tbody, areaKey) {
       <td style="text-align:right">
         <input type="number" class="inp inp-price" min="0" step="1" value="${c.price||''}" ${firmado ? 'disabled' : ''}
           placeholder="0" oninput="onCustomPrice('${areaKey}',${idx},this)">
+      </td>
+      <td style="text-align:center">
+        <input type="number" class="inp inp-descuento" min="0" max="100" step="1" value="${c.descuento_pct||''}" ${firmado ? 'disabled' : ''}
+          placeholder="0" oninput="onCustomDescuento('${areaKey}',${idx},this)">
       </td>
       <td style="text-align:right">
         <span class="inp-total" id="ctot-${areaKey}-${idx}">
@@ -921,7 +963,7 @@ function renderCustomRows(tbody, areaKey) {
   });
   // Add-custom button row
   const addRow = document.createElement('tr');
-  addRow.innerHTML = `<td colspan="7" style="padding:8px 10px;">
+  addRow.innerHTML = `<td colspan="8" style="padding:8px 10px;">
     <button onclick="addCustomRow('${areaKey}')" style="font-family:'Roboto',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;background:transparent;border:1px dashed var(--border);color:var(--slate-gray);padding:8px 16px;cursor:pointer;width:100%;text-align:center;transition:all .2s;"
       onmouseover="this.style.borderColor='var(--black)';this.style.color='var(--black)'"
       onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--slate-gray)'">
@@ -952,6 +994,14 @@ function onPrice(input) {
   refreshTotal(id);
   refreshAreaTotal(input.dataset.area);
 }
+function onDescuento(input) {
+  const id = input.dataset.id;
+  const pct = Math.max(0, Math.min(100, parseFloat(input.value) || 0));
+  input.value = pct || '';
+  DESCUENTO[id] = pct;
+  refreshTotal(id);
+  refreshAreaTotal(input.dataset.area);
+}
 function onNote(input) { NOTES[input.dataset.id] = input.value; }
 function onEliminar(input) {
   const id = input.dataset.id;
@@ -971,8 +1021,8 @@ function refreshTotal(id) {
   if (!item) return;
   const unitPrice = PRICE[id] !== undefined ? PRICE[id] : item.price;
   const qty = QTY[id] || 0;
-  if (unitPrice === null || unitPrice === undefined) { el.textContent = '—'; return; }
-  const total = unitPrice * qty;
+  const total = calcTotal(unitPrice, qty, DESCUENTO[id]);
+  if (total === null) { el.textContent = '—'; return; }
   el.textContent = total > 0 ? fmtEur(total) : '—';
 }
 
@@ -1000,13 +1050,13 @@ function refreshAreaTotal(areaKey) {
   let total = 0;
   items.forEach(item => {
     const p = PRICE[item.id] !== undefined ? PRICE[item.id] : item.price;
-    if (p !== null && p !== undefined) total += p * (QTY[item.id] || 0);
+    total += calcTotal(p, QTY[item.id] || 0, DESCUENTO[item.id]) || 0;
   });
   // add custom
   const theArea = AREAS.find(a => a.key === areaKey || (a.subAreas && a.subAreas.some(s => s.key === areaKey)));
   const ck = theArea ? theArea.key : areaKey;
   (CUSTOM[ck] || []).forEach(c => {
-    if (c.price && c.qty) total += c.price * c.qty;
+    total += calcTotal(c.price, c.qty, c.descuento_pct) || 0;
   });
 
   const el = document.getElementById('atotal-' + (theArea ? theArea.step : ''));
@@ -1016,7 +1066,7 @@ function refreshAreaTotal(areaKey) {
 // Custom extras
 function addCustomRow(areaKey) {
   if (!CUSTOM[areaKey]) CUSTOM[areaKey] = [];
-  CUSTOM[areaKey].push({ id: 'custom_' + Date.now() + '_' + Math.floor(Math.random()*10000), name:'', price:null, qty:0, notes:'', oficio:'' });
+  CUSTOM[areaKey].push({ id: 'custom_' + Date.now() + '_' + Math.floor(Math.random()*10000), name:'', price:null, descuento_pct:0, qty:0, notes:'', oficio:'' });
   rebuildStep(areaKey);
 }
 function onCustomName(areaKey, idx, input) {
@@ -1035,7 +1085,8 @@ function onCustomQty(areaKey, idx, input) {
   }
   const el = document.getElementById(`ctot-${areaKey}-${idx}`);
   const c = CUSTOM[areaKey][idx];
-  if (el) el.textContent = (c.price && c.qty) ? fmtEur(c.price * c.qty) : '—';
+  const total = calcTotal(c.price, c.qty, c.descuento_pct);
+  if (el) el.textContent = (total && total > 0) ? fmtEur(total) : '—';
   refreshAreaTotal(areaKey);
 }
 function onCustomPrice(areaKey, idx, input) {
@@ -1044,7 +1095,19 @@ function onCustomPrice(areaKey, idx, input) {
   CUSTOM[areaKey][idx].price = p;
   const el = document.getElementById(`ctot-${areaKey}-${idx}`);
   const c = CUSTOM[areaKey][idx];
-  if (el) el.textContent = (c.price && c.qty) ? fmtEur(c.price * c.qty) : '—';
+  const total = calcTotal(c.price, c.qty, c.descuento_pct);
+  if (el) el.textContent = (total && total > 0) ? fmtEur(total) : '—';
+  refreshAreaTotal(areaKey);
+}
+function onCustomDescuento(areaKey, idx, input) {
+  if (!CUSTOM[areaKey]) return;
+  const pct = Math.max(0, Math.min(100, parseFloat(input.value)||0));
+  input.value = pct || '';
+  CUSTOM[areaKey][idx].descuento_pct = pct;
+  const el = document.getElementById(`ctot-${areaKey}-${idx}`);
+  const c = CUSTOM[areaKey][idx];
+  const total = calcTotal(c.price, c.qty, c.descuento_pct);
+  if (el) el.textContent = (total && total > 0) ? fmtEur(total) : '—';
   refreshAreaTotal(areaKey);
 }
 function onCustomNote(areaKey, idx, input) {
@@ -1116,6 +1179,7 @@ function buildDOM() {
       <th data-i18n="th_item">${LANG==='es'?'Extra':'Extra'}</th>
       <th class="tc" data-i18n="th_qty">${LANG==='es'?'Uds.':'Units'}</th>
       <th class="tr" data-i18n="th_price">${LANG==='es'?'Precio unit. (€)':'Unit price (€)'}</th>
+      <th class="tc" data-i18n="th_descuento">${LANG==='es'?'Desc. %':'Disc. %'}</th>
       <th class="tr" data-i18n="th_total">${LANG==='es'?'Total (€)':'Total (€)'}</th>
         <th class="to">${LANG==='es'?'Oficio':'Trade'}</th>
         <th class="tn" data-i18n="th_notes">${LANG==='es'?'Comentario':'Comment'}</th>
@@ -1201,7 +1265,19 @@ function buildDOM() {
   const firmaStep = document.createElement('div');
   firmaStep.className = 'step';
   firmaStep.id = 'step-' + TOTAL_STEPS;
-  firmaStep.innerHTML = `
+  firmaStep.innerHTML = CONTRATO ? `
+    <div class="sec-eyebrow">13 — ${LANG==='es'?'Descarga':'Download'}</div>
+    <h2 class="sec-title" id="firma-step-title">${LANG==='es'?'Presupuesto de contrato':'Contract quote'}</h2>
+    <div class="firma-block">
+      <div class="firma-title" id="firma-pdf-title">${LANG==='es'?'Presupuesto generado':'Quote generated'}</div>
+      <div class="firma-desc" id="firma-pdf-desc">${LANG==='es'?'Este presupuesto no se envía por email ni requiere firma. Descárgalo para adjuntarlo al contrato:':'This quote is not sent by email and does not require a signature. Download it to attach to the contract:'}</div>
+      <div id="firma-generating" class="firma-generating">${LANG==='es'?'⟳ Generando documento…':'⟳ Generating document…'}</div>
+      <div id="firma-download-wrap" style="display:none">
+        <a id="btn-dl-pdf" class="btn-download-pdf" href="#" target="_blank">
+          ⬇ ${LANG==='es'?'Descargar presupuesto PDF':'Download PDF quote'}
+        </a>
+      </div>
+    </div>` : `
     <div class="sec-eyebrow">13 — ${LANG==='es'?'Firma':'Signature'}</div>
     <h2 class="sec-title" id="firma-step-title">${LANG==='es'?'Documento y firma':'Document & signature'}</h2>
     <div class="firma-block">
@@ -1335,12 +1411,13 @@ function buildSummary() {
     selected.forEach(item => {
       const qty = QTY[item.id] || 0;
       const p = PRICE[item.id] !== undefined ? PRICE[item.id] : item.price;
-      const total = (p !== null && p !== undefined) ? p * qty : null;
+      const descuentoPct = DESCUENTO[item.id] || 0;
+      const total = calcTotal(p, qty, descuentoPct);
       if (total) grandTotal += total;
       const name = LANG === 'es' ? item.name_es : item.name_en;
       const note = NOTES[item.id] || '';
       html += `<tr>
-        <td>${name}</td>
+        <td>${name}${descuentoPct ? ` <span style="color:var(--slate-gray);font-size:11px;">(-${descuentoPct}%)</span>` : ''}</td>
         <td>× ${qty}</td>
         <td>${total !== null ? fmtEur(total) : `<span style="font-size:11px;color:var(--mid)">${LANG==='es'?'Sin precio':'No price'}</span>`}</td>
         <td>${note ? `<span>${note}</span>` : ''}</td>
@@ -1348,10 +1425,10 @@ function buildSummary() {
     });
 
     customs.forEach(c => {
-      const total = c.price && c.qty ? c.price * c.qty : null;
+      const total = calcTotal(c.price, c.qty, c.descuento_pct);
       if (total) grandTotal += total;
       html += `<tr style="background:var(--off-white)">
-        <td>${c.name || `(${LANG==='es'?'Extra sin nombre':'Unnamed extra'})`}</td>
+        <td>${c.name || `(${LANG==='es'?'Extra sin nombre':'Unnamed extra'})`}${c.descuento_pct ? ` <span style="color:var(--slate-gray);font-size:11px;">(-${c.descuento_pct}%)</span>` : ''}</td>
         <td>× ${c.qty}</td>
         <td>${total !== null ? fmtEur(total) : '—'}</td>
         <td>${c.notes ? `<span>${c.notes}</span>` : ''}</td>
@@ -1788,7 +1865,8 @@ function submitExtras() {
       if (qty === 0 && !NOTES[item.id]) return; // inactivo, nada que hacer
 
       const p = PRICE[item.id] !== undefined ? PRICE[item.id] : item.price;
-      const total = p !== null ? p * qty : null;
+      const descuentoPct = DESCUENTO[item.id] || 0;
+      const total = calcTotal(p, qty, descuentoPct);
       if (total) grandTotal += total;
       const obj = {
         area: area.label_es,
@@ -1801,6 +1879,7 @@ function submitExtras() {
         oficio: item.oficio || '',
         pedido: item.pedido ? 'P' : '',
         precio_unit: p,
+        descuento_pct: descuentoPct,
         cantidad: qty,
         total: total,
         iva: total !== null ? total * IVA_RATE : null,
@@ -1832,6 +1911,7 @@ function submitExtras() {
             oficio: sub.oficio || '',
             pedido: sub.pedido ? 'P' : '',
             precio_unit: null,
+            descuento_pct: null,
             cantidad: null,
             total: null,
             iva: null,
@@ -1858,7 +1938,7 @@ function submitExtras() {
         return;
       }
       if (!c.name && !c.qty) return;
-      const total = c.price && c.qty ? c.price * c.qty : null;
+      const total = calcTotal(c.price, c.qty, c.descuento_pct);
       if (total) grandTotal += total;
       const obj = {
         area: area.label_es,
@@ -1869,6 +1949,7 @@ function submitExtras() {
         descripcion: '', descripcion_en: '',
         oficio: c.oficio || '', pedido: '',
         precio_unit: c.price,
+        descuento_pct: c.descuento_pct || 0,
         cantidad: c.qty,
         total: total,
         iva: total !== null ? total * IVA_RATE : null,
