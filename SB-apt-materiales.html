@@ -137,9 +137,28 @@
   select.finput { appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; cursor: pointer; }
 
   /* ── LANG TOGGLE ── */
-  .lang-toggle { position:fixed; top:52px; right:16px; z-index:1000; display:flex; gap:0; border:1px solid var(--border); border-radius:4px; overflow:hidden; background:white; }
-  .lang-btn { font-family:'Roboto',sans-serif; font-size:11px; letter-spacing:1px; padding:6px 12px; cursor:pointer; border:none; background:transparent; color:var(--slate-gray); transition:all .2s; }
+  .lang-toggle { position:fixed; top:54px; right:16px; z-index:1000; display:flex; gap:0; border:1px solid var(--border); border-radius:4px; overflow:hidden; background:white; width:84px; }
+  .lang-btn { font-family:'Roboto',sans-serif; font-size:11px; letter-spacing:1px; padding:6px 0; cursor:pointer; border:none; background:transparent; color:var(--slate-gray); transition:all .2s; flex:1; text-align:center; }
   .lang-btn.active { background:var(--black); color:white; }
+
+  /* ── ACCESO INTERNO (staff) ── */
+  .staff-toggle { position:fixed; top:92px; right:16px; z-index:1000; width:84px; text-align:center; font-family:'Roboto',sans-serif; font-size:11px; letter-spacing:1px; color:var(--slate-gray); background:white; border:1px solid var(--border); border-radius:4px; padding:6px 4px; cursor:pointer; box-sizing:border-box; line-height:1.4; }
+  .staff-toggle:hover { border-color:var(--black); color:var(--black); }
+  .staff-badge { position:fixed; top:92px; right:16px; z-index:1000; font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:white; background:var(--black); border-radius:4px; padding:7px 14px; white-space:nowrap; }
+  .staff-overlay { display:none; position:fixed; top:0; left:0; width:100%; z-index:2000; justify-content:center; padding:140px 24px 24px; }
+  .staff-overlay.active { display:flex; }
+  .staff-overlay::before { content:''; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(17,17,17,.55); z-index:-1; }
+  .staff-panel { background:white; width:100%; max-width:380px; padding:48px 40px; border:1px solid var(--border); max-height:calc(100vh - 120px); overflow-y:auto; }
+  .staff-panel h3 { font-family:'Oswald',sans-serif; font-size:18px; font-weight:400; text-transform:uppercase; letter-spacing:3px; margin-bottom:6px; color:var(--black); }
+  .staff-panel .staff-sub { font-family:'Roboto',sans-serif; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:var(--mid); margin-bottom:32px; }
+  .staff-panel .fgroup { display:flex; flex-direction:column; gap:7px; margin-bottom:18px; }
+  .staff-panel .flabel { font-family:'Roboto',sans-serif; font-size:10px; letter-spacing:3px; text-transform:uppercase; color:var(--slate-gray); }
+  .staff-panel .finput { width:100%; }
+  .staff-error { font-family:'Roboto',sans-serif; font-size:12px; color:#C0392B; margin-top:4px; min-height:16px; }
+  .staff-btn { width:100%; margin-top:8px; font-family:'Oswald',sans-serif; font-size:12px; letter-spacing:3px; text-transform:uppercase; background:var(--black); color:white; border:none; padding:14px; cursor:pointer; transition:background .2s; }
+  .staff-btn:hover { background:#333; }
+  .staff-link { display:block; text-align:center; font-family:'Roboto',sans-serif; font-size:11px; color:var(--slate-gray); cursor:pointer; text-decoration:underline; margin-top:16px; }
+  .staff-loading { font-family:'Roboto',sans-serif; font-size:12px; color:var(--slate-gray); margin-top:10px; text-align:center; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
@@ -148,6 +167,51 @@
   <button class="lang-btn active" id="btn-es" onclick="setLang('es')">ES</button>
   <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
 </div>
+<div class="staff-toggle" id="staffToggle" onclick="abrirAccesoInterno()">Acceso interno</div>
+<div class="staff-badge" id="staffBadge" style="display:none;"></div>
+
+<div class="staff-overlay" id="staffOverlay">
+  <div class="staff-panel">
+    <div id="staffPanelLogin">
+      <h3>Acceso interno</h3>
+      <div class="staff-sub">Serena Breeze · Materiales</div>
+      <div class="fgroup">
+        <label class="flabel">Usuario</label>
+        <input class="finput" id="staffUser" type="text" placeholder="Usuario" autocomplete="username">
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Contraseña</label>
+        <input class="finput" id="staffPass" type="password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="staff-btn" onclick="loginStaff()">Acceder →</button>
+      <div class="staff-error" id="staffLoginError"></div>
+      <span class="staff-link" onclick="cerrarAccesoInterno()">Cancelar</span>
+    </div>
+    <div id="staffPanelVivienda" style="display:none;">
+      <h3>Seleccionar vivienda</h3>
+      <div class="staff-sub">Consultar o crear elección</div>
+      <div class="fgroup">
+        <label class="flabel">Promoción</label>
+        <select class="finput" id="staffPromo" onchange="staffUpdateViviendas()">
+          <option value="">Seleccione promoción…</option>
+          <option value="Serena Breeze 2">Serena Breeze 2</option>
+          <option value="Serena Breeze 3">Serena Breeze 3</option>
+        </select>
+      </div>
+      <div class="fgroup">
+        <label class="flabel">Vivienda</label>
+        <select class="finput" id="staffUnit" disabled>
+          <option value="">Seleccione primero la promoción…</option>
+        </select>
+      </div>
+      <button class="staff-btn" onclick="staffCargarVivienda()">Cargar →</button>
+      <div class="staff-error" id="staffViviendaError"></div>
+      <div class="staff-loading" id="staffLoading" style="display:none;">Consultando…</div>
+      <span class="staff-link" onclick="cerrarAccesoInterno()">Cancelar</span>
+    </div>
+  </div>
+</div>
+
 <div class="step-nav-wrap">
   <div class="step-nav">
     <div class="snav-item active" onclick="goTo(1)" data-step="1"><div class="snav-dot"></div><span data-i18n="nav1">01 · Pav. interior</span></div>
@@ -391,6 +455,202 @@
 <script>
 
   const S = {};
+
+  // ── ACCESO INTERNO (staff) ──
+  const AUTH_URL = 'https://script.google.com/macros/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
+  const STAFF_WEBHOOK = 'https://hook.eu1.make.com/4kesrw63v96ar1gyutbacmbopzjak95v';
+  let staffMode = false;
+  let staffUsuario = '';
+  let staffVivienda = '';
+  let staffPromoSel = '';
+
+  function abrirAccesoInterno() {
+    document.getElementById('staffOverlay').classList.add('active');
+  }
+  function cerrarAccesoInterno() {
+    document.getElementById('staffOverlay').classList.remove('active');
+  }
+
+  function loginStaff() {
+    const usuario = document.getElementById('staffUser').value.trim();
+    const pass = document.getElementById('staffPass').value;
+    const errEl = document.getElementById('staffLoginError');
+    errEl.textContent = '';
+    if (!usuario || !pass) {
+      errEl.textContent = 'Introduce usuario y contraseña.';
+      return;
+    }
+    fetch(AUTH_URL, {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'login', usuario, pass, herramienta: 'materiales' })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok) {
+          errEl.textContent = data.motivo === 'sin_acceso'
+            ? 'Ese usuario no tiene acceso a materiales.'
+            : 'Usuario o contraseña incorrectos.';
+          return;
+        }
+        staffUsuario = data.nombre || usuario;
+        document.getElementById('staffPanelLogin').style.display = 'none';
+        document.getElementById('staffPanelVivienda').style.display = 'block';
+      })
+      .catch(() => { errEl.textContent = 'Error de conexión. Inténtalo de nuevo.'; });
+  }
+
+  function staffUpdateViviendas() {
+    const promo = document.getElementById('staffPromo').value;
+    const sel = document.getElementById('staffUnit');
+    sel.innerHTML = '';
+    if (!promo) {
+      sel.innerHTML = '<option value="">Seleccione primero la promoción…</option>';
+      sel.disabled = true;
+      return;
+    }
+    sel.disabled = false;
+    sel.innerHTML = '<option value="">Seleccione vivienda…</option>' +
+      VIVIENDAS[promo].map(v => `<option value="${v}">${v}</option>`).join('');
+  }
+
+  // Misma conversión nombre→código que usa submit() para el flujo de cliente.
+  function codigoDeVivienda(promo, unit) {
+    const promoNum = promo.includes('2') ? '2' : '3';
+    if (unit.startsWith('Villa')) {
+      const num = unit.split(' ')[1];
+      return promoNum + 'SB' + num;
+    }
+    const bloque = unit.match(/Bloque (\d)/);
+    const planta = unit.match(/Planta (\d)/);
+    const puerta = unit.match(/Puerta (\d)/);
+    const b = bloque ? bloque[1] : '1';
+    const pl = planta ? planta[1] : '0';
+    const pu = puerta ? puerta[1] : '1';
+    return promoNum + 'SB' + b + pl + pu;
+  }
+
+  function staffCargarVivienda() {
+    const promo = document.getElementById('staffPromo').value;
+    const unit = document.getElementById('staffUnit').value;
+    const errEl = document.getElementById('staffViviendaError');
+    errEl.textContent = '';
+    if (!promo || !unit) {
+      errEl.textContent = 'Selecciona promoción y vivienda.';
+      return;
+    }
+    const codigo = codigoDeVivienda(promo, unit);
+    document.getElementById('staffLoading').style.display = 'block';
+
+    fetch(STAFF_WEBHOOK, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accion: 'consulta', vivienda: codigo })
+    })
+      .then(r => r.json())
+      .then(data => {
+        document.getElementById('staffLoading').style.display = 'none';
+        staffMode = true;
+        staffVivienda = codigo;
+        staffPromoSel = promo;
+
+        // Fija promo/vivienda ANTES de precargar — isAtico()/pavDisplay()
+        // dependen del valor actual de cUnit para saber si hay que mostrar
+        // 100×100 en vez de 60×60.
+        const cPromo = document.getElementById('cPromo');
+        cPromo.value = promo;
+        updateViviendas();
+        document.getElementById('cUnit').value = unit;
+
+        const encontrado = data.materiales && data.materiales[0] && data.materiales[0].vivienda;
+        if (encontrado) {
+          precargarSeleccion(data.materiales[0]);
+        }
+
+        cPromo.disabled = true;
+        document.getElementById('cUnit').disabled = true;
+
+        document.getElementById('staffBadge').style.display = 'block';
+        document.getElementById('staffBadge').textContent =
+          (encontrado ? 'Editando ' : 'Creando ') + codigo + ' — ' + staffUsuario;
+        document.getElementById('staffToggle').style.display = 'none';
+
+        cerrarAccesoInterno();
+        goTo(1);
+        tick();
+      })
+      .catch(() => {
+        document.getElementById('staffLoading').style.display = 'none';
+        errEl.textContent = 'Error de conexión. Inténtalo de nuevo.';
+      });
+  }
+
+  // Reconstruye S{} y marca visualmente las tarjetas ya elegidas. Los 6
+  // campos "simples" (pav_int, alic_bano1, alic_bano2, interior, mueble_a,
+  // mueble_b) y encimera se localizan por el mismo valor bruto que llevan en
+  // el onclick. bano1_enc/mueble_bano2 guardan "Oslo NN Nombre" (vía
+  // OSLO_LABELS), así que hay que deshacer esa etiqueta para recuperar el
+  // argumento original y volver a pintar la imagen de referencia.
+  function precargarSeleccion(d) {
+    const camposSimples = ['alic_bano1', 'alic_bano2', 'interior', 'mueble_a', 'mueble_b', 'encimera'];
+
+    // pav_int es especial: si la vivienda es ático, el valor guardado está en
+    // 100×100 pero las tarjetas del paso 1 solo existen en 60×60.
+    if (d.pav_int) {
+      let valTarjeta = d.pav_int;
+      if (isAtico()) valTarjeta = valTarjeta.replace('100×100', '60×60');
+      S['pav_int'] = d.pav_int;
+      document.querySelectorAll('.card[onclick]').forEach(el => {
+        if (el.getAttribute('onclick').includes("'pav_int','" + valTarjeta + "'")) el.classList.add('selected');
+      });
+    }
+
+    camposSimples.forEach(key => {
+      const val = d[key];
+      if (!val) return;
+      S[key] = val;
+      document.querySelectorAll('.card[onclick], .ccard[onclick]').forEach(el => {
+        if (el.getAttribute('onclick').includes("'" + key + "','" + val + "'")) {
+          el.classList.add('selected');
+        }
+      });
+    });
+
+    function reverso(labelsMap, prefijo, valorGuardado) {
+      if (!valorGuardado || !valorGuardado.startsWith(prefijo)) return null;
+      const resto = valorGuardado.slice(prefijo.length).trim();
+      const entry = Object.entries(labelsMap).find(([k, v]) => v === resto);
+      return entry ? entry[0] : resto;
+    }
+    const OSLO_LABELS_REV = {'Blanco Mate':'27 Blanco Mate','Roble Natural':'24 Roble Natural','Nogal Vera':'84 Nogal Vera','Moka Mate':'46 Moka Mate','Mist Mate':'75 Mist Mate'};
+
+    if (d.bano1_enc) {
+      const nombre = reverso(OSLO_LABELS_REV, 'Oslo ', d.bano1_enc);
+      if (nombre) {
+        S['bano1_enc'] = d.bano1_enc;
+        document.getElementById('cg-bano1').querySelectorAll('.ccard').forEach(c => {
+          if (c.getAttribute('onclick').includes("'bano1_enc','" + nombre + "'")) c.classList.add('selected');
+        });
+        const wrap = document.getElementById('bano1-ref-wrap');
+        const file = OSLO_IMGS[nombre];
+        if (wrap && file) wrap.innerHTML = '<img src="' + OSLO_BASE + file + '" alt="Oslo ' + nombre + '" style="width:100%;display:block;" onload="sendHeight()">';
+      }
+    }
+    if (d.mueble_bano2) {
+      const nombre = reverso(OSLO_LABELS_REV, 'Oslo ', d.mueble_bano2);
+      if (nombre) {
+        S['mueble_bano2'] = d.mueble_bano2;
+        document.getElementById('cg-oslo').querySelectorAll('.ccard').forEach(c => {
+          if (c.getAttribute('onclick').includes("'mueble_bano2','" + nombre + "'")) c.classList.add('selected');
+        });
+        const wrap = document.getElementById('bano2-ref-wrap');
+        const file = OSLO_IMGS[nombre];
+        if (wrap && file) wrap.innerHTML = '<img src="' + OSLO_BASE + file + '" alt="Oslo ' + nombre + '" style="width:100%;display:block;" onload="sendHeight()">';
+      }
+    }
+
+    if (d.observaciones) document.getElementById('cNotes').value = d.observaciones;
+  }
+
   let LANG = 'es';
 
   // Mapa imágenes Oslo apartamentos
@@ -656,7 +916,7 @@
     const promo = document.getElementById('cPromo').value;
     const unit  = document.getElementById('cUnit').value;
 
-    if (!name || !email) {
+    if (!staffMode && (!name || !email)) {
       alert(LANG==='es' ? 'Por favor, introduzca su nombre y email antes de confirmar.' : 'Please enter your name and email before confirming.');
       return;
     }
@@ -665,21 +925,44 @@
       return;
     }
 
-    // Convertir nombre de vivienda a código
-    const promoNum = promo.includes('2') ? '2' : '3';
-    let codigo = '';
-    if (unit.startsWith('Villa')) {
-      const num = unit.split(' ')[1];
-      codigo = promoNum + 'SB' + num;
-    } else {
-      const bloque = unit.match(/Bloque (\d)/);
-      const planta = unit.match(/Planta (\d)/);
-      const puerta = unit.match(/Puerta (\d)/);
-      const b = bloque ? bloque[1] : '1';
-      const pl = planta ? planta[1] : '0';
-      const pu = puerta ? puerta[1] : '1';
-      codigo = promoNum + 'SB' + b + pl + pu;
+    if (staffMode) {
+      const payload = {
+        accion: 'guardar',
+        vivienda: staffVivienda,
+        nombre: name,
+        email: email,
+        telefono: phone,
+        observaciones: notes,
+        staff_usuario: staffUsuario,
+        pav_int:      pavDisplay(S['pav_int']) || '',
+        alic_bano1:   S['alic_bano1']   || '',
+        alic_bano2:   S['alic_bano2']   || '',
+        bano1_enc:    S['bano1_enc']    || '',
+        mueble_bano2: S['mueble_bano2'] || '',
+        interior:     S['interior']     || '',
+        mueble_a:     S['mueble_a']     || '',
+        mueble_b:     S['mueble_b']     || '',
+        encimera:     S['encimera']     || ''
+      };
+      fetch(STAFF_WEBHOOK, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).catch(e => console.error('Error webhook staff:', e));
+
+      document.getElementById('step-7').style.display = 'none';
+      document.getElementById('success').style.display = 'block';
+      document.querySelector('#success h2').textContent = LANG==='es' ? 'Elección guardada' : 'Selection saved';
+      document.querySelector('#success p').innerHTML = LANG==='es'
+        ? 'Se ha guardado la elección de materiales de <strong>' + staffVivienda + '</strong>.<br>El PDF se ha adjuntado a la tarjeta de Trello y se ha avisado a arquitectura.'
+        : 'The materials selection for <strong>' + staffVivienda + '</strong> has been saved.<br>The PDF has been attached to the Trello card and architecture has been notified.';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      window.parent.postMessage({ scrollTop: true }, '*');
+      return;
     }
+
+    // Convertir nombre de vivienda a código
+    const codigo = codigoDeVivienda(promo, unit);
 
     const pdfBase64 = generatePDF();
     const payload = {
