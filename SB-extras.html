@@ -446,7 +446,7 @@ async function vsCheckVivienda() {
     const res = await fetch(WEBHOOK_CONSULTA, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vivienda: codigo, post_entrega: POST_ENTREGA ? 'TRUE' : 'FALSE' })
+      body: JSON.stringify({ vivienda: codigo, post_entrega: POST_ENTREGA ? 'TRUE' : 'FALSE', modo: CONTRATO ? 'contrato' : '' })
     });
     const data = await res.json();
     const extras = Array.isArray(data) ? data : (data.extras || []);
@@ -1887,6 +1887,7 @@ function submitExtras() {
         nota_extra: item.comment_es || '',
         nota_extra_en: item.comment_en || '',
         comentario: NOTES[item.id] || '',
+        incluido_contrato: CONTRATO ? 'TRUE' : 'FALSE',
         tipo: ''
       };
 
@@ -1956,6 +1957,7 @@ function submitExtras() {
         total_con_iva: total !== null ? total * (1 + IVA_RATE) : null,
         nota_extra: '', nota_extra_en: '',
         comentario: c.notes || '',
+        incluido_contrato: CONTRATO ? 'TRUE' : 'FALSE',
         tipo: ''
       };
       extrasPdfPayload.push(obj);
@@ -1992,9 +1994,11 @@ function submitExtras() {
     total_con_iva: grandTotal * (1 + IVA_RATE),
     iva_rate: IVA_RATE,
     post_entrega: POST_ENTREGA ? 'TRUE' : 'FALSE',
+    modo: CONTRATO ? 'contrato' : '',
+    accion: CONTRATO ? 'contrato' : '',
     extras: JSON.stringify(extrasPayload),
     extras_pdf: JSON.stringify(extrasPdfPayload),
-    estado: 'Enviado'
+    estado: CONTRATO ? 'Firmado' : 'Enviado'
   };
 
   // Disable button while waiting
