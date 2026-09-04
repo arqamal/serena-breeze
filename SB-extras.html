@@ -56,6 +56,9 @@
   .inp:focus { border-color: var(--black); }
   .inp-qty { width: 64px; text-align: center; }
   .inp-price { width: 96px; text-align: right; }
+  .inp-descuento::-webkit-outer-spin-button,
+  .inp-descuento::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .inp-descuento { -moz-appearance: textfield; }
   .inp-total { font-family: 'Oswald', sans-serif; font-size: 14px; color: var(--black); text-align: right; display: block; }
   .inp-total.consultar { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--mid); font-style: italic; }
   .inp-name { width: 100%; font-size: 13px; }
@@ -519,7 +522,7 @@ function vsConfirm() {
           id: e.id,
           name: e.extra || '',
           price: incluidoContratoCustom ? 0 : (e.price !== undefined && e.price !== null ? Number(e.price) : null),
-          descuento_pct: e.descuento_pct !== undefined && e.descuento_pct !== null ? Number(e.descuento_pct) : 0,
+          descuento_pct: incluidoContratoCustom ? 0 : (e.descuento_pct !== undefined && e.descuento_pct !== null ? Number(e.descuento_pct) : 0),
           qty: e.qty !== undefined && e.qty !== null ? Number(e.qty) : 0,
           notes: incluidoContratoCustom ? 'INCLUIDO EN CONTRATO' : (e.notes || ''),
           oficio: e.oficio || '',
@@ -540,6 +543,7 @@ function vsConfirm() {
     // marcado en el comentario — no se cobra dos veces (ver punto 7 del traspaso).
     if (!CONTRATO && e.incluido_contrato === 'TRUE') {
       PRICE[e.id] = 0;
+      DESCUENTO[e.id] = 0;
       NOTES[e.id] = 'INCLUIDO EN CONTRATO';
     }
   });
