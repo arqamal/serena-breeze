@@ -249,7 +249,7 @@
     border: 1px solid var(--border); margin-top: 8px; }
   .vsearch-btn.secondary:hover { border-color: var(--black); color: var(--black); }
   .vsearch-info { font-family: 'Roboto', sans-serif; font-size: 12px;
-    color: var(--slate-gray); margin-top: 16px; line-height: 1.6;
+    color: var(--slate-gray); margin-top: 16px; margin-bottom: 12px; line-height: 1.6;
     padding: 12px 14px; background: var(--off-white);
     border-left: 3px solid var(--border); display: none; }
   .vsearch-info.visible { display: block; }
@@ -305,13 +305,13 @@
       </select>
     </div>
     <div class="vsearch-info" id="vs-info"></div>
-    <label class="vsearch-check" id="vs-post-check">
-      <input type="checkbox" id="vs-post" onchange="togglePostEntrega()">
-      <span class="vsearch-check-label" id="vs-post-label">Extras post-entrega</span>
-    </label>
     <label class="vsearch-check" id="vs-contrato-check">
       <input type="checkbox" id="vs-contrato" onchange="toggleContrato()">
       <span class="vsearch-check-label" id="vs-contrato-label">Extras de contrato</span>
+    </label>
+    <label class="vsearch-check" id="vs-post-check">
+      <input type="checkbox" id="vs-post" onchange="togglePostEntrega()">
+      <span class="vsearch-check-label" id="vs-post-label">Extras post-entrega</span>
     </label>
     <button class="vsearch-btn" id="vs-btn" onclick="vsConfirm()">Continuar →</button>
   </div>
@@ -403,7 +403,6 @@ function togglePostEntrega() {
   // Exclusión mutua: si se marca post-entrega, se desmarca y bloquea contrato
   const cbContrato = document.getElementById('vs-contrato');
   if (POST_ENTREGA) { cbContrato.checked = false; CONTRATO = false; document.getElementById('vs-contrato-check').classList.remove('active'); }
-  cbContrato.disabled = POST_ENTREGA;
   // Si ya había vivienda seleccionada, la consulta cacheada corresponde al modo
   // anterior — hay que refrescarla con el modo/post_entrega actuales (bug 04/09/2026).
   vsCheckVivienda();
@@ -417,7 +416,6 @@ function toggleContrato() {
   // Exclusión mutua: si se marca contrato, se desmarca y bloquea post-entrega
   const cbPost = document.getElementById('vs-post');
   if (CONTRATO) { cbPost.checked = false; POST_ENTREGA = false; IVA_RATE = 0.10; document.getElementById('vs-post-check').classList.remove('active'); document.getElementById('vs-post-label').textContent = (LANG === 'es' ? 'Extras post-entrega' : 'Post-delivery extras'); }
-  cbPost.disabled = CONTRATO;
   // Mismo motivo que en togglePostEntrega(): refrescar el caché con el modo actual.
   vsCheckVivienda();
 }
@@ -440,6 +438,7 @@ async function vsCheckVivienda() {
   const btn    = document.getElementById('vs-btn');
   if (!raw) { info.className = 'vsearch-info'; return; }
 
+  const mySeq = ++vsCheckSeq; // marca esta petición como la más reciente
   vsChecking = true;
   if (btn) btn.disabled = true;
   const codigo = raw.includes('—') ? raw.split('—')[0].trim() : raw;
@@ -454,6 +453,7 @@ async function vsCheckVivienda() {
       body: JSON.stringify({ vivienda: codigo, post_entrega: POST_ENTREGA ? 'TRUE' : 'FALSE', modo: CONTRATO ? 'contrato' : '' })
     });
     const data = await res.json();
+    if (mySeq !== vsCheckSeq) return; // llegó tarde — ya hay una petición más nueva en marcha, se descarta
     const extras = Array.isArray(data) ? data : (data.extras || []);
     const found  = extras.filter(e => (e.qty || 0) > 0).length;
     document.getElementById('vs-btn')._cachedEspeciales = (Array.isArray(data) ? [] : (data.especiales || []));
@@ -472,6 +472,7 @@ async function vsCheckVivienda() {
       document.getElementById('vs-btn')._cachedExtras = [];
     }
   } catch(e) {
+    if (mySeq !== vsCheckSeq) return; // idem si falla tarde y ya hay otra en marcha
     info.className = 'vsearch-info visible new';
     info.textContent = LANG === 'es'
       ? 'No se pudo conectar. Se iniciará una selección nueva.'
@@ -479,8 +480,7 @@ async function vsCheckVivienda() {
     document.getElementById('vs-btn')._cachedExtras = [];
     document.getElementById('vs-btn')._cachedEspeciales = [];
   } finally {
-    vsChecking = false;
-    if (btn) btn.disabled = false;
+    if (mySeq === vsCheckSeq) { vsChecking = false; if (btn) btn.disabled = false; }
   }
 }
 
@@ -802,6 +802,7 @@ const OFICIOS = ["ALBA\u00d1ILERIA", "Carpinteria MADERA", "Carpinteria METALICA
 
 let LANG = 'es';
 let vsChecking = false; // true mientras vsCheckVivienda() está comprobando datos existentes — bloquea "Continuar"
+let vsCheckSeq = 0; // contador de petición — evita que una respuesta tardía de un toggle anterior pise el caché de la última selección
 let currentStep = 1;
 const TOTAL_STEPS = 13; // 11 areas + confirm + firma
 const STEP_ESPECIALES = 14; // paso independiente, no participa en la aritmética de TOTAL_STEPS
