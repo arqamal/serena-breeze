@@ -509,13 +509,14 @@ function vsConfirm() {
       const areaKey = area ? area.key : null;
       if (areaKey) {
         if (!CUSTOM[areaKey]) CUSTOM[areaKey] = [];
+        const incluidoContratoCustom = !CONTRATO && e.incluido_contrato === 'TRUE';
         CUSTOM[areaKey].push({
           id: e.id,
           name: e.extra || '',
-          price: e.price !== undefined && e.price !== null ? Number(e.price) : null,
+          price: incluidoContratoCustom ? 0 : (e.price !== undefined && e.price !== null ? Number(e.price) : null),
           descuento_pct: e.descuento_pct !== undefined && e.descuento_pct !== null ? Number(e.descuento_pct) : 0,
           qty: e.qty !== undefined && e.qty !== null ? Number(e.qty) : 0,
-          notes: e.notes || '',
+          notes: incluidoContratoCustom ? 'INCLUIDO EN CONTRATO' : (e.notes || ''),
           oficio: e.oficio || '',
           estado: e.estado || ''
         });
@@ -530,6 +531,12 @@ function vsConfirm() {
     if (e.descuento_pct !== undefined && e.descuento_pct !== null) DESCUENTO[e.id] = Number(e.descuento_pct);
     if (hasNote) NOTES[e.id] = e.notes;
     if (e.estado !== undefined && e.estado !== '') ESTADO[e.id] = e.estado;
+    // Extra ya incluido en el contrato: en modo Normal se muestra a precio 0,
+    // marcado en el comentario — no se cobra dos veces (ver punto 7 del traspaso).
+    if (!CONTRATO && e.incluido_contrato === 'TRUE') {
+      PRICE[e.id] = 0;
+      NOTES[e.id] = 'INCLUIDO EN CONTRATO';
+    }
   });
 
   // Show app
