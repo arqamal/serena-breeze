@@ -1263,10 +1263,10 @@ function buildDOM() {
       </div>
       <div class="form-row">
         <div class="fgroup"><label class="flabel" id="lbl-name">${LANG==='es'?'Nombre cliente':'Client name'}</label><input class="finput" id="cName" type="text" placeholder="${LANG==='es'?'Nombre y apellidos':'Full name'}"></div>
-        <div class="fgroup"><label class="flabel">Email</label><input class="finput" id="cEmail" type="email" placeholder="correo@ejemplo.com"></div>
+        ${CONTRATO ? '' : `<div class="fgroup"><label class="flabel">Email</label><input class="finput" id="cEmail" type="email" placeholder="correo@ejemplo.com"></div>`}
       </div>
       <div class="form-row">
-        <div class="fgroup"><label class="flabel" id="lbl-phone">${LANG==='es'?'Teléfono':'Phone'}</label><input class="finput" id="cPhone" type="tel" placeholder="+34 600 000 000"></div>
+        ${CONTRATO ? '' : `<div class="fgroup"><label class="flabel" id="lbl-phone">${LANG==='es'?'Teléfono':'Phone'}</label><input class="finput" id="cPhone" type="tel" placeholder="+34 600 000 000"></div>`}
         <div class="fgroup"><label class="flabel" id="lbl-notes">${LANG==='es'?'Observaciones':'Notes'}</label><input class="finput" id="cNotes" type="text" placeholder="${LANG==='es'?'Comentarios adicionales':'Additional comments'}"></div>
       </div>
     </div>
@@ -1287,7 +1287,7 @@ function buildDOM() {
     <h2 class="sec-title" id="firma-step-title">${LANG==='es'?'Presupuesto de contrato':'Contract quote'}</h2>
     <div class="firma-block">
       <div class="firma-title" id="firma-pdf-title">${LANG==='es'?'Presupuesto generado':'Quote generated'}</div>
-      <div class="firma-desc" id="firma-pdf-desc">${LANG==='es'?'Este presupuesto no se envía por email ni requiere firma. Descárgalo para adjuntarlo al contrato:':'This quote is not sent by email and does not require a signature. Download it to attach to the contract:'}</div>
+      <div class="firma-desc" id="firma-pdf-desc">${LANG==='es'?'Este presupuesto no se envía por email al cliente ni requiere firma. Descárgalo para adjuntarlo al contrato:':'This quote is not sent by email to the client and does not require a signature. Download it to attach to the contract:'}</div>
       <div id="firma-generating" class="firma-generating">${LANG==='es'?'⟳ Generando documento…':'⟳ Generating document…'}</div>
       <div id="firma-download-wrap" style="display:none">
         <a id="btn-dl-pdf" class="btn-download-pdf" href="#" target="_blank">
@@ -1848,12 +1848,13 @@ function submitDocs() {
 // ─── SUBMIT ─────────────────────────────────────────────────────────
 function submitExtras() {
   const name  = document.getElementById('cName').value.trim();
-  const email = document.getElementById('cEmail').value.trim();
+  const cEmailEl = document.getElementById('cEmail');
+  const email = cEmailEl ? cEmailEl.value.trim() : '';
   const promo = SESSION_PROMO;
   const codigo = SESSION_CODIGO;
 
   if (!promo || !codigo) { alert(LANG==='es'?'Error: vivienda no seleccionada.':'Error: no property selected.'); return; }
-  if (!name || !email) { alert(LANG==='es'?'Introduzca nombre y email.':'Please enter name and email.'); return; }
+  if (!name || (!CONTRATO && !email)) { alert(LANG==='es'?'Introduzca nombre y email.':'Please enter name and email.'); return; }
 
   // Build extras payload
   const extrasPayload = [];     // controla qué se escribe/actualiza en _datos
@@ -2003,7 +2004,7 @@ function submitExtras() {
     vivienda: codigo,
     nombre: name,
     email: email,
-    telefono: document.getElementById('cPhone').value.trim(),
+    telefono: (document.getElementById('cPhone') ? document.getElementById('cPhone').value.trim() : ''),
     observaciones: document.getElementById('cNotes').value.trim(),
     fecha: new Date().toLocaleDateString('es-ES'),
     total_sin_iva: grandTotal,
