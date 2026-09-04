@@ -404,6 +404,9 @@ function togglePostEntrega() {
   const cbContrato = document.getElementById('vs-contrato');
   if (POST_ENTREGA) { cbContrato.checked = false; CONTRATO = false; document.getElementById('vs-contrato-check').classList.remove('active'); }
   cbContrato.disabled = POST_ENTREGA;
+  // Si ya había vivienda seleccionada, la consulta cacheada corresponde al modo
+  // anterior — hay que refrescarla con el modo/post_entrega actuales (bug 04/09/2026).
+  vsCheckVivienda();
 }
 
 function toggleContrato() {
@@ -415,6 +418,8 @@ function toggleContrato() {
   const cbPost = document.getElementById('vs-post');
   if (CONTRATO) { cbPost.checked = false; POST_ENTREGA = false; IVA_RATE = 0.10; document.getElementById('vs-post-check').classList.remove('active'); document.getElementById('vs-post-label').textContent = (LANG === 'es' ? 'Extras post-entrega' : 'Post-delivery extras'); }
   cbPost.disabled = CONTRATO;
+  // Mismo motivo que en togglePostEntrega(): refrescar el caché con el modo actual.
+  vsCheckVivienda();
 }
 
 function vsUpdateApts() {
