@@ -75,6 +75,7 @@
   .fase-table-wrap.fase-table-ancha table.data-table { min-width: 640px; }
   table.data-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
   table.data-table th { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--off-white); font-weight: 400; }
+  table.data-table th .th-sub { display: block; font-size: 9px; letter-spacing: .5px; text-transform: none; color: var(--mid); margin-top: 2px; }
   table.data-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   table.data-table tr:last-child td { border-bottom: none; }
   table.data-table td.rowlabel { font-family: 'Roboto', sans-serif; font-size: 12.5px; color: var(--slate-gray); }
@@ -274,9 +275,9 @@ const FIELDS_FASE = [
 ];
 const FIELDS_VIVIENDA = [
   { key: 'fecha_fin_estimada', label: 'Fecha fin estimada', type: 'month', nivelPermiso: 'fase' }, // la edita quien edite Fase (arquitectura+tec), no solo Vivienda
+  { key: 'fecha_entrega', label: 'Fecha entrega', sublabel: 'de contrato', type: 'month' },
   { key: 'fecha_cfo', label: 'CFO', type: 'date' },
   { key: 'fecha_acta_recepcion', label: 'Acta de Recepción', type: 'date' },
-  { key: 'fecha_entrega', label: 'Fecha entrega', type: 'month' },
   { key: 'fecha_escritura', label: 'Fecha escritura', type: 'date' }
 ];
 
@@ -463,7 +464,7 @@ function renderBloque3_Viviendas() {
     html += '<div class="viviendas-group">';
     html += '<div class="viviendas-group-title">' + escapeHtml(fase) + '</div>';
     html += '<div class="viviendas-table-wrap"><table class="data-table"><thead><tr><th>Vivienda</th>';
-    FIELDS_VIVIENDA.forEach(f => { html += '<th>' + escapeHtml(f.label) + '</th>'; });
+    FIELDS_VIVIENDA.forEach(f => { html += '<th>' + escapeHtml(f.label) + (f.sublabel ? '<br><span class="th-sub">' + escapeHtml(f.sublabel) + '</span>' : '') + '</th>'; });
     html += '</tr></thead><tbody>';
 
     if (!viviendas.length) {
