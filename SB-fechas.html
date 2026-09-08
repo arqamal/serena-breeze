@@ -82,6 +82,9 @@
   table.data-table tr.fila-limite-fase { background: var(--off-white); }
   table.data-table tr.fila-limite-fase td.rowlabel { color: var(--black); font-weight: 400; }
   table.data-table td.vcode { font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: .5px; color: var(--black); white-space: nowrap; }
+  .vcode-cell { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .vcode-link { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: .5px; color: var(--slate-gray); text-decoration: none; border: 1px solid var(--border); padding: 3px 8px; white-space: nowrap; transition: all .15s; }
+  .vcode-link:hover { border-color: var(--black); color: var(--black); background: var(--off-white); }
   .fase-table-wrap table.data-table th:first-child, .fase-table-wrap table.data-table td:first-child { width: 42%; }
   .fase-table-wrap.fase-table-ancha table.data-table th:first-child, .fase-table-wrap.fase-table-ancha table.data-table td:first-child { width: 190px; }
   .field-input { min-width: 0; }
@@ -471,7 +474,7 @@ function renderBloque3_Viviendas() {
       html += '<tr><td colspan="' + (FIELDS_VIVIENDA.length + 1) + '" style="color:var(--slate-gray); font-style:italic; padding:16px 12px;">Sin sembrar todavía — ejecuta seedViviendas() en el Apps Script.</td></tr>';
     } else {
       viviendas.forEach(v => {
-        html += '<tr data-nivel="vivienda" data-fase="' + escapeAttr(fase) + '" data-vivienda="' + escapeAttr(v.vivienda) + '"><td class="vcode">' + escapeHtml(v.vivienda) + '</td>';
+        html += '<tr data-nivel="vivienda" data-fase="' + escapeAttr(fase) + '" data-vivienda="' + escapeAttr(v.vivienda) + '"><td class="vcode"><div class="vcode-cell"><span>' + escapeHtml(v.vivienda) + '</span><a class="vcode-link" href="' + urlDetalleVivienda_(CURRENT_PROMO, v.vivienda) + '" title="Ver detalle de vivienda">Detalle →</a></div></td>';
         FIELDS_VIVIENDA.forEach(f => {
           const puedeEditarCampo = puedeEditarNivel(f.nivelPermiso || 'vivienda');
           html += '<td>' + renderCampoCelda(f, v[f.key], puedeEditarCampo, f.key, { fase: fase, vivienda: v.vivienda }) + '</td>';
@@ -622,6 +625,12 @@ function llamarGuardar(payload) {
 
 function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function escapeAttr(s) { return escapeHtml(s); }
+
+// ─── ENLACE A DETALLE DE VIVIENDA (placeholder — pendiente de crear SB-vivienda-detalle.html) ───
+const URL_DETALLE_VIVIENDA = 'SB-vivienda-detalle.html'; // TODO: sustituir por URL real (Webflow o GitHub Pages) cuando exista la página
+function urlDetalleVivienda_(promocion, vivienda) {
+  return URL_DETALLE_VIVIENDA + '?promo=' + encodeURIComponent(promocion) + '&vivienda=' + encodeURIComponent(vivienda);
+}
 </script>
 </body>
 </html>
