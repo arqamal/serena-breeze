@@ -181,15 +181,18 @@
         <li>Elige la promoción arriba (1SB / 2SB / 3SB). Cada una tiene su propia página con 3 niveles: <strong>Promoción</strong>, <strong>Fase</strong> (Villas y Apartamentos — en 3SB, además, por bloque) y <strong>Vivienda</strong>.</li>
         <li>Los campos marcados <em>· calculado</em> no se editan directamente: se calculan solos a partir de las fechas de las viviendas (la más tardía), y se actualizan al momento en cuanto guardas algo.
           <ul class="help-sublist">
-            <li><strong>Fecha fin estimada</strong> de Promoción = la <em>fecha fin estimada</em> más tardía entre todas las viviendas de esa promoción.</li>
+            <li><strong>Fecha fin estimada</strong> de Promoción = la <em>Final de Obra Estimada</em> más tardía entre todas las viviendas de esa promoción.</li>
             <li><strong>Fecha fin real</strong> de Promoción = la <em>CFO</em> más tardía entre todas las viviendas de esa promoción.</li>
-            <li><strong>Entrega de fase</strong> = la <em>fecha entrega</em> más tardía entre las viviendas de esa fase (Villas y cada bloque de Apartamentos, por separado).</li>
+            <li><strong>Entrega de fase</strong> = la <em>Entrega Estimada Cliente</em> más tardía entre las viviendas de esa fase (Villas y cada bloque de Apartamentos, por separado) — no depende de la fecha de entrega de contrato.</li>
           </ul>
           En los tres casos, mientras falte una sola vivienda por rellenar ese dato, el campo calculado se queda vacío.
         </li>
+        <li>En Vivienda, <strong>Final de Obra Estimada</strong> y <strong>Entrega Estimada Cliente</strong> las puede editar quien tenga permiso de Fase (arquitectura y técnicos), no solo quien tenga permiso de Vivienda — el resto de campos de vivienda sí exige ese permiso específico.</li>
+        <li><strong>Fecha entrega de contrato</strong> se introduce como periodo por trimestre (p. ej. <em>cuarto trimestre 2026</em>), con un trimestre de fin opcional para un rango (p. ej. <em>cuarto trimestre 2026 – primer trimestre 2027</em>); si se deja el fin en blanco, se guarda como un único trimestre.</li>
+        <li>Las fechas de tipo mes se muestran con el nombre del mes en letra (p. ej. <em>marzo 2027</em>), no en formato numérico.</li>
         <li>Los fondos de color son un semáforo de plazo: <span class="help-dot due-green"></span> verde a más de un mes, <span class="help-dot due-orange"></span> naranja dentro del último mes, <span class="help-dot due-red"></span> rojo si ya venció.</li>
         <li>Si un campo aparece como texto en vez de como casilla editable, tu usuario no tiene permiso para tocarlo en ese nivel — puedes consultarlo, pero no cambiarlo.</li>
-        <li>Cada fecha se guarda sola al salir del campo, sin botón de guardar.</li>
+        <li>Cada fecha se guarda sola al salir del campo (o al elegir trimestre/año), sin botón de guardar.</li>
       </ul>
     </div>
   </main>
@@ -279,11 +282,11 @@ const FIELDS_FASE = [
   { key: 'fecha_mobiliario', label: 'Mobiliario - Estores - Pinturas - Cocina - Electrodomésticos', type: 'date' },
   { key: 'fecha_vidrios', label: 'Vidrios', type: 'date' },
   { key: 'fecha_jardineria', label: 'Jardinería', type: 'date' },
-  { key: 'fecha_entrega', label: 'Entrega de fase', type: 'trimestre', computed: true }
+  { key: 'fecha_entrega', label: 'Entrega de fase', type: 'month', computed: true }
 ];
 const FIELDS_VIVIENDA = [
   { key: 'fecha_fin_estimada', label: 'Final de Obra Estimada', type: 'month', nivelPermiso: 'fase' }, // la edita quien edite Fase (arquitectura+tec), no solo Vivienda
-  { key: 'fecha_entrega_estimada_cliente', label: 'Entrega Estimada Cliente', type: 'month' },
+  { key: 'fecha_entrega_estimada_cliente', label: 'Entrega Estimada Cliente', type: 'month', nivelPermiso: 'fase' },
   { key: 'fecha_entrega', label: 'Fecha entrega', sublabel: 'de contrato', type: 'trimestre' },
   { key: 'fecha_cfo', label: 'CFO', type: 'date' },
   { key: 'fecha_acta_recepcion', label: 'Acta de Recepción', type: 'date' },
@@ -430,8 +433,10 @@ function renderBloque2_Fases() {
   fasesDePromo().forEach(fase => {
     const base = DATA_FASES.find(r => r.promocion === CURRENT_PROMO && r.fase === fase) || { promocion: CURRENT_PROMO, fase: fase };
     const viviendasFase = DATA_VIVIENDAS.filter(r => r.promocion === CURRENT_PROMO && r.fase === fase);
-    // fecha_entrega de fase es calculada: la más tardía de sus viviendas.
-    registros[fase] = Object.assign({}, base, { fecha_entrega: maxFechaViviendaCompleta_(viviendasFase, 'fecha_entrega') });
+    // fecha_entrega de fase es calculada: la Entrega Estimada Cliente más
+    // tardía de sus viviendas (ya no la fecha de entrega de contrato, que
+    // ahora es un periodo por trimestre y no es agregable de la misma forma).
+    registros[fase] = Object.assign({}, base, { fecha_entrega: maxFechaViviendaCompleta_(viviendasFase, 'fecha_entrega_estimada_cliente') });
   });
 
   let html = '<div class="fase-table-wrap' + (fasesDePromo().length > 2 ? ' fase-table-ancha' : '') + '"><table class="data-table"><thead><tr><th>Campo</th>';
@@ -532,11 +537,13 @@ function formatearFechaES(iso) {
   const [y, m, d] = String(iso).split('-');
   return d + '/' + m + '/' + y;
 }
+const MESES_LABELS = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 function formatearMesES(iso) {
   if (!iso) return '';
   const m6 = /^(\d{4})-(\d{2})/.exec(String(iso));
   if (!m6) return iso;
-  return m6[2] + '/' + m6[1];
+  const nombre = MESES_LABELS[Number(m6[2])];
+  return (nombre || m6[2]) + ' ' + m6[1];
 }
 
 // ── PERIODO POR TRIMESTRE (fecha_entrega de vivienda/fase) ──────
