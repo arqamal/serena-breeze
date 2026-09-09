@@ -518,7 +518,12 @@ function rangoTrimestreALetras(q1, y1, q2, y2, idioma) {
 // ─── RECÁLCULOS EN VIVO DEL FORMULARIO ───────────────────────────────
 function formatearMiles(n) {
   n = Math.round((Number(n) || 0) * 100) / 100;
-  return n.toLocaleString('es-ES');
+  const negativo = n < 0 ? '-' : '';
+  n = Math.abs(n);
+  const partes = n.toFixed(2).split('.');
+  const entero = partes[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  const decimales = partes[1] === '00' ? '' : ',' + partes[1];
+  return negativo + entero + decimales;
 }
 function parsearMiles(s) {
   if (!s) return 0;
@@ -536,11 +541,30 @@ function recalcularPrecios() {
   const total = subtotal * (1 + ivaPct / 100);
   document.getElementById('f-subtotal').value = subtotal ? formatearMiles(subtotal) : '';
   document.getElementById('f-total').value = total ? formatearMiles(total) : '';
+  recalcularPagos();
 }
 function actualizarLetrasReserva() {
   const importe = parsearMiles(document.getElementById('f-pago_reserv').value);
   document.getElementById('f-pago_reserv_letra').value = numeroALetrasES(importe);
   document.getElementById('f-pago_reserv_letra_en').value = numberToWordsEN(importe);
+  recalcularPagos();
+}
+// Pago 1 = 25% de (total - reserva). Pago 2 = igual que pago 1.
+// Pago 3 = el resto (el otro 50% de esa base). Se recalculan solos al
+// tocar total o reserva, pero siguen siendo campos de texto normales —
+// si los editas a mano después, se quedan con lo que hayas puesto hasta
+// que vuelvas a tocar total/reserva.
+function recalcularPagos() {
+  const total = parsearMiles(document.getElementById('f-total').value);
+  const reserva = parsearMiles(document.getElementById('f-pago_reserv').value);
+  const base = total - reserva;
+  if (base <= 0) return;
+  const pago1 = base * 0.25;
+  const pago2 = base * 0.25;
+  const pago3 = base - pago1 - pago2;
+  document.getElementById('f-pago_1').value = formatearMiles(pago1);
+  document.getElementById('f-pago_2').value = formatearMiles(pago2);
+  document.getElementById('f-pago_3').value = formatearMiles(pago3);
 }
 function actualizarFechaPago(n) {
   const f = parseFechaInput(document.getElementById('f-fecha_pago_' + n + '_raw').value);
