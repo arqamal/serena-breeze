@@ -545,7 +545,7 @@ function actualizarAdelanto() {
   const anio = parseInt(document.getElementById('f-adelanto-anio').value, 10);
   const prev = document.getElementById('prev-adelanto');
   if (!mes || !anio) { prev.textContent = '—'; return; }
-  prev.textContent = MESES_ES[mes - 1] + ' de ' + anio;
+  prev.textContent = (MESES_ES[mes - 1] + ' de ' + anio) + '  /  ' + (MESES_EN[mes - 1] + ' ' + anio);
 }
 
 function opcionesTrimestre(idSel) {
@@ -644,7 +644,7 @@ function mostrarFormulario(tipo, modo) {
         <input type="number" class="form-input" id="f-adelanto-anio" placeholder="Año" style="width:100px;" oninput="actualizarAdelanto()">
       </div>
     </div>
-    <div class="form-field"><label class="form-label">Texto generado — si lo dejas vacío, se mantiene lo que ya hubiera</label><div class="form-input precargado" id="prev-adelanto" style="min-height:20px;">${escapeHtml(val('adelanto_contrato')) || '—'}</div></div>`;
+    <div class="form-field"><label class="form-label">Texto generado (ES / EN) — si lo dejas vacío, se mantiene lo que ya hubiera</label><div class="form-input precargado" id="prev-adelanto" style="min-height:20px;">${escapeHtml(val('adelanto_contrato')) ? escapeHtml(val('adelanto_contrato')) + '  /  ' + escapeHtml(val('adelanto_contrato_en')) : '—'}</div></div>`;
   }
   html += `</div>`;
 
@@ -699,7 +699,10 @@ function enviarFormulario(tipo, modo) {
     campos.pago_reserv_letra_en = document.getElementById('f-pago_reserv_letra_en').value.trim();
     const mesAdel = parseInt(document.getElementById('f-adelanto-mes').value, 10);
     const anioAdel = parseInt(document.getElementById('f-adelanto-anio').value, 10);
-    if (mesAdel && anioAdel) campos.adelanto_contrato = MESES_ES[mesAdel - 1] + ' de ' + anioAdel;
+    if (mesAdel && anioAdel) {
+      campos.adelanto_contrato = MESES_ES[mesAdel - 1] + ' de ' + anioAdel;
+      campos.adelanto_contrato_en = MESES_EN[mesAdel - 1] + ' ' + anioAdel;
+    }
   }
 
   // fechas de pago (del selector de calendario, ya convertidas a texto ES/EN)
