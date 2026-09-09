@@ -98,6 +98,9 @@
   .form-input:focus { border-color: var(--black); }
   .form-input.precargado { background: var(--precargado); border-color: var(--precargado-border); }
   .form-input.precargado:focus { background: var(--white); }
+  .form-input.catalogo { background: #EEF4FB; border-color: #C9DCF0; }
+  .form-input.catalogo:focus { background: var(--white); }
+  .catalogo-note { font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--slate-gray); margin-bottom: 14px; }
   .form-section-label { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate-gray); margin: 28px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
   .form-section-label:first-child { margin-top: 0; }
 
@@ -146,7 +149,6 @@
         <option value="">Seleccione primero la promoción…</option>
       </select>
     </div>
-    <div class="msg error" id="vs-error"></div>
     <button class="vsearch-btn" id="vs-btn" onclick="vsConfirm()" disabled>Continuar →</button>
   </div>
 </div>
@@ -197,34 +199,33 @@ const CAMPOS_FORM = [
   { key: 'nie_cliente2', label: 'NIE / Pasaporte cliente 2', appliesTo: ['reserva','contrato'] },
   { key: 'mail_cliente2', label: 'Email cliente 2', appliesTo: ['reserva','contrato'] },
   { key: 'tlf_cliente2', label: 'Teléfono cliente 2', appliesTo: ['reserva','contrato'] },
-  { key: 'dom_cliente', label: 'Domicilio del/de los cliente(s)', appliesTo: ['reserva','contrato'], full: true },
-
-  { seccion: 'Precio' },
-  { key: 'precio_viv', label: 'Precio vivienda (€)', appliesTo: ['reserva','contrato'] },
-  { key: 'precio_ext', label: 'Importe extras y modificaciones (€)', appliesTo: ['reserva','contrato'] },
-  { key: 'subtotal', label: 'Subtotal (€)', appliesTo: ['reserva','contrato'] },
-  { key: 'iva', label: 'IVA', appliesTo: ['reserva','contrato'] },
-  { key: 'total', label: 'Total compraventa (€)', appliesTo: ['reserva','contrato'] },
-
-  { seccion: 'Forma de pago' },
-  { key: 'pago_reserv', label: 'Pago a la firma de la reserva (€)', appliesTo: ['reserva','contrato'] },
-  { key: 'pago_reserv_letra', label: 'Importe en letras (ES)', appliesTo: ['reserva'] },
-  { key: 'pago_reserv_letra_en', label: 'Importe en letras (EN)', appliesTo: ['reserva'] },
-  { key: 'fecha_pago_1', label: 'Fecha pago 1 (ES, texto libre)', appliesTo: ['reserva','contrato'] },
-  { key: 'fecha_pago_1_en', label: 'Fecha pago 1 (EN, texto libre)', appliesTo: ['reserva','contrato'] },
-  { key: 'pago_1', label: 'Importe pago 1 (€)', appliesTo: ['reserva','contrato'] },
-  { key: 'fecha_pago_2', label: 'Fecha pago 2 (ES, texto libre)', appliesTo: ['reserva','contrato'] },
-  { key: 'fecha_pago_2_en', label: 'Fecha pago 2 (EN, texto libre)', appliesTo: ['reserva','contrato'] },
-  { key: 'pago_2', label: 'Importe pago 2 (€)', appliesTo: ['reserva','contrato'] },
-  { key: 'fecha_pago_3', label: 'Fecha pago 3 (ES, no imprime en plantilla)', appliesTo: ['reserva','contrato'] },
-  { key: 'fecha_pago_3_en', label: 'Fecha pago 3 (EN, no imprime en plantilla)', appliesTo: ['reserva','contrato'] },
-  { key: 'pago_3', label: 'Importe pago 3 / escritura (€)', appliesTo: ['reserva','contrato'] },
-
-  { seccion: 'Plazos' },
-  { key: 'plazo', label: 'Plazo de entrega (ES, texto libre)', appliesTo: ['reserva','contrato'] },
-  { key: 'plazo_en', label: 'Plazo de entrega (EN, texto libre)', appliesTo: ['reserva','contrato'] },
-  { key: 'adelanto_contrato', label: 'Mes límite para adelantar firma', appliesTo: ['reserva'] }
+  { key: 'dom_cliente', label: 'Domicilio del/de los cliente(s)', appliesTo: ['reserva','contrato'], full: true }
+  // Precio, Forma de pago y Plazos ya no son campos de texto simples: se
+  // renderizan aparte en mostrarFormulario() porque llevan cálculo
+  // automático (subtotal/total), conversión a letras (pago_reserv) o
+  // selector de trimestre (plazo). Ver bloques dedicados más abajo.
 ];
+
+// Campos de "Promoción" (vendedor, banco, catálogo de la vivienda). Se
+// muestran también aquí, en otro color, para el caso raro en que una
+// vivienda concreta necesite un valor distinto al del catálogo general —
+// el cambio solo afecta a ESTE contrato (no reescribe la pestaña
+// Promoción; para eso hay que editar el Sheet directamente).
+const LABELS_PROMO = {
+  vendedor: 'Vendedor (razón social)', dom_vendedor: 'Domicilio vendedor', cif_vendedor: 'CIF vendedor',
+  rep_vendedor: 'Representante/apoderado', dni_rep: 'DNI representante', mail_vendedor: 'Email vendedor', tel_vendedor: 'Teléfono vendedor',
+  banco_r: 'Banco (reserva)', iban_r: 'IBAN (reserva)', bic_swift_r: 'BIC/SWIFT (reserva)',
+  banco_c: 'Banco (compraventa)', iban_c: 'IBAN (compraventa)', bic_swift_c: 'BIC/SWIFT (compraventa)',
+  dir_banco_c: 'Dirección banco (compraventa)', titular_cuenta_c: 'Titular cuenta (compraventa)',
+  promocion: 'Promoción', ciudad: 'Ciudad', exp_obra: 'Expediente de obras',
+  ref_catas_matriz: 'Referencia catastral matriz', num_finca_parcela: 'Número de finca',
+  reg_prop: 'Registro de la propiedad (ES)', reg_prop_en: 'Registro de la propiedad (EN)',
+  situacion: 'Situación (ES)', situacion_en: 'Situación (EN)'
+};
+const CAMPOS_PROMO_RESERVA = ['vendedor','dom_vendedor','cif_vendedor','rep_vendedor','dni_rep','mail_vendedor','tel_vendedor',
+  'banco_r','iban_r','bic_swift_r','promocion','ciudad','exp_obra','num_finca_parcela','reg_prop','reg_prop_en','situacion','situacion_en'];
+const CAMPOS_PROMO_CONTRATO = ['vendedor','dom_vendedor','cif_vendedor','rep_vendedor','dni_rep','mail_vendedor','tel_vendedor',
+  'banco_c','iban_c','bic_swift_c','dir_banco_c','titular_cuenta_c','promocion','ciudad','ref_catas_matriz','num_finca_parcela','reg_prop','situacion'];
 
 let SESSION_PROMO = null;
 let SESSION_COD_VIV = null;
@@ -255,8 +256,14 @@ function doLogin() {
       } else if (data.motivo === 'sin_acceso') {
         errorEl.textContent = 'Tu usuario no tiene acceso a esta herramienta.';
         errorEl.style.display = 'block';
-      } else {
+      } else if (data.motivo === 'herramienta_desconocida') {
+        errorEl.textContent = 'El servidor de login no reconoce "contratos" todavía — falta desplegar la versión nueva de AuthUsuarios.gs.';
+        errorEl.style.display = 'block';
+      } else if (data.motivo === 'credenciales') {
         errorEl.textContent = 'Usuario o contraseña incorrectos.';
+        errorEl.style.display = 'block';
+      } else {
+        errorEl.textContent = 'Error inesperado (' + (data.motivo || 'sin motivo') + ').';
         errorEl.style.display = 'block';
       }
     })
@@ -291,7 +298,6 @@ function vsConfirm() {
   if (!promo || !codViv) return;
   SESSION_PROMO = promo;
   SESSION_COD_VIV = codViv;
-  document.getElementById('vs-error').style.display = 'none';
   document.getElementById('vivienda-screen').classList.remove('visible');
   document.getElementById('app-wrapper').style.display = 'block';
   document.getElementById('tb-viv').textContent = codViv;
@@ -301,7 +307,6 @@ function vsConfirm() {
 
 function volverASelector() {
   document.getElementById('app-wrapper').style.display = 'none';
-  document.getElementById('vs-error').style.display = 'none';
   document.getElementById('vivienda-screen').classList.add('visible');
 }
 
@@ -379,30 +384,256 @@ function confirmarCancelacion() {
 }
 
 // ─── FORMULARIO RESERVA / CONTRATO ──────────────────────────────────
+// ─── NÚMERO A LETRAS (ES / EN) ───────────────────────────────────────
+// Cubre enteros hasta 999.999.999. Sin decimales/céntimos: las cantidades
+// de estos contratos son siempre cifras redondas en la práctica.
+const UNIDADES_ES = ['', 'UNO', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
+const ESPECIALES_ES = ['DIEZ','ONCE','DOCE','TRECE','CATORCE','QUINCE','DIECISÉIS','DIECISIETE','DIECIOCHO','DIECINUEVE'];
+const VEINTI_ES = ['VEINTE','VEINTIUNO','VEINTIDÓS','VEINTITRÉS','VEINTICUATRO','VEINTICINCO','VEINTISÉIS','VEINTISIETE','VEINTIOCHO','VEINTINUEVE'];
+const DECENAS_ES = ['','DIEZ','VEINTE','TREINTA','CUARENTA','CINCUENTA','SESENTA','SETENTA','OCHENTA','NOVENTA'];
+const CENTENAS_ES = ['','CIENTO','DOSCIENTOS','TRESCIENTOS','CUATROCIENTOS','QUINIENTOS','SEISCIENTOS','SETECIENTOS','OCHOCIENTOS','NOVECIENTOS'];
+
+function decenasALetrasES(n) {
+  if (n < 10) return UNIDADES_ES[n];
+  if (n < 20) return ESPECIALES_ES[n - 10];
+  if (n < 30) return VEINTI_ES[n - 20];
+  const d = Math.floor(n / 10), u = n % 10;
+  return u === 0 ? DECENAS_ES[d] : DECENAS_ES[d] + ' Y ' + UNIDADES_ES[u];
+}
+function centenasALetrasES(n) {
+  if (n === 0) return '';
+  if (n === 100) return 'CIEN';
+  const c = Math.floor(n / 100), r = n % 100;
+  return [c > 0 ? CENTENAS_ES[c] : '', r > 0 ? decenasALetrasES(r) : ''].filter(Boolean).join(' ');
+}
+function numeroALetrasES(n) {
+  n = Math.round(Number(n) || 0);
+  if (n === 0) return 'CERO';
+  if (n < 0) return 'MENOS ' + numeroALetrasES(-n);
+  if (n >= 1000000000) return String(n);
+  const millones = Math.floor(n / 1000000);
+  const miles = Math.floor((n % 1000000) / 1000);
+  const resto = n % 1000;
+  const partes = [];
+  if (millones > 0) partes.push(millones === 1 ? 'UN MILLÓN' : centenasALetrasES(millones) + ' MILLONES');
+  if (miles > 0) partes.push(miles === 1 ? 'MIL' : centenasALetrasES(miles) + ' MIL');
+  if (resto > 0) partes.push(centenasALetrasES(resto));
+  return partes.join(' ');
+}
+
+const ONES_EN = ['', 'ONE','TWO','THREE','FOUR','FIVE','SIX','SEVEN','EIGHT','NINE'];
+const TEENS_EN = ['TEN','ELEVEN','TWELVE','THIRTEEN','FOURTEEN','FIFTEEN','SIXTEEN','SEVENTEEN','EIGHTEEN','NINETEEN'];
+const TENS_EN = ['','TEN','TWENTY','THIRTY','FORTY','FIFTY','SIXTY','SEVENTY','EIGHTY','NINETY'];
+
+function twoDigitsEN(n) {
+  if (n < 10) return ONES_EN[n];
+  if (n < 20) return TEENS_EN[n - 10];
+  const d = Math.floor(n / 10), u = n % 10;
+  return u === 0 ? TENS_EN[d] : TENS_EN[d] + '-' + ONES_EN[u];
+}
+function threeDigitsEN(n) {
+  if (n === 0) return '';
+  const h = Math.floor(n / 100), r = n % 100;
+  let out = h > 0 ? ONES_EN[h] + ' HUNDRED' : '';
+  if (r > 0) out += (out ? ' ' : '') + twoDigitsEN(r);
+  return out;
+}
+function numberToWordsEN(n) {
+  n = Math.round(Number(n) || 0);
+  if (n === 0) return 'ZERO';
+  if (n < 0) return 'MINUS ' + numberToWordsEN(-n);
+  if (n >= 1000000000) return String(n);
+  const millions = Math.floor(n / 1000000);
+  const thousands = Math.floor((n % 1000000) / 1000);
+  const rest = n % 1000;
+  const partes = [];
+  if (millions > 0) partes.push(threeDigitsEN(millions) + ' MILLION');
+  if (thousands > 0) partes.push(threeDigitsEN(thousands) + ' THOUSAND');
+  if (rest > 0) partes.push(threeDigitsEN(rest));
+  return partes.join(' ');
+}
+
+// ─── FECHAS BILINGÜES (a partir de <input type="date">) ──────────────
+const MESES_ES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const MESES_EN = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function parseFechaInput(valor) {
+  if (!valor) return null;
+  const [y, m, d] = valor.split('-').map(Number);
+  if (!y || !m || !d) return null;
+  return { y, m, d };
+}
+function ordinalEN(d) {
+  if (d % 10 === 1 && d !== 11) return d + 'st';
+  if (d % 10 === 2 && d !== 12) return d + 'nd';
+  if (d % 10 === 3 && d !== 13) return d + 'rd';
+  return d + 'th';
+}
+function fechaALetrasES(f) { return f.d + ' de ' + MESES_ES[f.m - 1] + ' de ' + f.y; }
+function fechaALetrasEN(f) { return MESES_EN[f.m - 1] + ' ' + ordinalEN(f.d) + ', ' + f.y; }
+
+// ─── TRIMESTRE (mismo patrón que SB-fechas.html) ──────────────────────
+const TRIM_ES = ['primer','segundo','tercer','cuarto'];
+const TRIM_EN = ['first','second','third','fourth'];
+
+function trimestreALetras(q, y, idioma) {
+  if (!q || !y) return '';
+  const arr = idioma === 'en' ? TRIM_EN : TRIM_ES;
+  return idioma === 'en' ? (arr[q - 1] + ' quarter of ' + y) : (arr[q - 1] + ' trimestre de ' + y);
+}
+function rangoTrimestreALetras(q1, y1, q2, y2, idioma) {
+  const primero = trimestreALetras(q1, y1, idioma);
+  if (!primero) return '';
+  if (!q2 || !y2) return primero;
+  const segundo = trimestreALetras(q2, y2, idioma);
+  return primero + (idioma === 'en' ? ' and ' : ' y ') + segundo;
+}
+
+// ─── RECÁLCULOS EN VIVO DEL FORMULARIO ───────────────────────────────
+function recalcularPrecios() {
+  const precioViv = parseFloat(document.getElementById('f-precio_viv').value) || 0;
+  const precioExt = parseFloat(document.getElementById('f-precio_ext').value) || 0;
+  const iva = parseFloat(document.getElementById('f-iva').value) || 0;
+  const subtotal = precioViv + precioExt;
+  document.getElementById('f-subtotal').value = subtotal || '';
+  document.getElementById('f-total').value = (subtotal + iva) || '';
+}
+function actualizarLetrasReserva() {
+  const importe = parseFloat(document.getElementById('f-pago_reserv').value) || 0;
+  document.getElementById('f-pago_reserv_letra').value = numeroALetrasES(importe);
+  document.getElementById('f-pago_reserv_letra_en').value = numberToWordsEN(importe);
+}
+function actualizarFechaPago(n) {
+  const f = parseFechaInput(document.getElementById('f-fecha_pago_' + n + '_raw').value);
+  const prev = document.getElementById('prev-fecha_pago_' + n);
+  if (!f) { prev.textContent = '—'; return; }
+  prev.textContent = fechaALetrasES(f) + '  /  ' + fechaALetrasEN(f);
+}
+function actualizarPlazo() {
+  const q1 = parseInt(document.getElementById('f-plazo-q1').value, 10);
+  const y1 = parseInt(document.getElementById('f-plazo-y1').value, 10);
+  const q2 = parseInt(document.getElementById('f-plazo-q2').value, 10);
+  const y2 = parseInt(document.getElementById('f-plazo-y2').value, 10);
+  const es = rangoTrimestreALetras(q1, y1, q2, y2, 'es');
+  const en = rangoTrimestreALetras(q1, y1, q2, y2, 'en');
+  document.getElementById('prev-plazo').textContent = es ? (es + '  /  ' + en) : '—';
+}
+function actualizarAdelanto() {
+  const mes = parseInt(document.getElementById('f-adelanto-mes').value, 10);
+  const anio = parseInt(document.getElementById('f-adelanto-anio').value, 10);
+  const prev = document.getElementById('prev-adelanto');
+  if (!mes || !anio) { prev.textContent = '—'; return; }
+  prev.textContent = MESES_ES[mes - 1] + ' de ' + anio;
+}
+
+function opcionesTrimestre(idSel) {
+  return `<select class="form-input" id="${idSel}" onchange="${idSel.includes('plazo') ? 'actualizarPlazo()' : ''}">
+    <option value="">Trim.</option>
+    <option value="1">1º</option><option value="2">2º</option><option value="3">3º</option><option value="4">4º</option>
+  </select>`;
+}
 function mostrarFormulario(tipo) {
   const activa = ULTIMA_PRECARGA ? ULTIMA_PRECARGA.activa : null;
   const precargados = (tipo === 'contrato' && activa) ? activa : {};
+  const val = k => (precargados[k] !== undefined && precargados[k] !== null) ? precargados[k] : '';
+  const esP = k => val(k) !== '';
 
   let html = `<div class="sec-title">${tipo === 'reserva' ? 'Nueva reserva' : 'Generar compraventa'} — ${escapeHtml(SESSION_COD_VIV)}</div>`;
   html += `<div id="form-msg"></div>`;
-  html += `<div class="form-grid">`;
 
+  // ── Cliente(s): campos simples, genéricos ──
+  html += `<div class="form-grid">`;
   CAMPOS_FORM.forEach(campo => {
     if (campo.seccion) {
       html += `</div><div class="form-section-label">${campo.seccion}</div><div class="form-grid">`;
       return;
     }
     if (!campo.appliesTo.includes(tipo)) return;
-    const valorPrevio = precargados[campo.key];
-    const esPrecargado = valorPrevio !== undefined && valorPrevio !== null && valorPrevio !== '';
     html += `
       <div class="form-field ${campo.full ? 'full' : ''}">
         <label class="form-label">${campo.label}</label>
-        <input type="text" class="form-input ${esPrecargado ? 'precargado' : ''}" id="f-${campo.key}" value="${escapeHtml(esPrecargado ? valorPrevio : '')}">
+        <input type="text" class="form-input ${esP(campo.key) ? 'precargado' : ''}" id="f-${campo.key}" value="${escapeHtml(val(campo.key))}">
       </div>`;
   });
-
   html += `</div>`;
+
+  // ── Precio: subtotal y total se calculan solos ──
+  html += `<div class="form-section-label">Precio</div><div class="form-grid">
+    <div class="form-field"><label class="form-label">Precio vivienda (€)</label><input type="number" class="form-input ${esP('precio_viv') ? 'precargado' : ''}" id="f-precio_viv" value="${escapeHtml(val('precio_viv'))}" oninput="recalcularPrecios()"></div>
+    <div class="form-field"><label class="form-label">Importe extras y modificaciones (€)</label><input type="number" class="form-input ${esP('precio_ext') ? 'precargado' : ''}" id="f-precio_ext" value="${escapeHtml(val('precio_ext'))}" oninput="recalcularPrecios()"></div>
+    <div class="form-field"><label class="form-label">Subtotal (€) — calculado</label><input type="text" class="form-input precargado" id="f-subtotal" value="${escapeHtml(val('subtotal'))}" readonly></div>
+    <div class="form-field"><label class="form-label">IVA (€)</label><input type="number" class="form-input ${esP('iva') ? 'precargado' : ''}" id="f-iva" value="${escapeHtml(val('iva'))}" oninput="recalcularPrecios()"></div>
+    <div class="form-field"><label class="form-label">Total compraventa (€) — calculado</label><input type="text" class="form-input precargado" id="f-total" value="${escapeHtml(val('total'))}" readonly></div>
+  </div>`;
+
+  // ── Forma de pago ──
+  html += `<div class="form-section-label">Forma de pago</div><div class="form-grid">
+    <div class="form-field"><label class="form-label">Pago a la firma de la reserva (€)</label><input type="number" class="form-input ${esP('pago_reserv') ? 'precargado' : ''}" id="f-pago_reserv" value="${escapeHtml(val('pago_reserv'))}" oninput="actualizarLetrasReserva()"></div>`;
+  if (tipo === 'reserva') {
+    html += `
+    <div class="form-field"><label class="form-label">Importe en letras (ES) — generado, editable</label><input type="text" class="form-input" id="f-pago_reserv_letra" value=""></div>
+    <div class="form-field"><label class="form-label">Importe en letras (EN) — generado, editable</label><input type="text" class="form-input" id="f-pago_reserv_letra_en" value=""></div>`;
+  }
+  [1, 2, 3].forEach(n => {
+    html += `
+    <div class="form-field"><label class="form-label">Fecha pago ${n}</label><input type="date" class="form-input" id="f-fecha_pago_${n}_raw" onchange="actualizarFechaPago(${n})"></div>
+    <div class="form-field"><label class="form-label">Importe pago ${n} (€)</label><input type="number" class="form-input ${esP('pago_' + n) ? 'precargado' : ''}" id="f-pago_${n}" value="${escapeHtml(val('pago_' + n))}"></div>
+    <div class="form-field full"><label class="form-label">Texto generado — pago ${n} (ES / EN)</label><div class="form-input precargado" id="prev-fecha_pago_${n}" style="min-height:20px;">—</div></div>`;
+  });
+  html += `</div>`;
+
+  // ── Plazos: selector de trimestre, igual patrón que SB-fechas.html ──
+  html += `<div class="form-section-label">Plazos</div><div class="form-grid">
+    <div class="form-field">
+      <label class="form-label">Plazo de entrega — desde</label>
+      <div style="display:flex; gap:8px;">
+        ${opcionesTrimestre('f-plazo-q1')}
+        <input type="number" class="form-input" id="f-plazo-y1" placeholder="Año" style="width:100px;" oninput="actualizarPlazo()">
+      </div>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Plazo de entrega — hasta (opcional, para rango)</label>
+      <div style="display:flex; gap:8px;">
+        ${opcionesTrimestre('f-plazo-q2')}
+        <input type="number" class="form-input" id="f-plazo-y2" placeholder="Año" style="width:100px;" oninput="actualizarPlazo()">
+      </div>
+    </div>
+    <div class="form-field full"><label class="form-label">Texto generado (ES / EN) — si lo dejas vacío, se mantiene lo que ya hubiera</label><div class="form-input precargado" id="prev-plazo" style="min-height:20px;">${escapeHtml(val('plazo')) ? escapeHtml(val('plazo')) + '  /  ' + escapeHtml(val('plazo_en')) : '—'}</div></div>`;
+  if (tipo === 'reserva') {
+    html += `
+    <div class="form-field">
+      <label class="form-label">Mes límite para adelantar firma</label>
+      <div style="display:flex; gap:8px;">
+        <select class="form-input" id="f-adelanto-mes" onchange="actualizarAdelanto()">
+          <option value="">Mes…</option>
+          <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+          <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+          <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+        </select>
+        <input type="number" class="form-input" id="f-adelanto-anio" placeholder="Año" style="width:100px;" oninput="actualizarAdelanto()">
+      </div>
+    </div>
+    <div class="form-field"><label class="form-label">Texto generado</label><div class="form-input precargado" id="prev-adelanto" style="min-height:20px;">—</div></div>`;
+  }
+  html += `</div>`;
+
+  // ── Promoción: vendedor / banco / catálogo de la vivienda. Se muestran
+  // aquí también, en azul, para el caso excepcional de una vivienda con un
+  // dato distinto al general — no reescribe la pestaña Promoción, solo
+  // afecta a este contrato. ──
+  const promo = (ULTIMA_PRECARGA && ULTIMA_PRECARGA.promocion) || {};
+  const camposPromo = tipo === 'reserva' ? CAMPOS_PROMO_RESERVA : CAMPOS_PROMO_CONTRATO;
+  html += `<div class="form-section-label">Datos de la promoción</div>
+    <div class="catalogo-note">Vienen del catálogo general de la vivienda. Si cambias algo aquí, se sustituye en el sitio en la fila de esta vivienda en la pestaña Promoción (no se crea fila nueva ni se toca ninguna otra vivienda) — úsalo solo si de verdad esta vivienda es una excepción.</div>
+    <div class="form-grid">`;
+  camposPromo.forEach(key => {
+    const valor = promo[key] !== undefined && promo[key] !== null ? promo[key] : '';
+    html += `
+    <div class="form-field"><label class="form-label">${LABELS_PROMO[key] || key}</label><input type="text" class="form-input catalogo" id="fp-${key}" value="${escapeHtml(valor)}"></div>`;
+  });
+  html += `</div>`;
+
   html += `
     <div class="estado-actions">
       <button class="btn btn-primary" id="btn-generar" onclick="enviarFormulario('${tipo}')">Generar PDF</button>
@@ -414,10 +645,55 @@ function mostrarFormulario(tipo) {
 
 function enviarFormulario(tipo) {
   const campos = {};
+
+  // campos simples (Cliente(s))
   CAMPOS_FORM.forEach(c => {
     if (c.seccion || !c.appliesTo.includes(tipo)) return;
     const el = document.getElementById('f-' + c.key);
     if (el) campos[c.key] = el.value.trim();
+  });
+
+  // precio (subtotal/total ya calculados en los inputs readonly)
+  ['precio_viv','precio_ext','subtotal','iva','total','pago_reserv'].forEach(k => {
+    const el = document.getElementById('f-' + k);
+    if (el) campos[k] = el.value.trim();
+  });
+  if (tipo === 'reserva') {
+    campos.pago_reserv_letra = document.getElementById('f-pago_reserv_letra').value.trim();
+    campos.pago_reserv_letra_en = document.getElementById('f-pago_reserv_letra_en').value.trim();
+    const mesAdel = parseInt(document.getElementById('f-adelanto-mes').value, 10);
+    const anioAdel = parseInt(document.getElementById('f-adelanto-anio').value, 10);
+    if (mesAdel && anioAdel) campos.adelanto_contrato = MESES_ES[mesAdel - 1] + ' de ' + anioAdel;
+  }
+
+  // fechas de pago (del selector de calendario, ya convertidas a texto ES/EN)
+  [1, 2, 3].forEach(n => {
+    const f = parseFechaInput(document.getElementById('f-fecha_pago_' + n + '_raw').value);
+    if (f) {
+      campos['fecha_pago_' + n] = fechaALetrasES(f);
+      campos['fecha_pago_' + n + '_en'] = fechaALetrasEN(f);
+    }
+    const elPago = document.getElementById('f-pago_' + n);
+    if (elPago) campos['pago_' + n] = elPago.value.trim();
+  });
+
+  // plazo (trimestre) — si no se tocó el selector, no se manda nada y el
+  // backend mantiene lo que ya viniera precargado de la reserva
+  const q1 = parseInt(document.getElementById('f-plazo-q1').value, 10);
+  const y1 = parseInt(document.getElementById('f-plazo-y1').value, 10);
+  if (q1 && y1) {
+    const q2 = parseInt(document.getElementById('f-plazo-q2').value, 10);
+    const y2 = parseInt(document.getElementById('f-plazo-y2').value, 10);
+    campos.plazo = rangoTrimestreALetras(q1, y1, q2, y2, 'es');
+    campos.plazo_en = rangoTrimestreALetras(q1, y1, q2, y2, 'en');
+  }
+
+  // datos de "Promoción" — si se editan aquí, solo afecta a este PDF, no
+  // reescribe la pestaña Promoción del Sheet.
+  const camposPromo = tipo === 'reserva' ? CAMPOS_PROMO_RESERVA : CAMPOS_PROMO_CONTRATO;
+  camposPromo.forEach(key => {
+    const el = document.getElementById('fp-' + key);
+    if (el) campos[key] = el.value.trim();
   });
 
   const btn = document.getElementById('btn-generar');
@@ -441,7 +717,6 @@ function enviarFormulario(tipo) {
       }
       document.getElementById('form-msg').innerHTML =
         `<div class="msg success">Generado correctamente. <a href="${data.pdf_url}" target="_blank">Abrir PDF</a></div>`;
-      // recarga el estado tras un momento para que se vea el mensaje
       setTimeout(cargarEstado, 1200);
     })
     .catch(() => {
