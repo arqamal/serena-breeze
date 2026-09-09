@@ -343,18 +343,20 @@ function renderEstado(data) {
   if (!activa) {
     badgeClase = 'libre'; badgeTexto = 'Vivienda libre';
     lineas = 'No hay ninguna reserva ni contrato activo para esta vivienda.';
-    acciones = `<button class="btn btn-primary" onclick="mostrarFormulario('reserva')">Generar reserva</button>`;
+    acciones = `<button class="btn btn-primary" onclick="mostrarFormulario('reserva','nuevo')">Generar reserva</button>`;
   } else if (activa.tipo === 'reserva') {
     badgeClase = 'reserva'; badgeTexto = 'Reserva activa';
     lineas = `<b>${escapeHtml(activa.cliente1 || '—')}</b>${activa.cliente2 ? ' y <b>' + escapeHtml(activa.cliente2) + '</b>' : ''} · reservada el ${fmtFecha(activa.timestamp)}`;
     acciones = `
-      <button class="btn btn-primary" onclick="mostrarFormulario('contrato')">Generar compraventa</button>
+      <button class="btn btn-primary" onclick="mostrarFormulario('contrato','nuevo')">Generar compraventa</button>
+      <button class="btn btn-secondary" onclick="mostrarFormulario('reserva','editar')">Editar reserva</button>
       ${activa.pdf_url ? `<a class="btn btn-link" href="${activa.pdf_url}" target="_blank">Ver PDF de reserva</a>` : ''}
       <button class="btn btn-danger" onclick="confirmarCancelacion()">Cancelar reserva</button>`;
   } else { // contrato
     badgeClase = 'contrato'; badgeTexto = 'Contrato de compraventa activo';
     lineas = `<b>${escapeHtml(activa.cliente1 || '—')}</b>${activa.cliente2 ? ' y <b>' + escapeHtml(activa.cliente2) + '</b>' : ''} · compraventa generada el ${fmtFecha(activa.timestamp)}`;
     acciones = `
+      <button class="btn btn-secondary" onclick="mostrarFormulario('contrato','editar')">Editar contrato</button>
       ${activa.pdf_url ? `<a class="btn btn-link" href="${activa.pdf_url}" target="_blank">Ver PDF de compraventa</a>` : ''}
       <button class="btn btn-danger" onclick="confirmarCancelacion()">Cancelar contrato</button>`;
   }
@@ -369,7 +371,12 @@ function renderEstado(data) {
 }
 
 function confirmarCancelacion() {
-  if (!confirm('¿Seguro que quieres cancelar? Esta acción se registra en el Sheet y no se puede deshacer desde aquí.')) return;
+  const activa = ULTIMA_PRECARGA ? ULTIMA_PRECARGA.activa : null;
+  const esContrato = activa && activa.tipo === 'contrato';
+  const aviso = esContrato
+    ? '¿Seguro que quieres cancelar el contrato de compraventa? Esto también cancelará la reserva que le dio origen. Se registra en el Sheet y no se puede deshacer desde aquí.'
+    : '¿Seguro que quieres cancelar la reserva? Esta acción se registra en el Sheet y no se puede deshacer desde aquí.';
+  if (!confirm(aviso)) return;
   document.getElementById('load-indicator').style.display = 'block';
   llamarBackend({ accion: 'cancelar', promocion: SESSION_PROMO, cod_viv: SESSION_COD_VIV })
     .then(data => {
@@ -532,13 +539,21 @@ function opcionesTrimestre(idSel) {
     <option value="1">1º</option><option value="2">2º</option><option value="3">3º</option><option value="4">4º</option>
   </select>`;
 }
-function mostrarFormulario(tipo) {
+function mostrarFormulario(tipo, modo) {
+  modo = modo || 'nuevo';
   const activa = ULTIMA_PRECARGA ? ULTIMA_PRECARGA.activa : null;
-  const precargados = (tipo === 'contrato' && activa) ? activa : {};
+  // modo 'editar': se precarga con los valores ACTUALES de la fila activa
+  // (sea reserva o contrato). modo 'nuevo' + tipo 'contrato': se precarga
+  // desde la reserva activa (comportamiento de siempre). modo 'nuevo' +
+  // tipo 'reserva': en blanco.
+  const precargados = (modo === 'editar' && activa) ? activa : ((tipo === 'contrato' && activa) ? activa : {});
   const val = k => (precargados[k] !== undefined && precargados[k] !== null) ? precargados[k] : '';
   const esP = k => val(k) !== '';
 
-  let html = `<div class="sec-title">${tipo === 'reserva' ? 'Nueva reserva' : 'Generar compraventa'} — ${escapeHtml(SESSION_COD_VIV)}</div>`;
+  const titulo = modo === 'editar'
+    ? (tipo === 'reserva' ? 'Editar reserva' : 'Editar contrato')
+    : (tipo === 'reserva' ? 'Nueva reserva' : 'Generar compraventa');
+  let html = `<div class="sec-title">${titulo} — ${escapeHtml(SESSION_COD_VIV)}</div>`;
   html += `<div id="form-msg"></div>`;
 
   // ── Cliente(s): campos simples, genéricos ──
@@ -571,8 +586,8 @@ function mostrarFormulario(tipo) {
     <div class="form-field"><label class="form-label">Pago a la firma de la reserva (€)</label><input type="number" class="form-input ${esP('pago_reserv') ? 'precargado' : ''}" id="f-pago_reserv" value="${escapeHtml(val('pago_reserv'))}" oninput="actualizarLetrasReserva()"></div>`;
   if (tipo === 'reserva') {
     html += `
-    <div class="form-field"><label class="form-label">Importe en letras (ES) — generado, editable</label><input type="text" class="form-input" id="f-pago_reserv_letra" value=""></div>
-    <div class="form-field"><label class="form-label">Importe en letras (EN) — generado, editable</label><input type="text" class="form-input" id="f-pago_reserv_letra_en" value=""></div>`;
+    <div class="form-field"><label class="form-label">Importe en letras (ES) — generado, editable</label><input type="text" class="form-input ${esP('pago_reserv_letra') ? 'precargado' : ''}" id="f-pago_reserv_letra" value="${escapeHtml(val('pago_reserv_letra'))}"></div>
+    <div class="form-field"><label class="form-label">Importe en letras (EN) — generado, editable</label><input type="text" class="form-input ${esP('pago_reserv_letra_en') ? 'precargado' : ''}" id="f-pago_reserv_letra_en" value="${escapeHtml(val('pago_reserv_letra_en'))}"></div>`;
   }
   [1, 2, 3].forEach(n => {
     html += `
@@ -614,7 +629,7 @@ function mostrarFormulario(tipo) {
         <input type="number" class="form-input" id="f-adelanto-anio" placeholder="Año" style="width:100px;" oninput="actualizarAdelanto()">
       </div>
     </div>
-    <div class="form-field"><label class="form-label">Texto generado</label><div class="form-input precargado" id="prev-adelanto" style="min-height:20px;">—</div></div>`;
+    <div class="form-field"><label class="form-label">Texto generado — si lo dejas vacío, se mantiene lo que ya hubiera</label><div class="form-input precargado" id="prev-adelanto" style="min-height:20px;">${escapeHtml(val('adelanto_contrato')) || '—'}</div></div>`;
   }
   html += `</div>`;
 
@@ -636,14 +651,15 @@ function mostrarFormulario(tipo) {
 
   html += `
     <div class="estado-actions">
-      <button class="btn btn-primary" id="btn-generar" onclick="enviarFormulario('${tipo}')">Generar PDF</button>
+      <button class="btn btn-primary" id="btn-generar" onclick="enviarFormulario('${tipo}','${modo}')">${modo === 'editar' ? 'Guardar cambios y regenerar PDF' : 'Generar PDF'}</button>
       <button class="btn btn-secondary" onclick="renderEstado(ULTIMA_PRECARGA)">Cancelar</button>
     </div>`;
 
   document.getElementById('contenido').innerHTML = html;
 }
 
-function enviarFormulario(tipo) {
+function enviarFormulario(tipo, modo) {
+  modo = modo || 'nuevo';
   const campos = {};
 
   // campos simples (Cliente(s))
@@ -698,11 +714,12 @@ function enviarFormulario(tipo) {
 
   const btn = document.getElementById('btn-generar');
   btn.disabled = true;
-  btn.textContent = 'Generando…';
+  const textoOriginal = btn.textContent;
+  btn.textContent = modo === 'editar' ? 'Guardando…' : 'Generando…';
   document.getElementById('form-msg').innerHTML = '';
 
   llamarBackend({
-    accion: tipo === 'reserva' ? 'generar_reserva' : 'generar_contrato',
+    accion: modo === 'editar' ? 'editar' : (tipo === 'reserva' ? 'generar_reserva' : 'generar_contrato'),
     promocion: SESSION_PROMO,
     cod_viv: SESSION_COD_VIV,
     usuario: SESSION_USUARIO,
@@ -710,7 +727,7 @@ function enviarFormulario(tipo) {
   })
     .then(data => {
       btn.disabled = false;
-      btn.textContent = 'Generar PDF';
+      btn.textContent = textoOriginal;
       if (!data.ok) {
         document.getElementById('form-msg').innerHTML = `<div class="msg error">${escapeHtml(data.error || 'No se pudo generar el contrato.')}</div>`;
         return;
@@ -721,7 +738,7 @@ function enviarFormulario(tipo) {
     })
     .catch(() => {
       btn.disabled = false;
-      btn.textContent = 'Generar PDF';
+      btn.textContent = textoOriginal;
       document.getElementById('form-msg').innerHTML = `<div class="msg error">No se pudo conectar con el servidor. Inténtalo de nuevo.</div>`;
     });
 }
