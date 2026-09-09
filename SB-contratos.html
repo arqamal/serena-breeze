@@ -38,13 +38,15 @@
   .login-btn:disabled { opacity: .55; cursor: default; }
   .login-error { font-family: 'Roboto', sans-serif; font-size: 12px; color: #c0392b; margin-top: 14px; text-align: center; display: none; }
 
-  /* ── SELECTOR VIVIENDA ── */
-  #vivienda-screen {
+  /* ── SELECTOR PROMOCIÓN Y LISTADO DE VIVIENDAS ── */
+  #promo-screen {
     position: fixed; inset: 0; background: var(--white);
     display: none; align-items: center; justify-content: center;
     z-index: 9998;
   }
-  #vivienda-screen.visible { display: flex; }
+  #promo-screen.visible { display: flex; }
+  #listado-screen { display: none; }
+  #listado-screen.visible { display: block; }
   .vsearch-box { width: 100%; max-width: 420px; padding: 48px 40px; border: 1px solid var(--border); }
   .vsearch-logo { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 3px; text-transform: uppercase; color: var(--black); margin-bottom: 6px; }
   .vsearch-sub { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); margin-bottom: 40px; }
@@ -112,6 +114,18 @@
   .msg.info { background: var(--off-white); color: var(--slate-gray); border-left: 3px solid var(--border); display: block; }
 
   .loading { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--slate-gray); padding: 40px 0; text-align: center; }
+
+  /* ── TABLA DE LISTADO (mismo patrón que SB-fechas.html) ── */
+  .viviendas-table-wrap { overflow-x: auto; border: 1px solid var(--border); margin: 0 32px 40px; }
+  table.data-table { width: 100%; border-collapse: collapse; min-width: 640px; }
+  table.data-table th { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--off-white); font-weight: 400; }
+  table.data-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.data-table tr:last-child td { border-bottom: none; }
+  table.data-table td.vcode { font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: .5px; color: var(--black); white-space: nowrap; }
+  table.data-table td.vcliente { font-family: 'Roboto', sans-serif; font-size: 12.5px; color: var(--text); }
+  table.data-table .fila-acciones { display: flex; gap: 6px; flex-wrap: nowrap; }
+  table.data-table .fila-acciones .btn { padding: 7px 10px; font-size: 10px; letter-spacing: 1px; flex-shrink: 0; white-space: nowrap; }
+  .estado-badge.chip { font-size: 9px; padding: 2px 7px; }
 </style>
 </head>
 <body>
@@ -133,26 +147,34 @@
   </div>
 </div>
 
-<div id="vivienda-screen">
+<div id="promo-screen">
   <div class="vsearch-box">
     <div class="vsearch-logo">Serena Breeze</div>
-    <div class="vsearch-sub">Generador de contratos · Seleccione vivienda</div>
+    <div class="vsearch-sub">Generador de contratos · Seleccione promoción</div>
     <div class="vsearch-field">
       <label class="vsearch-label">Promoción</label>
-      <select class="vsearch-select" id="vs-promo" onchange="vsUpdateViviendas()">
+      <select class="vsearch-select" id="ps-promo">
         <option value="">Seleccione promoción…</option>
         <option value="2SB">Serena Breeze 2</option>
         <option value="3SB">Serena Breeze 3</option>
       </select>
     </div>
-    <div class="vsearch-field">
-      <label class="vsearch-label">Vivienda</label>
-      <select class="vsearch-select" id="vs-viv" disabled>
-        <option value="">Seleccione primero la promoción…</option>
-      </select>
-    </div>
-    <button class="vsearch-btn" id="vs-btn" onclick="vsConfirm()" disabled>Continuar →</button>
+    <button class="vsearch-btn" id="ps-btn" onclick="psConfirm()" disabled>Continuar →</button>
   </div>
+</div>
+
+<div id="listado-screen">
+  <div class="top-bar">
+    <div>
+      <div class="top-bar-viv" id="ls-promo-nombre">—</div>
+      <div class="top-bar-sub">Estado de todas las viviendas</div>
+    </div>
+    <button class="top-bar-change" onclick="volverAPromo()">Cambiar promoción</button>
+  </div>
+  <main>
+    <div id="listado-load" class="loading" style="display:none;">Cargando…</div>
+    <div id="listado-contenido"></div>
+  </main>
 </div>
 
 <div id="app-wrapper">
@@ -161,7 +183,7 @@
       <div class="top-bar-viv" id="tb-viv">—</div>
       <div class="top-bar-sub" id="tb-sub">—</div>
     </div>
-    <button class="top-bar-change" onclick="volverASelector()">Cambiar vivienda</button>
+    <button class="top-bar-change" onclick="volverAListado()">← Volver al listado</button>
   </div>
 
   <main>
@@ -233,6 +255,8 @@ let SESSION_PROMO = null;
 let SESSION_COD_VIV = null;
 let SESSION_USUARIO = null;
 let ULTIMA_PRECARGA = null; // respuesta cruda de 'precargar'
+let LISTADO_DATA = [];      // respuesta cruda de 'listar_estado'
+let PENDIENTE_ACCION = null; // {tipo, modo} — acción a abrir en cuanto cargue precargar
 
 // ─── LOGIN ───────────────────────────────────────────────────────────
 function doLogin() {
@@ -254,7 +278,7 @@ function doLogin() {
       if (data.ok) {
         SESSION_USUARIO = u;
         document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('vivienda-screen').classList.add('visible');
+        document.getElementById('promo-screen').classList.add('visible');
       } else if (data.motivo === 'sin_acceso') {
         errorEl.textContent = 'Tu usuario no tiene acceso a esta herramienta.';
         errorEl.style.display = 'block';
@@ -276,40 +300,122 @@ function doLogin() {
     .finally(() => { btn.disabled = false; btn.textContent = original; });
 }
 
-// ─── SELECTOR DE VIVIENDA ────────────────────────────────────────────
-function vsUpdateViviendas() {
-  const promo = document.getElementById('vs-promo').value;
-  const sel = document.getElementById('vs-viv');
-  sel.innerHTML = '';
-  if (!promo) {
-    sel.disabled = true;
-    sel.innerHTML = '<option value="">Seleccione primero la promoción…</option>';
-    document.getElementById('vs-btn').disabled = true;
-    return;
+// ─── SELECTOR DE PROMOCIÓN ───────────────────────────────────────────
+document.addEventListener('change', e => {
+  if (e.target && e.target.id === 'ps-promo') {
+    document.getElementById('ps-btn').disabled = !e.target.value;
   }
-  sel.disabled = false;
-  sel.innerHTML = '<option value="">Seleccione vivienda…</option>' +
-    UNIDADES[promo].codigos.map(c => `<option value="${c}">${c}</option>`).join('');
-  document.getElementById('vs-btn').disabled = true;
-  sel.onchange = () => { document.getElementById('vs-btn').disabled = !sel.value; };
+});
+function psConfirm() {
+  const promo = document.getElementById('ps-promo').value;
+  if (!promo) return;
+  SESSION_PROMO = promo;
+  document.getElementById('promo-screen').classList.remove('visible');
+  document.getElementById('ls-promo-nombre').textContent = UNIDADES[promo].nombre;
+  document.getElementById('listado-screen').classList.add('visible');
+  cargarListado();
+}
+function volverAPromo() {
+  document.getElementById('listado-screen').classList.remove('visible');
+  document.getElementById('promo-screen').classList.add('visible');
 }
 
-function vsConfirm() {
-  const promo = document.getElementById('vs-promo').value;
-  const codViv = document.getElementById('vs-viv').value;
-  if (!promo || !codViv) return;
-  SESSION_PROMO = promo;
+// ─── LISTADO DE VIVIENDAS (accion: listar_estado) ───────────────────
+function cargarListado() {
+  document.getElementById('listado-contenido').innerHTML = '';
+  document.getElementById('listado-load').style.display = 'block';
+  llamarBackend({ accion: 'listar_estado', promocion: SESSION_PROMO })
+    .then(data => {
+      document.getElementById('listado-load').style.display = 'none';
+      if (!data.ok) {
+        document.getElementById('listado-contenido').innerHTML = `<div class="msg error" style="margin:0 32px;">${escapeHtml(data.error || 'No se pudo cargar el listado.')}</div>`;
+        return;
+      }
+      LISTADO_DATA = data.viviendas;
+      renderListado(LISTADO_DATA);
+    })
+    .catch(() => {
+      document.getElementById('listado-load').style.display = 'none';
+      document.getElementById('listado-contenido').innerHTML = `<div class="msg error" style="margin:0 32px;">No se pudo conectar con el servidor. Inténtalo de nuevo.</div>`;
+    });
+}
+
+function accionesFila(v) {
+  if (!v.tipo) {
+    return `<button class="btn btn-primary" onclick="entrarYAbrir('${v.cod_viv}','reserva','nuevo')">Reservar</button>`;
+  }
+  if (v.tipo === 'reserva') {
+    return `
+      <button class="btn btn-primary" onclick="entrarYAbrir('${v.cod_viv}','contrato','nuevo')">Compraventa</button>
+      <button class="btn btn-secondary" onclick="entrarYAbrir('${v.cod_viv}','reserva','editar')">Editar</button>
+      ${v.pdf_url ? `<a class="btn btn-link" href="${v.pdf_url}" target="_blank">PDF</a>` : ''}
+      <button class="btn btn-danger" onclick="cancelarDesdeListado('${v.cod_viv}')">Cancelar</button>`;
+  }
+  // contrato
+  return `
+    <button class="btn btn-secondary" onclick="entrarYAbrir('${v.cod_viv}','contrato','editar')">Editar</button>
+    ${v.pdf_url ? `<a class="btn btn-link" href="${v.pdf_url}" target="_blank">PDF</a>` : ''}
+    <button class="btn btn-danger" onclick="cancelarDesdeListado('${v.cod_viv}')">Cancelar</button>`;
+}
+
+function renderListado(viviendas) {
+  const badge = v => {
+    if (!v.tipo) return `<span class="estado-badge libre chip">Libre</span>`;
+    if (v.tipo === 'reserva') return `<span class="estado-badge reserva chip">Reserva</span>`;
+    return `<span class="estado-badge contrato chip">Compraventa</span>`;
+  };
+  const cliente = v => v.cliente1 ? escapeHtml(v.cliente1) + (v.cliente2 ? ' y ' + escapeHtml(v.cliente2) : '') : '—';
+
+  const filas = viviendas.map(v => `
+    <tr>
+      <td class="vcode">${escapeHtml(v.cod_viv)}</td>
+      <td>${escapeHtml(v.vivienda || '—')}</td>
+      <td>${badge(v)}</td>
+      <td class="vcliente">${cliente(v)}</td>
+      <td><div class="fila-acciones">${accionesFila(v)}</div></td>
+    </tr>`).join('');
+
+  document.getElementById('listado-contenido').innerHTML = `
+    <div class="viviendas-table-wrap">
+      <table class="data-table">
+        <thead><tr><th>Código</th><th>Vivienda</th><th>Estado</th><th>Cliente</th><th>Acciones</th></tr></thead>
+        <tbody>${filas}</tbody>
+      </table>
+    </div>`;
+}
+
+function cancelarDesdeListado(codViv) {
+  const fila = (LISTADO_DATA || []).find(v => v.cod_viv === codViv);
+  const esContrato = fila && fila.tipo === 'contrato';
+  const aviso = esContrato
+    ? '¿Seguro que quieres cancelar el contrato de compraventa de ' + codViv + '? Esto también cancelará la reserva que le dio origen. No se puede deshacer desde aquí.'
+    : '¿Seguro que quieres cancelar la reserva de ' + codViv + '? No se puede deshacer desde aquí.';
+  if (!confirm(aviso)) return;
+  llamarBackend({ accion: 'cancelar', promocion: SESSION_PROMO, cod_viv: codViv })
+    .then(data => {
+      if (!data.ok) { alert(data.error || 'No se pudo cancelar.'); return; }
+      cargarListado();
+    })
+    .catch(() => alert('No se pudo conectar con el servidor. Inténtalo de nuevo.'));
+}
+
+// ─── ENTRAR EN UNA VIVIENDA CONCRETA ─────────────────────────────────
+function entrarEnVivienda(codViv) {
   SESSION_COD_VIV = codViv;
-  document.getElementById('vivienda-screen').classList.remove('visible');
+  document.getElementById('listado-screen').classList.remove('visible');
   document.getElementById('app-wrapper').style.display = 'block';
   document.getElementById('tb-viv').textContent = codViv;
-  document.getElementById('tb-sub').textContent = UNIDADES[promo].nombre;
+  document.getElementById('tb-sub').textContent = UNIDADES[SESSION_PROMO].nombre;
   cargarEstado();
 }
-
-function volverASelector() {
+function entrarYAbrir(codViv, tipo, modo) {
+  PENDIENTE_ACCION = { tipo, modo };
+  entrarEnVivienda(codViv);
+}
+function volverAListado() {
   document.getElementById('app-wrapper').style.display = 'none';
-  document.getElementById('vivienda-screen').classList.add('visible');
+  document.getElementById('listado-screen').classList.add('visible');
+  cargarListado(); // refresca por si hubo cambios (generar/editar/cancelar)
 }
 
 // ─── CARGA DE ESTADO (accion: precargar) ────────────────────────────
@@ -325,7 +431,13 @@ function cargarEstado() {
         return;
       }
       ULTIMA_PRECARGA = data;
-      renderEstado(data);
+      if (PENDIENTE_ACCION) {
+        const acc = PENDIENTE_ACCION;
+        PENDIENTE_ACCION = null;
+        mostrarFormulario(acc.tipo, acc.modo);
+      } else {
+        renderEstado(data);
+      }
     })
     .catch(() => {
       document.getElementById('load-indicator').style.display = 'none';
