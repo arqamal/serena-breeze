@@ -589,8 +589,8 @@ function mostrarFormulario(tipo, modo) {
 
   // ── Precio: subtotal y total se calculan solos ──
   html += `<div class="form-section-label">Precio</div><div class="form-grid una-col">
-    <div class="form-field"><label class="form-label">Precio vivienda (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('precio_viv') ? 'precargado' : ''}" id="f-precio_viv" value="${escapeHtml(val('precio_viv') ? formatearMiles(parsearMiles(val('precio_viv'))) : '')}" oninput="recalcularPrecios()" onblur="formatearCampo(this)"></div>
-    <div class="form-field"><label class="form-label">Importe extras y modificaciones (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('precio_ext') ? 'precargado' : ''}" id="f-precio_ext" value="${escapeHtml(val('precio_ext') ? formatearMiles(parsearMiles(val('precio_ext'))) : '')}" oninput="recalcularPrecios()" onblur="formatearCampo(this)"></div>
+    <div class="form-field"><label class="form-label">Precio vivienda (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('precio_viv') ? 'precargado' : ''}" id="f-precio_viv" value="${escapeHtml(val('precio_viv') ? formatearMiles(parsearMiles(val('precio_viv'))) : '')}" oninput="recalcularPrecios()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>
+    <div class="form-field"><label class="form-label">Importe extras y modificaciones (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('precio_ext') ? 'precargado' : ''}" id="f-precio_ext" value="${escapeHtml(val('precio_ext') ? formatearMiles(parsearMiles(val('precio_ext'))) : '')}" oninput="recalcularPrecios()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>
     <div class="form-field"><label class="form-label">Subtotal (€) — calculado</label><input type="text" class="form-input precargado" id="f-subtotal" value="${escapeHtml(val('subtotal') ? formatearMiles(parsearMiles(val('subtotal'))) : '')}" readonly></div>
     <div class="form-field"><label class="form-label">IVA (%)</label><input type="number" step="0.01" class="form-input ${esP('iva') ? 'precargado' : ''}" id="f-iva" value="${escapeHtml(String(val('iva')).replace('%',''))}" oninput="recalcularPrecios()"></div>
     <div class="form-field"><label class="form-label">Total compraventa (€) — calculado</label><input type="text" class="form-input precargado" id="f-total" value="${escapeHtml(val('total') ? formatearMiles(parsearMiles(val('total'))) : '')}" readonly></div>
@@ -598,7 +598,7 @@ function mostrarFormulario(tipo, modo) {
 
   // ── Forma de pago ──
   html += `<div class="form-section-label">Forma de pago</div><div class="form-grid una-col">
-    <div class="form-field"><label class="form-label">Pago a la firma de la reserva (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('pago_reserv') ? 'precargado' : ''}" id="f-pago_reserv" value="${escapeHtml(val('pago_reserv') ? formatearMiles(parsearMiles(val('pago_reserv'))) : '')}" oninput="actualizarLetrasReserva()" onblur="formatearCampo(this)"></div>`;
+    <div class="form-field"><label class="form-label">Pago a la firma de la reserva (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('pago_reserv') ? 'precargado' : ''}" id="f-pago_reserv" value="${escapeHtml(val('pago_reserv') ? formatearMiles(parsearMiles(val('pago_reserv'))) : '')}" oninput="actualizarLetrasReserva()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>`;
   if (tipo === 'reserva') {
     html += `
     <div class="form-field"><label class="form-label">Importe en letras (ES) — generado, editable</label><input type="text" class="form-input ${esP('pago_reserv_letra') ? 'precargado' : ''}" id="f-pago_reserv_letra" value="${escapeHtml(val('pago_reserv_letra'))}"></div>
@@ -607,8 +607,8 @@ function mostrarFormulario(tipo, modo) {
   [1, 2, 3].forEach(n => {
     html += `
     <div class="form-field"><label class="form-label">Fecha pago ${n}</label><input type="date" class="form-input" id="f-fecha_pago_${n}_raw" onchange="actualizarFechaPago(${n})"></div>
-    <div class="form-field"><label class="form-label">Importe pago ${n} (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('pago_' + n) ? 'precargado' : ''}" id="f-pago_${n}" value="${escapeHtml(val('pago_' + n) ? formatearMiles(parsearMiles(val('pago_' + n))) : '')}" onblur="formatearCampo(this)"></div>
-    <div class="form-field full"><label class="form-label">Texto generado — pago ${n} (ES / EN)</label><div class="form-input precargado" id="prev-fecha_pago_${n}" style="min-height:20px;">—</div></div>`;
+    <div class="form-field full"><label class="form-label">Fecha en letras — pago ${n} (ES / EN)</label><div class="form-input precargado" id="prev-fecha_pago_${n}" style="min-height:20px;">—</div></div>
+    <div class="form-field"><label class="form-label">Importe pago ${n} (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('pago_' + n) ? 'precargado' : ''}" id="f-pago_${n}" value="${escapeHtml(val('pago_' + n) ? formatearMiles(parsearMiles(val('pago_' + n))) : '')}" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>`;
   });
   html += `</div>`;
 
