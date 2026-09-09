@@ -78,7 +78,7 @@
   .estado-linea { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); line-height: 1.7; }
   .estado-linea b { font-weight: 400; color: var(--black); }
   .estado-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
-  .estado-actions .btn { flex-shrink: 0; white-space: nowrap; }
+  .estado-actions .btn { flex-shrink: 0; white-space: nowrap; padding: 10px 14px; font-size: 11px; letter-spacing: 1.3px; }
   .btn { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 12px 24px; border: none; transition: all .2s; }
   .btn-primary { background: var(--black); color: white; }
   .btn-primary:hover { background: #333; }
@@ -92,6 +92,7 @@
 
   /* formulario */
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; margin-bottom: 28px; }
+  .form-grid.una-col { grid-template-columns: 1fr; }
   .form-field { display: flex; flex-direction: column; gap: 6px; }
   .form-field.full { grid-column: 1 / -1; }
   .form-label { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--slate-gray); }
@@ -587,7 +588,7 @@ function mostrarFormulario(tipo, modo) {
   html += `</div>`;
 
   // ── Precio: subtotal y total se calculan solos ──
-  html += `<div class="form-section-label">Precio</div><div class="form-grid">
+  html += `<div class="form-section-label">Precio</div><div class="form-grid una-col">
     <div class="form-field"><label class="form-label">Precio vivienda (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('precio_viv') ? 'precargado' : ''}" id="f-precio_viv" value="${escapeHtml(val('precio_viv') ? formatearMiles(parsearMiles(val('precio_viv'))) : '')}" oninput="recalcularPrecios()" onblur="formatearCampo(this)"></div>
     <div class="form-field"><label class="form-label">Importe extras y modificaciones (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('precio_ext') ? 'precargado' : ''}" id="f-precio_ext" value="${escapeHtml(val('precio_ext') ? formatearMiles(parsearMiles(val('precio_ext'))) : '')}" oninput="recalcularPrecios()" onblur="formatearCampo(this)"></div>
     <div class="form-field"><label class="form-label">Subtotal (€) — calculado</label><input type="text" class="form-input precargado" id="f-subtotal" value="${escapeHtml(val('subtotal') ? formatearMiles(parsearMiles(val('subtotal'))) : '')}" readonly></div>
@@ -596,7 +597,7 @@ function mostrarFormulario(tipo, modo) {
   </div>`;
 
   // ── Forma de pago ──
-  html += `<div class="form-section-label">Forma de pago</div><div class="form-grid">
+  html += `<div class="form-section-label">Forma de pago</div><div class="form-grid una-col">
     <div class="form-field"><label class="form-label">Pago a la firma de la reserva (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('pago_reserv') ? 'precargado' : ''}" id="f-pago_reserv" value="${escapeHtml(val('pago_reserv') ? formatearMiles(parsearMiles(val('pago_reserv'))) : '')}" oninput="actualizarLetrasReserva()" onblur="formatearCampo(this)"></div>`;
   if (tipo === 'reserva') {
     html += `
