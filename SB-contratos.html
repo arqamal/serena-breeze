@@ -472,6 +472,23 @@ function parseFechaInput(valor) {
   if (!y || !m || !d) return null;
   return { y, m, d };
 }
+function ddmmyyyyAIso(s) {
+  if (!s) return '';
+  const m = String(s).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!m) return '';
+  return m[3] + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0');
+}
+function fechaISOaDDMMYYYY(iso) {
+  const f = parseFechaInput(iso);
+  if (!f) return '';
+  const pad = n => String(n).padStart(2, '0');
+  return pad(f.d) + '/' + pad(f.m) + '/' + f.y;
+}
+function hoyISO() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+}
 function ordinalEN(d) {
   if (d % 10 === 1 && d !== 11) return d + 'st';
   if (d % 10 === 2 && d !== 12) return d + 'nd';
@@ -570,6 +587,13 @@ function mostrarFormulario(tipo, modo) {
     : (tipo === 'reserva' ? 'Nueva reserva' : 'Generar compraventa');
   let html = `<div class="sec-title">${titulo} — ${escapeHtml(SESSION_COD_VIV)}</div>`;
   html += `<div id="form-msg"></div>`;
+
+  // ── Fecha del documento: editable, hoy por defecto ──
+  const claveFechaHoy = tipo === 'reserva' ? 'fecha_hoy_r' : 'fecha_hoy_c';
+  const fechaHoyISO = val(claveFechaHoy) ? ddmmyyyyAIso(val(claveFechaHoy)) : hoyISO();
+  html += `<div class="form-grid una-col">
+    <div class="form-field"><label class="form-label">Fecha del documento</label><input type="date" class="form-input precargado" id="f-fecha-hoy" value="${fechaHoyISO}"></div>
+  </div>`;
 
   // ── Cliente(s): campos simples, genéricos ──
   html += `<div class="form-grid">`;
@@ -676,6 +700,11 @@ function mostrarFormulario(tipo, modo) {
 function enviarFormulario(tipo, modo) {
   modo = modo || 'nuevo';
   const campos = {};
+
+  // fecha del documento
+  const claveFechaHoy = tipo === 'reserva' ? 'fecha_hoy_r' : 'fecha_hoy_c';
+  const fechaHoyVal = document.getElementById('f-fecha-hoy').value;
+  if (fechaHoyVal) campos[claveFechaHoy] = fechaISOaDDMMYYYY(fechaHoyVal);
 
   // campos simples (Cliente(s))
   CAMPOS_FORM.forEach(c => {
