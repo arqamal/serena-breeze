@@ -640,7 +640,7 @@ function mostrarFormulario(tipo, modo) {
     <div class="form-field"><label class="form-label">Precio vivienda (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('precio_viv') ? 'precargado' : ''}" id="f-precio_viv" value="${escapeHtml(val('precio_viv') ? formatearMiles(parsearMiles(val('precio_viv'))) : '')}" oninput="recalcularPrecios()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>
     <div class="form-field"><label class="form-label">Importe extras y modificaciones (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('precio_ext') ? 'precargado' : ''}" id="f-precio_ext" value="${escapeHtml(val('precio_ext') ? formatearMiles(parsearMiles(val('precio_ext'))) : '')}" oninput="recalcularPrecios()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>
     <div class="form-field"><label class="form-label">Subtotal (€) — calculado</label><input type="text" class="form-input precargado" id="f-subtotal" value="${escapeHtml(val('subtotal') ? formatearMiles(parsearMiles(val('subtotal'))) : '')}" readonly></div>
-    <div class="form-field"><label class="form-label">IVA (%)</label><input type="number" step="0.01" class="form-input ${esP('iva') ? 'precargado' : ''}" id="f-iva" value="${escapeHtml(String(val('iva')).replace('%',''))}" oninput="recalcularPrecios()"></div>
+    <div class="form-field"><label class="form-label">IVA (%)</label><input type="number" step="0.01" class="form-input precargado" id="f-iva" value="${escapeHtml(esP('iva') ? String(val('iva')).replace('%','') : '10')}" oninput="recalcularPrecios()"></div>
     <div class="form-field"><label class="form-label">Total compraventa (€) — calculado</label><input type="text" class="form-input precargado" id="f-total" value="${escapeHtml(val('total') ? formatearMiles(parsearMiles(val('total'))) : '')}" readonly></div>
   </div>`;
 
@@ -746,7 +746,7 @@ function enviarFormulario(tipo, modo) {
   campos.subtotal = document.getElementById('f-subtotal').value;
   campos.total = document.getElementById('f-total').value;
   const ivaEl = document.getElementById('f-iva');
-  campos.iva = ivaEl.value.trim() ? ivaEl.value.trim() + '%' : '';
+  campos.iva = ivaEl.value.trim();
   if (tipo === 'reserva') {
     campos.pago_reserv_letra = document.getElementById('f-pago_reserv_letra').value.trim();
     campos.pago_reserv_letra_en = document.getElementById('f-pago_reserv_letra_en').value.trim();
