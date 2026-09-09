@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serena Breeze — Contratos</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #FFFFFF;
+    --off-white: #F7F6F4;
+    --border: #E0DDD8;
+    --mid: #B0AA9F;
+    --slate-gray: #6B7280;
+    --text: #2A2520;
+    --black: #111111;
+    --precargado: #FBF7EE;
+    --precargado-border: #E8DDBE;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 14px; }
+
+  /* ── LOGIN (idéntico patrón a SB-extras.html) ── */
+  #login-screen {
+    position: fixed; inset: 0; background: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+  }
+  .login-box { width: 100%; max-width: 380px; padding: 48px 40px; border: 1px solid var(--border); }
+  .login-logo { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 3px; text-transform: uppercase; color: var(--black); margin-bottom: 6px; }
+  .login-sub { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); margin-bottom: 40px; }
+  .login-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+  .login-label { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); }
+  .login-input { border: 1px solid var(--border); padding: 12px 14px; font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--text); background: var(--white); outline: none; transition: border-color .2s; border-radius: 0; width: 100%; }
+  .login-input:focus { border-color: var(--black); }
+  .login-btn { width: 100%; margin-top: 8px; font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; background: var(--black); color: white; border: none; padding: 14px; cursor: pointer; transition: background .2s; }
+  .login-btn:hover { background: #333; }
+  .login-btn:disabled { opacity: .55; cursor: default; }
+  .login-error { font-family: 'Roboto', sans-serif; font-size: 12px; color: #c0392b; margin-top: 14px; text-align: center; display: none; }
+
+  /* ── SELECTOR VIVIENDA ── */
+  #vivienda-screen {
+    position: fixed; inset: 0; background: var(--white);
+    display: none; align-items: center; justify-content: center;
+    z-index: 9998;
+  }
+  #vivienda-screen.visible { display: flex; }
+  .vsearch-box { width: 100%; max-width: 420px; padding: 48px 40px; border: 1px solid var(--border); }
+  .vsearch-logo { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 3px; text-transform: uppercase; color: var(--black); margin-bottom: 6px; }
+  .vsearch-sub { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); margin-bottom: 40px; }
+  .vsearch-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 12px; }
+  .vsearch-label { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); }
+  .vsearch-select { border: 1px solid var(--border); padding: 12px 14px; font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--text); background: var(--white); outline: none; transition: border-color .2s; border-radius: 0; width: 100%; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  .vsearch-select:focus { border-color: var(--black); }
+  .vsearch-select:disabled { opacity: .5; }
+  .vsearch-btn { width: 100%; margin-top: 8px; font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; background: var(--black); color: white; border: none; padding: 14px; cursor: pointer; transition: background .2s; }
+  .vsearch-btn:hover { background: #333; }
+  .vsearch-btn:disabled { opacity: .5; cursor: default; }
+
+  /* ── APP ── */
+  #app-wrapper { display: none; }
+  main { max-width: 780px; margin: 0 auto; padding: 40px 32px 80px; }
+
+  .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; border-bottom: 1px solid var(--border); }
+  .top-bar-viv { font-family: 'Oswald', sans-serif; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; color: var(--black); }
+  .top-bar-sub { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--slate-gray); margin-top: 2px; }
+  .top-bar-change { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); cursor: pointer; border: 1px solid var(--border); padding: 8px 14px; background: none; }
+  .top-bar-change:hover { border-color: var(--black); color: var(--black); }
+
+  .sec-title { font-family: 'Oswald', sans-serif; font-size: 24px; font-weight: 400; text-transform: uppercase; color: var(--black); margin-bottom: 20px; letter-spacing: 1px; }
+
+  /* estado card */
+  .estado-card { border: 1px solid var(--border); padding: 20px 22px; margin-bottom: 28px; }
+  .estado-badge { display: inline-block; font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; margin-bottom: 10px; }
+  .estado-badge.libre { background: #f0faf0; color: #2d7a2d; border: 1px solid #b8e0b8; }
+  .estado-badge.reserva { background: #FEF3EA; color: #E87722; border: 1px solid #F5C89A; }
+  .estado-badge.contrato { background: #eef2ff; color: #3949ab; border: 1px solid #c5cae9; }
+  .estado-linea { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); line-height: 1.7; }
+  .estado-linea b { font-weight: 400; color: var(--black); }
+  .estado-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .btn { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 12px 24px; border: none; transition: all .2s; }
+  .btn-primary { background: var(--black); color: white; }
+  .btn-primary:hover { background: #333; }
+  .btn-primary:disabled { opacity: .5; cursor: default; }
+  .btn-secondary { background: transparent; color: var(--slate-gray); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--black); color: var(--black); }
+  .btn-danger { background: transparent; color: #c0392b; border: 1px solid #eac6c0; }
+  .btn-danger:hover { border-color: #c0392b; background: #fdf1ef; }
+  .btn-link { background: transparent; color: var(--black); border: 1px solid var(--border); text-decoration: none; display: inline-block; }
+  .btn-link:hover { border-color: var(--black); }
+
+  /* formulario */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 16px; margin-bottom: 28px; }
+  .form-field { display: flex; flex-direction: column; gap: 6px; }
+  .form-field.full { grid-column: 1 / -1; }
+  .form-label { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--slate-gray); }
+  .form-input { border: 1px solid var(--border); padding: 10px 12px; font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); background: var(--white); outline: none; transition: border-color .2s, background .2s; border-radius: 0; width: 100%; }
+  .form-input:focus { border-color: var(--black); }
+  .form-input.precargado { background: var(--precargado); border-color: var(--precargado-border); }
+  .form-input.precargado:focus { background: var(--white); }
+  .form-section-label { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate-gray); margin: 28px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .form-section-label:first-child { margin-top: 0; }
+
+  .msg { font-family: 'Roboto', sans-serif; font-size: 13px; padding: 12px 16px; margin-bottom: 20px; display: none; }
+  .msg.error { background: #fdf1ef; color: #c0392b; border-left: 3px solid #c0392b; display: block; }
+  .msg.success { background: #f0faf0; color: #2d7a2d; border-left: 3px solid #2d7a2d; display: block; }
+  .msg.info { background: var(--off-white); color: var(--slate-gray); border-left: 3px solid var(--border); display: block; }
+
+  .loading { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--slate-gray); padding: 40px 0; text-align: center; }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Serena Breeze</div>
+    <div class="login-sub">Generador de contratos · Uso interno</div>
+    <div class="login-field">
+      <label class="login-label">Usuario</label>
+      <input class="login-input" id="login-user" type="text" placeholder="Usuario" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Contraseña</label>
+      <input class="login-input" id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Acceder →</button>
+    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
+  </div>
+</div>
+
+<div id="vivienda-screen">
+  <div class="vsearch-box">
+    <div class="vsearch-logo">Serena Breeze</div>
+    <div class="vsearch-sub">Generador de contratos · Seleccione vivienda</div>
+    <div class="vsearch-field">
+      <label class="vsearch-label">Promoción</label>
+      <select class="vsearch-select" id="vs-promo" onchange="vsUpdateViviendas()">
+        <option value="">Seleccione promoción…</option>
+        <option value="2SB">Serena Breeze 2</option>
+        <option value="3SB">Serena Breeze 3</option>
+      </select>
+    </div>
+    <div class="vsearch-field">
+      <label class="vsearch-label">Vivienda</label>
+      <select class="vsearch-select" id="vs-viv" disabled>
+        <option value="">Seleccione primero la promoción…</option>
+      </select>
+    </div>
+    <div class="msg error" id="vs-error"></div>
+    <button class="vsearch-btn" id="vs-btn" onclick="vsConfirm()" disabled>Continuar →</button>
+  </div>
+</div>
+
+<div id="app-wrapper">
+  <div class="top-bar">
+    <div>
+      <div class="top-bar-viv" id="tb-viv">—</div>
+      <div class="top-bar-sub" id="tb-sub">—</div>
+    </div>
+    <button class="top-bar-change" onclick="volverASelector()">Cambiar vivienda</button>
+  </div>
+
+  <main>
+    <div id="load-indicator" class="loading" style="display:none;">Cargando…</div>
+    <div id="contenido"></div>
+  </main>
+</div>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────────
+const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
+const CONTRATOS_URL = 'https://script.google.com/macros/s/AKfycbzy5_v-tsFEsdgbGfTVqM76ygji9OW-0NOnPSaWKDgap2I8Y7IrDkAw14a7yawVKv8U/exec';
+
+const UNIDADES = {
+  '2SB': {
+    nombre: 'Serena Breeze 2',
+    codigos: ['2SB1','2SB2','2SB3','2SB4','2SB101','2SB102','2SB103','2SB104','2SB105','2SB111','2SB112','2SB113','2SB114','2SB115','2SB121','2SB122']
+  },
+  '3SB': {
+    nombre: 'Serena Breeze 3',
+    codigos: ['3SB1','3SB2','3SB3','3SB4','3SB5','3SB6','3SB7',
+      '3SB101','3SB102','3SB103','3SB104','3SB105','3SB106','3SB111','3SB112','3SB113','3SB114','3SB115','3SB116','3SB121','3SB122','3SB123','3SB124',
+      '3SB201','3SB202','3SB203','3SB204','3SB211','3SB212','3SB213','3SB214','3SB221','3SB222',
+      '3SB301','3SB302','3SB303','3SB304','3SB311','3SB312','3SB313','3SB314','3SB321','3SB322','3SB323']
+  }
+};
+
+// Campos del formulario (tabla "Clientes", bucket de datos manuales por
+// contrato). appliesTo indica en qué formularios aparece.
+const CAMPOS_FORM = [
+  { seccion: 'Cliente(s)' },
+  { key: 'cliente1', label: 'Cliente 1 (nombre completo)', appliesTo: ['reserva','contrato'] },
+  { key: 'nie_cliente1', label: 'NIE / Pasaporte cliente 1', appliesTo: ['reserva','contrato'] },
+  { key: 'mail_cliente1', label: 'Email cliente 1', appliesTo: ['reserva','contrato'] },
+  { key: 'tlf_cliente1', label: 'Teléfono cliente 1', appliesTo: ['reserva','contrato'] },
+  { key: 'cliente2', label: 'Cliente 2 (opcional)', appliesTo: ['reserva','contrato'] },
+  { key: 'nie_cliente2', label: 'NIE / Pasaporte cliente 2', appliesTo: ['reserva','contrato'] },
+  { key: 'mail_cliente2', label: 'Email cliente 2', appliesTo: ['reserva','contrato'] },
+  { key: 'tlf_cliente2', label: 'Teléfono cliente 2', appliesTo: ['reserva','contrato'] },
+  { key: 'dom_cliente', label: 'Domicilio del/de los cliente(s)', appliesTo: ['reserva','contrato'], full: true },
+
+  { seccion: 'Precio' },
+  { key: 'precio_viv', label: 'Precio vivienda (€)', appliesTo: ['reserva','contrato'] },
+  { key: 'precio_ext', label: 'Importe extras y modificaciones (€)', appliesTo: ['reserva','contrato'] },
+  { key: 'subtotal', label: 'Subtotal (€)', appliesTo: ['reserva','contrato'] },
+  { key: 'iva', label: 'IVA', appliesTo: ['reserva','contrato'] },
+  { key: 'total', label: 'Total compraventa (€)', appliesTo: ['reserva','contrato'] },
+
+  { seccion: 'Forma de pago' },
+  { key: 'pago_reserv', label: 'Pago a la firma de la reserva (€)', appliesTo: ['reserva','contrato'] },
+  { key: 'pago_reserv_letra', label: 'Importe en letras (ES)', appliesTo: ['reserva'] },
+  { key: 'pago_reserv_letra_en', label: 'Importe en letras (EN)', appliesTo: ['reserva'] },
+  { key: 'fecha_pago_1', label: 'Fecha pago 1 (ES, texto libre)', appliesTo: ['reserva','contrato'] },
+  { key: 'fecha_pago_1_en', label: 'Fecha pago 1 (EN, texto libre)', appliesTo: ['reserva','contrato'] },
+  { key: 'pago_1', label: 'Importe pago 1 (€)', appliesTo: ['reserva','contrato'] },
+  { key: 'fecha_pago_2', label: 'Fecha pago 2 (ES, texto libre)', appliesTo: ['reserva','contrato'] },
+  { key: 'fecha_pago_2_en', label: 'Fecha pago 2 (EN, texto libre)', appliesTo: ['reserva','contrato'] },
+  { key: 'pago_2', label: 'Importe pago 2 (€)', appliesTo: ['reserva','contrato'] },
+  { key: 'fecha_pago_3', label: 'Fecha pago 3 (ES, no imprime en plantilla)', appliesTo: ['reserva','contrato'] },
+  { key: 'fecha_pago_3_en', label: 'Fecha pago 3 (EN, no imprime en plantilla)', appliesTo: ['reserva','contrato'] },
+  { key: 'pago_3', label: 'Importe pago 3 / escritura (€)', appliesTo: ['reserva','contrato'] },
+
+  { seccion: 'Plazos' },
+  { key: 'plazo', label: 'Plazo de entrega (ES, texto libre)', appliesTo: ['reserva','contrato'] },
+  { key: 'plazo_en', label: 'Plazo de entrega (EN, texto libre)', appliesTo: ['reserva','contrato'] },
+  { key: 'adelanto_contrato', label: 'Mes límite para adelantar firma', appliesTo: ['reserva'] }
+];
+
+let SESSION_PROMO = null;
+let SESSION_COD_VIV = null;
+let SESSION_USUARIO = null;
+let ULTIMA_PRECARGA = null; // respuesta cruda de 'precargar'
+
+// ─── LOGIN ───────────────────────────────────────────────────────────
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const btn = document.getElementById('login-btn');
+  const errorEl = document.getElementById('login-error');
+  errorEl.style.display = 'none';
+  const original = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Comprobando…';
+
+  fetch(LOGIN_URL, {
+    method: 'POST',
+    body: JSON.stringify({ accion: 'login', usuario: u, pass: p, herramienta: 'contratos' })
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        SESSION_USUARIO = u;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('vivienda-screen').classList.add('visible');
+      } else if (data.motivo === 'sin_acceso') {
+        errorEl.textContent = 'Tu usuario no tiene acceso a esta herramienta.';
+        errorEl.style.display = 'block';
+      } else {
+        errorEl.textContent = 'Usuario o contraseña incorrectos.';
+        errorEl.style.display = 'block';
+      }
+    })
+    .catch(() => {
+      errorEl.textContent = 'No se pudo comprobar el acceso. Inténtalo de nuevo.';
+      errorEl.style.display = 'block';
+    })
+    .finally(() => { btn.disabled = false; btn.textContent = original; });
+}
+
+// ─── SELECTOR DE VIVIENDA ────────────────────────────────────────────
+function vsUpdateViviendas() {
+  const promo = document.getElementById('vs-promo').value;
+  const sel = document.getElementById('vs-viv');
+  sel.innerHTML = '';
+  if (!promo) {
+    sel.disabled = true;
+    sel.innerHTML = '<option value="">Seleccione primero la promoción…</option>';
+    document.getElementById('vs-btn').disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  sel.innerHTML = '<option value="">Seleccione vivienda…</option>' +
+    UNIDADES[promo].codigos.map(c => `<option value="${c}">${c}</option>`).join('');
+  document.getElementById('vs-btn').disabled = true;
+  sel.onchange = () => { document.getElementById('vs-btn').disabled = !sel.value; };
+}
+
+function vsConfirm() {
+  const promo = document.getElementById('vs-promo').value;
+  const codViv = document.getElementById('vs-viv').value;
+  if (!promo || !codViv) return;
+  SESSION_PROMO = promo;
+  SESSION_COD_VIV = codViv;
+  document.getElementById('vs-error').style.display = 'none';
+  document.getElementById('vivienda-screen').classList.remove('visible');
+  document.getElementById('app-wrapper').style.display = 'block';
+  document.getElementById('tb-viv').textContent = codViv;
+  document.getElementById('tb-sub').textContent = UNIDADES[promo].nombre;
+  cargarEstado();
+}
+
+function volverASelector() {
+  document.getElementById('app-wrapper').style.display = 'none';
+  document.getElementById('vs-error').style.display = 'none';
+  document.getElementById('vivienda-screen').classList.add('visible');
+}
+
+// ─── CARGA DE ESTADO (accion: precargar) ────────────────────────────
+function cargarEstado() {
+  document.getElementById('contenido').innerHTML = '';
+  document.getElementById('load-indicator').style.display = 'block';
+
+  llamarBackend({ accion: 'precargar', promocion: SESSION_PROMO, cod_viv: SESSION_COD_VIV })
+    .then(data => {
+      document.getElementById('load-indicator').style.display = 'none';
+      if (!data.ok) {
+        mostrarError(data.error || 'No se pudo cargar la vivienda.');
+        return;
+      }
+      ULTIMA_PRECARGA = data;
+      renderEstado(data);
+    })
+    .catch(() => {
+      document.getElementById('load-indicator').style.display = 'none';
+      mostrarError('No se pudo conectar con el servidor. Inténtalo de nuevo.');
+    });
+}
+
+function mostrarError(texto) {
+  document.getElementById('contenido').innerHTML =
+    `<div class="msg error">${escapeHtml(texto)}</div>`;
+}
+
+function renderEstado(data) {
+  const activa = data.activa;
+  let badgeClase, badgeTexto, lineas, acciones;
+
+  if (!activa) {
+    badgeClase = 'libre'; badgeTexto = 'Vivienda libre';
+    lineas = 'No hay ninguna reserva ni contrato activo para esta vivienda.';
+    acciones = `<button class="btn btn-primary" onclick="mostrarFormulario('reserva')">Generar reserva</button>`;
+  } else if (activa.tipo === 'reserva') {
+    badgeClase = 'reserva'; badgeTexto = 'Reserva activa';
+    lineas = `<b>${escapeHtml(activa.cliente1 || '—')}</b>${activa.cliente2 ? ' y <b>' + escapeHtml(activa.cliente2) + '</b>' : ''} · reservada el ${fmtFecha(activa.timestamp)}`;
+    acciones = `
+      <button class="btn btn-primary" onclick="mostrarFormulario('contrato')">Generar compraventa</button>
+      ${activa.pdf_url ? `<a class="btn btn-link" href="${activa.pdf_url}" target="_blank">Ver PDF de reserva</a>` : ''}
+      <button class="btn btn-danger" onclick="confirmarCancelacion()">Cancelar reserva</button>`;
+  } else { // contrato
+    badgeClase = 'contrato'; badgeTexto = 'Contrato de compraventa activo';
+    lineas = `<b>${escapeHtml(activa.cliente1 || '—')}</b>${activa.cliente2 ? ' y <b>' + escapeHtml(activa.cliente2) + '</b>' : ''} · compraventa generada el ${fmtFecha(activa.timestamp)}`;
+    acciones = `
+      ${activa.pdf_url ? `<a class="btn btn-link" href="${activa.pdf_url}" target="_blank">Ver PDF de compraventa</a>` : ''}
+      <button class="btn btn-danger" onclick="confirmarCancelacion()">Cancelar contrato</button>`;
+  }
+
+  document.getElementById('contenido').innerHTML = `
+    <div class="sec-title">Estado de ${escapeHtml(data.cod_viv)}</div>
+    <div class="estado-card">
+      <span class="estado-badge ${badgeClase}">${badgeTexto}</span>
+      <div class="estado-linea">${lineas}</div>
+      <div class="estado-actions">${acciones}</div>
+    </div>`;
+}
+
+function confirmarCancelacion() {
+  if (!confirm('¿Seguro que quieres cancelar? Esta acción se registra en el Sheet y no se puede deshacer desde aquí.')) return;
+  document.getElementById('load-indicator').style.display = 'block';
+  llamarBackend({ accion: 'cancelar', promocion: SESSION_PROMO, cod_viv: SESSION_COD_VIV })
+    .then(data => {
+      document.getElementById('load-indicator').style.display = 'none';
+      if (!data.ok) { mostrarError(data.error || 'No se pudo cancelar.'); return; }
+      cargarEstado();
+    })
+    .catch(() => {
+      document.getElementById('load-indicator').style.display = 'none';
+      mostrarError('No se pudo conectar con el servidor. Inténtalo de nuevo.');
+    });
+}
+
+// ─── FORMULARIO RESERVA / CONTRATO ──────────────────────────────────
+function mostrarFormulario(tipo) {
+  const activa = ULTIMA_PRECARGA ? ULTIMA_PRECARGA.activa : null;
+  const precargados = (tipo === 'contrato' && activa) ? activa : {};
+
+  let html = `<div class="sec-title">${tipo === 'reserva' ? 'Nueva reserva' : 'Generar compraventa'} — ${escapeHtml(SESSION_COD_VIV)}</div>`;
+  html += `<div id="form-msg"></div>`;
+  html += `<div class="form-grid">`;
+
+  CAMPOS_FORM.forEach(campo => {
+    if (campo.seccion) {
+      html += `</div><div class="form-section-label">${campo.seccion}</div><div class="form-grid">`;
+      return;
+    }
+    if (!campo.appliesTo.includes(tipo)) return;
+    const valorPrevio = precargados[campo.key];
+    const esPrecargado = valorPrevio !== undefined && valorPrevio !== null && valorPrevio !== '';
+    html += `
+      <div class="form-field ${campo.full ? 'full' : ''}">
+        <label class="form-label">${campo.label}</label>
+        <input type="text" class="form-input ${esPrecargado ? 'precargado' : ''}" id="f-${campo.key}" value="${escapeHtml(esPrecargado ? valorPrevio : '')}">
+      </div>`;
+  });
+
+  html += `</div>`;
+  html += `
+    <div class="estado-actions">
+      <button class="btn btn-primary" id="btn-generar" onclick="enviarFormulario('${tipo}')">Generar PDF</button>
+      <button class="btn btn-secondary" onclick="renderEstado(ULTIMA_PRECARGA)">Cancelar</button>
+    </div>`;
+
+  document.getElementById('contenido').innerHTML = html;
+}
+
+function enviarFormulario(tipo) {
+  const campos = {};
+  CAMPOS_FORM.forEach(c => {
+    if (c.seccion || !c.appliesTo.includes(tipo)) return;
+    const el = document.getElementById('f-' + c.key);
+    if (el) campos[c.key] = el.value.trim();
+  });
+
+  const btn = document.getElementById('btn-generar');
+  btn.disabled = true;
+  btn.textContent = 'Generando…';
+  document.getElementById('form-msg').innerHTML = '';
+
+  llamarBackend({
+    accion: tipo === 'reserva' ? 'generar_reserva' : 'generar_contrato',
+    promocion: SESSION_PROMO,
+    cod_viv: SESSION_COD_VIV,
+    usuario: SESSION_USUARIO,
+    campos: campos
+  })
+    .then(data => {
+      btn.disabled = false;
+      btn.textContent = 'Generar PDF';
+      if (!data.ok) {
+        document.getElementById('form-msg').innerHTML = `<div class="msg error">${escapeHtml(data.error || 'No se pudo generar el contrato.')}</div>`;
+        return;
+      }
+      document.getElementById('form-msg').innerHTML =
+        `<div class="msg success">Generado correctamente. <a href="${data.pdf_url}" target="_blank">Abrir PDF</a></div>`;
+      // recarga el estado tras un momento para que se vea el mensaje
+      setTimeout(cargarEstado, 1200);
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.textContent = 'Generar PDF';
+      document.getElementById('form-msg').innerHTML = `<div class="msg error">No se pudo conectar con el servidor. Inténtalo de nuevo.</div>`;
+    });
+}
+
+// ─── UTILS ───────────────────────────────────────────────────────────
+function llamarBackend(payload) {
+  return fetch(CONTRATOS_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json());
+}
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+}
+function fmtFecha(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  if (isNaN(d)) return String(ts);
+  return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+function sendHeight() {
+  window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, '*');
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  sendHeight();
+  ['login-user','login-pass'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  });
+});
+new MutationObserver(sendHeight).observe(document.body, { childList: true, subtree: true, attributes: true });
+</script>
+</body>
+</html>
