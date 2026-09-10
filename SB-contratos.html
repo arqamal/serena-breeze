@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Serena Breeze — Contratos</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 <style>
   :root {
     --white: #FFFFFF;
@@ -160,6 +161,10 @@
   .btn-enviar-firmado { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; padding: 14px 32px; background: var(--black); color: white; border: none; transition: all .2s; margin-top: 16px; opacity: .4; pointer-events: none; }
   .btn-enviar-firmado.active { opacity: 1; pointer-events: auto; }
   .btn-enviar-firmado.active:hover { background: #333; }
+  .docs-file-list { margin-top: 12px; display: flex; flex-direction: column; gap: 6px; }
+  .docs-file-item { display: flex; align-items: center; justify-content: space-between; background: var(--off-white); border: 1px solid var(--border); padding: 8px 12px; font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--text); }
+  .docs-file-item .remove-btn { font-size: 16px; cursor: pointer; color: var(--mid); background: none; border: none; padding: 0 4px; line-height: 1; }
+  .docs-file-item .remove-btn:hover { color: var(--black); }
 </style>
 </head>
 <body>
@@ -490,14 +495,12 @@ function renderEstado(data) {
     acciones = `
       <button class="btn btn-primary" onclick="mostrarFormulario('contrato','nuevo')">Generar compraventa</button>
       <button class="btn btn-secondary" onclick="mostrarFormulario('reserva','editar')">Editar reserva</button>
-      ${activa.pdf_url ? `<a class="btn btn-link" href="${activa.pdf_url}" target="_blank">Ver PDF de reserva</a>` : ''}
       <button class="btn btn-danger" onclick="confirmarCancelacion()">Cancelar reserva</button>`;
   } else { // contrato
     badgeClase = 'contrato'; badgeTexto = 'Contrato de compraventa activo';
     lineas = `<b>${escapeHtml(activa.cliente1 || '—')}</b>${activa.cliente2 ? ' y <b>' + escapeHtml(activa.cliente2) + '</b>' : ''} · compraventa generada el ${fmtFecha(activa.timestamp)}`;
     acciones = `
       <button class="btn btn-secondary" onclick="mostrarFormulario('contrato','editar')">Editar contrato</button>
-      ${activa.pdf_url ? `<a class="btn btn-link" href="${activa.pdf_url}" target="_blank">Ver PDF de compraventa</a>` : ''}
       <button class="btn btn-danger" onclick="confirmarCancelacion()">Cancelar contrato</button>`;
   }
 
@@ -508,11 +511,58 @@ function renderEstado(data) {
       <div class="estado-linea">${lineas}</div>
       <div class="estado-actions">${acciones}</div>
     </div>
+    ${renderDocumentosBlock(data.documentos)}
     ${renderFirmaBlock(activa)}`;
+}
+
+// Lista los hasta 4 PDF posibles de una vivienda (reserva / reserva
+// firmado / compraventa / compraventa firmado). La reserva no
+// desaparece al generar la compraventa — sigue en Clientes con su
+// propio PDF, así que se pueden ver los dos históricos a la vez.
+function renderDocumentosBlock(documentos) {
+  if (!documentos) return '';
+  const filas = [];
+  if (documentos.reserva) {
+    if (documentos.reserva.pdf_url) filas.push({ label: 'PDF de reserva', url: documentos.reserva.pdf_url });
+    if (documentos.reserva.pdf_firmado_url) filas.push({ label: 'PDF de reserva firmado (' + escapeHtml(documentos.reserva.fecha_firma || '') + ')', url: documentos.reserva.pdf_firmado_url });
+  }
+  if (documentos.contrato) {
+    if (documentos.contrato.pdf_url) filas.push({ label: 'PDF de compraventa', url: documentos.contrato.pdf_url });
+    if (documentos.contrato.pdf_firmado_url) filas.push({ label: 'PDF de compraventa firmado (' + escapeHtml(documentos.contrato.fecha_firma || '') + ')', url: documentos.contrato.pdf_firmado_url });
+  }
+  if (!filas.length) return '';
+  return `
+    <div class="estado-card" style="margin-top:16px;">
+      <div class="form-section-label" style="margin-top:0;">Documentos</div>
+      <div class="estado-actions">${filas.map(f => `<a class="btn btn-link" href="${f.url}" target="_blank">${f.label}</a>`).join('')}</div>
+    </div>`;
 }
 
 // ─── FIRMA: PDF firmado a mano (no sustituye al generado, convive) ──
 let FIRMA_PENDIENTE = null; // { base64, tipoEvento } — hasta que se pulsa "Enviar"
+let ADJUNTOS_FILES = []; // File[] pendientes de fusionar con el próximo PDF generado
+
+function onAdjuntosSeleccionados(input) {
+  const nuevos = Array.from(input.files).filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
+  ADJUNTOS_FILES = ADJUNTOS_FILES.concat(nuevos);
+  renderAdjuntosList();
+  input.value = ''; // permite volver a soltar el mismo archivo si hace falta
+}
+function renderAdjuntosList() {
+  const list = document.getElementById('adjuntos-file-list');
+  if (!list) return;
+  list.innerHTML = ADJUNTOS_FILES.map((f, i) => `
+    <div class="docs-file-item">
+      <span>📄 ${escapeHtml(f.name)}</span>
+      <button class="remove-btn" onclick="quitarAdjunto(${i})" title="Eliminar">×</button>
+    </div>`).join('');
+  const zone = document.getElementById('adjuntos-upload-zone');
+  if (zone) zone.classList.toggle('has-file', ADJUNTOS_FILES.length > 0);
+}
+function quitarAdjunto(idx) {
+  ADJUNTOS_FILES.splice(idx, 1);
+  renderAdjuntosList();
+}
 let FIRMA_TIPO_EVENTO_ACTUAL = null; // 'reserva'|'contrato' de la fila activa mostrada, para el drag-and-drop
 
 function renderFirmaBlock(activa) {
@@ -845,6 +895,7 @@ function opcionesTrimestre(idSel) {
 }
 function mostrarFormulario(tipo, modo) {
   modo = modo || 'nuevo';
+  ADJUNTOS_FILES = []; // limpio por si venía de un formulario anterior
   const activa = ULTIMA_PRECARGA ? ULTIMA_PRECARGA.activa : null;
   // modo 'editar': se precarga con los valores ACTUALES de la fila activa
   // (sea reserva o contrato). modo 'nuevo' + tipo 'contrato': se precarga
@@ -976,6 +1027,20 @@ function mostrarFormulario(tipo, modo) {
   });
   html += `</div>`;
 
+  // ── Adjuntos (opcional): PDF sueltos que se fusionan con el contrato en
+  // el navegador (pdf-lib) antes de guardarlo. Apps Script no puede hacer
+  // esta fusión — se probó y da timeout, no tiene bucle de eventos para
+  // resolver las promesas de esa librería. Se giran a vertical las
+  // páginas que vengan apaisadas. ──
+  html += `<div class="form-section-label">Adjuntos (opcional)</div>
+    <div class="catalogo-note">PDF sueltos (planos, anexos...) que se fusionan al final del contrato antes de guardarlo. Las páginas apaisadas se giran a vertical. No es obligatorio.</div>
+    <div class="upload-zone" id="adjuntos-upload-zone" onclick="document.getElementById('adjuntos-input').click()">
+      <input type="file" id="adjuntos-input" accept="application/pdf" multiple style="display:none" onchange="onAdjuntosSeleccionados(this)">
+      <label class="upload-zone-label">Haz clic o arrastra aquí uno o varios PDF</label>
+      <div class="upload-zone-hint">Solo archivos PDF · puedes añadir varios</div>
+    </div>
+    <div class="docs-file-list" id="adjuntos-file-list"></div>`;
+
   html += `
     <div class="estado-actions">
       <button class="btn btn-primary" id="btn-generar" onclick="enviarFormulario('${tipo}','${modo}')">${modo === 'editar' ? 'Guardar cambios y regenerar PDF' : 'Generar PDF'}</button>
@@ -1077,6 +1142,37 @@ function enviarFormulario(tipo, modo) {
         document.getElementById('form-msg').innerHTML = `<div class="msg error">${escapeHtml(data.error || 'No se pudo generar el contrato.')}</div>`;
         return;
       }
+      const archivos = ADJUNTOS_FILES.slice();
+      if (archivos.length && !data.pdf_base64) {
+        // Backend viejo (sin desplegar la versión que devuelve pdf_base64):
+        // avisar en vez de ignorar los adjuntos en silencio.
+        document.getElementById('form-msg').innerHTML =
+          `<div class="msg error">Generado correctamente, PERO no se pudieron fusionar los ${archivos.length} adjunto(s): el servidor no mandó los bytes del PDF (falta desplegar la última versión de GeneradorContratos.gs). El contrato en sí está bien guardado — <a href="${data.pdf_url}" target="_blank">abrir</a>.</div>`;
+        setTimeout(cargarEstado, 3000);
+        return;
+      }
+      if (archivos.length && data.pdf_base64) {
+        document.getElementById('form-msg').innerHTML =
+          `<div class="msg info">PDF generado. Fusionando ${archivos.length} adjunto(s)…</div>`;
+        fusionarAdjuntosYSustituir(data.pdf_base64, archivos, tipo)
+          .then(res2 => {
+            if (!res2.ok) {
+              document.getElementById('form-msg').innerHTML =
+                `<div class="msg error">El contrato se generó bien, pero no se pudieron fusionar los adjuntos: ${escapeHtml(res2.error || 'error desconocido')}. El PDF sin adjuntos ya está guardado — <a href="${data.pdf_url}" target="_blank">abrir</a>.</div>`;
+              setTimeout(cargarEstado, 2500);
+              return;
+            }
+            document.getElementById('form-msg').innerHTML =
+              `<div class="msg success">Generado con adjuntos fusionados. <a href="${res2.pdf_url}" target="_blank">Abrir PDF</a></div>`;
+            setTimeout(cargarEstado, 1200);
+          })
+          .catch(err => {
+            document.getElementById('form-msg').innerHTML =
+              `<div class="msg error">El contrato se generó bien, pero falló la fusión de adjuntos (${escapeHtml(String(err && err.message || err))}). El PDF sin adjuntos ya está guardado — <a href="${data.pdf_url}" target="_blank">abrir</a>.</div>`;
+            setTimeout(cargarEstado, 2500);
+          });
+        return;
+      }
       document.getElementById('form-msg').innerHTML =
         `<div class="msg success">Generado correctamente. <a href="${data.pdf_url}" target="_blank">Abrir PDF</a></div>`;
       setTimeout(cargarEstado, 1200);
@@ -1086,6 +1182,47 @@ function enviarFormulario(tipo, modo) {
       btn.textContent = textoOriginal;
       document.getElementById('form-msg').innerHTML = `<div class="msg error">No se pudo conectar con el servidor. Inténtalo de nuevo.</div>`;
     });
+}
+
+// ─── FUSIÓN DE ADJUNTOS EN EL NAVEGADOR (pdf-lib) ────────────────────
+// Apps Script no puede hacer esto (no tiene bucle de eventos real para
+// resolver las promesas de pdf-lib — se probó, da timeout). El
+// navegador sí, porque es literalmente el entorno para el que se
+// diseñó la librería.
+async function fusionarAdjuntosYSustituir(pdfBase64Principal, archivos, tipoEvento) {
+  if (typeof PDFLib === 'undefined') {
+    throw new Error('La librería pdf-lib no se cargó (¿bloqueada por algún filtro de red o ad-blocker?). Revisa la consola del navegador.');
+  }
+  const { PDFDocument, degrees } = PDFLib;
+  const principalBytes = Uint8Array.from(atob(pdfBase64Principal), c => c.charCodeAt(0));
+  const doc = await PDFDocument.load(principalBytes);
+
+  for (const archivo of archivos) {
+    const buf = await archivo.arrayBuffer();
+    const donante = await PDFDocument.load(buf);
+    const paginas = await doc.copyPages(donante, donante.getPageIndices());
+    paginas.forEach(p => {
+      const { width, height } = p.getSize();
+      if (width > height) p.setRotation(degrees(90)); // apaisada -> vertical
+      doc.addPage(p);
+    });
+  }
+
+  const mergedBytes = await doc.save();
+  let binario = '';
+  const CHUNK = 8192;
+  for (let i = 0; i < mergedBytes.length; i += CHUNK) {
+    binario += String.fromCharCode.apply(null, mergedBytes.subarray(i, i + CHUNK));
+  }
+  const mergedBase64 = btoa(binario);
+
+  return llamarBackend({
+    accion: 'sustituir_pdf_con_adjuntos',
+    promocion: SESSION_PROMO,
+    cod_viv: SESSION_COD_VIV,
+    tipo_evento: tipoEvento,
+    pdf_base64: mergedBase64
+  });
 }
 
 // ─── UTILS ───────────────────────────────────────────────────────────
@@ -1112,26 +1249,42 @@ window.addEventListener('load', () => {
     document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   });
 
-  // Arrastrar y soltar el PDF firmado (mismo patrón que SB-extras.html)
+  // Arrastrar y soltar (mismo patrón que SB-extras.html). El de firma y
+  // el de adjuntos nunca están en pantalla a la vez (pertenecen a
+  // vistas distintas), así que basta con mirar cuál de los dos existe.
   document.addEventListener('dragover', e => {
-    const zone = document.getElementById('firma-upload-zone');
-    if (zone) { e.preventDefault(); zone.style.borderColor = 'var(--black)'; }
+    const zonaFirma = document.getElementById('firma-upload-zone');
+    const zonaAdj = document.getElementById('adjuntos-upload-zone');
+    if (zonaFirma || zonaAdj) e.preventDefault();
+    if (zonaFirma) zonaFirma.style.borderColor = 'var(--black)';
+    if (zonaAdj) zonaAdj.style.borderColor = 'var(--black)';
   });
   document.addEventListener('dragleave', () => {
-    const zone = document.getElementById('firma-upload-zone');
-    if (zone && !zone.classList.contains('has-file')) zone.style.borderColor = '';
+    const zonaFirma = document.getElementById('firma-upload-zone');
+    if (zonaFirma && !zonaFirma.classList.contains('has-file')) zonaFirma.style.borderColor = '';
+    const zonaAdj = document.getElementById('adjuntos-upload-zone');
+    if (zonaAdj && !zonaAdj.classList.contains('has-file')) zonaAdj.style.borderColor = '';
   });
   document.addEventListener('drop', e => {
-    const zone = document.getElementById('firma-upload-zone');
-    if (!zone) return;
+    const zonaFirma = document.getElementById('firma-upload-zone');
+    const zonaAdj = document.getElementById('adjuntos-upload-zone');
+    if (!zonaFirma && !zonaAdj) return;
     e.preventDefault();
     const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
-    if (files.length !== 1) return;
-    const input = document.getElementById('firma-input');
-    const dt = new DataTransfer();
-    dt.items.add(files[0]);
-    input.files = dt.files;
-    onSeleccionarFirmado(input, FIRMA_TIPO_EVENTO_ACTUAL);
+    if (!files.length) return;
+    if (zonaAdj) {
+      const input = document.getElementById('adjuntos-input');
+      const dt = new DataTransfer();
+      files.forEach(f => dt.items.add(f));
+      input.files = dt.files;
+      onAdjuntosSeleccionados(input);
+    } else if (zonaFirma && files.length === 1) {
+      const input = document.getElementById('firma-input');
+      const dt = new DataTransfer();
+      dt.items.add(files[0]);
+      input.files = dt.files;
+      onSeleccionarFirmado(input, FIRMA_TIPO_EVENTO_ACTUAL);
+    }
   });
 });
 new MutationObserver(sendHeight).observe(document.body, { childList: true, subtree: true, attributes: true });
