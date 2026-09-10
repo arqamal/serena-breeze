@@ -152,7 +152,8 @@
   .lang-btn { flex:1; text-align:center; padding:6px 0; }
   .staff-toggle { position:fixed; top:92px; right:16px; z-index:1000; width:84px; text-align:center; font-family:'Roboto',sans-serif; font-size:11px; letter-spacing:1px; color:var(--slate-gray); background:white; border:1px solid var(--border); border-radius:4px; padding:6px 4px; cursor:pointer; box-sizing:border-box; line-height:1.4; }
   .staff-toggle:hover { border-color:var(--black); color:var(--black); }
-  .staff-badge { position:fixed; top:92px; right:16px; z-index:1000; font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:white; background:var(--black); border-radius:4px; padding:7px 14px; white-space:nowrap; }
+  .staff-badge { position:fixed; top:92px; right:16px; z-index:1000; font-family:'Oswald',sans-serif; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:white; background:var(--black); border-radius:4px; padding:7px 14px; white-space:nowrap; cursor:pointer; }
+  .staff-badge:hover { background:#333; }
   .staff-overlay { display:none; position:fixed; top:0; left:0; width:100%; z-index:2000; justify-content:center; padding:140px 24px 24px; }
   .staff-overlay.active { display:flex; }
   .staff-overlay::before { content:''; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(17,17,17,.55); z-index:-1; }
@@ -559,10 +560,9 @@
     document.getElementById('staffOverlay').classList.remove('active');
   }
   function cerrarSesionStaff() {
+    if (!confirm('¿Cerrar sesión? Se recarga la página y tendrás que volver a acceder.')) return;
     localStorage.removeItem(CLAVE_TOKEN_SESION);
-    staffUsuario = '';
-    document.getElementById('staffPanelVivienda').style.display = 'none';
-    document.getElementById('staffPanelLogin').style.display = 'block';
+    location.reload(); // más simple y fiable que revertir a mano cUnit/cPromo/badge/toggle
   }
   // Si hay una sesión guardada válida (de esta u otra herramienta), se
   // salta directamente el formulario de usuario/contraseña.
@@ -702,6 +702,8 @@
         document.getElementById('staffBadge').style.display = 'block';
         document.getElementById('staffBadge').textContent =
           (encontrado ? 'Editando ' : 'Creando ') + codigo + ' — ' + staffUsuario;
+        document.getElementById('staffBadge').title = 'Pulsa para cerrar sesión';
+        document.getElementById('staffBadge').onclick = cerrarSesionStaff;
         document.getElementById('staffToggle').style.display = 'none';
 
         cerrarAccesoInterno();

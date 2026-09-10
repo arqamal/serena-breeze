@@ -154,6 +154,8 @@
 
   .lang-toggle { position: fixed; top: 52px; right: 16px; z-index: 10000; display: none; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; background: white; }
   .lang-toggle.visible { display: flex; }
+  #logout-link { display: none; }
+  #logout-link.visible { display: block; }
   .lang-btn { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 1px; padding: 6px 12px; cursor: pointer; border: none; background: transparent; color: var(--slate-gray); transition: all .2s; }
   .lang-btn.active { background: var(--black); color: white; }
 
@@ -316,7 +318,6 @@
       <span class="vsearch-check-label" id="vs-post-label">Extras post-entrega</span>
     </label>
     <button class="vsearch-btn" id="vs-btn" onclick="vsConfirm()">Continuar →</button>
-    <div style="text-align:center; margin-top:14px;"><a href="#" onclick="cerrarSesion(); return false;" style="font-family:'Roboto',sans-serif; font-size:11px; color:var(--slate-gray); text-decoration:none;">Cerrar sesión</a></div>
   </div>
 </div>
 
@@ -324,6 +325,7 @@
   <button class="lang-btn active" id="btn-es" onclick="setLang('es')">ES</button>
   <button class="lang-btn" id="btn-en" onclick="setLang('en')">EN</button>
 </div>
+<div id="logout-link" style="position:fixed; top:52px; left:16px; z-index:10000; font-family:'Roboto',sans-serif; font-size:11px; color:var(--slate-gray); cursor:pointer; background:white; border:1px solid var(--border); border-radius:4px; padding:6px 10px;" onclick="cerrarSesion()">Cerrar sesión</div>
 
 <div id="app-wrapper">
 
@@ -378,6 +380,7 @@ function doLogin() {
         if (data.token) localStorage.setItem(CLAVE_TOKEN_SESION, data.token);
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('vivienda-screen').classList.add('visible');
+        document.getElementById('logout-link').classList.add('visible');
       } else if (data.motivo === 'sin_acceso') {
         errorEl.textContent = (LANG === 'es' ? 'Tu usuario no tiene acceso a esta herramienta.' : 'Your user does not have access to this tool.');
         errorEl.style.display = 'block';
@@ -418,6 +421,7 @@ function intentarSesionGuardada() {
 }
 
 function cerrarSesion() {
+  if (!confirm(LANG === 'es' ? '¿Cerrar sesión? Se recarga la página y tendrás que volver a acceder.' : 'Close session? The page will reload and you will need to log in again.')) return;
   localStorage.removeItem(CLAVE_TOKEN_SESION);
   location.reload();
 }
@@ -598,6 +602,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (entrado) {
       document.getElementById('login-screen').style.display = 'none';
       document.getElementById('vivienda-screen').classList.add('visible');
+      document.getElementById('logout-link').classList.add('visible');
     }
   });
 });
