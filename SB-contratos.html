@@ -38,13 +38,7 @@
   .login-btn:disabled { opacity: .55; cursor: default; }
   .login-error { font-family: 'Roboto', sans-serif; font-size: 12px; color: #c0392b; margin-top: 14px; text-align: center; display: none; }
 
-  /* ── SELECTOR PROMOCIÓN Y LISTADO DE VIVIENDAS ── */
-  #promo-screen {
-    position: fixed; inset: 0; background: var(--white);
-    display: none; align-items: center; justify-content: center;
-    z-index: 9998;
-  }
-  #promo-screen.visible { display: flex; }
+  /* ── LISTADO DE VIVIENDAS (pantalla principal tras login) ── */
   #listado-screen { display: none; }
   #listado-screen.visible { display: block; }
   .vsearch-box { width: 100%; max-width: 420px; padding: 48px 40px; border: 1px solid var(--border); }
@@ -69,11 +63,25 @@
   .top-bar-change { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); cursor: pointer; border: 1px solid var(--border); padding: 8px 14px; background: none; }
   .top-bar-change:hover { border-color: var(--black); color: var(--black); }
 
-  .sec-title { font-family: 'Oswald', sans-serif; font-size: 24px; font-weight: 400; text-transform: uppercase; color: var(--black); margin-bottom: 20px; letter-spacing: 1px; }
+  .sec-title { font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 400; text-transform: uppercase; color: var(--black); margin-bottom: 12px; letter-spacing: 1px; }
+  .sec-eyebrow { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 10px; }
+  .sec-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.7; max-width: 640px; margin-bottom: 28px; }
+
+  /* TOP BAR de promociones, igual que SB-fechas.html */
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+  .promo-tabs { display: flex; border: 1px solid var(--border); }
+  .promo-tab { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; padding: 12px 28px; cursor: pointer; background: var(--white); color: var(--slate-gray); border: none; border-right: 1px solid var(--border); transition: all .15s; }
+  .promo-tab:last-child { border-right: none; }
+  .promo-tab.active { background: var(--black); color: white; }
+  .promo-tab:hover:not(.active) { background: var(--off-white); color: var(--text); }
+  .refresh-btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 11px 18px; background: transparent; color: var(--slate-gray); border: 1px solid var(--border); transition: all .15s; }
+  .refresh-btn:hover { border-color: var(--black); color: var(--black); }
+
+  .pie-nota { font-family: 'Roboto', sans-serif; font-size: 12px; font-weight: 300; color: var(--mid); line-height: 1.6; max-width: 720px; margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--border); }
 
   /* estado card */
   .estado-card { border: 1px solid var(--border); padding: 20px 22px; margin-bottom: 28px; }
-  .estado-badge { display: inline-block; font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; margin-bottom: 10px; }
+  .estado-badge { display: inline-block; font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; margin-bottom: 10px; line-height: 1.4; box-sizing: border-box; vertical-align: middle; }
   .estado-badge.libre { background: #f0faf0; color: #2d7a2d; border: 1px solid #b8e0b8; }
   .estado-badge.reserva { background: #FEF3EA; color: #E87722; border: 1px solid #F5C89A; }
   .estado-badge.contrato { background: #eef2ff; color: #3949ab; border: 1px solid #c5cae9; }
@@ -105,6 +113,11 @@
   .form-input.catalogo { background: #EEF4FB; border-color: #C9DCF0; }
   .form-input.catalogo:focus { background: var(--white); }
   .catalogo-note { font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--slate-gray); margin-bottom: 14px; }
+  .form-input.importe { font-weight: 700; }
+  .form-row { display: flex; gap: 14px 16px; margin-bottom: 14px; flex-wrap: wrap; }
+  .form-row .form-field { flex: 1; min-width: 140px; }
+  .form-row .form-field.ancho { flex: 2; min-width: 220px; }
+  .pie-nota-form { font-family: 'Roboto', sans-serif; font-size: 12px; font-weight: 300; color: var(--slate-gray); line-height: 1.6; margin: 4px 0 28px; padding: 12px 14px; background: var(--off-white); border-left: 3px solid var(--border); }
   .form-section-label { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate-gray); margin: 28px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
   .form-section-label:first-child { margin-top: 0; }
 
@@ -113,19 +126,40 @@
   .msg.success { background: #f0faf0; color: #2d7a2d; border-left: 3px solid #2d7a2d; display: block; }
   .msg.info { background: var(--off-white); color: var(--slate-gray); border-left: 3px solid var(--border); display: block; }
 
-  .loading { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--slate-gray); padding: 40px 0; text-align: center; }
+  .loading { font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--slate-gray); padding: 8px 16px; background: var(--off-white); border: 1px solid var(--border); margin-bottom: 20px; letter-spacing: .5px; }
 
-  /* ── TABLA DE LISTADO (mismo patrón que SB-fechas.html) ── */
-  .viviendas-table-wrap { overflow-x: auto; border: 1px solid var(--border); margin: 0 32px 40px; }
-  table.data-table { width: 100%; border-collapse: collapse; min-width: 640px; }
+  /* ── LISTADO: mismos tamaños/clases que SB-fechas.html ── */
+  #listado-screen main { max-width: 1080px; padding: 40px 48px 80px; }
+  .viviendas-group { margin-bottom: 28px; }
+  .viviendas-group-title { font-family: 'Oswald', sans-serif; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); padding: 12px 16px; background: var(--off-white); border: 1px solid var(--border); border-bottom: none; }
+  .viviendas-table-wrap { overflow-x: auto; border: 1px solid var(--border); }
+  table.data-table { width: 100%; border-collapse: collapse; min-width: 640px; table-layout: fixed; }
+  table.data-table th:nth-child(1), table.data-table td:nth-child(1) { width: 10%; }
+  table.data-table th:nth-child(2), table.data-table td:nth-child(2) { width: 32%; }
+  table.data-table th:nth-child(3), table.data-table td:nth-child(3) { width: 22%; }
+  table.data-table th:nth-child(4), table.data-table td:nth-child(4) { width: 36%; }
   table.data-table th { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--off-white); font-weight: 400; }
-  table.data-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  table.data-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   table.data-table tr:last-child td { border-bottom: none; }
   table.data-table td.vcode { font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: .5px; color: var(--black); white-space: nowrap; }
-  table.data-table td.vcliente { font-family: 'Roboto', sans-serif; font-size: 12.5px; color: var(--text); }
+  .vcode-btn { display: inline-block; width: 76px; box-sizing: border-box; text-align: center; font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: .5px; color: var(--black); text-decoration: none; border: 1px solid var(--border); padding: 6px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; transition: all .15s; background: var(--white); cursor: pointer; }
+  .vcode-btn:hover { border-color: var(--black); background: var(--off-white); }
+  table.data-table td.rowlabel { font-family: 'Roboto', sans-serif; font-size: 12.5px; color: var(--slate-gray); }
   table.data-table .fila-acciones { display: flex; gap: 6px; flex-wrap: nowrap; }
   table.data-table .fila-acciones .btn { padding: 7px 10px; font-size: 10px; letter-spacing: 1px; flex-shrink: 0; white-space: nowrap; }
   .estado-badge.chip { font-size: 9px; padding: 2px 7px; }
+  .estado-badge.firmado { background: #f0faf0; color: #2d7a2d; border: 1px solid #b8ddb8; }
+
+  /* ── SUBIDA DE FIRMADO: mismo patrón que SB-extras.html ── */
+  .upload-zone { border: 2px dashed var(--border); padding: 32px 20px; text-align: center; cursor: pointer; transition: border-color .2s; margin-top: 16px; }
+  .upload-zone:hover { border-color: var(--black); }
+  .upload-zone.has-file { border-color: #2d7a2d; background: #f0faf0; border-style: solid; }
+  .upload-zone-label { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); cursor: pointer; display: block; }
+  .upload-zone-hint { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--mid); margin-top: 6px; }
+  .upload-zone-filename { font-family: 'Roboto', sans-serif; font-size: 13px; color: #2d7a2d; margin-top: 8px; font-weight: 400; }
+  .btn-enviar-firmado { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; padding: 14px 32px; background: var(--black); color: white; border: none; transition: all .2s; margin-top: 16px; opacity: .4; pointer-events: none; }
+  .btn-enviar-firmado.active { opacity: 1; pointer-events: auto; }
+  .btn-enviar-firmado.active:hover { background: #333; }
 </style>
 </head>
 <body>
@@ -147,33 +181,24 @@
   </div>
 </div>
 
-<div id="promo-screen">
-  <div class="vsearch-box">
-    <div class="vsearch-logo">Serena Breeze</div>
-    <div class="vsearch-sub">Generador de contratos · Seleccione promoción</div>
-    <div class="vsearch-field">
-      <label class="vsearch-label">Promoción</label>
-      <select class="vsearch-select" id="ps-promo">
-        <option value="">Seleccione promoción…</option>
-        <option value="2SB">Serena Breeze 2</option>
-        <option value="3SB">Serena Breeze 3</option>
-      </select>
-    </div>
-    <button class="vsearch-btn" id="ps-btn" onclick="psConfirm()" disabled>Continuar →</button>
-  </div>
-</div>
-
 <div id="listado-screen">
-  <div class="top-bar">
-    <div>
-      <div class="top-bar-viv" id="ls-promo-nombre">—</div>
-      <div class="top-bar-sub">Estado de todas las viviendas</div>
-    </div>
-    <button class="top-bar-change" onclick="volverAPromo()">Cambiar promoción</button>
-  </div>
   <main>
+    <div class="sec-eyebrow">Serena Breeze · Contratos</div>
+    <div class="sec-title">Generador de contratos</div>
+    <div class="sec-desc">Estado de reserva y compraventa de cada vivienda: genera, edita y cancela contratos por unidad.</div>
+
+    <div class="topbar">
+      <div class="promo-tabs">
+        <button class="promo-tab" id="tab-2sb" onclick="switchPromo('2SB')">2SB</button>
+        <button class="promo-tab" id="tab-3sb" onclick="switchPromo('3SB')">3SB</button>
+      </div>
+      <button class="refresh-btn" onclick="if (SESSION_PROMO) cargarListado()">↻ Actualizar</button>
+    </div>
+
     <div id="listado-load" class="loading" style="display:none;">Cargando…</div>
     <div id="listado-contenido"></div>
+
+    <div class="pie-nota">Los datos de esta página vienen directamente de la pestaña "Clientes" del Sheet de cada promoción. "Editar" sustituye el contrato activo en el sitio (no crea uno nuevo); "Cancelar" un contrato de compraventa cancela también la reserva que le dio origen.</div>
   </main>
 </div>
 
@@ -200,14 +225,19 @@ const CONTRATOS_URL = 'https://script.google.com/macros/s/AKfycbzy5_v-tsFEsdgbGf
 const UNIDADES = {
   '2SB': {
     nombre: 'Serena Breeze 2',
-    codigos: ['2SB1','2SB2','2SB3','2SB4','2SB101','2SB102','2SB103','2SB104','2SB105','2SB111','2SB112','2SB113','2SB114','2SB115','2SB121','2SB122']
+    grupos: {
+      'Villas': ['2SB1','2SB2','2SB3','2SB4'],
+      'Apartamentos': ['2SB101','2SB102','2SB103','2SB104','2SB105','2SB111','2SB112','2SB113','2SB114','2SB115','2SB121','2SB122']
+    }
   },
   '3SB': {
     nombre: 'Serena Breeze 3',
-    codigos: ['3SB1','3SB2','3SB3','3SB4','3SB5','3SB6','3SB7',
-      '3SB101','3SB102','3SB103','3SB104','3SB105','3SB106','3SB111','3SB112','3SB113','3SB114','3SB115','3SB116','3SB121','3SB122','3SB123','3SB124',
-      '3SB201','3SB202','3SB203','3SB204','3SB211','3SB212','3SB213','3SB214','3SB221','3SB222',
-      '3SB301','3SB302','3SB303','3SB304','3SB311','3SB312','3SB313','3SB314','3SB321','3SB322','3SB323']
+    grupos: {
+      'Villas': ['3SB1','3SB2','3SB3','3SB4','3SB5','3SB6','3SB7'],
+      'Apartamentos Bloque 1': ['3SB101','3SB102','3SB103','3SB104','3SB105','3SB106','3SB111','3SB112','3SB113','3SB114','3SB115','3SB116','3SB121','3SB122','3SB123','3SB124'],
+      'Apartamentos Bloque 2': ['3SB201','3SB202','3SB203','3SB204','3SB211','3SB212','3SB213','3SB214','3SB221','3SB222'],
+      'Apartamentos Bloque 3': ['3SB301','3SB302','3SB303','3SB304','3SB311','3SB312','3SB313','3SB314','3SB321','3SB322','3SB323']
+    }
   }
 };
 
@@ -278,7 +308,7 @@ function doLogin() {
       if (data.ok) {
         SESSION_USUARIO = u;
         document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('promo-screen').classList.add('visible');
+        document.getElementById('listado-screen').classList.add('visible');
       } else if (data.motivo === 'sin_acceso') {
         errorEl.textContent = 'Tu usuario no tiene acceso a esta herramienta.';
         errorEl.style.display = 'block';
@@ -300,24 +330,12 @@ function doLogin() {
     .finally(() => { btn.disabled = false; btn.textContent = original; });
 }
 
-// ─── SELECTOR DE PROMOCIÓN ───────────────────────────────────────────
-document.addEventListener('change', e => {
-  if (e.target && e.target.id === 'ps-promo') {
-    document.getElementById('ps-btn').disabled = !e.target.value;
-  }
-});
-function psConfirm() {
-  const promo = document.getElementById('ps-promo').value;
-  if (!promo) return;
+// ─── SELECTOR DE PROMOCIÓN (pestañas, igual que SB-fechas.html) ─────
+function switchPromo(promo) {
   SESSION_PROMO = promo;
-  document.getElementById('promo-screen').classList.remove('visible');
-  document.getElementById('ls-promo-nombre').textContent = UNIDADES[promo].nombre;
-  document.getElementById('listado-screen').classList.add('visible');
+  document.getElementById('tab-2sb').classList.toggle('active', promo === '2SB');
+  document.getElementById('tab-3sb').classList.toggle('active', promo === '3SB');
   cargarListado();
-}
-function volverAPromo() {
-  document.getElementById('listado-screen').classList.remove('visible');
-  document.getElementById('promo-screen').classList.add('visible');
 }
 
 // ─── LISTADO DE VIVIENDAS (accion: listar_estado) ───────────────────
@@ -364,24 +382,32 @@ function renderListado(viviendas) {
     if (v.tipo === 'reserva') return `<span class="estado-badge reserva chip">Reserva</span>`;
     return `<span class="estado-badge contrato chip">Compraventa</span>`;
   };
-  const cliente = v => v.cliente1 ? escapeHtml(v.cliente1) + (v.cliente2 ? ' y ' + escapeHtml(v.cliente2) : '') : '—';
+  const porCodigo = {};
+  viviendas.forEach(v => { porCodigo[v.cod_viv] = v; });
 
-  const filas = viviendas.map(v => `
-    <tr>
-      <td class="vcode">${escapeHtml(v.cod_viv)}</td>
-      <td>${escapeHtml(v.vivienda || '—')}</td>
-      <td>${badge(v)}</td>
-      <td class="vcliente">${cliente(v)}</td>
-      <td><div class="fila-acciones">${accionesFila(v)}</div></td>
-    </tr>`).join('');
+  const grupos = UNIDADES[SESSION_PROMO].grupos;
+  let html = '';
+  Object.keys(grupos).forEach(nombreGrupo => {
+    const codigos = grupos[nombreGrupo];
+    html += `<div class="viviendas-group">`;
+    html += `<div class="viviendas-group-title">${escapeHtml(nombreGrupo)}</div>`;
+    html += `<div class="viviendas-table-wrap"><table class="data-table"><thead><tr><th>Vivienda</th><th>Cliente</th><th>Estado</th><th>Acciones</th></tr></thead><tbody>`;
+    codigos.forEach(cod => {
+      const v = porCodigo[cod] || { cod_viv: cod, vivienda: '', tipo: null, cliente1: '', cliente2: '', pdf_url: '' };
+      const clienteHtml = v.cliente1
+        ? escapeHtml(v.cliente1) + (v.cliente2 ? '<br>' + escapeHtml(v.cliente2) : '')
+        : '—';
+      html += `<tr>
+        <td class="vcode"><button class="vcode-btn" onclick="entrarEnVivienda('${cod}')" title="Ver estado y subir firmado">${escapeHtml(cod)}</button></td>
+        <td class="rowlabel">${clienteHtml}</td>
+        <td>${badge(v)}${v.firmado ? ' <span class="estado-badge firmado chip" title="Firmado">F</span>' : ''}</td>
+        <td><div class="fila-acciones">${accionesFila(v)}</div></td>
+      </tr>`;
+    });
+    html += `</tbody></table></div></div>`;
+  });
 
-  document.getElementById('listado-contenido').innerHTML = `
-    <div class="viviendas-table-wrap">
-      <table class="data-table">
-        <thead><tr><th>Código</th><th>Vivienda</th><th>Estado</th><th>Cliente</th><th>Acciones</th></tr></thead>
-        <tbody>${filas}</tbody>
-      </table>
-    </div>`;
+  document.getElementById('listado-contenido').innerHTML = html;
 }
 
 function cancelarDesdeListado(codViv) {
@@ -481,7 +507,101 @@ function renderEstado(data) {
       <span class="estado-badge ${badgeClase}">${badgeTexto}</span>
       <div class="estado-linea">${lineas}</div>
       <div class="estado-actions">${acciones}</div>
+    </div>
+    ${renderFirmaBlock(activa)}`;
+}
+
+// ─── FIRMA: PDF firmado a mano (no sustituye al generado, convive) ──
+let FIRMA_PENDIENTE = null; // { base64, tipoEvento } — hasta que se pulsa "Enviar"
+let FIRMA_TIPO_EVENTO_ACTUAL = null; // 'reserva'|'contrato' de la fila activa mostrada, para el drag-and-drop
+
+function renderFirmaBlock(activa) {
+  if (!activa) return '';
+  FIRMA_PENDIENTE = null;
+  FIRMA_TIPO_EVENTO_ACTUAL = activa.tipo;
+  const sufijo = activa.tipo === 'reserva' ? 'r' : 'c';
+  const firmado = !!activa['firmado_' + sufijo];
+  const fecha = activa['fecha_firma_' + sufijo];
+  const url = activa['pdf_firmado_' + sufijo + '_url'];
+  const etiqueta = activa.tipo === 'reserva' ? 'reserva' : 'contrato';
+
+  return `
+    <div class="estado-card" style="margin-top:16px;">
+      <span class="estado-badge ${firmado ? 'firmado' : ''}" style="${firmado ? '' : 'background:var(--off-white);color:var(--slate-gray);border:1px solid var(--border);'}">${firmado ? 'Firmado ✓' : 'Sin firmar'}</span>
+      <div class="estado-linea">${firmado ? 'PDF de ' + etiqueta + ' firmado subido el ' + escapeHtml(fecha || '—') + '.' : 'Adjunta aquí el PDF de ' + etiqueta + ' firmado a mano — se guarda junto al generado, no lo sustituye.'}</div>
+      ${url ? `<div class="estado-actions"><a class="btn btn-link" href="${url}" target="_blank">Ver PDF firmado</a></div>` : ''}
+      <div id="firma-msg"></div>
+      <div class="upload-zone" id="firma-upload-zone" onclick="document.getElementById('firma-input').click()">
+        <input type="file" id="firma-input" accept="application/pdf" style="display:none" onchange="onSeleccionarFirmado(this,'${activa.tipo}')">
+        <label class="upload-zone-label" id="firma-upload-label">Haz clic o arrastra aquí el PDF firmado</label>
+        <div class="upload-zone-hint">Solo archivos PDF</div>
+        <div class="upload-zone-filename" id="firma-upload-filename"></div>
+      </div>
+      <button class="btn-enviar-firmado" id="btn-enviar-firmado" onclick="enviarFirmado()">
+        ${firmado ? 'Sustituir documento firmado →' : 'Enviar documento firmado →'}
+      </button>
     </div>`;
+}
+
+function onSeleccionarFirmado(input, tipoEvento) {
+  const file = input.files[0];
+  if (!file) return;
+  const esPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+  if (!esPdf) {
+    mostrarMsgFirma('error', 'Solo se admiten archivos PDF.');
+    input.value = '';
+    return;
+  }
+  input.disabled = true; // evita relecturas mientras el FileReader está en curso
+  const zone = document.getElementById('firma-upload-zone');
+  const fname = document.getElementById('firma-upload-filename');
+  const reader = new FileReader();
+  reader.onload = e => {
+    input.disabled = false;
+    FIRMA_PENDIENTE = { base64: e.target.result.split(',')[1], tipoEvento: tipoEvento };
+    if (zone) zone.classList.add('has-file');
+    if (fname) fname.textContent = '✓ ' + file.name;
+    const btn = document.getElementById('btn-enviar-firmado');
+    if (btn) btn.classList.add('active');
+  };
+  reader.onerror = () => {
+    input.disabled = false;
+    mostrarMsgFirma('error', 'No se pudo leer el archivo.');
+  };
+  reader.readAsDataURL(file);
+}
+
+function mostrarMsgFirma(tipo, texto) {
+  const el = document.getElementById('firma-msg');
+  if (!el) return;
+  el.innerHTML = `<div class="msg ${tipo}">${escapeHtml(texto)}</div>`;
+}
+
+function enviarFirmado() {
+  if (!FIRMA_PENDIENTE) return;
+  const btn = document.getElementById('btn-enviar-firmado');
+  if (btn) { btn.textContent = 'Enviando…'; btn.classList.remove('active'); }
+  mostrarMsgFirma('info', 'Subiendo PDF firmado…');
+  llamarBackend({
+    accion: 'subir_firmado',
+    promocion: SESSION_PROMO,
+    cod_viv: SESSION_COD_VIV,
+    tipo_evento: FIRMA_PENDIENTE.tipoEvento,
+    pdf_base64: FIRMA_PENDIENTE.base64,
+    usuario: SESSION_USUARIO
+  })
+    .then(data => {
+      if (!data.ok) {
+        mostrarMsgFirma('error', data.error || 'No se pudo subir el PDF firmado.');
+        if (btn) { btn.textContent = 'Enviar documento firmado →'; btn.classList.add('active'); }
+        return;
+      }
+      cargarEstado(); // recarga y ya se ve "Firmado ✓"
+    })
+    .catch(() => {
+      mostrarMsgFirma('error', 'No se pudo conectar con el servidor. Inténtalo de nuevo.');
+      if (btn) { btn.textContent = 'Enviar documento firmado →'; btn.classList.add('active'); }
+    });
 }
 
 function confirmarCancelacion() {
@@ -655,10 +775,26 @@ function recalcularPrecios() {
   document.getElementById('f-total').value = total ? formatearMiles(total) : '';
   recalcularPagos();
 }
+// Sustituye "don {{cliente1}} y doña {{cliente2}}" fijo en la plantilla
+// por un marcador ya construido — así la "y" solo aparece si hay
+// segundo cliente, y el tratamiento no asume sexo por posición.
+const TRATAMIENTO_ES = { 'Don': 'don', 'Doña': 'doña' };
+const TRATAMIENTO_EN = { 'Don': 'Mr.', 'Doña': 'Mrs.' };
+function construirFormulaClientes(idioma) {
+  const c1 = (document.getElementById('f-cliente1') || {}).value || '';
+  const c2 = (document.getElementById('f-cliente2') || {}).value || '';
+  const t1 = (document.getElementById('f-tratamiento1') || {}).value || 'Don';
+  const t2 = (document.getElementById('f-tratamiento2') || {}).value || 'Don';
+  const tabla = idioma === 'en' ? TRATAMIENTO_EN : TRATAMIENTO_ES;
+  const nexo = idioma === 'en' ? ' and ' : ' y ';
+  let out = c1.trim() ? (tabla[t1] + ' ' + c1.trim()) : '';
+  if (c2.trim()) out += (out ? nexo : '') + tabla[t2] + ' ' + c2.trim();
+  return out;
+}
 function actualizarLetrasReserva() {
   const importe = parsearMiles(document.getElementById('f-pago_reserv').value);
-  document.getElementById('f-pago_reserv_letra').value = numeroALetrasES(importe);
-  document.getElementById('f-pago_reserv_letra_en').value = numberToWordsEN(importe);
+  const prev = document.getElementById('prev-pago-reserv-letra');
+  if (prev) prev.textContent = importe ? (numeroALetrasES(importe) + '  /  ' + numberToWordsEN(importe)) : '—';
   recalcularPagos();
 }
 // Pago 1 = 25% de (total - reserva). Pago 2 = igual que pago 1.
@@ -731,7 +867,10 @@ function mostrarFormulario(tipo, modo) {
     <div class="form-field"><label class="form-label">Fecha del documento</label><input type="date" class="form-input precargado" id="f-fecha-hoy" value="${fechaHoyISO}"></div>
   </div>`;
 
-  // ── Cliente(s): campos simples, genéricos ──
+  // ── Cliente(s): campos simples, genéricos. El tratamiento (solo
+  // reserva) se inserta en su propia fila justo antes de cada nombre —
+  // "don"/"doña" + la "y" del RECIBE se arman en el envío, no en la
+  // plantilla (marcador ya construido: formula_clientes). ──
   html += `<div class="form-grid">`;
   CAMPOS_FORM.forEach(campo => {
     if (campo.seccion) {
@@ -739,6 +878,13 @@ function mostrarFormulario(tipo, modo) {
       return;
     }
     if (!campo.appliesTo.includes(tipo)) return;
+    if (tipo === 'reserva' && (campo.key === 'cliente1' || campo.key === 'cliente2')) {
+      const n = campo.key === 'cliente1' ? 1 : 2;
+      html += `
+      <div class="form-field full"><label class="form-label">Tratamiento cliente ${n}</label>
+        <select class="form-input" id="f-tratamiento${n}"><option value="Don">Don</option><option value="Doña">Doña</option></select>
+      </div>`;
+    }
     html += `
       <div class="form-field ${campo.full ? 'full' : ''}">
         <label class="form-label">${campo.label}</label>
@@ -751,29 +897,35 @@ function mostrarFormulario(tipo, modo) {
   html += `<div class="form-section-label">Precio</div><div class="form-grid una-col">
     <div class="form-field"><label class="form-label">Precio vivienda (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('precio_viv') ? 'precargado' : ''}" id="f-precio_viv" value="${escapeHtml(val('precio_viv') ? formatearMiles(parsearMiles(val('precio_viv'))) : '')}" oninput="recalcularPrecios()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>
     <div class="form-field"><label class="form-label">Importe extras y modificaciones (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('precio_ext') ? 'precargado' : ''}" id="f-precio_ext" value="${escapeHtml(val('precio_ext') ? formatearMiles(parsearMiles(val('precio_ext'))) : '')}" oninput="recalcularPrecios()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>
-    <div class="form-field"><label class="form-label">Subtotal (€) — calculado</label><input type="text" class="form-input precargado" id="f-subtotal" value="${escapeHtml(val('subtotal') ? formatearMiles(parsearMiles(val('subtotal'))) : '')}" readonly></div>
+    <div class="form-field"><label class="form-label">Subtotal (€) — calculado</label><input type="text" class="form-input importe precargado" id="f-subtotal" value="${escapeHtml(val('subtotal') ? formatearMiles(parsearMiles(val('subtotal'))) : '')}" readonly></div>
     <div class="form-field"><label class="form-label">IVA (%)</label><input type="number" step="0.01" class="form-input precargado" id="f-iva" value="${escapeHtml(esP('iva') ? String(val('iva')).replace('%','') : '10')}" oninput="recalcularPrecios()"></div>
-    <div class="form-field"><label class="form-label">Total compraventa (€) — calculado</label><input type="text" class="form-input precargado" id="f-total" value="${escapeHtml(val('total') ? formatearMiles(parsearMiles(val('total'))) : '')}" readonly></div>
+    <div class="form-field"><label class="form-label">Total compraventa (€) — calculado</label><input type="text" class="form-input importe precargado" id="f-total" value="${escapeHtml(val('total') ? formatearMiles(parsearMiles(val('total'))) : '')}" readonly></div>
   </div>`;
 
   // ── Forma de pago ──
-  html += `<div class="form-section-label">Forma de pago</div><div class="form-grid una-col">
-    <div class="form-field"><label class="form-label">Pago a la firma de la reserva (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('pago_reserv') ? 'precargado' : ''}" id="f-pago_reserv" value="${escapeHtml(val('pago_reserv') ? formatearMiles(parsearMiles(val('pago_reserv'))) : '')}" oninput="actualizarLetrasReserva()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>`;
+  html += `<div class="form-section-label">Forma de pago</div>
+    <div class="form-row">
+      <div class="form-field${tipo === 'reserva' ? '' : ' ancho'}"><label class="form-label">Pago a la firma de la reserva (€)</label><input type="text" inputmode="numeric" class="form-input importe ${esP('pago_reserv') ? 'precargado' : ''}" id="f-pago_reserv" value="${escapeHtml(val('pago_reserv') ? formatearMiles(parsearMiles(val('pago_reserv'))) : '')}" oninput="actualizarLetrasReserva()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>`;
   if (tipo === 'reserva') {
+    const letrasIniciales = esP('pago_reserv')
+      ? numeroALetrasES(parsearMiles(val('pago_reserv'))) + '  /  ' + numberToWordsEN(parsearMiles(val('pago_reserv')))
+      : '—';
     html += `
-    <div class="form-field"><label class="form-label">Importe en letras (ES) — generado, editable</label><input type="text" class="form-input ${esP('pago_reserv_letra') ? 'precargado' : ''}" id="f-pago_reserv_letra" value="${escapeHtml(val('pago_reserv_letra'))}"></div>
-    <div class="form-field"><label class="form-label">Importe en letras (EN) — generado, editable</label><input type="text" class="form-input ${esP('pago_reserv_letra_en') ? 'precargado' : ''}" id="f-pago_reserv_letra_en" value="${escapeHtml(val('pago_reserv_letra_en'))}"></div>`;
+      <div class="form-field ancho"><label class="form-label">Importe en letras (ES / EN) — se genera solo</label><div class="form-input precargado" id="prev-pago-reserv-letra" style="min-height:20px;">${letrasIniciales}</div></div>`;
   }
+  html += `</div>`;
   [1, 2, 3].forEach(n => {
     html += `
-    <div class="form-field"><label class="form-label">Fecha pago ${n}</label><input type="date" class="form-input" id="f-fecha_pago_${n}_raw" onchange="actualizarFechaPago(${n})"></div>
-    <div class="form-field full"><label class="form-label">Fecha en letras — pago ${n} (ES / EN)</label><div class="form-input precargado" id="prev-fecha_pago_${n}" style="min-height:20px;">—</div></div>
-    <div class="form-field"><label class="form-label">Importe pago ${n} (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('pago_' + n) ? 'precargado' : ''}" id="f-pago_${n}" value="${escapeHtml(val('pago_' + n) ? formatearMiles(parsearMiles(val('pago_' + n))) : '')}" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>`;
+    <div class="form-row">
+      <div class="form-field"><label class="form-label">Fecha pago ${n}</label><input type="date" class="form-input" id="f-fecha_pago_${n}_raw" onchange="actualizarFechaPago(${n})"></div>
+      <div class="form-field ancho"><label class="form-label">Fecha en letras (ES / EN)</label><div class="form-input precargado" id="prev-fecha_pago_${n}" style="min-height:20px;">—</div></div>
+      <div class="form-field"><label class="form-label">Importe pago ${n} (€)</label><input type="text" inputmode="numeric" class="form-input importe ${esP('pago_' + n) ? 'precargado' : ''}" id="f-pago_${n}" value="${escapeHtml(val('pago_' + n) ? formatearMiles(parsearMiles(val('pago_' + n))) : '')}" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>
+    </div>`;
   });
-  html += `</div>`;
+  html += `<div class="pie-nota-form">Cómo se calculan: pago 1 = 25% del total menos la reserva. Pago 2 = el mismo importe que el pago 1. Pago 3 = el resto (el otro 50%). Se recalculan solos al cambiar el total o la reserva, pero puedes escribir encima si necesitas otro reparto.</div>`;
 
   // ── Plazos: selector de trimestre, igual patrón que SB-fechas.html ──
-  html += `<div class="form-section-label">Plazos</div><div class="form-grid">
+  html += `<div class="form-section-label">Plazos</div><div class="form-grid una-col">
     <div class="form-field">
       <label class="form-label">Plazo de entrega — desde</label>
       <div style="display:flex; gap:8px;">
@@ -860,8 +1012,13 @@ function enviarFormulario(tipo, modo) {
   const ivaEl = document.getElementById('f-iva');
   campos.iva = ivaEl.value.trim();
   if (tipo === 'reserva') {
-    campos.pago_reserv_letra = document.getElementById('f-pago_reserv_letra').value.trim();
-    campos.pago_reserv_letra_en = document.getElementById('f-pago_reserv_letra_en').value.trim();
+    campos.formula_clientes = construirFormulaClientes('es');
+    campos.formula_clientes_en = construirFormulaClientes('en');
+    const importeReserva = parsearMiles(document.getElementById('f-pago_reserv').value);
+    if (importeReserva) {
+      campos.pago_reserv_letra = numeroALetrasES(importeReserva);
+      campos.pago_reserv_letra_en = numberToWordsEN(importeReserva);
+    }
     const mesAdel = parseInt(document.getElementById('f-adelanto-mes').value, 10);
     const anioAdel = parseInt(document.getElementById('f-adelanto-anio').value, 10);
     if (mesAdel && anioAdel) {
@@ -953,6 +1110,28 @@ window.addEventListener('load', () => {
   sendHeight();
   ['login-user','login-pass'].forEach(id => {
     document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  });
+
+  // Arrastrar y soltar el PDF firmado (mismo patrón que SB-extras.html)
+  document.addEventListener('dragover', e => {
+    const zone = document.getElementById('firma-upload-zone');
+    if (zone) { e.preventDefault(); zone.style.borderColor = 'var(--black)'; }
+  });
+  document.addEventListener('dragleave', () => {
+    const zone = document.getElementById('firma-upload-zone');
+    if (zone && !zone.classList.contains('has-file')) zone.style.borderColor = '';
+  });
+  document.addEventListener('drop', e => {
+    const zone = document.getElementById('firma-upload-zone');
+    if (!zone) return;
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
+    if (files.length !== 1) return;
+    const input = document.getElementById('firma-input');
+    const dt = new DataTransfer();
+    dt.items.add(files[0]);
+    input.files = dt.files;
+    onSeleccionarFirmado(input, FIRMA_TIPO_EVENTO_ACTUAL);
   });
 });
 new MutationObserver(sendHeight).observe(document.body, { childList: true, subtree: true, attributes: true });
