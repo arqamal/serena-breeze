@@ -316,6 +316,7 @@
       <span class="vsearch-check-label" id="vs-post-label">Extras post-entrega</span>
     </label>
     <button class="vsearch-btn" id="vs-btn" onclick="vsConfirm()">Continuar →</button>
+    <div style="text-align:center; margin-top:14px;"><a href="#" onclick="cerrarSesion(); return false;" style="font-family:'Roboto',sans-serif; font-size:11px; color:var(--slate-gray); text-decoration:none;">Cerrar sesión</a></div>
   </div>
 </div>
 
@@ -340,6 +341,7 @@
 <script>
 // ─── LOGIN (migrado a AuthUsuarios.gs — login centralizado) ─────────
 const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
+const CLAVE_TOKEN_SESION = 'amal_token'; // compartida entre TODAS las herramientas (mismo origen github.io)
 
 // ─── WEBHOOKS ────────────────────────────────────────────────────────
 const WEBHOOK_SUBMIT  = 'https://hook.eu1.make.com/1o69ejvny1ecqirrvqcewxho8l7s7vcd';
@@ -373,6 +375,7 @@ function doLogin() {
     .then(r => r.json())
     .then(data => {
       if (data.ok) {
+        if (data.token) localStorage.setItem(CLAVE_TOKEN_SESION, data.token);
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('vivienda-screen').classList.add('visible');
       } else if (data.motivo === 'sin_acceso') {
@@ -390,6 +393,33 @@ function doLogin() {
     .finally(() => {
       if (btn) { btn.disabled = false; btn.textContent = textoOriginal; }
     });
+}
+
+// Sesión guardada (token en localStorage, compartido entre herramientas
+// del mismo origen). Si es válida y tiene acceso a "extras", se salta el
+// formulario de login.
+function intentarSesionGuardada() {
+  const token = localStorage.getItem(CLAVE_TOKEN_SESION);
+  if (!token) return Promise.resolve(false);
+  return fetch(LOGIN_URL, {
+    method: 'POST',
+    body: JSON.stringify({ accion: 'login', token: token, herramienta: 'extras' })
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) {
+        localStorage.removeItem(CLAVE_TOKEN_SESION);
+        return false;
+      }
+      if (data.token) localStorage.setItem(CLAVE_TOKEN_SESION, data.token); // renueva caducidad
+      return true;
+    })
+    .catch(() => false); // sin conexión: se cae al login normal, no se bloquea la pantalla
+}
+
+function cerrarSesion() {
+  localStorage.removeItem(CLAVE_TOKEN_SESION);
+  location.reload();
 }
 
 // ─── VIVIENDA SEARCH SCREEN ──────────────────────────────────────────
@@ -563,6 +593,12 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById(id)?.addEventListener('keydown', e => {
       if (e.key === 'Enter') doLogin();
     });
+  });
+  intentarSesionGuardada().then(entrado => {
+    if (entrado) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('vivienda-screen').classList.add('visible');
+    }
   });
 });
 
