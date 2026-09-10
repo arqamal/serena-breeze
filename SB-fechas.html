@@ -68,6 +68,12 @@
   .field-input.due-orange, .field-value.due-orange { background: #FCEFD9; }
   .field-input.due-red, .field-value.due-red { background: #FBE3E1; }
 
+  /* CAMPO DE PERIODO (trimestre+año, con fin opcional) — usado en fecha_entrega de vivienda */
+  .trimestre-input { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; padding: 5px 6px; }
+  .trimestre-input select { border: 1px solid var(--border); padding: 5px 3px; font-family: 'Roboto', sans-serif; font-size: 11.5px; color: var(--text); background: var(--white); outline: none; border-radius: 0; }
+  .trimestre-input select:focus { border-color: var(--black); }
+  .trimestre-input .tri-sep { font-family: 'Roboto', sans-serif; font-size: 10px; color: var(--slate-gray); white-space: nowrap; }
+
   /* BLOQUE 2 — TABLA DE FASE, TRANSPUESTA (campo en filas, Villas/Apartamentos en columnas) — cabe sin scroll lateral */
   .fase-table-wrap, .viviendas-table-wrap { border: 1px solid var(--border); }
   .fase-table-wrap { margin-bottom: 28px; }
@@ -181,15 +187,18 @@
         <li>Elige la promoción arriba (1SB / 2SB / 3SB). Cada una tiene su propia página con 3 niveles: <strong>Promoción</strong>, <strong>Fase</strong> (Villas y Apartamentos — en 3SB, además, por bloque) y <strong>Vivienda</strong>.</li>
         <li>Los campos marcados <em>· calculado</em> no se editan directamente: se calculan solos a partir de las fechas de las viviendas (la más tardía), y se actualizan al momento en cuanto guardas algo.
           <ul class="help-sublist">
-            <li><strong>Fecha fin estimada</strong> de Promoción = la <em>fecha fin estimada</em> más tardía entre todas las viviendas de esa promoción.</li>
+            <li><strong>Fecha fin estimada</strong> de Promoción = la <em>Final de Obra Estimada</em> más tardía entre todas las viviendas de esa promoción.</li>
             <li><strong>Fecha fin real</strong> de Promoción = la <em>CFO</em> más tardía entre todas las viviendas de esa promoción.</li>
-            <li><strong>Entrega de fase</strong> = la <em>fecha entrega</em> más tardía entre las viviendas de esa fase (Villas y cada bloque de Apartamentos, por separado).</li>
+            <li><strong>Entrega de fase</strong> = la <em>Entrega Estimada Cliente</em> más tardía entre las viviendas de esa fase (Villas y cada bloque de Apartamentos, por separado) — no depende de la fecha de entrega de contrato.</li>
           </ul>
           En los tres casos, mientras falte una sola vivienda por rellenar ese dato, el campo calculado se queda vacío.
         </li>
+        <li>En Vivienda, <strong>Final de Obra Estimada</strong> y <strong>Entrega Estimada Cliente</strong> las puede editar quien tenga permiso de Fase (arquitectura y técnicos), no solo quien tenga permiso de Vivienda — el resto de campos de vivienda sí exige ese permiso específico.</li>
+        <li><strong>Fecha entrega de contrato</strong> se introduce como periodo por trimestre (p. ej. <em>cuarto trimestre 2026</em>), con un trimestre de fin opcional para un rango (p. ej. <em>cuarto trimestre 2026 – primer trimestre 2027</em>); si se deja el fin en blanco, se guarda como un único trimestre.</li>
+        <li>Las fechas de tipo mes se muestran con el nombre del mes en letra (p. ej. <em>marzo 2027</em>), no en formato numérico.</li>
         <li>Los fondos de color son un semáforo de plazo: <span class="help-dot due-green"></span> verde a más de un mes, <span class="help-dot due-orange"></span> naranja dentro del último mes, <span class="help-dot due-red"></span> rojo si ya venció.</li>
         <li>Si un campo aparece como texto en vez de como casilla editable, tu usuario no tiene permiso para tocarlo en ese nivel — puedes consultarlo, pero no cambiarlo.</li>
-        <li>Cada fecha se guarda sola al salir del campo, sin botón de guardar.</li>
+        <li>Cada fecha se guarda sola al salir del campo (o al elegir trimestre/año), sin botón de guardar.</li>
       </ul>
     </div>
   </main>
@@ -288,8 +297,6 @@ function doLogin() {
     if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   });
 });
-
-// Al cargar, intenta la sesión guardada antes de obligar a loguearse.
 document.addEventListener('DOMContentLoaded', () => {
   intentarSesionGuardada().then(entrado => {
     if (entrado) {
@@ -328,8 +335,9 @@ const FIELDS_FASE = [
   { key: 'fecha_entrega', label: 'Entrega de fase', type: 'month', computed: true }
 ];
 const FIELDS_VIVIENDA = [
-  { key: 'fecha_fin_estimada', label: 'Fecha fin estimada', type: 'month', nivelPermiso: 'fase' }, // la edita quien edite Fase (arquitectura+tec), no solo Vivienda
-  { key: 'fecha_entrega', label: 'Fecha entrega', sublabel: 'de contrato', type: 'month' },
+  { key: 'fecha_fin_estimada', label: 'Final de Obra Estimada', type: 'month', nivelPermiso: 'fase' }, // la edita quien edite Fase (arquitectura+tec), no solo Vivienda
+  { key: 'fecha_entrega_estimada_cliente', label: 'Entrega Estimada Cliente', type: 'month', nivelPermiso: 'fase' },
+  { key: 'fecha_entrega', label: 'Fecha entrega', sublabel: 'de contrato', type: 'trimestre' },
   { key: 'fecha_cfo', label: 'CFO', type: 'date' },
   { key: 'fecha_acta_recepcion', label: 'Acta de Recepción', type: 'date' },
   { key: 'fecha_escritura', label: 'Fecha escritura', type: 'date' }
@@ -475,8 +483,10 @@ function renderBloque2_Fases() {
   fasesDePromo().forEach(fase => {
     const base = DATA_FASES.find(r => r.promocion === CURRENT_PROMO && r.fase === fase) || { promocion: CURRENT_PROMO, fase: fase };
     const viviendasFase = DATA_VIVIENDAS.filter(r => r.promocion === CURRENT_PROMO && r.fase === fase);
-    // fecha_entrega de fase es calculada: la más tardía de sus viviendas.
-    registros[fase] = Object.assign({}, base, { fecha_entrega: maxFechaViviendaCompleta_(viviendasFase, 'fecha_entrega') });
+    // fecha_entrega de fase es calculada: la Entrega Estimada Cliente más
+    // tardía de sus viviendas (ya no la fecha de entrega de contrato, que
+    // ahora es un periodo por trimestre y no es agregable de la misma forma).
+    registros[fase] = Object.assign({}, base, { fecha_entrega: maxFechaViviendaCompleta_(viviendasFase, 'fecha_entrega_estimada_cliente') });
   });
 
   let html = '<div class="fase-table-wrap' + (fasesDePromo().length > 2 ? ' fase-table-ancha' : '') + '"><table class="data-table"><thead><tr><th>Campo</th>';
@@ -569,6 +579,7 @@ function renderFieldRow(fields, registro, puedeEditar) {
 function formatearValorMostrado(field, valor) {
   if (field.type === 'month') return formatearMesES(valor);
   if (field.type === 'date') return formatearFechaES(valor);
+  if (field.type === 'trimestre') return formatearRangoTrimestre_(valor);
   return valor;
 }
 function formatearFechaES(iso) {
@@ -576,11 +587,46 @@ function formatearFechaES(iso) {
   const [y, m, d] = String(iso).split('-');
   return d + '/' + m + '/' + y;
 }
+const MESES_LABELS = ['', 'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 function formatearMesES(iso) {
   if (!iso) return '';
   const m6 = /^(\d{4})-(\d{2})/.exec(String(iso));
   if (!m6) return iso;
-  return m6[2] + '/' + m6[1];
+  const nombre = MESES_LABELS[Number(m6[2])];
+  return (nombre || m6[2]) + ' ' + m6[1];
+}
+
+// ── PERIODO POR TRIMESTRE (fecha_entrega de vivienda/fase) ──────
+// Se guarda como 'AAAAQn' (un solo trimestre) o 'AAAAQn_AAAAQn' (rango
+// inicio_fin). Texto libre, no es Date ni 'yyyy-MM' — así Sheets no lo
+// autoconvierte nunca (ver nota en GeneradorFechas.gs, CAMPOS_MES).
+const TRIMESTRE_LABELS = ['', 'primer', 'segundo', 'tercer', 'cuarto'];
+const TRIMESTRE_ANIO_INI = 2024, TRIMESTRE_ANIO_FIN = 2032;
+function parseTrimestreCodigo_(codigo) {
+  const m = /^(\d{4})Q([1-4])$/.exec(String(codigo || ''));
+  return m ? { anio: Number(m[1]), trimestre: Number(m[2]) } : null;
+}
+function formatearTrimestreCodigo_(codigo) {
+  const t = parseTrimestreCodigo_(codigo);
+  return t ? (TRIMESTRE_LABELS[t.trimestre] + ' trimestre ' + t.anio) : '';
+}
+function formatearRangoTrimestre_(valor) {
+  if (!valor) return '';
+  const partes = String(valor).split('_');
+  const ini = formatearTrimestreCodigo_(partes[0]);
+  if (!ini) return '';
+  if (partes.length < 2 || partes[1] === partes[0]) return ini;
+  const fin = formatearTrimestreCodigo_(partes[1]);
+  return fin ? (ini + ' – ' + fin) : ini;
+}
+// Fecha de referencia para semáforo y para comparar máximos entre viviendas
+// (Entrega de fase = la más tardía de sus viviendas): siempre el trimestre
+// FIN del periodo (o el único, si no hay rango) — último día de ese trimestre.
+function trimestreValorAFecha_(valor) {
+  const partes = String(valor || '').split('_');
+  const ultimo = parseTrimestreCodigo_(partes[partes.length - 1]);
+  if (!ultimo) return null;
+  return new Date(ultimo.anio, ultimo.trimestre * 3, 0);
 }
 // Acepta 'YYYY-MM-DD' (date) o 'YYYY-MM' (month); para 'month' se compara
 // contra el día 1 de ese mes — aproximación razonable ya que no hay día exacto.
@@ -589,6 +635,7 @@ function parseFechaValor_(iso) {
   const s = String(iso);
   if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return new Date(s + 'T00:00:00');
   if (/^\d{4}-\d{2}$/.test(s)) return new Date(s + '-01T00:00:00');
+  if (/^\d{4}Q[1-4](_\d{4}Q[1-4])?$/.test(s)) return trimestreValorAFecha_(s);
   return null;
 }
 // Verde: a más de 1 mes vista · Naranja: dentro del mes que viene · Rojo: fecha ya pasada.
@@ -606,18 +653,58 @@ function claseSemaforo(iso, campoKey) {
   return 'due-green';
 }
 function renderCampoCelda(field, valor, puedeEditar, campoKey, ctx) {
-  const clase = (field.type === 'date' || field.type === 'month') ? claseSemaforo(valor, campoKey) : '';
+  const clase = (field.type === 'date' || field.type === 'month' || field.type === 'trimestre') ? claseSemaforo(valor, campoKey) : '';
   const editable = puedeEditar && !field.computed;
   if (!editable) {
     const vacio = (valor === undefined || valor === null || valor === '');
     const texto = vacio ? (field.computed ? 'Sin viviendas con fecha' : 'Sin definir') : escapeHtml(formatearValorMostrado(field, valor));
     return '<div class="field-value' + (vacio ? ' empty' : '') + (clase ? ' ' + clase : '') + '">' + texto + '</div>';
   }
+  if (field.type === 'trimestre') return renderTrimestreInput_(valor, clase, campoKey, ctx);
   const valorAttr = (valor === undefined || valor === null) ? '' : escapeAttr(valor);
   const ctxAttrs = 'data-campo="' + campoKey + '"' +
     (ctx.fase ? ' data-fase="' + escapeAttr(ctx.fase) + '"' : '') +
     (ctx.vivienda ? ' data-vivienda="' + escapeAttr(ctx.vivienda) + '"' : '');
   return '<input class="field-input' + (clase ? ' ' + clase : '') + '" type="' + field.type + '" value="' + valorAttr + '" ' + ctxAttrs + '>';
+}
+
+// ── INPUT DE PERIODO (trimestre+año inicio, trimestre+año fin opcional) ──
+function opcionesTrimestre_(seleccion) {
+  let html = '<option value="">–</option>';
+  for (let q = 1; q <= 4; q++) {
+    const label = TRIMESTRE_LABELS[q].charAt(0).toUpperCase() + TRIMESTRE_LABELS[q].slice(1) + ' trim.';
+    html += '<option value="' + q + '"' + (String(seleccion) === String(q) ? ' selected' : '') + '>' + label + '</option>';
+  }
+  return html;
+}
+function opcionesAnio_(seleccion) {
+  let html = '<option value="">Año</option>';
+  for (let a = TRIMESTRE_ANIO_INI; a <= TRIMESTRE_ANIO_FIN; a++) {
+    html += '<option value="' + a + '"' + (String(seleccion) === String(a) ? ' selected' : '') + '>' + a + '</option>';
+  }
+  return html;
+}
+function renderTrimestreInput_(valor, clase, campoKey, ctx) {
+  const partes = String(valor || '').split('_');
+  const ini = parseTrimestreCodigo_(partes[0]) || {};
+  const fin = partes.length > 1 ? (parseTrimestreCodigo_(partes[1]) || {}) : {};
+  const ctxAttrs = 'data-campo="' + campoKey + '"' +
+    (ctx.fase ? ' data-fase="' + escapeAttr(ctx.fase) + '"' : '') +
+    (ctx.vivienda ? ' data-vivienda="' + escapeAttr(ctx.vivienda) + '"' : '');
+  return '<div class="field-input trimestre-input' + (clase ? ' ' + clase : '') + '" ' + ctxAttrs + '>' +
+    '<select class="tri-sel" data-parte="ini-q">' + opcionesTrimestre_(ini.trimestre) + '</select>' +
+    '<select class="tri-sel" data-parte="ini-a">' + opcionesAnio_(ini.anio) + '</select>' +
+    '<span class="tri-sep">→ opcional</span>' +
+    '<select class="tri-sel" data-parte="fin-q">' + opcionesTrimestre_(fin.trimestre) + '</select>' +
+    '<select class="tri-sel" data-parte="fin-a">' + opcionesAnio_(fin.anio) + '</select>' +
+  '</div>';
+}
+function valorDesdeTrimestreInput_(wrap) {
+  const get = parte => wrap.querySelector('[data-parte="' + parte + '"]').value;
+  const iniQ = get('ini-q'), iniA = get('ini-a'), finQ = get('fin-q'), finA = get('fin-a');
+  if (!iniQ || !iniA) return ''; // sin trimestre de inicio no hay valor válido que guardar
+  const ini = iniA + 'Q' + iniQ;
+  return (finQ && finA) ? (ini + '_' + finA + 'Q' + finQ) : ini;
 }
 
 // ─── LISTENERS (delegación: un solo listener por elemento generado) ────
@@ -638,6 +725,15 @@ function activarListeners() {
     const fase = fila.dataset.fase;
     const vivienda = fila.dataset.vivienda;
     el.addEventListener((el.type === 'date' || el.type === 'month') ? 'change' : 'blur', () => guardarCampoInput(el, campos => guardarVivienda(fase, vivienda, campos)));
+  });
+
+  cont.querySelectorAll('tr[data-nivel="vivienda"] .trimestre-input[data-campo]').forEach(wrap => {
+    const fila = wrap.closest('tr');
+    const fase = fila.dataset.fase;
+    const vivienda = fila.dataset.vivienda;
+    wrap.querySelectorAll('select').forEach(sel => {
+      sel.addEventListener('change', () => guardarTrimestreInput(wrap, campos => guardarVivienda(fase, vivienda, campos)));
+    });
   });
 }
 
@@ -661,6 +757,31 @@ function guardarCampoInput(el, onSave) {
       el.classList.remove('saving');
       el.classList.add('err-flash');
       setTimeout(() => el.classList.remove('err-flash'), 2500);
+    });
+}
+
+// Misma mecánica que guardarCampoInput, pero el valor sale de recombinar los
+// 4 <select> del input de trimestre en vez de leer un único el.value.
+function guardarTrimestreInput(wrap, onSave) {
+  const campo = wrap.dataset.campo;
+  const nuevoValor = valorDesdeTrimestreInput_(wrap);
+  wrap.classList.add('saving');
+  wrap.classList.remove('err-flash', 'saved-flash');
+  const campos = {}; campos[campo] = nuevoValor;
+  onSave(campos)
+    .then(() => {
+      wrap.classList.remove('saving');
+      wrap.classList.remove('due-green', 'due-orange', 'due-red');
+      const clase = claseSemaforo(nuevoValor, campo);
+      if (clase) wrap.classList.add(clase);
+      wrap.classList.add('saved-flash');
+      setTimeout(() => wrap.classList.remove('saved-flash'), 1200);
+    })
+    .catch(e => {
+      console.error('Error al guardar ' + campo + ':', e);
+      wrap.classList.remove('saving');
+      wrap.classList.add('err-flash');
+      setTimeout(() => wrap.classList.remove('err-flash'), 2500);
     });
 }
 
