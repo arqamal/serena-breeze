@@ -198,6 +198,7 @@
         <button class="promo-tab" id="tab-3sb" onclick="switchPromo('3SB')">3SB</button>
       </div>
       <button class="refresh-btn" onclick="if (SESSION_PROMO) cargarListado()">↻ Actualizar</button>
+      <button class="refresh-btn" onclick="cerrarSesion()">Cerrar sesión</button>
     </div>
 
     <div id="listado-load" class="loading" style="display:none;">Cargando…</div>
@@ -294,6 +295,37 @@ let LISTADO_DATA = [];      // respuesta cruda de 'listar_estado'
 let PENDIENTE_ACCION = null; // {tipo, modo} — acción a abrir en cuanto cargue precargar
 
 // ─── LOGIN ───────────────────────────────────────────────────────────
+const CLAVE_TOKEN_SESION = 'amal_token'; // compartida entre TODAS las herramientas (mismo origen github.io)
+
+// Sesión guardada (token en localStorage, compartido entre herramientas
+// del mismo origen). Si es válida y tiene acceso a "contratos", se salta
+// el formulario de login. Si no, cae al login normal sin más aviso — no
+// es un error, es lo esperado la primera vez o tras caducar (12h).
+function intentarSesionGuardada() {
+  const token = localStorage.getItem(CLAVE_TOKEN_SESION);
+  if (!token) return Promise.resolve(false);
+  return fetch(LOGIN_URL, {
+    method: 'POST',
+    body: JSON.stringify({ accion: 'login', token: token, herramienta: 'contratos' })
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) {
+        localStorage.removeItem(CLAVE_TOKEN_SESION);
+        return false;
+      }
+      SESSION_USUARIO = data.usuario;
+      if (data.token) localStorage.setItem(CLAVE_TOKEN_SESION, data.token); // renueva caducidad
+      return true;
+    })
+    .catch(() => false); // sin conexión: se cae al login normal, no se bloquea la pantalla
+}
+
+function cerrarSesion() {
+  localStorage.removeItem(CLAVE_TOKEN_SESION);
+  location.reload();
+}
+
 function doLogin() {
   const u = document.getElementById('login-user').value.trim();
   const p = document.getElementById('login-pass').value;
@@ -311,7 +343,8 @@ function doLogin() {
     .then(r => r.json())
     .then(data => {
       if (data.ok) {
-        SESSION_USUARIO = u;
+        SESSION_USUARIO = data.usuario || u;
+        if (data.token) localStorage.setItem(CLAVE_TOKEN_SESION, data.token);
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('listado-screen').classList.add('visible');
       } else if (data.motivo === 'sin_acceso') {
@@ -1253,6 +1286,15 @@ window.addEventListener('load', () => {
   sendHeight();
   ['login-user','login-pass'].forEach(id => {
     document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  });
+
+  // Sesión guardada: si hay un token válido, se salta el login.
+  intentarSesionGuardada().then(entrado => {
+    if (entrado) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('listado-screen').classList.add('visible');
+      sendHeight();
+    }
   });
 
   // Arrastrar y soltar (mismo patrón que SB-extras.html). El de firma y
