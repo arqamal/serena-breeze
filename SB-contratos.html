@@ -75,8 +75,11 @@
   .promo-tab:last-child { border-right: none; }
   .promo-tab.active { background: var(--black); color: white; }
   .promo-tab:hover:not(.active) { background: var(--off-white); color: var(--text); }
-  .refresh-btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 11px 18px; background: transparent; color: var(--slate-gray); border: 1px solid var(--border); transition: all .15s; }
-  .refresh-btn:hover { border-color: var(--black); color: var(--black); }
+  .refresh-btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 11px 18px; background: transparent; color: var(--slate-gray); border: none; transition: all .15s; }
+  .refresh-btn:hover { background: var(--off-white); color: var(--black); }
+  .acciones-topbar { display: flex; border: 1px solid var(--border); }
+  .acciones-topbar .refresh-btn { border-right: 1px solid var(--border); }
+  .acciones-topbar .refresh-btn:last-child { border-right: none; }
 
   .pie-nota { font-family: 'Roboto', sans-serif; font-size: 12px; font-weight: 300; color: var(--mid); line-height: 1.6; max-width: 720px; margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--border); }
 
@@ -197,8 +200,10 @@
         <button class="promo-tab" id="tab-2sb" onclick="switchPromo('2SB')">2SB</button>
         <button class="promo-tab" id="tab-3sb" onclick="switchPromo('3SB')">3SB</button>
       </div>
-      <button class="refresh-btn" onclick="if (SESSION_PROMO) cargarListado()">↻ Actualizar</button>
-      <button class="refresh-btn" onclick="cerrarSesion()">Cerrar sesión</button>
+      <div class="acciones-topbar">
+        <button class="refresh-btn" onclick="if (SESSION_PROMO) cargarListado()">↻ Actualizar</button>
+        <button class="refresh-btn" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
     </div>
 
     <div id="listado-load" class="loading" style="display:none;">Cargando…</div>
