@@ -1203,7 +1203,13 @@ async function fusionarAdjuntosYSustituir(pdfBase64Principal, archivos, tipoEven
     const paginas = await doc.copyPages(donante, donante.getPageIndices());
     paginas.forEach(p => {
       const { width, height } = p.getSize();
-      if (width > height) p.setRotation(degrees(90)); // apaisada -> vertical
+      const anguloActual = p.getRotation().angle % 360;
+      // si la página ya trae una rotación guardada (típico en escaneados),
+      // el ancho/alto "visual" real es el contrario del que mide getSize()
+      const apaisadaDeVerdad = (anguloActual === 90 || anguloActual === 270) ? (height > width) : (width > height);
+      if (apaisadaDeVerdad) {
+        p.setRotation(degrees((anguloActual + 90) % 360)); // gira 90° más sobre lo que ya tuviera
+      }
       doc.addPage(p);
     });
   }
