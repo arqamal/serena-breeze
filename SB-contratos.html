@@ -909,7 +909,6 @@ function mostrarFormulario(tipo, modo) {
     ? (tipo === 'reserva' ? 'Editar reserva' : 'Editar contrato')
     : (tipo === 'reserva' ? 'Nueva reserva' : 'Generar compraventa');
   let html = `<div class="sec-title">${titulo} — ${escapeHtml(SESSION_COD_VIV)}</div>`;
-  html += `<div id="form-msg"></div>`;
 
   // ── Fecha del documento: editable, hoy por defecto ──
   const claveFechaHoy = tipo === 'reserva' ? 'fecha_hoy_r' : 'fecha_hoy_c';
@@ -1042,6 +1041,7 @@ function mostrarFormulario(tipo, modo) {
     <div class="docs-file-list" id="adjuntos-file-list"></div>`;
 
   html += `
+    <div id="form-msg"></div>
     <div class="estado-actions">
       <button class="btn btn-primary" id="btn-generar" onclick="enviarFormulario('${tipo}','${modo}')">${modo === 'editar' ? 'Guardar cambios y regenerar PDF' : 'Generar PDF'}</button>
       <button class="btn btn-secondary" onclick="renderEstado(ULTIMA_PRECARGA)">Cancelar</button>
