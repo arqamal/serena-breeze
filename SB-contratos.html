@@ -711,21 +711,39 @@ function guardarContactos() {
 
 function renderDocumentosBlock(documentos) {
   if (!documentos) return '';
-  const filas = [];
-  if (documentos.reserva) {
-    if (documentos.reserva.pdf_url) filas.push({ label: 'PDF de reserva', url: documentos.reserva.pdf_url });
-    if (documentos.reserva.pdf_firmado_url) filas.push({ label: 'PDF de reserva firmado (' + escapeHtml(documentos.reserva.fecha_firma || '') + ')', url: documentos.reserva.pdf_firmado_url });
-  }
-  if (documentos.contrato) {
-    if (documentos.contrato.pdf_url) filas.push({ label: 'PDF de compraventa', url: documentos.contrato.pdf_url });
-    if (documentos.contrato.pdf_firmado_url) filas.push({ label: 'PDF de compraventa firmado (' + escapeHtml(documentos.contrato.fecha_firma || '') + ')', url: documentos.contrato.pdf_firmado_url });
-  }
-  if (!filas.length) return '';
+  const bloque = (doc, tipoEvento, etiqueta) => {
+    if (!doc || !doc.pdf_url) return '';
+    let html = `<div class="estado-actions" style="margin-bottom:8px;">`;
+    html += `<a class="btn btn-link" href="${doc.pdf_url}" target="_blank">PDF de ${etiqueta}</a>`;
+    if (doc.pdf_firmado_url) html += `<a class="btn btn-link" href="${doc.pdf_firmado_url}" target="_blank">PDF de ${etiqueta} firmado (${escapeHtml(doc.fecha_firma || '')})</a>`;
+    if (doc.doc_url) {
+      html += `<a class="btn btn-link" href="${doc.doc_url}" target="_blank">Abrir Doc editable</a>`;
+      html += `<button class="btn btn-secondary" onclick="regenerarPdfDesdeDoc('${tipoEvento}')">Regenerar PDF desde este Doc</button>`;
+    }
+    html += `</div>`;
+    return html;
+  };
+  const contenido = bloque(documentos.reserva, 'reserva', 'reserva') + bloque(documentos.contrato, 'contrato', 'compraventa');
+  if (!contenido) return '';
   return `
     <div class="estado-card" style="margin-top:16px;">
       <div class="form-section-label" style="margin-top:0;">Documentos</div>
-      <div class="estado-actions">${filas.map(f => `<a class="btn btn-link" href="${f.url}" target="_blank">${f.label}</a>`).join('')}</div>
+      ${contenido}
+      <div id="regenerar-msg"></div>
     </div>`;
+}
+
+function regenerarPdfDesdeDoc(tipoEvento) {
+  if (!confirm('¿Regenerar el PDF de ' + (tipoEvento === 'reserva' ? 'reserva' : 'compraventa') + ' a partir del Doc editable, tal como esté ahora mismo? El PDF anterior se sustituye.')) return;
+  const msg = document.getElementById('regenerar-msg');
+  msg.innerHTML = `<div class="msg info">Regenerando…</div>`;
+  llamarBackend({ accion: 'regenerar_pdf_desde_doc', promocion: SESSION_PROMO, cod_viv: SESSION_COD_VIV, tipo_evento: tipoEvento })
+    .then(data => {
+      if (!data.ok) { msg.innerHTML = `<div class="msg error">${escapeHtml(data.error || 'No se pudo regenerar.')}</div>`; return; }
+      msg.innerHTML = `<div class="msg success">PDF regenerado. <a href="${data.pdf_url}" target="_blank">Abrir</a></div>`;
+      setTimeout(cargarEstado, 1500);
+    })
+    .catch(() => { msg.innerHTML = `<div class="msg error">No se pudo conectar con el servidor. Inténtalo de nuevo.</div>`; });
 }
 
 // ─── FIRMA: PDF firmado a mano (no sustituye al generado, convive) ──
