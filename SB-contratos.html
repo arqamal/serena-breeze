@@ -1157,12 +1157,13 @@ function mostrarFormulario(tipo, modo) {
   // reserva) se inserta en su propia fila justo antes de cada nombre —
   // "don"/"doña" + la "y" del RECIBE se arman en el envío, no en la
   // plantilla (marcador ya construido: formula_clientes). ──
-  html += `<div class="form-grid">`;
+  html += `<div class="acordeon abierto" id="acordeon-cliente">
+    <div class="acordeon-cabecera" onclick="document.getElementById('acordeon-cliente').classList.toggle('abierto')">
+      <span>Cliente(s)</span><span class="acordeon-flecha">▾</span>
+    </div>
+    <div class="acordeon-cuerpo"><div class="form-grid">`;
   CAMPOS_FORM.forEach(campo => {
-    if (campo.seccion) {
-      html += `</div><div class="form-section-label">${campo.seccion}</div><div class="form-grid">`;
-      return;
-    }
+    if (campo.seccion) return; // solo hay una sección (Cliente(s)) — ya abierta arriba
     if (!campo.appliesTo.includes(tipo)) return;
     if (tipo === 'reserva' && (campo.key === 'cliente1' || campo.key === 'cliente2')) {
       const n = campo.key === 'cliente1' ? 1 : 2;
@@ -1177,27 +1178,36 @@ function mostrarFormulario(tipo, modo) {
         <input type="text" class="form-input ${esP(campo.key) ? 'precargado' : ''}" id="f-${campo.key}" value="${escapeHtml(val(campo.key))}">
       </div>`;
   });
-  html += `</div>`;
+  html += `</div></div></div>`;
 
-  // ── Agencia / Representante legal: plegados salvo que ya tengan datos.
+  // ── Representante legal / Agencia: plegados salvo que ya tengan datos.
   // Viven en Contactos, no en Clientes — se guardan al generar el PDF. ──
   const contactosForm = (ULTIMA_PRECARGA && ULTIMA_PRECARGA.contactos) || [];
   const datosAgencia = contactosForm.find(c => c.tipo === 'agencia') || {};
   const datosLegal = contactosForm.find(c => c.tipo === 'legal') || {};
-  html += renderAcordeonOpcional('agencia', 'Agencia', 'Agencia', 'Agente', datosAgencia);
+  html += `<div class="catalogo-note">Si rellenas estos datos, aparecerán en el PDF que se genere ahora. Si no quieres que salgan en este documento, puedes rellenarlos más adelante (en el Detalle de la vivienda) sin que afecten a este PDF ya generado.</div>`;
   html += renderAcordeonOpcional('legal', 'Representante legal', 'Representante legal', 'Abogado', datosLegal);
+  html += renderAcordeonOpcional('agencia', 'Agencia', 'Agencia', 'Agente', datosAgencia);
 
   // ── Precio: subtotal y total se calculan solos ──
-  html += `<div class="form-section-label">Precio</div><div class="form-grid una-col">
+  html += `<div class="acordeon abierto" id="acordeon-precio">
+    <div class="acordeon-cabecera" onclick="document.getElementById('acordeon-precio').classList.toggle('abierto')">
+      <span>Precio</span><span class="acordeon-flecha">▾</span>
+    </div>
+    <div class="acordeon-cuerpo"><div class="form-grid una-col">
     <div class="form-field"><label class="form-label">Precio vivienda (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('precio_viv') ? 'precargado' : ''}" id="f-precio_viv" value="${escapeHtml(val('precio_viv') ? formatearMiles(parsearMiles(val('precio_viv'))) : '')}" oninput="recalcularPrecios()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>
     <div class="form-field"><label class="form-label">Importe extras y modificaciones (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('precio_ext') ? 'precargado' : ''}" id="f-precio_ext" value="${escapeHtml(val('precio_ext') ? formatearMiles(parsearMiles(val('precio_ext'))) : '')}" oninput="recalcularPrecios()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>
     <div class="form-field"><label class="form-label">Subtotal (€) — calculado</label><input type="text" class="form-input importe precargado" id="f-subtotal" value="${escapeHtml(val('subtotal') ? formatearMiles(parsearMiles(val('subtotal'))) : '')}" readonly></div>
     <div class="form-field"><label class="form-label">IVA (%)</label><input type="number" step="0.01" class="form-input precargado" id="f-iva" value="${escapeHtml(esP('iva') ? String(val('iva')).replace('%','') : '10')}" oninput="recalcularPrecios()"></div>
     <div class="form-field"><label class="form-label">Total compraventa (€) — calculado</label><input type="text" class="form-input importe precargado" id="f-total" value="${escapeHtml(val('total') ? formatearMiles(parsearMiles(val('total'))) : '')}" readonly></div>
-  </div>`;
+  </div></div></div>`;
 
   // ── Forma de pago ──
-  html += `<div class="form-section-label">Forma de pago</div>
+  html += `<div class="acordeon abierto" id="acordeon-pago">
+    <div class="acordeon-cabecera" onclick="document.getElementById('acordeon-pago').classList.toggle('abierto')">
+      <span>Forma de pago</span><span class="acordeon-flecha">▾</span>
+    </div>
+    <div class="acordeon-cuerpo">
     <div class="form-row">
       <div class="form-field${tipo === 'reserva' ? '' : ' ancho'}"><label class="form-label">Pago a la firma de la reserva (€)</label><input type="text" inputmode="numeric" class="form-input importe ${esP('pago_reserv') ? 'precargado' : ''}" id="f-pago_reserv" value="${escapeHtml(val('pago_reserv') ? formatearMiles(parsearMiles(val('pago_reserv'))) : '')}" oninput="actualizarLetrasReserva()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>`;
   if (tipo === 'reserva') {
@@ -1216,10 +1226,15 @@ function mostrarFormulario(tipo, modo) {
       <div class="form-field"><label class="form-label">Importe pago ${n} (€)</label><input type="text" inputmode="numeric" class="form-input importe ${esP('pago_' + n) ? 'precargado' : ''}" id="f-pago_${n}" value="${escapeHtml(val('pago_' + n) ? formatearMiles(parsearMiles(val('pago_' + n))) : '')}" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>
     </div>`;
   });
-  html += `<div class="pie-nota-form">Cómo se calculan: pago 1 = 25% del total menos la reserva. Pago 2 = el mismo importe que el pago 1. Pago 3 = el resto (el otro 50%). Se recalculan solos al cambiar el total o la reserva, pero puedes escribir encima si necesitas otro reparto.</div>`;
+  html += `<div class="pie-nota-form">Cómo se calculan: pago 1 = 25% del total menos la reserva. Pago 2 = el mismo importe que el pago 1. Pago 3 = el resto (el otro 50%). Se recalculan solos al cambiar el total o la reserva, pero puedes escribir encima si necesitas otro reparto.</div>
+    </div></div>`;
 
   // ── Plazos: selector de trimestre, igual patrón que SB-fechas.html ──
-  html += `<div class="form-section-label">Plazos</div><div class="form-grid una-col">
+  html += `<div class="acordeon abierto" id="acordeon-plazos">
+    <div class="acordeon-cabecera" onclick="document.getElementById('acordeon-plazos').classList.toggle('abierto')">
+      <span>Plazos</span><span class="acordeon-flecha">▾</span>
+    </div>
+    <div class="acordeon-cuerpo"><div class="form-grid una-col">
     <div class="form-field">
       <label class="form-label">Plazo de entrega — desde</label>
       <div style="display:flex; gap:8px;">
@@ -1252,7 +1267,7 @@ function mostrarFormulario(tipo, modo) {
     </div>
     <div class="form-field"><label class="form-label">Texto generado (ES / EN) — si lo dejas vacío, se mantiene lo que ya hubiera</label><div class="form-input precargado" id="prev-adelanto" style="min-height:20px;">${escapeHtml(val('adelanto_contrato')) ? escapeHtml(val('adelanto_contrato')) + '  /  ' + escapeHtml(val('adelanto_contrato_en')) : '—'}</div></div>`;
   }
-  html += `</div>`;
+  html += `</div></div></div>`;
 
   // ── Promoción: vendedor / banco / catálogo de la vivienda. Se muestran
   // aquí también, en azul, para el caso excepcional de una vivienda con un
@@ -1260,7 +1275,11 @@ function mostrarFormulario(tipo, modo) {
   // afecta a este contrato. ──
   const promo = (ULTIMA_PRECARGA && ULTIMA_PRECARGA.promocion) || {};
   const camposPromo = tipo === 'reserva' ? CAMPOS_PROMO_RESERVA : CAMPOS_PROMO_CONTRATO;
-  html += `<div class="form-section-label">Datos de la promoción</div>
+  html += `<div class="acordeon abierto" id="acordeon-promocion">
+    <div class="acordeon-cabecera" onclick="document.getElementById('acordeon-promocion').classList.toggle('abierto')">
+      <span>Datos de la promoción</span><span class="acordeon-flecha">▾</span>
+    </div>
+    <div class="acordeon-cuerpo">
     <div class="catalogo-note">Vienen del catálogo general de la vivienda. Si cambias algo aquí, se sustituye en el sitio en la fila de esta vivienda en la pestaña Promoción (no se crea fila nueva ni se toca ninguna otra vivienda) — úsalo solo si de verdad esta vivienda es una excepción.</div>
     <div class="form-grid">`;
   camposPromo.forEach(key => {
@@ -1268,21 +1287,26 @@ function mostrarFormulario(tipo, modo) {
     html += `
     <div class="form-field"><label class="form-label">${LABELS_PROMO[key] || key}</label><input type="text" class="form-input catalogo" id="fp-${key}" value="${escapeHtml(valor)}"></div>`;
   });
-  html += `</div>`;
+  html += `</div></div></div>`;
 
   // ── Adjuntos (opcional): PDF sueltos que se fusionan con el contrato en
   // el navegador (pdf-lib) antes de guardarlo. Apps Script no puede hacer
   // esta fusión — se probó y da timeout, no tiene bucle de eventos para
   // resolver las promesas de esa librería. Se giran a vertical las
   // páginas que vengan apaisadas. ──
-  html += `<div class="form-section-label">Adjuntos (opcional)</div>
+  html += `<div class="acordeon abierto" id="acordeon-adjuntos">
+    <div class="acordeon-cabecera" onclick="document.getElementById('acordeon-adjuntos').classList.toggle('abierto')">
+      <span>Adjuntos (opcional)</span><span class="acordeon-flecha">▾</span>
+    </div>
+    <div class="acordeon-cuerpo">
     <div class="catalogo-note">PDF sueltos (planos, anexos...) que se fusionan al final del contrato antes de guardarlo. Las páginas apaisadas se giran a vertical. No es obligatorio.</div>
     <div class="upload-zone" id="adjuntos-upload-zone" onclick="document.getElementById('adjuntos-input').click()">
       <input type="file" id="adjuntos-input" accept="application/pdf" multiple style="display:none" onchange="onAdjuntosSeleccionados(this)">
       <label class="upload-zone-label">Haz clic o arrastra aquí uno o varios PDF</label>
       <div class="upload-zone-hint">Solo archivos PDF · puedes añadir varios</div>
     </div>
-    <div class="docs-file-list" id="adjuntos-file-list"></div>`;
+    <div class="docs-file-list" id="adjuntos-file-list"></div>
+    </div></div>`;
 
   html += `
     <div id="form-msg"></div>
