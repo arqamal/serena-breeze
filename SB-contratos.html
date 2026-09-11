@@ -589,7 +589,7 @@ function renderEstado(data) {
 // tocar cualquier campo: esto puede estar ya en documentos firmados.
 function renderClienteBlock(activa, contactos) {
   if (!activa) return ''; // sin reserva/contrato activo no hay datos de cliente que mostrar
-  const filaContactoCliente = (contactos || []).find(c => c.tipo === 'cliente') || {};
+  const mailchimpDe = n => ((contactos || []).find(c => c.tipo === 'cliente' + n) || {}).mailchimp;
   const claseSiRelleno = v => v ? 'catalogo' : '';
   const cli = n => ({
     nombre: activa['cliente' + n] || '',
@@ -606,7 +606,7 @@ function renderClienteBlock(activa, contactos) {
       <td><input type="text" class="${claseSiRelleno(c.direccion)}" id="cliente-${n}-direccion" value="${escapeHtml(c.direccion)}" onfocus="avisoEditarCliente()"></td>
       <td><input type="text" class="${claseSiRelleno(c.telefono)}" id="cliente-${n}-telefono" value="${escapeHtml(c.telefono)}" onfocus="avisoEditarCliente()"></td>
       <td><input type="text" class="${claseSiRelleno(c.correo)}" id="cliente-${n}-correo" value="${escapeHtml(c.correo)}" onfocus="avisoEditarCliente()"></td>
-      ${n === 1 ? `<td rowspan="2" style="vertical-align:middle; text-align:center;"><input type="checkbox" id="cliente-mailchimp" ${filaContactoCliente.mailchimp ? 'checked' : ''}></td>` : ''}
+      <td style="text-align:center;"><input type="checkbox" id="cliente-${n}-mailchimp" ${mailchimpDe(n) ? 'checked' : ''}></td>
     </tr>`;
   }).join('');
 
@@ -642,10 +642,11 @@ function guardarClienteDetalle() {
     mail_cliente1: document.getElementById('cliente-1-correo').value.trim(),
     mail_cliente2: document.getElementById('cliente-2-correo').value.trim()
   };
-  const mailchimp = document.getElementById('cliente-mailchimp').checked;
+  const mailchimp1 = document.getElementById('cliente-1-mailchimp').checked;
+  const mailchimp2 = document.getElementById('cliente-2-mailchimp').checked;
   const msg = document.getElementById('cliente-msg');
   msg.innerHTML = `<div class="msg info">Guardando…</div>`;
-  llamarBackend({ accion: 'guardar_cliente_detalle', promocion: SESSION_PROMO, cod_viv: SESSION_COD_VIV, campos, mailchimp })
+  llamarBackend({ accion: 'guardar_cliente_detalle', promocion: SESSION_PROMO, cod_viv: SESSION_COD_VIV, campos, cliente1_mailchimp: mailchimp1, cliente2_mailchimp: mailchimp2 })
     .then(data => {
       if (!data.ok) { msg.innerHTML = `<div class="msg error">${escapeHtml(data.error || 'No se pudo guardar.')}</div>`; return; }
       msg.innerHTML = `<div class="msg success">Datos de cliente guardados.</div>`;
