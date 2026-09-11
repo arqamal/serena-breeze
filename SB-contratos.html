@@ -1113,10 +1113,10 @@ function opcionesTrimestre(idSel) {
 }
 // Bloque plegable Agencia/Representante legal — abierto solo si ya
 // tiene datos (nombre relleno), plegado si no.
-function renderAcordeonOpcional(clave, titulo, labelNombre, labelResponsable, datos) {
-  const abierto = !!(datos && datos.nombre);
-  const val = campo => (datos && datos[campo]) || '';
-  const claseSiRelleno = v => v ? 'catalogo' : '';
+function renderAcordeonOpcional(clave, titulo, labelNombre, labelResponsable, valForm, esPForm) {
+  const campo = sufijo => clave + '_' + sufijo;
+  const abierto = esPForm(campo('nombre'));
+  const claseSiRelleno = c => esPForm(c) ? 'catalogo' : '';
   return `
     <div class="acordeon ${abierto ? 'abierto' : ''}" id="acordeon-${clave}">
       <div class="acordeon-cabecera" onclick="document.getElementById('acordeon-${clave}').classList.toggle('abierto')">
@@ -1125,11 +1125,11 @@ function renderAcordeonOpcional(clave, titulo, labelNombre, labelResponsable, da
       </div>
       <div class="acordeon-cuerpo">
         <div class="form-grid">
-          <div class="form-field"><label class="form-label">${labelNombre}</label><input type="text" class="form-input ${claseSiRelleno(val('nombre'))}" id="f-${clave}-nombre" value="${escapeHtml(val('nombre'))}"></div>
-          <div class="form-field"><label class="form-label">Domicilio</label><input type="text" class="form-input ${claseSiRelleno(val('domicilio'))}" id="f-${clave}-domicilio" value="${escapeHtml(val('domicilio'))}"></div>
-          <div class="form-field"><label class="form-label">${labelResponsable}</label><input type="text" class="form-input ${claseSiRelleno(val('responsable'))}" id="f-${clave}-responsable" value="${escapeHtml(val('responsable'))}"></div>
-          <div class="form-field"><label class="form-label">Email</label><input type="text" class="form-input ${claseSiRelleno(val('email'))}" id="f-${clave}-email" value="${escapeHtml(val('email'))}"></div>
-          <div class="form-field"><label class="form-label">Teléfono</label><input type="text" class="form-input ${claseSiRelleno(val('telefono'))}" id="f-${clave}-telefono" value="${escapeHtml(val('telefono'))}"></div>
+          <div class="form-field"><label class="form-label">${labelNombre}</label><input type="text" class="form-input ${claseSiRelleno(campo('nombre'))}" id="f-${clave}-nombre" value="${escapeHtml(valForm(campo('nombre')))}"></div>
+          <div class="form-field"><label class="form-label">Domicilio</label><input type="text" class="form-input ${claseSiRelleno(campo('domicilio'))}" id="f-${clave}-domicilio" value="${escapeHtml(valForm(campo('domicilio')))}"></div>
+          <div class="form-field"><label class="form-label">${labelResponsable}</label><input type="text" class="form-input ${claseSiRelleno(campo('responsable'))}" id="f-${clave}-responsable" value="${escapeHtml(valForm(campo('responsable')))}"></div>
+          <div class="form-field"><label class="form-label">Email</label><input type="text" class="form-input ${claseSiRelleno(campo('email'))}" id="f-${clave}-email" value="${escapeHtml(valForm(campo('email')))}"></div>
+          <div class="form-field"><label class="form-label">Teléfono</label><input type="text" class="form-input ${claseSiRelleno(campo('telefono'))}" id="f-${clave}-telefono" value="${escapeHtml(valForm(campo('telefono')))}"></div>
         </div>
       </div>
     </div>`;
@@ -1191,14 +1191,14 @@ function mostrarFormulario(tipo, modo) {
   });
   html += `</div></div></div>`;
 
-  // ── Representante legal / Agencia: plegados salvo que ya tengan datos.
-  // Viven en Contactos, no en Clientes — se guardan al generar el PDF. ──
-  const contactosForm = (ULTIMA_PRECARGA && ULTIMA_PRECARGA.contactos) || [];
-  const datosAgencia = contactosForm.find(c => c.tipo === 'agencia') || {};
-  const datosLegal = contactosForm.find(c => c.tipo === 'legal') || {};
-  html += `<div class="catalogo-note">Si rellenas estos datos, aparecerán en el PDF que se genere ahora. Si no quieres que salgan en este documento, puedes rellenarlos más adelante (en el Detalle de la vivienda) sin que afecten a este PDF ya generado.</div>`;
-  html += renderAcordeonOpcional('legal', 'Representante legal', 'Representante legal', 'Abogado', datosLegal);
-  html += renderAcordeonOpcional('agencia', 'Agencia', 'Agencia', 'Agente', datosAgencia);
+  // ── Representante legal / Agencia: viven en la propia fila del evento
+  // (Clientes), igual que cliente1/precio_viv/etc — así si estaba en la
+  // reserva, se precarga solo en la compraventa (CAMPOS_COMUNES_RESERVA_
+  // CONTRATO). Lo que se edite en el Detalle (pestaña Contactos) es solo
+  // informativo — nunca se cuela aquí. ──
+  html += `<div class="catalogo-note">Si rellenas estos datos, aparecerán en el PDF que se genere ahora, y pasarán solos a la compraventa si esta es una reserva. Lo que edites por separado en el Detalle de la vivienda es solo para consulta — nunca se mete aquí solo.</div>`;
+  html += renderAcordeonOpcional('legal', 'Representante legal', 'Representante legal', 'Abogado', val, esP);
+  html += renderAcordeonOpcional('agencia', 'Agencia', 'Agencia', 'Agente', val, esP);
 
   // ── Precio: subtotal y total se calculan solos ──
   html += `<div class="acordeon abierto" id="acordeon-precio">
