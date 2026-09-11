@@ -142,6 +142,17 @@
   table.data-table th:nth-child(2), table.data-table td:nth-child(2) { width: 32%; }
   table.data-table th:nth-child(3), table.data-table td:nth-child(3) { width: 22%; }
   table.data-table th:nth-child(4), table.data-table td:nth-child(4) { width: 36%; }
+  /* tabla de contactos (Cliente/Agencia/Legal) en el detalle — 5 columnas,
+     anchos propios (mayor especificidad de origen que las del listado) */
+  table.contactos-table th:nth-child(1), table.contactos-table td:nth-child(1) { width: 14%; }
+  table.contactos-table th:nth-child(2), table.contactos-table td:nth-child(2) { width: 30%; }
+  table.contactos-table th:nth-child(3), table.contactos-table td:nth-child(3) { width: 24%; }
+  table.contactos-table th:nth-child(4), table.contactos-table td:nth-child(4) { width: 24%; }
+  table.contactos-table th:nth-child(5), table.contactos-table td:nth-child(5) { width: 8%; text-align: center; }
+  table.contactos-table td input[type="text"] { width: 100%; border: 1px solid var(--border); padding: 6px 8px; font-family: 'Roboto', sans-serif; font-size: 12.5px; background: var(--white); }
+  table.contactos-table td input[type="text"].catalogo { background: #EEF4FB; border-color: #C9DCF0; }
+  table.contactos-table td input[type="text"].catalogo:focus { background: var(--white); }
+  table.contactos-table td.tipo-label { font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: .5px; color: var(--black); text-transform: uppercase; }
   table.data-table th { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--off-white); font-weight: 400; }
   table.data-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   table.data-table tr:last-child td { border-bottom: none; }
@@ -543,7 +554,8 @@ function renderEstado(data) {
   }
 
   document.getElementById('contenido').innerHTML = `
-    <div class="sec-title">Estado de ${escapeHtml(data.cod_viv)}</div>
+    <div class="sec-title">Detalle ${escapeHtml(data.cod_viv)}</div>
+    ${renderContactosBlock(data.contactos)}
     <div class="estado-card">
       <span class="estado-badge ${badgeClase}">${badgeTexto}</span>
       <div class="estado-linea">${lineas}</div>
@@ -557,6 +569,55 @@ function renderEstado(data) {
 // firmado / compraventa / compraventa firmado). La reserva no
 // desaparece al generar la compraventa — sigue en Clientes con su
 // propio PDF, así que se pueden ver los dos históricos a la vez.
+// Bloque de Cliente/Agencia/Legal — mismo estilo que la tabla del
+// listado (data-table), editable, con guardado explícito (no automático).
+function renderContactosBlock(contactos) {
+  const porTipo = {};
+  (contactos || []).forEach(c => { porTipo[c.tipo] = c; });
+  const etiquetas = { cliente: 'Cliente', agencia: 'Agencia', legal: 'Legal' };
+  const claseSiRelleno = v => v ? 'catalogo' : '';
+  const filas = ['cliente', 'agencia', 'legal'].map(tipo => {
+    const c = porTipo[tipo] || {};
+    return `<tr>
+      <td class="tipo-label">${etiquetas[tipo]}</td>
+      <td><input type="text" class="${claseSiRelleno(c.nombre)}" id="contacto-${tipo}-nombre" value="${escapeHtml(c.nombre || '')}"></td>
+      <td><input type="text" class="${claseSiRelleno(c.responsable)}" id="contacto-${tipo}-responsable" value="${escapeHtml(c.responsable || '')}"></td>
+      <td><input type="text" class="${claseSiRelleno(c.contacto)}" id="contacto-${tipo}-contacto" value="${escapeHtml(c.contacto || '')}"></td>
+      <td><input type="checkbox" id="contacto-${tipo}-mailchimp" ${c.mailchimp ? 'checked' : ''}></td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="viviendas-table-wrap" style="margin-bottom:12px;">
+      <table class="data-table contactos-table">
+        <thead><tr><th></th><th>Nombre</th><th>Responsable</th><th>Contacto</th><th>Mailchimp</th></tr></thead>
+        <tbody>${filas}</tbody>
+      </table>
+    </div>
+    <div id="contactos-msg"></div>
+    <div class="estado-actions" style="margin-bottom:28px;">
+      <button class="btn btn-secondary" onclick="guardarContactos()">Guardar contactos</button>
+    </div>`;
+}
+
+function guardarContactos() {
+  const contactos = ['cliente', 'agencia', 'legal'].map(tipo => ({
+    tipo,
+    nombre: document.getElementById('contacto-' + tipo + '-nombre').value.trim(),
+    responsable: document.getElementById('contacto-' + tipo + '-responsable').value.trim(),
+    contacto: document.getElementById('contacto-' + tipo + '-contacto').value.trim(),
+    mailchimp: document.getElementById('contacto-' + tipo + '-mailchimp').checked
+  }));
+  const msg = document.getElementById('contactos-msg');
+  msg.innerHTML = `<div class="msg info">Guardando…</div>`;
+  llamarBackend({ accion: 'guardar_contactos', promocion: SESSION_PROMO, cod_viv: SESSION_COD_VIV, contactos })
+    .then(data => {
+      if (!data.ok) { msg.innerHTML = `<div class="msg error">${escapeHtml(data.error || 'No se pudo guardar.')}</div>`; return; }
+      msg.innerHTML = `<div class="msg success">Contactos guardados.</div>`;
+    })
+    .catch(() => { msg.innerHTML = `<div class="msg error">No se pudo conectar con el servidor. Inténtalo de nuevo.</div>`; });
+}
+
 function renderDocumentosBlock(documentos) {
   if (!documentos) return '';
   const filas = [];
@@ -935,11 +996,15 @@ function mostrarFormulario(tipo, modo) {
   modo = modo || 'nuevo';
   ADJUNTOS_FILES = []; // limpio por si venía de un formulario anterior
   const activa = ULTIMA_PRECARGA ? ULTIMA_PRECARGA.activa : null;
+  const semilla = ULTIMA_PRECARGA ? ULTIMA_PRECARGA.semilla : null;
   // modo 'editar': se precarga con los valores ACTUALES de la fila activa
   // (sea reserva o contrato). modo 'nuevo' + tipo 'contrato': se precarga
-  // desde la reserva activa (comportamiento de siempre). modo 'nuevo' +
-  // tipo 'reserva': en blanco.
-  const precargados = (modo === 'editar' && activa) ? activa : ((tipo === 'contrato' && activa) ? activa : {});
+  // desde la reserva activa. modo 'nuevo' + tipo 'reserva': se precarga
+  // desde la fila semilla (tipo=null) — nunca desde eventos cancelados.
+  const precargados = (modo === 'editar' && activa) ? activa
+    : (tipo === 'contrato' && activa) ? activa
+    : (tipo === 'reserva' && modo === 'nuevo' && semilla) ? semilla
+    : {};
   const val = k => (precargados[k] !== undefined && precargados[k] !== null) ? precargados[k] : '';
   const esP = k => val(k) !== '';
 
