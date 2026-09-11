@@ -123,6 +123,13 @@
   .form-row .form-field { flex: 1; min-width: 140px; }
   .form-row .form-field.ancho { flex: 2; min-width: 220px; }
   .pie-nota-form { font-family: 'Roboto', sans-serif; font-size: 12px; font-weight: 300; color: var(--slate-gray); line-height: 1.6; margin: 4px 0 28px; padding: 12px 14px; background: var(--off-white); border-left: 3px solid var(--border); }
+  .acordeon { border: 1px solid var(--border); margin-bottom: 16px; }
+  .acordeon-cabecera { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; cursor: pointer; background: var(--off-white); font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); }
+  .acordeon-cabecera:hover { background: #eeece7; }
+  .acordeon-flecha { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--slate-gray); transition: transform .2s; }
+  .acordeon.abierto .acordeon-flecha { transform: rotate(180deg); }
+  .acordeon-cuerpo { display: none; padding: 16px; }
+  .acordeon.abierto .acordeon-cuerpo { display: block; }
   .form-section-label { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate-gray); margin: 28px 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
   .form-section-label:first-child { margin-top: 0; }
 
@@ -954,6 +961,23 @@ function hoyISO() {
   const pad = n => String(n).padStart(2, '0');
   return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
 }
+function sumarDiasISO(fechaISO, dias) {
+  const f = parseFechaInput(fechaISO);
+  if (!f) return '';
+  const d = new Date(Date.UTC(f.y, f.m - 1, f.d));
+  d.setUTCDate(d.getUTCDate() + dias);
+  const pad = n => String(n).padStart(2, '0');
+  return d.getUTCFullYear() + '-' + pad(d.getUTCMonth() + 1) + '-' + pad(d.getUTCDate());
+}
+// Pago 1 = fecha de reserva + 20 días — automático, pero el campo sigue
+// siendo un <input type="date"> normal, así que se puede sobrescribir a mano.
+function actualizarFechaPago1DesdeReserva() {
+  const fechaHoy = document.getElementById('f-fecha-hoy').value;
+  const input1 = document.getElementById('f-fecha_pago_1_raw');
+  if (!fechaHoy || !input1) return;
+  input1.value = sumarDiasISO(fechaHoy, 20);
+  actualizarFechaPago(1);
+}
 function ordinalEN(d) {
   if (d % 10 === 1 && d !== 11) return d + 'st';
   if (d % 10 === 2 && d !== 12) return d + 'nd';
@@ -1076,6 +1100,30 @@ function opcionesTrimestre(idSel) {
     <option value="1">1º</option><option value="2">2º</option><option value="3">3º</option><option value="4">4º</option>
   </select>`;
 }
+// Bloque plegable Agencia/Representante legal — abierto solo si ya
+// tiene datos (nombre relleno), plegado si no.
+function renderAcordeonOpcional(clave, titulo, labelNombre, labelResponsable, datos) {
+  const abierto = !!(datos && datos.nombre);
+  const val = campo => (datos && datos[campo]) || '';
+  const claseSiRelleno = v => v ? 'catalogo' : '';
+  return `
+    <div class="acordeon ${abierto ? 'abierto' : ''}" id="acordeon-${clave}">
+      <div class="acordeon-cabecera" onclick="document.getElementById('acordeon-${clave}').classList.toggle('abierto')">
+        <span>${titulo}</span>
+        <span class="acordeon-flecha">▾</span>
+      </div>
+      <div class="acordeon-cuerpo">
+        <div class="form-grid">
+          <div class="form-field"><label class="form-label">${labelNombre}</label><input type="text" class="form-input ${claseSiRelleno(val('nombre'))}" id="f-${clave}-nombre" value="${escapeHtml(val('nombre'))}"></div>
+          <div class="form-field"><label class="form-label">Domicilio</label><input type="text" class="form-input ${claseSiRelleno(val('domicilio'))}" id="f-${clave}-domicilio" value="${escapeHtml(val('domicilio'))}"></div>
+          <div class="form-field"><label class="form-label">${labelResponsable}</label><input type="text" class="form-input ${claseSiRelleno(val('responsable'))}" id="f-${clave}-responsable" value="${escapeHtml(val('responsable'))}"></div>
+          <div class="form-field"><label class="form-label">Email</label><input type="text" class="form-input ${claseSiRelleno(val('email'))}" id="f-${clave}-email" value="${escapeHtml(val('email'))}"></div>
+          <div class="form-field"><label class="form-label">Teléfono</label><input type="text" class="form-input ${claseSiRelleno(val('telefono'))}" id="f-${clave}-telefono" value="${escapeHtml(val('telefono'))}"></div>
+        </div>
+      </div>
+    </div>`;
+}
+
 function mostrarFormulario(tipo, modo) {
   document.getElementById('app-main').classList.remove('ancho');
   modo = modo || 'nuevo';
@@ -1102,7 +1150,7 @@ function mostrarFormulario(tipo, modo) {
   const claveFechaHoy = tipo === 'reserva' ? 'fecha_hoy_r' : 'fecha_hoy_c';
   const fechaHoyISO = val(claveFechaHoy) ? ddmmyyyyAIso(val(claveFechaHoy)) : hoyISO();
   html += `<div class="form-grid una-col">
-    <div class="form-field"><label class="form-label">Fecha del documento</label><input type="date" class="form-input precargado" id="f-fecha-hoy" value="${fechaHoyISO}"></div>
+    <div class="form-field"><label class="form-label">Fecha del documento</label><input type="date" class="form-input precargado" id="f-fecha-hoy" value="${fechaHoyISO}" ${tipo === 'reserva' ? 'onchange="actualizarFechaPago1DesdeReserva()"' : ''}></div>
   </div>`;
 
   // ── Cliente(s): campos simples, genéricos. El tratamiento (solo
@@ -1130,6 +1178,14 @@ function mostrarFormulario(tipo, modo) {
       </div>`;
   });
   html += `</div>`;
+
+  // ── Agencia / Representante legal: plegados salvo que ya tengan datos.
+  // Viven en Contactos, no en Clientes — se guardan al generar el PDF. ──
+  const contactosForm = (ULTIMA_PRECARGA && ULTIMA_PRECARGA.contactos) || [];
+  const datosAgencia = contactosForm.find(c => c.tipo === 'agencia') || {};
+  const datosLegal = contactosForm.find(c => c.tipo === 'legal') || {};
+  html += renderAcordeonOpcional('agencia', 'Agencia', 'Agencia', 'Agente', datosAgencia);
+  html += renderAcordeonOpcional('legal', 'Representante legal', 'Representante legal', 'Abogado', datosLegal);
 
   // ── Precio: subtotal y total se calculan solos ──
   html += `<div class="form-section-label">Precio</div><div class="form-grid una-col">
@@ -1236,6 +1292,7 @@ function mostrarFormulario(tipo, modo) {
     </div>`;
 
   document.getElementById('contenido').innerHTML = html;
+  if (tipo === 'reserva' && !esP('fecha_pago_1')) actualizarFechaPago1DesdeReserva();
 }
 
 function enviarFormulario(tipo, modo) {
@@ -1246,6 +1303,14 @@ function enviarFormulario(tipo, modo) {
   const claveFechaHoy = tipo === 'reserva' ? 'fecha_hoy_r' : 'fecha_hoy_c';
   const fechaHoyVal = document.getElementById('f-fecha-hoy').value;
   if (fechaHoyVal) campos[claveFechaHoy] = fechaISOaDDMMYYYY(fechaHoyVal);
+
+  // Agencia / Representante legal (opcionales — solo se mandan si hay algo escrito)
+  ['agencia', 'legal'].forEach(clave => {
+    ['nombre', 'domicilio', 'responsable', 'email', 'telefono'].forEach(campo => {
+      const el = document.getElementById('f-' + clave + '-' + campo);
+      if (el && el.value.trim()) campos[clave + '_' + campo] = el.value.trim();
+    });
+  });
 
   // campos simples (Cliente(s))
   CAMPOS_FORM.forEach(c => {
