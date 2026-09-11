@@ -1086,13 +1086,6 @@ function actualizarPlazo() {
   const en = rangoTrimestreALetras(q1, y1, q2, y2, 'en');
   document.getElementById('prev-plazo').textContent = es ? (es + '  /  ' + en) : '—';
 }
-function actualizarAdelanto() {
-  const mes = parseInt(document.getElementById('f-adelanto-mes').value, 10);
-  const anio = parseInt(document.getElementById('f-adelanto-anio').value, 10);
-  const prev = document.getElementById('prev-adelanto');
-  if (!mes || !anio) { prev.textContent = '—'; return; }
-  prev.textContent = (MESES_ES[mes - 1] + ' de ' + anio) + '  /  ' + (MESES_EN[mes - 1] + ' ' + anio);
-}
 
 function opcionesTrimestre(idSel) {
   return `<select class="form-input" id="${idSel}" onchange="${idSel.includes('plazo') ? 'actualizarPlazo()' : ''}">
@@ -1250,23 +1243,6 @@ function mostrarFormulario(tipo, modo) {
       </div>
     </div>
     <div class="form-field full"><label class="form-label">Texto generado (ES / EN) — si lo dejas vacío, se mantiene lo que ya hubiera</label><div class="form-input precargado" id="prev-plazo" style="min-height:20px;">${escapeHtml(val('plazo')) ? escapeHtml(val('plazo')) + '  /  ' + escapeHtml(val('plazo_en')) : '—'}</div></div>`;
-  if (tipo === 'reserva') {
-    html += `
-    <div class="form-field">
-      <label class="form-label">Mes límite para adelantar firma</label>
-      <div style="display:flex; gap:8px;">
-        <select class="form-input" id="f-adelanto-mes" onchange="actualizarAdelanto()">
-          <option value="">Mes…</option>
-          <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
-          <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
-          <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
-          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
-        </select>
-        <input type="number" class="form-input" id="f-adelanto-anio" placeholder="Año" style="width:100px;" oninput="actualizarAdelanto()">
-      </div>
-    </div>
-    <div class="form-field"><label class="form-label">Texto generado (ES / EN) — si lo dejas vacío, se mantiene lo que ya hubiera</label><div class="form-input precargado" id="prev-adelanto" style="min-height:20px;">${escapeHtml(val('adelanto_contrato')) ? escapeHtml(val('adelanto_contrato')) + '  /  ' + escapeHtml(val('adelanto_contrato_en')) : '—'}</div></div>`;
-  }
   html += `</div></div></div>`;
 
   // ── Promoción: vendedor / banco / catálogo de la vivienda. Se muestran
@@ -1360,12 +1336,6 @@ function enviarFormulario(tipo, modo) {
     if (importeReserva) {
       campos.pago_reserv_letra = numeroALetrasES(importeReserva);
       campos.pago_reserv_letra_en = numberToWordsEN(importeReserva);
-    }
-    const mesAdel = parseInt(document.getElementById('f-adelanto-mes').value, 10);
-    const anioAdel = parseInt(document.getElementById('f-adelanto-anio').value, 10);
-    if (mesAdel && anioAdel) {
-      campos.adelanto_contrato = MESES_ES[mesAdel - 1] + ' de ' + anioAdel;
-      campos.adelanto_contrato_en = MESES_EN[mesAdel - 1] + ' ' + anioAdel;
     }
   }
 
