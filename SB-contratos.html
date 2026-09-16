@@ -1212,13 +1212,20 @@ function mostrarFormulario(tipo, modo) {
   html += renderAcordeonOpcional('agencia', 'Agencia', 'Agencia', 'Agente', val, esP);
 
   // ── Precio: subtotal y total se calculan solos ──
+  // precio_ext: si no hay ya un valor guardado, se sugiere el total sin
+  // IVA de los extras marcados "incluido en contrato" en el sistema de
+  // Extras (otra Sheet, ver obtenerExtrasSinIva_) — editable, como
+  // cualquier otro campo precargado.
+  const extrasSugerido = (ULTIMA_PRECARGA && ULTIMA_PRECARGA.extras_sin_iva) || 0;
+  const precioExtPrecargado = esP('precio_ext') || extrasSugerido > 0;
+  const precioExtValor = esP('precio_ext') ? val('precio_ext') : (extrasSugerido > 0 ? extrasSugerido : '');
   html += `<div class="acordeon abierto" id="acordeon-precio">
     <div class="acordeon-cabecera" onclick="document.getElementById('acordeon-precio').classList.toggle('abierto')">
       <span>Precio</span><span class="acordeon-flecha">▾</span>
     </div>
     <div class="acordeon-cuerpo"><div class="form-grid una-col">
     <div class="form-field"><label class="form-label">Precio vivienda (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('precio_viv') ? 'precargado' : ''}" id="f-precio_viv" value="${escapeHtml(val('precio_viv') ? formatearMiles(parsearMiles(val('precio_viv'))) : '')}" oninput="recalcularPrecios()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>
-    <div class="form-field"><label class="form-label">Importe extras y modificaciones (€)</label><input type="text" inputmode="numeric" class="form-input ${esP('precio_ext') ? 'precargado' : ''}" id="f-precio_ext" value="${escapeHtml(val('precio_ext') ? formatearMiles(parsearMiles(val('precio_ext'))) : '')}" oninput="recalcularPrecios()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>
+    <div class="form-field"><label class="form-label">Importe extras y modificaciones (€)</label><input type="text" inputmode="numeric" class="form-input ${precioExtPrecargado ? 'precargado' : ''}" id="f-precio_ext" value="${escapeHtml(precioExtValor ? formatearMiles(parsearMiles(precioExtValor)) : '')}" oninput="recalcularPrecios()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>
     <div class="form-field"><label class="form-label">Subtotal (€) — calculado</label><input type="text" class="form-input importe precargado" id="f-subtotal" value="${escapeHtml(val('subtotal') ? formatearMiles(parsearMiles(val('subtotal'))) : '')}" readonly></div>
     <div class="form-field"><label class="form-label">IVA (%)</label><input type="number" step="0.01" class="form-input precargado" id="f-iva" value="${escapeHtml(esP('iva') ? String(val('iva')).replace('%','') : '10')}" oninput="recalcularPrecios()"></div>
     <div class="form-field"><label class="form-label">Total compraventa (€) — calculado</label><input type="text" class="form-input importe precargado" id="f-total" value="${escapeHtml(val('total') ? formatearMiles(parsearMiles(val('total'))) : '')}" readonly></div>
