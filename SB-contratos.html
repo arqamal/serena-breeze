@@ -740,6 +740,17 @@ function regenerarPdfDesdeDoc(tipoEvento) {
   llamarBackend({ accion: 'regenerar_pdf_desde_doc', promocion: SESSION_PROMO, cod_viv: SESSION_COD_VIV, tipo_evento: tipoEvento })
     .then(data => {
       if (!data.ok) { msg.innerHTML = `<div class="msg error">${escapeHtml(data.error || 'No se pudo regenerar.')}</div>`; return; }
+      if (data.requiere_fusion) {
+        msg.innerHTML = `<div class="msg info">Volviendo a fusionar ${data.adjuntos_guardados.length} adjunto(s) guardado(s)…</div>`;
+        refusionarAdjuntosGuardados(data.pdf_base64, data.adjuntos_guardados, tipoEvento)
+          .then(res2 => {
+            if (!res2.ok) { msg.innerHTML = `<div class="msg error">${escapeHtml(res2.error || 'No se pudo volver a fusionar los adjuntos.')}</div>`; return; }
+            msg.innerHTML = `<div class="msg success">PDF regenerado con sus adjuntos. <a href="${res2.pdf_url}" target="_blank">Abrir</a></div>`;
+            setTimeout(cargarEstado, 1500);
+          })
+          .catch(err => { msg.innerHTML = `<div class="msg error">Falló la fusión de adjuntos (${escapeHtml(String(err && err.message || err))}).</div>`; });
+        return;
+      }
       msg.innerHTML = `<div class="msg success">PDF regenerado. <a href="${data.pdf_url}" target="_blank">Abrir</a></div>`;
       setTimeout(cargarEstado, 1500);
     })
@@ -1461,9 +1472,11 @@ async function fusionarAdjuntosYSustituir(pdfBase64Principal, archivos, tipoEven
   const { PDFDocument, degrees } = PDFLib;
   const principalBytes = Uint8Array.from(atob(pdfBase64Principal), c => c.charCodeAt(0));
   const doc = await PDFDocument.load(principalBytes);
+  const adjuntosParaGuardar = []; // se mandan también sueltos, para poder recomponerlos si luego se edita el Doc
 
   for (const archivo of archivos) {
     const buf = await archivo.arrayBuffer();
+    adjuntosParaGuardar.push({ nombre: archivo.name, base64: arrayBufferABase64(buf) });
     const donante = await PDFDocument.load(buf);
     const paginas = await doc.copyPages(donante, donante.getPageIndices());
     paginas.forEach(p => {
@@ -1480,12 +1493,56 @@ async function fusionarAdjuntosYSustituir(pdfBase64Principal, archivos, tipoEven
   }
 
   const mergedBytes = await doc.save();
+  const mergedBase64 = uint8ArrayABase64(mergedBytes);
+
+  return llamarBackend({
+    accion: 'sustituir_pdf_con_adjuntos',
+    promocion: SESSION_PROMO,
+    cod_viv: SESSION_COD_VIV,
+    tipo_evento: tipoEvento,
+    pdf_base64: mergedBase64,
+    adjuntos: adjuntosParaGuardar
+  });
+}
+
+function uint8ArrayABase64(bytes) {
   let binario = '';
   const CHUNK = 8192;
-  for (let i = 0; i < mergedBytes.length; i += CHUNK) {
-    binario += String.fromCharCode.apply(null, mergedBytes.subarray(i, i + CHUNK));
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    binario += String.fromCharCode.apply(null, bytes.subarray(i, i + CHUNK));
   }
-  const mergedBase64 = btoa(binario);
+  return btoa(binario);
+}
+function arrayBufferABase64(buf) {
+  return uint8ArrayABase64(new Uint8Array(buf));
+}
+
+// Igual que fusionarAdjuntosYSustituir, pero para cuando los adjuntos ya
+// vienen en base64 desde el servidor (adjuntos_guardados, al regenerar
+// desde el Doc editable) en vez de recién elegidos en un <input file>.
+async function refusionarAdjuntosGuardados(pdfBase64Principal, adjuntosGuardados, tipoEvento) {
+  if (typeof PDFLib === 'undefined') {
+    throw new Error('La librería pdf-lib no se cargó (¿bloqueada por algún filtro de red o ad-blocker?). Revisa la consola del navegador.');
+  }
+  const { PDFDocument, degrees } = PDFLib;
+  const principalBytes = Uint8Array.from(atob(pdfBase64Principal), c => c.charCodeAt(0));
+  const doc = await PDFDocument.load(principalBytes);
+
+  for (const adj of adjuntosGuardados) {
+    const bytesAdjunto = Uint8Array.from(atob(adj.base64), c => c.charCodeAt(0));
+    const donante = await PDFDocument.load(bytesAdjunto);
+    const paginas = await doc.copyPages(donante, donante.getPageIndices());
+    paginas.forEach(p => {
+      const { width, height } = p.getSize();
+      const anguloActual = p.getRotation().angle % 360;
+      const apaisadaDeVerdad = (anguloActual === 90 || anguloActual === 270) ? (height > width) : (width > height);
+      if (apaisadaDeVerdad) p.setRotation(degrees((anguloActual + 90) % 360));
+      doc.addPage(p);
+    });
+  }
+
+  const mergedBytes = await doc.save();
+  const mergedBase64 = uint8ArrayABase64(mergedBytes);
 
   return llamarBackend({
     accion: 'sustituir_pdf_con_adjuntos',
@@ -1493,6 +1550,7 @@ async function fusionarAdjuntosYSustituir(pdfBase64Principal, archivos, tipoEven
     cod_viv: SESSION_COD_VIV,
     tipo_evento: tipoEvento,
     pdf_base64: mergedBase64
+    // sin `adjuntos`: ya están guardados en Drive de antes, no hace falta re-mandarlos
   });
 }
 
