@@ -1495,6 +1495,8 @@ async function fusionarAdjuntosYSustituir(pdfBase64Principal, archivos, tipoEven
   const mergedBytes = await doc.save();
   const mergedBase64 = uint8ArrayABase64(mergedBytes);
 
+  console.log('DEBUG adjuntosParaGuardar:', adjuntosParaGuardar.length, adjuntosParaGuardar.map(a => a.nombre));
+
   return llamarBackend({
     accion: 'sustituir_pdf_con_adjuntos',
     promocion: SESSION_PROMO,
@@ -1556,6 +1558,9 @@ async function refusionarAdjuntosGuardados(pdfBase64Principal, adjuntosGuardados
 
 // ─── UTILS ───────────────────────────────────────────────────────────
 function llamarBackend(payload) {
+  if (payload.accion === 'sustituir_pdf_con_adjuntos') {
+    console.log('DEBUG payload.adjuntos:', payload.adjuntos ? payload.adjuntos.length : 'undefined/no existe el campo');
+  }
   return fetch(CONTRATOS_URL, { method: 'POST', body: JSON.stringify(payload) }).then(r => r.json());
 }
 function escapeHtml(s) {
