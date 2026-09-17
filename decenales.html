@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serena Breeze — Decenal y OCT</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #FFFFFF;
+    --off-white: #F7F6F4;
+    --border: #E0DDD8;
+    --mid: #B0AA9F;
+    --slate-gray: #6B7280;
+    --text: #2A2520;
+    --black: #111111;
+    --precargado: #FBF7EE;
+    --precargado-border: #E8DDBE;
+    --decenal: #3949ab;
+    --oct: #b06a15;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 14px; }
+  main { max-width: 1160px; margin: 0 auto; padding: 40px 32px 100px; }
+
+  /* ── Copiado literal de SB-contratos.html ── */
+  .sec-title { font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 400; text-transform: uppercase; color: var(--black); margin-bottom: 12px; letter-spacing: 1px; }
+  .sec-eyebrow { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 10px; }
+  .sec-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.7; max-width: 640px; margin-bottom: 28px; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+  .promo-tabs { display: flex; border: 1px solid var(--border); }
+  .promo-tab { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; padding: 12px 28px; cursor: pointer; background: var(--white); color: var(--slate-gray); border: none; border-right: 1px solid var(--border); transition: all .15s; }
+  .promo-tab:last-child { border-right: none; }
+  .promo-tab.active { background: var(--black); color: white; }
+  .promo-tab:hover:not(.active) { background: var(--off-white); color: var(--text); }
+  .pie-nota { font-family: 'Roboto', sans-serif; font-size: 12px; font-weight: 300; color: var(--mid); line-height: 1.6; max-width: 760px; margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+  .leyenda { display: flex; gap: 22px; margin-bottom: 32px; flex-wrap: wrap; }
+  .leyenda-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--slate-gray); letter-spacing: .5px; font-family: 'Roboto', sans-serif; }
+  .swatch { width: 14px; height: 14px; border: 1px solid; }
+  .swatch.manual { background: var(--precargado); border-color: var(--precargado-border); }
+  .swatch.calc { background: #F3F4F5; border-color: #DADCDF; }
+
+  section.bloque-grande { margin-bottom: 50px; }
+  .bloque-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; padding-bottom: 10px; border-bottom: 2px solid var(--black); }
+  .bloque-header .tag { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: white; padding: 3px 8px; }
+  .bloque-header .tag.decenal { background: var(--decenal); }
+  .bloque-header .tag.oct { background: var(--oct); }
+  .bloque-header .tag.base { background: var(--black); }
+  .bloque-header h2 { font-family: 'Oswald', sans-serif; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; color: var(--black); }
+  .bloque-note { font-size: 12px; color: var(--slate-gray); margin: 10px 0 18px; line-height: 1.6; max-width: 780px; font-family: 'Roboto', sans-serif; }
+
+  .subseccion { font-family: 'Oswald', sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 2px; color: var(--black); margin: 24px 0 4px; }
+  .sub-nota { font-size: 12px; color: var(--slate-gray); margin: 4px 0 12px; line-height: 1.6; font-family: 'Roboto', sans-serif; }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .flabel { font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--slate-gray); font-family: 'Roboto', sans-serif; }
+  .fval { border: 1px solid var(--border); padding: 8px 10px; font-size: 13px; width: 100%; border-radius: 0; outline: none; font-family: 'Roboto', sans-serif; font-weight: 300; }
+  input.fval.manual { background: var(--precargado); border-color: var(--precargado-border); color: var(--text); text-align: right; }
+  input.fval.manual:focus { background: var(--white); border-color: var(--black); }
+  .fval.calc { background: #F3F4F5; border-color: #DADCDF; color: var(--text); font-variant-numeric: tabular-nums; text-align: right; }
+
+  .fila-ancha { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px 16px; }
+
+  .caja { border: 1px solid var(--border); padding: 18px 20px 20px; margin-bottom: 16px; }
+  .caja-title { font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--black); margin-bottom: 4px; }
+  .caja-sub { font-size: 11px; color: var(--slate-gray); margin-bottom: 14px; font-family: 'Roboto', sans-serif; }
+  .scroll-x { overflow-x: auto; padding-bottom: 4px; }
+  table.filas { border-collapse: collapse; width: 100%; }
+  table.filas th { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); text-align: left; padding: 0 10px 8px; white-space: nowrap; font-weight: 400; font-family: 'Roboto', sans-serif; }
+  table.filas td { padding: 4px 10px; white-space: nowrap; }
+  table.filas tr:not(:last-child) td { padding-bottom: 8px; }
+  table.filas input.nombre { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: .5px; text-transform: uppercase; color: var(--black); border: none; background: transparent; width: 100%; outline: none; padding: 8px 0; border-bottom: 1px dashed transparent; }
+  table.filas input.nombre:focus { border-bottom-color: var(--mid); }
+  table.filas th.chk, table.filas td.chk { text-align: center; padding: 4px 6px; }
+  table.filas input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; accent-color: var(--black); }
+
+  /* Anchos fijos e idénticos para que villas / bloque(s) / piscina alineen siempre, aunque estén en tablas separadas */
+  /* table-layout:fixed en Chromium SOLO respeta los anchos de <col> al pie
+     de la letra si la propia <table> tiene un ancho TOTAL explícito (no
+     "auto" ni "100%"): si no, deja que una cabecera larga siga inflando esa
+     columna, y como villas/bloque/piscina son tablas separadas con distinto
+     nº de columnas, cada una "infla" de forma distinta y quedan
+     descuadradas aunque el CSS pida el mismo px. Por eso cada tabla de
+     reparto se pinta con <colgroup> Y con su ancho total puesto por JS
+     (suma exacta de sus columnas) — ver colgroupHtml()/anchoTabla() en el
+     script. */
+  table.filas th, table.filas td { overflow: hidden; text-overflow: ellipsis; }
+  table.tabla-pem, table.tabla-reparto-dec, table.tabla-oct { table-layout: fixed; }
+  table.tabla-pem col.col-nombre { width: 230px; }
+  table.tabla-pem col.col-pem { width: 220px; }
+  table.tabla-pem col.col-unid { width: 150px; }
+
+  table.tabla-totales { table-layout: fixed; min-width: 760px; }
+  table.tabla-totales th:first-child, table.tabla-totales td:first-child { width: 160px; text-align: left; }
+  table.tabla-totales th, table.tabla-totales td { text-align: right; }
+  table.tabla-totales tr.fila-destacada td .fval, table.tabla-totales tr.fila-destacada td { font-weight: 700; }
+
+  /* ── Comparativo: semáforo de precio por fila ── */
+  .comp-max { background: #FDECEA !important; border: 2px solid #C0392B !important; color: #A83226 !important; }
+  .comp-min { background: #F0FAF0 !important; border: 2px solid #2D7A2D !important; color: #2D7A2D !important; }
+  .comp-alto { background: #FEF3EA !important; border-color: #F5C89A !important; color: #B06A15 !important; }
+  .comp-bajo { background: #FFFBEA !important; border-color: #E8DDA0 !important; color: #8A6D1A !important; }
+
+  .caja.total { background: var(--off-white); }
+  .caja.total .fval.calc { background: var(--white); }
+
+  table.pagos { width: 100%; border-collapse: collapse; margin-top: 8px; table-layout: fixed; }
+  table.pagos th:nth-child(1), table.pagos td:nth-child(1) { width: 15%; }
+  table.pagos th:nth-child(2), table.pagos td:nth-child(2) { width: 12%; }
+  table.pagos th:nth-child(3), table.pagos td:nth-child(3) { width: 19%; }
+  table.pagos th:nth-child(4), table.pagos td:nth-child(4) { width: 19%; }
+  table.pagos th:nth-child(5), table.pagos td:nth-child(5) { width: 19%; }
+  table.pagos th:nth-child(6), table.pagos td:nth-child(6) { width: 16%; }
+  table.pagos th { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--slate-gray); text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-weight: 400; }
+  table.pagos td { padding: 6px; border-bottom: 1px solid var(--border); vertical-align: middle; overflow: hidden; text-overflow: ellipsis; }
+  table.pagos input { width: 100%; box-sizing: border-box; }
+  table.pagos tfoot td { font-weight: 400; padding-top: 10px; }
+
+  .totales-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px 16px; margin-top: 16px; }
+  .total-box { border: 1px solid #DADCDF; background: #F3F4F5; padding: 14px 16px; }
+  .total-box .flabel { margin-bottom: 6px; }
+  .total-box .num { font-family: 'Oswald', sans-serif; font-size: 19px; color: var(--black); }
+  .total-box.destacado { background: var(--black); border-color: var(--black); }
+  .total-box.destacado .flabel, .total-box.destacado .num { color: white; }
+
+  .aviso { font-size: 12px; color: var(--slate-gray); line-height: 1.7; margin-top: 10px; padding: 12px 14px; border-left: 2px solid var(--mid); background: var(--off-white); font-family: 'Roboto', sans-serif; }
+  .aviso.ok { border-left-color: #2d7a2d; }
+  .aviso.mal { border-left-color: #c0392b; color: #a83226; }
+
+  .btn { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 9px 16px; border: 1px solid var(--border); background: transparent; color: var(--slate-gray); transition: all .2s; }
+  .btn:hover { border-color: var(--black); color: var(--black); }
+  .btn-del { cursor: pointer; background: transparent; border: none; color: var(--mid); font-size: 15px; line-height: 1; padding: 4px 6px; }
+  .btn-del:hover { color: #c0392b; }
+
+  /* ── LOGIN — idéntico patrón a SB-contratos.html ── */
+  #login-screen { position: fixed; inset: 0; background: var(--white); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+  .login-box { width: 100%; max-width: 380px; padding: 48px 40px; border: 1px solid var(--border); }
+  .login-logo { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 3px; text-transform: uppercase; color: var(--black); margin-bottom: 6px; }
+  .login-sub { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); margin-bottom: 40px; }
+  .login-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+  .login-label { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); }
+  .login-input { border: 1px solid var(--border); padding: 12px 14px; font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--text); background: var(--white); outline: none; transition: border-color .2s; border-radius: 0; width: 100%; }
+  .login-input:focus { border-color: var(--black); }
+  .login-btn { width: 100%; margin-top: 8px; font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; background: var(--black); color: white; border: none; padding: 14px; cursor: pointer; transition: background .2s; }
+  .login-btn:hover { background: #333; }
+  .login-btn:disabled { opacity: .55; cursor: default; }
+  .login-error { font-family: 'Roboto', sans-serif; font-size: 12px; color: #c0392b; margin-top: 14px; text-align: center; display: none; }
+  #app-wrapper { display: none; }
+  .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; border-bottom: 1px solid var(--border); }
+  .top-bar-sub { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--slate-gray); }
+  .top-bar-change { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); cursor: pointer; border: 1px solid var(--border); padding: 8px 14px; background: none; }
+  .top-bar-change:hover { border-color: var(--black); color: var(--black); }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Serena Breeze</div>
+    <div class="login-sub">Decenal y OCT · Uso interno</div>
+    <div class="login-field">
+      <label class="login-label">Usuario</label>
+      <input class="login-input" id="login-user" type="text" placeholder="Usuario" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Contraseña</label>
+      <input class="login-input" id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Acceder →</button>
+    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
+  </div>
+</div>
+
+<div id="app-wrapper">
+<div class="top-bar">
+  <div class="top-bar-sub" id="tb-usuario">—</div>
+  <button class="top-bar-change" onclick="cerrarSesion()">Cerrar sesión</button>
+</div>
+<main>
+  <div class="sec-eyebrow">Serena Breeze · Seguros</div>
+  <div class="sec-title" id="promo-titulo">1SB</div>
+  <div class="sec-desc" id="promo-desc">Desglose del seguro decenal y del OCT por vivienda.</div>
+
+  <div class="topbar">
+    <div class="promo-tabs" id="promo-tabs"></div>
+  </div>
+
+  <div class="leyenda" id="promo-leyenda">
+    <div class="leyenda-item"><span class="swatch manual"></span> Dato manual (editable)</div>
+    <div class="leyenda-item"><span class="swatch calc"></span> Calculado (fórmula)</div>
+  </div>
+
+  <div id="promo-content">
+
+  <!-- ══════════════ PEM BASE ══════════════ -->
+  <section class="bloque-grande">
+    <div class="bloque-header"><span class="tag base">Base</span><h2>PEM por elemento</h2></div>
+    <div class="bloque-note">El único dato que se introduce a mano en todo el sistema. A partir de aquí se reparten proporcionalmente tanto el seguro decenal como el OCT (dos cosas distintas, cada una en su cuadro más abajo).</div>
+
+    <div class="caja">
+      <div class="caja-title">Villas</div>
+      <div class="scroll-x">
+        <table class="filas tabla-pem" style="width:450px">
+          <colgroup><col class="col-nombre"><col class="col-pem"></colgroup>
+          <thead><tr><th>Vivienda</th><th>PEM total (€)</th></tr></thead>
+          <tbody id="pem-villas-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="pem-bloques-container"></div>
+
+    <div class="caja">
+      <div class="caja-title">Piscina colectiva</div>
+      <div class="scroll-x">
+        <table class="filas tabla-pem" style="width:450px">
+          <colgroup><col class="col-nombre"><col class="col-pem"></colgroup>
+          <thead><tr><th>Elemento</th><th>PEM total (€)</th></tr></thead>
+          <tbody><tr>
+            <td><input class="nombre" id="nombre-piscina" oninput="recalc()"></td>
+            <td><input type="text" inputmode="decimal" class="fval manual" id="c-piscina" oninput="recalc()" onblur="formatField(this)"></td>
+          </tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="subseccion">Total PEM por fases</div>
+    <div class="sub-nota">Marca qué elementos entran en cada fase. Editable: puedes añadir o quitar fases.</div>
+    <div class="caja">
+      <div class="scroll-x">
+        <table class="filas" id="tabla-fases">
+          <thead><tr id="fases-head-row"><th>Fase</th><th>PEM total</th><th></th></tr></thead>
+          <tbody id="fases-body"></tbody>
+        </table>
+      </div>
+      <button class="btn" onclick="anadirFase()">+ Añadir fase</button>
+    </div>
+    <div class="totales-grid">
+      <div class="total-box destacado"><div class="flabel">Total proyecto completo (PEM)</div><div class="num" id="pem-total-general"></div></div>
+    </div>
+  </section>
+
+  <!-- ══════════════ SEGURO DECENAL ══════════════ -->
+  <section class="bloque-grande">
+    <div class="bloque-header"><span class="tag decenal">Decenal</span><h2>Seguro decenal</h2></div>
+    <div class="bloque-note">Cubre daños estructurales durante 10 años. Se calcula sobre una suma asegurada, con una tasa de prima aplicada por tramos ("entradas en cobertura").</div>
+
+    <div class="subseccion">Parámetros de la póliza</div>
+    <div class="sub-nota">La <b>suma asegurada provisional</b> sale directamente del dato manual de la aseguradora. La <b>suma asegurada definitiva</b> se calcula desde abajo, a partir del PEM de cada elemento y el % de incremento que fijes aquí.</div>
+    <div class="fila-ancha">
+      <div class="field">
+        <div class="flabel">Suma asegurada provisional total (€)</div>
+        <input type="text" inputmode="decimal" class="fval manual" id="c93" oninput="recalc()" onblur="formatField(this)">
+      </div>
+      <div class="field">
+        <div class="flabel">Tasa total %</div>
+        <input type="text" inputmode="decimal" class="fval manual" id="q93" oninput="recalc()" onblur="formatField(this)">
+      </div>
+      <div class="field">
+        <div class="flabel">Tasas + IPS (€)</div>
+        <input type="text" inputmode="decimal" class="fval manual" id="s93" oninput="recalc()" onblur="formatField(this)">
+      </div>
+    </div>
+    <div class="sub-nota" style="margin-top:16px;">% de incremento sobre PEM para calcular la suma asegurada definitiva:</div>
+    <div class="fila-ancha">
+      <div class="field">
+        <div class="flabel">% incremento villas</div>
+        <input type="text" inputmode="decimal" class="fval manual" id="mult-villa" oninput="recalc()" onblur="formatField(this)">
+      </div>
+      <div class="field">
+        <div class="flabel">% incremento bloque</div>
+        <input type="text" inputmode="decimal" class="fval manual" id="mult-bloque" oninput="recalc()" onblur="formatField(this)">
+      </div>
+      <div class="field">
+        <div class="flabel">% incremento piscina</div>
+        <input type="text" inputmode="decimal" class="fval manual" id="mult-piscina" oninput="recalc()" onblur="formatField(this)">
+      </div>
+    </div>
+
+    <div class="subseccion">Reparto por elemento</div>
+    <div class="caja">
+      <div class="caja-title">Villas</div>
+      <div class="scroll-x">
+        <table class="filas tabla-reparto-dec" id="tabla-dec-villas">
+          <thead><tr>
+            <th>Vivienda</th><th>PEM (ref.)</th><th>Suma aseg. prov. (D)</th><th>PEM aseg. def. (E)</th>
+            <th>Otros gastos 5% (F)</th><th>Suma aseg. definitiva (G)</th><th>Prima vivienda (V)</th>
+          </tr></thead>
+          <tbody id="dec-villas-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="dec-bloques-container"></div>
+
+    <div class="caja">
+      <div class="caja-title">Piscina colectiva</div>
+      <div class="caja-sub">No tiene prima propia: su coste se reparte dentro del precio por vivienda del primer bloque.</div>
+      <div class="scroll-x">
+        <table class="filas tabla-reparto-dec" id="tabla-dec-piscina">
+          <thead><tr>
+            <th>Elemento</th><th>PEM (ref.)</th><th>Suma aseg. prov. (D)</th><th>PEM aseg. def. (E)</th>
+            <th>Otros gastos 5% (F)</th><th>Suma aseg. definitiva (G)</th>
+          </tr></thead>
+          <tbody><tr>
+            <td><div class="fval calc" id="nombre-piscina-dec"></div></td>
+            <td><div class="fval calc" id="c-piscina-ref"></div></td>
+            <td><div class="fval calc" id="d-piscina"></div></td>
+            <td><div class="fval calc" id="e-piscina"></div></td>
+            <td><div class="fval calc" id="f-piscina"></div></td>
+            <td><div class="fval calc" id="g-piscina"></div></td>
+          </tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="subseccion">Entradas en cobertura</div>
+    <div class="sub-nota">Marca qué elementos entran en cada entrada. La prima neta prevista de cada entrada se calcula sobre la suma de "Suma aseg. definitiva (G)" de los elementos marcados.</div>
+    <div class="caja">
+      <div class="scroll-x">
+        <table class="filas" id="tabla-entradas">
+          <thead><tr id="entradas-head-row"><th>Entrada</th><th>Cobertura (G sumado)</th><th>Prima neta prevista</th><th></th></tr></thead>
+          <tbody id="entradas-body"></tbody>
+        </table>
+      </div>
+      <button class="btn" onclick="anadirEntrada()">+ Añadir entrada en cobertura</button>
+    </div>
+    <div class="totales-grid">
+      <div class="total-box"><div class="flabel">Cobertura total entradas</div><div class="num" id="h91"></div></div>
+      <div class="total-box"><div class="flabel">Prima neta prevista total</div><div class="num" id="i91"></div></div>
+    </div>
+
+    <div class="subseccion">Totales decenal — provisional y definitivo</div>
+    <div class="sub-nota">Son dos totales distintos: la suma asegurada <b>provisional</b> (dato de la aseguradora) y la suma asegurada <b>definitiva</b> (calculada desde el PEM de cada elemento). El IPS+Tasas de la fila definitiva se estima proporcional al de la provisional según el peso de una suma sobre la otra. [Suponiendo]</div>
+    <div class="caja total">
+      <div class="scroll-x">
+        <table class="filas tabla-totales">
+          <thead><tr><th>Suma asegurada</th><th>Importe</th><th>Prima neta</th><th>IPS + Tasas</th><th>Prima total</th><th>Prima por m²</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Provisional</td>
+              <td><div class="fval calc" id="prov-suma"></div></td>
+              <td><div class="fval calc" id="prov-prima-neta"></div></td>
+              <td><div class="fval calc" id="prov-ips"></div></td>
+              <td><div class="fval calc" id="prov-prima-total"></div></td>
+              <td><div class="fval calc" id="prov-prima-m2"></div></td>
+            </tr>
+            <tr class="fila-destacada">
+              <td>Definitiva</td>
+              <td><div class="fval calc" id="def-suma"></div></td>
+              <td><div class="fval calc" id="def-prima-neta"></div></td>
+              <td><div class="fval calc" id="def-ips"></div></td>
+              <td><div class="fval calc" id="def-prima-total"></div></td>
+              <td><div class="fval calc" id="def-prima-m2"></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="fila-ancha" style="margin-top:14px;">
+        <div class="field">
+          <div class="flabel">m² totales (para prima/m²)</div>
+          <input type="text" inputmode="decimal" class="fval manual" id="m2-total" oninput="recalc()" onblur="formatField(this)">
+        </div>
+      </div>
+      <div class="aviso" id="check-d93">Verificación reparto</div>
+    </div>
+
+    <div class="subseccion">Pagos reales cobrados</div>
+    <div class="sub-nota">Cada pago corresponde a una entrada en cobertura de arriba, en el mismo orden — salvo "Entrega a cuenta", que no tiene cobertura asociada y siempre va primero. "Previsto" es la prima neta prevista de esa entrada, para comparar con lo cobrado.</div>
+    <table class="pagos">
+      <thead><tr><th>Concepto</th><th>Fecha</th><th>Prima neta real</th><th>IPS + tasas</th><th>Total</th><th>Previsto</th></tr></thead>
+      <tbody id="pagos-body"></tbody>
+      <tfoot>
+        <tr><td>TOTAL</td><td></td>
+          <td class="fval calc" id="l91"></td>
+          <td class="fval calc" id="m91"></td>
+          <td class="fval calc" id="n91"></td>
+          <td class="fval calc" id="i91-pagos"></td>
+        </tr>
+      </tfoot>
+    </table>
+    <div class="totales-grid" style="margin-top:16px;">
+      <div class="total-box"><div class="flabel">Diferencia cobrado − previsto</div><div class="num" id="j91"></div></div>
+    </div>
+  </section>
+
+  <!-- ══════════════ OCT ══════════════ -->
+  <section class="bloque-grande">
+    <div class="bloque-header"><span class="tag oct">OCT</span><h2>OCT — Organismo de Control Técnico</h2></div>
+    <div class="bloque-note">No es un seguro: es el coste del control técnico independiente del proyecto. Es un importe total distinto de la suma asegurada decenal y se reparte aparte, proporcionalmente al PEM. La piscina se reparte entre las viviendas de todos los bloques, no solo del primero.</div>
+
+    <div class="subseccion">Parámetro</div>
+    <div class="fila-ancha">
+      <div class="field">
+        <div class="flabel">OCT total (€)</div>
+        <input type="text" inputmode="decimal" class="fval manual" id="z93" oninput="recalc()" onblur="formatField(this)">
+      </div>
+    </div>
+    <div class="sub-nota" style="margin-top:16px;">Importe aparte, no entra en ningún reparto ni total de arriba — solo se guarda aquí.</div>
+    <div class="fila-ancha">
+      <div class="field">
+        <div class="flabel">Informes parciales (€)</div>
+        <input type="text" inputmode="decimal" class="fval manual" id="informes-parciales" oninput="recalc()" onblur="formatField(this)">
+      </div>
+    </div>
+
+    <div class="subseccion">Reparto por elemento</div>
+    <div class="caja">
+      <div class="caja-title">Villas</div>
+      <div class="scroll-x">
+        <table class="filas tabla-oct" id="tabla-oct-villas">
+          <thead><tr><th>Vivienda</th><th>PEM (ref.)</th><th>OCT vivienda</th></tr></thead>
+          <tbody id="oct-villas-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="oct-bloques-container"></div>
+
+    <div class="caja total">
+      <div class="caja-title">Totales OCT</div>
+      <div class="totales-grid" style="margin-top:0;">
+        <div class="total-box destacado"><div class="flabel">OCT total</div><div class="num" id="z93-total"></div></div>
+        <div class="total-box"><div class="flabel">OCT por m²</div><div class="num" id="ac93"></div></div>
+      </div>
+      <div class="aviso" id="check-ab93">Verificación reparto</div>
+    </div>
+  </section>
+  </div><!-- /promo-content -->
+
+  <div id="comparativo-content" style="display:none;">
+    <div class="subseccion">Comparativo entre promociones</div>
+    <div class="sub-nota">Se recalcula solo a partir de los datos actuales de cada promoción (incluidos los cambios que aún no hayas guardado en esta sesión). "VILLA" y "APART" toman la primera villa y el primer bloque de cada promoción como referencia.</div>
+    <div class="leyenda">
+      <div class="leyenda-item"><span class="swatch" style="background:#FDECEA;border:2px solid #C0392B;"></span> Más caro</div>
+      <div class="leyenda-item"><span class="swatch" style="background:#FEF3EA;border-color:#F5C89A;"></span> 50% superior</div>
+      <div class="leyenda-item"><span class="swatch" style="background:#FFFBEA;border-color:#E8DDA0;"></span> 50% inferior</div>
+      <div class="leyenda-item"><span class="swatch" style="background:#F0FAF0;border:2px solid #2D7A2D;"></span> Más barato</div>
+    </div>
+
+    <div class="caja">
+      <div class="caja-title">Decenal</div>
+      <div class="scroll-x">
+        <table class="filas tabla-totales" id="tabla-comparativo-decenal">
+          <thead><tr id="comparativo-head-decenal"></tr></thead>
+          <tbody id="comparativo-body-decenal"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="caja">
+      <div class="caja-title">OCT</div>
+      <div class="scroll-x">
+        <table class="filas tabla-totales" id="tabla-comparativo-oct">
+          <thead><tr id="comparativo-head-oct"></tr></thead>
+          <tbody id="comparativo-body-oct"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="pie-nota">
+    Réplica funcional del seguro decenal y el OCT de las 5 promociones. Los campos con fondo crema son los únicos datos que se introducen a mano; todo lo demás se recalcula solo. Decenal y OCT son magnitudes independientes — el único vínculo entre ambas es que se reparten sobre el mismo PEM base, y la piscina colectiva se reparte entre las viviendas de <b>todos</b> los bloques (no solo el primero). Mientras el backend no esté desplegado, los datos de partida son los de <code>decenales_base_datos.xlsx</code> — edítalos aquí con confianza, pero no se guardan solos hasta que <code>DATA_URL</code> apunte a tu Apps Script.
+  </div>
+</main>
+</div><!-- /app-wrapper -->
+
+<script>
+// ═══════════════ LOGIN (mismo patrón que SB-contratos.html) ═══════════════
+// Rellena estas dos URLs cuando despliegues AuthUsuarios.gs y
+// GeneradorDecenales.gs como Apps Script Web Apps (ver cabecera del .gs).
+const LOGIN_URL = ''; // ej. 'https://script.google.com/macros/s/AKfycb.../exec' (AuthUsuarios)
+const DATA_URL = 'https://script.google.com/macros/s/AKfycbxx33EZsowitXf1YS8pwMt50UzQDScEfDBMomunESeAsZwClUkjHEUPTj5vnPaGsgF7/exec';  // GeneradorDecenales
+const HERRAMIENTA = 'decenales';
+const TOKEN_KEY = 'sb_decenales_token';
+
+function doLogin() {
+  const usuario = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-error');
+  err.style.display = 'none';
+  if (!usuario || !pass) return;
+  if (!LOGIN_URL) {
+    err.textContent = 'LOGIN_URL no está configurado todavía — despliega AuthUsuarios.gs y pega la URL en el HTML.';
+    err.style.display = 'block';
+    return;
+  }
+  btn.disabled = true;
+  fetch(LOGIN_URL, { method: 'POST', body: JSON.stringify({ accion: 'login', herramienta: HERRAMIENTA, usuario, pass }) })
+    .then(r => r.json())
+    .then(res => {
+      btn.disabled = false;
+      if (!res.ok) {
+        err.textContent = res.motivo === 'sin_acceso'
+          ? 'Tu usuario no tiene acceso a esta herramienta todavía.'
+          : 'Usuario o contraseña incorrectos.';
+        err.style.display = 'block';
+        return;
+      }
+      localStorage.setItem(TOKEN_KEY, res.token);
+      entrarApp_(res.nombre || usuario);
+    })
+    .catch(() => {
+      btn.disabled = false;
+      err.textContent = 'No se pudo contactar con el servidor de login.';
+      err.style.display = 'block';
+    });
+}
+
+function intentarSesionGuardada() {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token || !LOGIN_URL) return Promise.resolve(false);
+  return fetch(LOGIN_URL, { method: 'POST', body: JSON.stringify({ accion: 'login', herramienta: HERRAMIENTA, token }) })
+    .then(r => r.json())
+    .then(res => {
+      if (!res.ok) { localStorage.removeItem(TOKEN_KEY); return false; }
+      localStorage.setItem(TOKEN_KEY, res.token);
+      entrarApp_(res.nombre || '');
+      return true;
+    })
+    .catch(() => false);
+}
+
+function entrarApp_(nombre) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-wrapper').style.display = 'block';
+  document.getElementById('tb-usuario').textContent = nombre;
+  iniciarApp();
+}
+
+function cerrarSesion() {
+  localStorage.removeItem(TOKEN_KEY);
+  document.getElementById('app-wrapper').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+}
+
+window.addEventListener('load', () => {
+  document.getElementById('login-user').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('login-pass').focus(); });
+  document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  intentarSesionGuardada().then(entrado => {
+    if (!entrado && !LOGIN_URL) {
+      // Backend aún no desplegado: entra directo, sin bloquear el trabajo de hoy.
+      entrarApp_('');
+    }
+  });
+});
+</script>
+
+<script>
+// ═══════════════ FORMATO NUMÉRICO ═══════════════
+function fmtNum(n) {
+  if (isNaN(n)) n = 0;
+  return n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: 'always' });
+}
+function eur(n) { return fmtNum(n) + ' €'; }
+function parseNum(str) {
+  if (str === null || str === undefined || str === '') return 0;
+  const cleaned = String(str).trim().replace(/\./g, '').replace(',', '.');
+  const v = parseFloat(cleaned);
+  return isNaN(v) ? 0 : v;
+}
+function num(id) { const el = document.getElementById(id); return el ? parseNum(el.value) : 0; }
+
+// ─── Anchos de columna compartidos entre villas/bloque(s)/piscina, para que
+// las tablas (cada una un <table> distinto) alineen siempre — ver nota CSS. ─
+const WIDTHS_DEC = [150, 140, 150, 150, 140, 175, 140, 150]; // Nombre|PEM|D|E|F|G|V|W
+const WIDTHS_OCT_MERGE = [170, 155, 155, 165, 150, 150];     // Elemento|PEMbloque|PEMpiscina|PEMcombinado|AA|AB
+const WIDTHS_OCT_SOLO = [170, 155, 150, 150];                // Elemento|PEM|AA|AB
+const WIDTHS_OCT_VILLAS = [170, 155, 150];                   // Vivienda|PEM|AA
+function colgroupHtml(widths, n) {
+  return '<colgroup>' + widths.slice(0, n).map(w => `<col style="width:${w}px">`).join('') + '</colgroup>';
+}
+function anchoTabla(widths, n) {
+  return widths.slice(0, n).reduce((a, b) => a + b, 0);
+}
+function set(id, txt) { const el = document.getElementById(id); if (el) el.textContent = txt; }
+function formatField(el) { el.value = fmtNum(parseNum(el.value)); }
+function seedField(id, value) { const el = document.getElementById(id); if (el) el.value = fmtNum(value || 0); }
+function seedText(id, value) { const el = document.getElementById(id); if (el) el.value = value || ''; }
+
+// ═══════════════ DATOS DE PARTIDA (S. Asegurada Prov. = dato de la aseguradora; el resto se deriva) ═══════════════
+// Datos exactos leídos de CONTROL_DECENALES.XLSX, hoja "Desglose" (las 5
+// promociones estaban todas ahí, en bloques apilados — 3SB es el único
+// bloque sin rellenar en el Excel, así que es el único que queda a 0).
+const PROMOCIONES_INIT = {
+  '1SB': {
+    viviendas: 22,
+    villas: [68417.71, 65251.58, 65251.58, 65251.58, 65251.58, 68417.71],
+    bloques: [{ pem: 827538.25, unidades: 16 }],
+    piscina: 27405.85,
+    c93: 1503343.01, q93: 0.31, s93: 441.08, z93: 2900, m2: 2891,
+    multVilla: 233, multBloque: 180, multPiscina: 120,
+    entregaCuenta: { concepto: 'ENTREGA A CUENTA 30%', fecha: '2025-04-01', primaReal: 1623.61, ipsTasas: 138.01 },
+    // 2 entradas en cobertura (villas | bloque+piscina) → 2 pagos además de la entrega, en el mismo orden
+    entradasPagos: [
+      { fecha: '2026-04-22', primaReal: 2205.48, ipsTasas: 176.44 },
+      { fecha: '', primaReal: 0, ipsTasas: 0 }
+    ]
+  },
+  '2SB': {
+    viviendas: 16,
+    villas: [62459.80, 62459.80, 62459.80, 62459.80],
+    bloques: [{ pem: 756875.03, unidades: 13 }],
+    piscina: 27389.33,
+    c93: 1230583.24, q93: 0.31, s93: 310.90, z93: 2780, m2: 2358,
+    multVilla: 233, multBloque: 180, multPiscina: 120,
+    entregaCuenta: { concepto: 'ENTREGA A CUENTA 30%', fecha: '2026-02-12', primaReal: 1144.44, ipsTasas: 97.28 },
+    entradasPagos: [
+      { fecha: '', primaReal: 0, ipsTasas: 0 },
+      { fecha: '', primaReal: 0, ipsTasas: 0 }
+    ]
+  },
+  '1SV': {
+    viviendas: 41,
+    villas: [61318.40, 61318.40, 61318.40, 61318.40, 61318.40, 61318.40, 61318.39, 61318.39, 61318.39],
+    bloques: [{ pem: 706941.45, unidades: 16 }, { pem: 706941.46, unidades: 16 }],
+    piscina: 36706.33,
+    c93: 2262773.94, q93: 0.36, s93: 663.89, z93: 3500, m2: 5305,
+    // % de incremento propios de 1SV (no son el 233/180/120 redondo de las demás)
+    multVilla: 233.3811, multBloque: 180.00000254617976, multPiscina: 119.9999509621358,
+    // En el Excel real, 1SV tenía 3 entradas en cobertura, no 2 — por eso
+    // hay 3 pagos aparte de la entrega. No pude reconstruir con certeza qué
+    // elemento exacto entraba en cada una (varias villas valen lo mismo, no
+    // hay forma de distinguirlas por importe), así que uso un reparto
+    // limpio y editable: villas 1-6 | villas 7-9 | bloques+piscina.
+    entradasGrupos: [
+      { nombre: 'ENTRADA 1', tipo: ['villas0-5'] },
+      { nombre: 'ENTRADA 2', tipo: ['villas6-8'] },
+      { nombre: 'ENTRADA 3', tipo: ['bloques', 'piscina'] }
+    ],
+    // Confirmado con el Excel real (filas 25-29): 4 fases, no 2 — reparte
+    // villas y bloques por separado en vez de agruparlos todos juntos.
+    fasesGrupos: [
+      { nombre: 'FASE 1', tipo: ['villas0-5'] },
+      { nombre: 'FASE 2', tipo: ['bloque0', 'piscina'] },
+      { nombre: 'FASE 3', tipo: ['villas6-8'] },
+      { nombre: 'FASE 4', tipo: ['bloque1'] }
+    ],
+    entregaCuenta: { concepto: 'ENTREGA A CUENTA 30%', fecha: '2024-04-11', primaReal: 2443.80, ipsTasas: 207.72 },
+    entradasPagos: [
+      { fecha: '2024-11-19', primaReal: 2896.11, ipsTasas: 231.69 },
+      { fecha: '2024-06-06', primaReal: 5167.04, ipsTasas: 416.90 },
+      { fecha: '2025-11-25', primaReal: 4160.22, ipsTasas: 339.06 }
+    ]
+  },
+  '2SV': {
+    viviendas: 24,
+    villas: [68295.69, 68295.69, 68295.69, 68295.69, 68295.69, 68295.69, 81796.58, 81796.59],
+    bloques: [{ pem: 805982.54, unidades: 16 }],
+    piscina: 25261.62,
+    c93: 1698175.27, q93: 0.31, s93: 429.04, z93: 2900, m2: 3433,
+    multVilla: 233, multBloque: 180, multPiscina: 120,
+    // Aquí sí está confirmado con el Excel real: villas 1-6 | villas 7-8 | bloque+piscina.
+    entradasGrupos: [
+      { nombre: 'ENTRADA 1', tipo: ['villas0-5'] },
+      { nombre: 'ENTRADA 2', tipo: ['villas6-7'] },
+      { nombre: 'ENTRADA 3', tipo: ['bloques', 'piscina'] }
+    ],
+    entregaCuenta: { concepto: 'ENTREGA A CUENTA 30%', fecha: '2025-05-02', primaReal: 1579.31, ipsTasas: 134.24 },
+    entradasPagos: [
+      { fecha: '', primaReal: 0, ipsTasas: 0 },
+      { fecha: '', primaReal: 0, ipsTasas: 0 },
+      { fecha: '', primaReal: 0, ipsTasas: 0 }
+    ]
+  },
+  '3SB': {
+    viviendas: 44,
+    villas: [0, 0, 0, 0, 0, 0, 0],
+    bloques: [{ pem: 0, unidades: 13 }, { pem: 0, unidades: 12 }, { pem: 0, unidades: 12 }],
+    piscina: 0,
+    c93: 0, q93: 0, s93: 0, z93: 0, m2: 0,
+    multVilla: 233, multBloque: 180, multPiscina: 120,
+    entregaCuenta: { concepto: 'ENTREGA A CUENTA 30%', fecha: '', primaReal: 0, ipsTasas: 0 },
+    entradasPagos: [
+      { fecha: '', primaReal: 0, ipsTasas: 0 },
+      { fecha: '', primaReal: 0, ipsTasas: 0 }
+    ]
+  }
+};
+const ORDEN_PROMOS = ['1SV', '2SV', '1SB', '2SB', '3SB'];
+
+// ═══════════════ ESTADO EN MEMORIA (se conserva al cambiar de pestaña) ═══════════════
+let STATE = {};
+function nombresVillasDefault(n) {
+  const arr = [];
+  for (let i = 1; i <= n; i++) arr.push('VILLA ' + i);
+  return arr;
+}
+function nombresBloquesDefault(n) {
+  const arr = [];
+  for (let i = 1; i <= n; i++) arr.push('BLOQUE ' + i);
+  return arr;
+}
+function defaultFases(nVillas, nBloques, grupos) {
+  if (grupos) {
+    return grupos.map(g => ({ nombre: g.nombre, marcados: resolverGrupo_(g.tipo, nVillas, nBloques) }));
+  }
+  const villaIds = []; for (let i = 0; i < nVillas; i++) villaIds.push('v' + i);
+  const bloqueIds = []; for (let i = 0; i < nBloques; i++) bloqueIds.push('b' + i);
+  if (bloqueIds.length <= 2) {
+    return [
+      { nombre: 'FASE 1', marcados: villaIds },
+      { nombre: 'FASE 2', marcados: bloqueIds.concat(['piscina']) }
+    ];
+  }
+  const fases = [{ nombre: 'FASE 1', marcados: villaIds }];
+  bloqueIds.forEach((bid, i) => {
+    fases.push({ nombre: 'FASE ' + (i + 2), marcados: i === 0 ? [bid, 'piscina'] : [bid] });
+  });
+  return fases;
+}
+function defaultEntradas(nVillas, nBloques, grupos) {
+  if (grupos) {
+    return grupos.map(g => ({ nombre: g.nombre, marcados: resolverGrupo_(g.tipo, nVillas, nBloques) }));
+  }
+  const villaIds = []; for (let i = 0; i < nVillas; i++) villaIds.push('v' + i);
+  const bloqueIds = []; for (let i = 0; i < nBloques; i++) bloqueIds.push('b' + i);
+  return [
+    { nombre: 'ENTRADA 1', marcados: villaIds },
+    { nombre: 'ENTRADA 2', marcados: bloqueIds.concat(['piscina']) }
+  ];
+}
+// Traduce atajos ('villas0-5', 'bloques', 'bloque0', 'piscina') a ids reales.
+function resolverGrupo_(tipos, nVillas, nBloques) {
+  const ids = [];
+  tipos.forEach(t => {
+    if (t === 'bloques') { for (let i = 0; i < nBloques; i++) ids.push('b' + i); }
+    else if (t === 'piscina') { ids.push('piscina'); }
+    else {
+      const mBloque = t.match(/^bloque(\d+)$/);
+      if (mBloque) { if (+mBloque[1] < nBloques) ids.push('b' + mBloque[1]); return; }
+      const m = t.match(/^villas(\d+)-(\d+)$/);
+      if (m) { for (let i = +m[1]; i <= +m[2] && i < nVillas; i++) ids.push('v' + i); }
+    }
+  });
+  return ids;
+}
+function initState(codigo) {
+  const src = PROMOCIONES_INIT[codigo];
+  const entradas = defaultEntradas(src.villas.length, src.bloques.length, src.entradasGrupos);
+  const entradasPagos = src.entradasPagos || [];
+  const ordinales = ['1ª', '2ª', '3ª', '4ª', '5ª', '6ª', '7ª'];
+  entradas.forEach((e, i) => {
+    const p = entradasPagos[i] || { fecha: '', primaReal: 0, ipsTasas: 0 };
+    e.pagoConcepto = p.concepto || ((ordinales[i] || (i + 1) + 'ª') + ' ENTRADA');
+    e.pagoFecha = p.fecha; e.pagoPrimaReal = p.primaReal; e.pagoIpsTasas = p.ipsTasas;
+  });
+  return {
+    viviendas: src.viviendas,
+    villaNombres: nombresVillasDefault(src.villas.length),
+    villaPem: src.villas.slice(),
+    bloqueNombres: nombresBloquesDefault(src.bloques.length),
+    bloquePem: src.bloques.map(b => b.pem),
+    bloqueUnidades: src.bloques.map(b => b.unidades),
+    piscinaNombre: 'PISCINA COLECTIVA',
+    piscinaPem: src.piscina,
+    c93: src.c93, q93: src.q93, s93: src.s93, z93: src.z93, m2: src.m2,
+    informesParciales: src.informesParciales || 0,
+    multVilla: src.multVilla, multBloque: src.multBloque, multPiscina: src.multPiscina,
+    fases: defaultFases(src.villas.length, src.bloques.length, src.fasesGrupos),
+    entradas: entradas,
+    entregaCuenta: Object.assign({ concepto: 'ENTREGA A CUENTA 30%', fecha: '', primaReal: 0, ipsTasas: 0 }, src.entregaCuenta || {})
+  };
+}
+ORDEN_PROMOS.forEach(c => { STATE[c] = initState(c); });
+
+let PROMO_ACTUAL = '1SB';
+
+// ═══════════════ GUARDAR EDICIONES ANTES DE CAMBIAR DE PROMOCIÓN ═══════════════
+function volcarEstadoActual() {
+  const st = STATE[PROMO_ACTUAL];
+  st.villaNombres.forEach((_, i) => {
+    st.villaNombres[i] = document.getElementById('v' + i + '-nombre').value;
+    st.villaPem[i] = num('v' + i + '-pem');
+  });
+  st.bloqueNombres.forEach((_, i) => {
+    st.bloqueNombres[i] = document.getElementById('b' + i + '-nombre').value;
+    st.bloquePem[i] = num('b' + i + '-pem');
+    st.bloqueUnidades[i] = num('b' + i + '-unid');
+  });
+  st.piscinaNombre = document.getElementById('nombre-piscina').value;
+  st.piscinaPem = num('c-piscina');
+  st.c93 = num('c93'); st.q93 = num('q93'); st.s93 = num('s93'); st.z93 = num('z93'); st.m2 = num('m2-total');
+  st.informesParciales = num('informes-parciales');
+  st.multVilla = num('mult-villa'); st.multBloque = num('mult-bloque'); st.multPiscina = num('mult-piscina');
+  st.entregaCuenta = {
+    concepto: document.getElementById('entrega-concepto').value,
+    fecha: document.getElementById('entrega-fecha').value,
+    primaReal: num('entrega-l'),
+    ipsTasas: num('entrega-m')
+  };
+  st.entradas.forEach((e, i) => {
+    e.pagoConcepto = document.getElementById('pago-entrada' + i + '-j').value;
+    e.pagoFecha = document.getElementById('pago-entrada' + i + '-k').value;
+    e.pagoPrimaReal = num('pago-entrada' + i + '-l');
+    e.pagoIpsTasas = num('pago-entrada' + i + '-m');
+  });
+}
+
+// ═══════════════ PESTAÑAS DE PROMOCIÓN ═══════════════
+function buildTabs() {
+  const cont = document.getElementById('promo-tabs');
+  cont.innerHTML = '';
+  const btnComp = document.createElement('button');
+  btnComp.className = 'promo-tab' + (PROMO_ACTUAL === 'COMPARATIVO' ? ' active' : '');
+  btnComp.textContent = 'Comparativo';
+  btnComp.onclick = () => switchPromo('COMPARATIVO');
+  cont.appendChild(btnComp);
+  ORDEN_PROMOS.forEach(codigo => {
+    const btn = document.createElement('button');
+    btn.className = 'promo-tab' + (codigo === PROMO_ACTUAL ? ' active' : '');
+    btn.textContent = codigo;
+    btn.onclick = () => switchPromo(codigo);
+    cont.appendChild(btn);
+  });
+}
+function switchPromo(codigo) {
+  if (PROMO_ACTUAL !== 'COMPARATIVO' && PROMO_ACTUAL !== codigo) volcarEstadoActual();
+  PROMO_ACTUAL = codigo;
+  buildTabs();
+  if (codigo === 'COMPARATIVO') {
+    document.getElementById('promo-content').style.display = 'none';
+    document.getElementById('promo-leyenda').style.display = 'none';
+    document.getElementById('comparativo-content').style.display = 'block';
+    document.getElementById('promo-titulo').textContent = 'Comparativo';
+    document.getElementById('promo-desc').textContent = 'Vista comparada de las 5 promociones.';
+    renderComparativo();
+  } else {
+    document.getElementById('promo-content').style.display = 'block';
+    document.getElementById('promo-leyenda').style.display = 'flex';
+    document.getElementById('comparativo-content').style.display = 'none';
+    renderPromo();
+  }
+}
+
+// ═══════════════ COMPARATIVO ═══════════════
+// Cálculo puro (sin tocar el DOM de ninguna promoción) para poder comparar
+// las 5 a la vez — usa exactamente las mismas fórmulas que recalc(), pero
+// leyendo de STATE en vez de inputs en pantalla.
+function calcularResumen(st) {
+  const c92 = st.villaPem.reduce((a, b) => a + b, 0) + st.bloquePem.reduce((a, b) => a + b, 0) + st.piscinaPem;
+  const t93 = (st.c93 * st.q93 / 100) + st.s93;
+
+  const c0 = st.villaPem[0] || 0;
+  const d0 = c92 > 0 ? st.c93 * c0 / c92 : 0;
+  const villaDecenal = st.c93 > 0 ? d0 * t93 / st.c93 : 0;
+  const villaOct = c92 > 0 ? c0 * st.z93 / c92 : 0;
+
+  const cb0 = st.bloquePem[0] || 0;
+  const unid0 = st.bloqueUnidades[0] || 1;
+  const totalUnidBloques = st.bloqueUnidades.reduce((a, b) => a + (b || 0), 0) || 1;
+  const dPiscina = c92 > 0 ? st.c93 * st.piscinaPem / c92 : 0;
+  const dBloque0 = c92 > 0 ? st.c93 * cb0 / c92 : 0;
+  const apartDecenal = (st.c93 > 0 ? dBloque0 * t93 / st.c93 : 0) / unid0 + (st.c93 > 0 ? (dPiscina * t93 / st.c93) / totalUnidBloques : 0);
+  const apartOct = (c92 > 0 ? cb0 * st.z93 / c92 : 0) / unid0 + (c92 > 0 ? (st.piscinaPem * st.z93 / c92) / totalUnidBloques : 0);
+
+  return {
+    q93: st.q93,
+    villaDecenal, villaOct, apartDecenal, apartOct,
+    m2Decenal: st.m2 > 0 ? t93 / st.m2 : 0,
+    m2Oct: st.m2 > 0 ? st.z93 / st.m2 : 0,
+    totalDecenal: t93,
+    totalOct: st.z93,
+    informesParciales: st.informesParciales || 0
+  };
+}
+
+function renderComparativo() {
+  volcarEstadoActualSiProcede_();
+  const headHtml = '<th></th>' + ORDEN_PROMOS.map(c => `<th>${c} <span style="color:var(--slate-gray);font-weight:400;">(${fmtNum(STATE[c].q93)})</span></th>`).join('');
+  document.getElementById('comparativo-head-decenal').innerHTML = headHtml;
+  document.getElementById('comparativo-head-oct').innerHTML = headHtml;
+
+  const filasDecenal = [
+    { label: 'VILLA', val: r => r.villaDecenal },
+    { label: 'APART', val: r => r.apartDecenal },
+    { label: 'm²', val: r => r.m2Decenal },
+    { label: 'TOTAL', val: r => r.totalDecenal, destacada: true }
+  ];
+  const filasOct = [
+    { label: 'VILLA', val: r => r.villaOct },
+    { label: 'APART', val: r => r.apartOct },
+    { label: 'm²', val: r => r.m2Oct },
+    { label: 'TOTAL', val: r => r.totalOct, destacada: true },
+    { label: 'Informes parciales', val: r => r.informesParciales }
+  ];
+  const resumenes = {};
+  ORDEN_PROMOS.forEach(c => { resumenes[c] = calcularResumen(STATE[c]); });
+
+  pintarFilasComparativo_('comparativo-body-decenal', filasDecenal, resumenes);
+  pintarFilasComparativo_('comparativo-body-oct', filasOct, resumenes);
+}
+
+// Semáforo por fila: más caro en rojo, más barato en verde: del resto
+// (excluidos esos dos extremos), la mitad más cara en naranja y la mitad
+// más barata en amarillo. Con empates, todos los que comparten el valor
+// extremo se colorean igual.
+function claseSemaforo_(valores) {
+  const unicos = Array.from(new Set(valores)).sort((a, b) => a - b);
+  const clasePorValor = {};
+  if (unicos.length <= 1) {
+    unicos.forEach(v => clasePorValor[v] = '');
+    return clasePorValor;
+  }
+  const min = unicos[0], max = unicos[unicos.length - 1];
+  clasePorValor[min] = 'comp-min';
+  clasePorValor[max] = 'comp-max';
+  const resto = unicos.slice(1, -1);
+  const nBajo = Math.floor(resto.length / 2);
+  resto.forEach((v, i) => { clasePorValor[v] = i < nBajo ? 'comp-bajo' : 'comp-alto'; });
+  return clasePorValor;
+}
+
+function pintarFilasComparativo_(bodyId, filas, resumenes) {
+  const body = document.getElementById(bodyId);
+  body.innerHTML = '';
+  filas.forEach(f => {
+    const valores = ORDEN_PROMOS.map(c => f.val(resumenes[c]));
+    const clases = claseSemaforo_(valores);
+    const tr = document.createElement('tr');
+    if (f.destacada) tr.className = 'fila-destacada';
+    tr.innerHTML = `<td>${f.label}</td>` + ORDEN_PROMOS.map((c, i) => {
+      const v = valores[i];
+      const clase = clases[v] || '';
+      return `<td><div class="fval calc ${clase}">${eur(v)}</div></td>`;
+    }).join('');
+    body.appendChild(tr);
+  });
+}
+// Si el usuario entra en Comparativo desde una promoción real sin pasar por
+// switchPromo (no debería pasar tal cual está montado, pero por si acaso).
+function volcarEstadoActualSiProcede_() {
+  if (PROMO_ACTUAL !== 'COMPARATIVO' && document.getElementById('v0-nombre')) volcarEstadoActual();
+}
+
+// ═══════════════ RENDER COMPLETO DE LA PROMOCIÓN ACTUAL ═══════════════
+function renderPromo() {
+  const st = STATE[PROMO_ACTUAL];
+  document.getElementById('promo-titulo').textContent = PROMO_ACTUAL;
+  document.getElementById('promo-desc').textContent =
+    `${st.viviendas} viviendas · ${st.villaNombres.length} villas, ${st.bloqueNombres.length} bloque(s) y piscina colectiva.`;
+
+  // ── PEM base: villas ──
+  const pemVillasBody = document.getElementById('pem-villas-body');
+  pemVillasBody.innerHTML = '';
+  st.villaNombres.forEach((nombre, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input class="nombre" id="v${i}-nombre" value="${nombre}" oninput="recalc()"></td>
+      <td><input type="text" inputmode="decimal" class="fval manual" id="v${i}-pem" oninput="recalc()" onblur="formatField(this)"></td>`;
+    pemVillasBody.appendChild(tr);
+    seedField('v' + i + '-pem', st.villaPem[i]);
+  });
+
+  // ── PEM base: bloques (una caja por bloque) ──
+  const pemBloquesCont = document.getElementById('pem-bloques-container');
+  pemBloquesCont.innerHTML = '';
+  st.bloqueNombres.forEach((nombre, i) => {
+    const div = document.createElement('div');
+    div.className = 'caja';
+    div.innerHTML = `
+      <div class="caja-title">${nombre}</div>
+      <div class="scroll-x">
+        <table class="filas tabla-pem" style="width:600px">
+          <colgroup><col class="col-nombre"><col class="col-pem"><col class="col-unid"></colgroup>
+          <thead><tr><th>Bloque</th><th>PEM total (€)</th><th>Nº viviendas</th></tr></thead>
+          <tbody><tr>
+            <td><input class="nombre" id="b${i}-nombre" value="${nombre}" oninput="recalc()"></td>
+            <td><input type="text" inputmode="decimal" class="fval manual" id="b${i}-pem" oninput="recalc()" onblur="formatField(this)"></td>
+            <td><input type="text" inputmode="decimal" class="fval manual" id="b${i}-unid" oninput="recalc()" onblur="formatField(this)"></td>
+          </tr></tbody>
+        </table>
+      </div>`;
+    pemBloquesCont.appendChild(div);
+    seedField('b' + i + '-pem', st.bloquePem[i]);
+    seedField('b' + i + '-unid', st.bloqueUnidades[i]);
+  });
+
+  // ── PEM base: piscina ──
+  seedText('nombre-piscina', st.piscinaNombre);
+  seedField('c-piscina', st.piscinaPem);
+
+  // ── Fases PEM ──
+  buildFasesHead(st);
+  renderFases(st);
+
+  // ── Decenal: villas / bloques / piscina reparto ──
+  const tablaDecVillas = document.getElementById('tabla-dec-villas');
+  tablaDecVillas.style.width = anchoTabla(WIDTHS_DEC, 7) + 'px';
+  tablaDecVillas.querySelector('colgroup')?.remove();
+  tablaDecVillas.insertAdjacentHTML('afterbegin', colgroupHtml(WIDTHS_DEC, 7));
+  const tablaDecPiscina = document.getElementById('tabla-dec-piscina');
+  tablaDecPiscina.style.width = anchoTabla(WIDTHS_DEC, 6) + 'px';
+  tablaDecPiscina.querySelector('colgroup')?.remove();
+  tablaDecPiscina.insertAdjacentHTML('afterbegin', colgroupHtml(WIDTHS_DEC, 6));
+  const tablaOctVillas = document.getElementById('tabla-oct-villas');
+  tablaOctVillas.style.width = anchoTabla(WIDTHS_OCT_VILLAS, 3) + 'px';
+  tablaOctVillas.querySelector('colgroup')?.remove();
+  tablaOctVillas.insertAdjacentHTML('afterbegin', colgroupHtml(WIDTHS_OCT_VILLAS, 3));
+
+  const decVillasBody = document.getElementById('dec-villas-body');
+  decVillasBody.innerHTML = '';
+  st.villaNombres.forEach((_, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><div class="fval calc" id="v${i}-nombre-dec"></div></td>
+      <td><div class="fval calc" id="v${i}-pem-ref"></div></td>
+      <td><div class="fval calc" id="v${i}-d"></div></td>
+      <td><div class="fval calc" id="v${i}-e"></div></td>
+      <td><div class="fval calc" id="v${i}-f"></div></td>
+      <td><div class="fval calc" id="v${i}-g"></div></td>
+      <td><div class="fval calc" id="v${i}-v"></div></td>`;
+    decVillasBody.appendChild(tr);
+  });
+
+  const decBloquesCont = document.getElementById('dec-bloques-container');
+  decBloquesCont.innerHTML = '';
+  st.bloqueNombres.forEach((nombre, i) => {
+    const div = document.createElement('div');
+    div.className = 'caja';
+    const notaPiscina = `<div class="caja-sub">Incluye su parte proporcional de la piscina colectiva, repartida entre las viviendas de todos los bloques.</div>`;
+    div.innerHTML = `
+      <div class="caja-title">${nombre}</div>
+      ${notaPiscina}
+      <div class="scroll-x">
+        <table class="filas tabla-reparto-dec" style="width:${anchoTabla(WIDTHS_DEC, 8)}px">
+          ${colgroupHtml(WIDTHS_DEC, 8)}
+          <thead><tr>
+            <th>Bloque</th><th>PEM (ref.)</th><th>Suma aseg. prov. (D)</th><th>PEM aseg. def. (E)</th>
+            <th>Otros gastos 5% (F)</th><th>Suma aseg. definitiva (G)</th>
+            <th>Prima por vivienda</th><th>Prima total bloque</th>
+          </tr></thead>
+          <tbody><tr>
+            <td><div class="fval calc" id="b${i}-nombre-dec"></div></td>
+            <td><div class="fval calc" id="b${i}-pem-ref"></div></td>
+            <td><div class="fval calc" id="b${i}-d"></div></td>
+            <td><div class="fval calc" id="b${i}-e"></div></td>
+            <td><div class="fval calc" id="b${i}-f"></div></td>
+            <td><div class="fval calc" id="b${i}-g"></div></td>
+            <td><div class="fval calc" id="b${i}-v"></div></td>
+            <td><div class="fval calc" id="b${i}-w"></div></td>
+          </tr></tbody>
+        </table>
+      </div>`;
+    decBloquesCont.appendChild(div);
+  });
+
+  // ── Entradas en cobertura ──
+  buildEntradasHead(st);
+  renderEntradas(st);
+
+  // ── OCT: villas ──
+  const octVillasBody = document.getElementById('oct-villas-body');
+  octVillasBody.innerHTML = '';
+  st.villaNombres.forEach((_, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><div class="fval calc" id="v${i}-nombre-oct"></div></td>
+      <td><div class="fval calc" id="v${i}-pem-oct"></div></td>
+      <td><div class="fval calc" id="v${i}-aa"></div></td>`;
+    octVillasBody.appendChild(tr);
+  });
+
+  // ── OCT: bloques (todos incluyen su parte de la piscina) ──
+  const octBloquesCont = document.getElementById('oct-bloques-container');
+  octBloquesCont.innerHTML = '';
+  st.bloqueNombres.forEach((nombre, i) => {
+    const div = document.createElement('div');
+    div.className = 'caja';
+    div.innerHTML = `
+      <div class="caja-title">${nombre}</div>
+      <div class="caja-sub">Incluye su parte proporcional de la piscina colectiva, repartida entre las viviendas de todos los bloques.</div>
+      <div class="scroll-x">
+        <table class="filas tabla-oct" style="width:${anchoTabla(WIDTHS_OCT_MERGE, 6)}px">
+          ${colgroupHtml(WIDTHS_OCT_MERGE, 6)}
+          <thead><tr><th>Elemento</th><th>PEM bloque (ref.)</th><th>PEM piscina (ref.)</th><th>PEM combinado (ref.)</th><th>OCT por vivienda</th><th>OCT total bloque</th></tr></thead>
+          <tbody><tr>
+            <td><div class="fval calc" id="b${i}-nombre-oct"></div></td>
+            <td><div class="fval calc" id="b${i}-pem-oct"></div></td>
+            <td><div class="fval calc" id="c-piscina-oct"></div></td>
+            <td><div class="fval calc" id="b${i}-pem-combi-oct"></div></td>
+            <td><div class="fval calc" id="b${i}-aa"></div></td>
+            <td><div class="fval calc" id="b${i}-ab"></div></td>
+          </tr></tbody>
+        </table>
+      </div>`;
+    octBloquesCont.appendChild(div);
+  });
+
+  // ── Pagos: entrega a cuenta (fija) + una fila por entrada en cobertura ──
+  const pagosBody = document.getElementById('pagos-body');
+  pagosBody.innerHTML = '';
+  const trEntrega = document.createElement('tr');
+  trEntrega.innerHTML = `
+    <td><input class="fval manual" style="text-align:left" id="entrega-concepto" oninput="recalc()"></td>
+    <td><input type="date" class="fval manual" id="entrega-fecha" oninput="recalc()"></td>
+    <td><input type="text" inputmode="decimal" class="fval manual" id="entrega-l" oninput="recalc()" onblur="formatField(this)"></td>
+    <td><input type="text" inputmode="decimal" class="fval manual" id="entrega-m" oninput="recalc()" onblur="formatField(this)"></td>
+    <td class="fval calc" id="entrega-n"></td>
+    <td class="fval calc">—</td>`;
+  pagosBody.appendChild(trEntrega);
+  document.getElementById('entrega-concepto').value = st.entregaCuenta.concepto;
+  document.getElementById('entrega-fecha').value = st.entregaCuenta.fecha;
+  seedField('entrega-l', st.entregaCuenta.primaReal);
+  seedField('entrega-m', st.entregaCuenta.ipsTasas);
+
+  st.entradas.forEach((e, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input class="fval manual" style="text-align:left" id="pago-entrada${i}-j" oninput="recalc()"></td>
+      <td><input type="date" class="fval manual" id="pago-entrada${i}-k" oninput="recalc()"></td>
+      <td><input type="text" inputmode="decimal" class="fval manual" id="pago-entrada${i}-l" oninput="recalc()" onblur="formatField(this)"></td>
+      <td><input type="text" inputmode="decimal" class="fval manual" id="pago-entrada${i}-m" oninput="recalc()" onblur="formatField(this)"></td>
+      <td class="fval calc" id="pago-entrada${i}-n"></td>
+      <td class="fval calc" id="pago-entrada${i}-previsto"></td>`;
+    pagosBody.appendChild(tr);
+    document.getElementById('pago-entrada' + i + '-j').value = e.pagoConcepto;
+    document.getElementById('pago-entrada' + i + '-k').value = e.pagoFecha;
+    seedField('pago-entrada' + i + '-l', e.pagoPrimaReal);
+    seedField('pago-entrada' + i + '-m', e.pagoIpsTasas);
+  });
+
+  // ── Parámetros de póliza ──
+  seedField('c93', st.c93); seedField('q93', st.q93); seedField('s93', st.s93); seedField('z93', st.z93);
+  seedField('informes-parciales', st.informesParciales);
+  seedField('m2-total', st.m2);
+  seedField('mult-villa', st.multVilla); seedField('mult-bloque', st.multBloque); seedField('mult-piscina', st.multPiscina);
+
+  recalc();
+}
+
+// ═══════════════ FASES PEM (configurable) ═══════════════
+function elementosActuales(st) {
+  const els = [];
+  st.villaNombres.forEach((n, i) => els.push({ id: 'v' + i, nombre: n }));
+  st.bloqueNombres.forEach((n, i) => els.push({ id: 'b' + i, nombre: n }));
+  els.push({ id: 'piscina', nombre: st.piscinaNombre || 'PISCINA' });
+  return els;
+}
+function buildFasesHead(st) {
+  const headRow = document.getElementById('fases-head-row');
+  headRow.innerHTML = `<th>Fase</th>` + elementosActuales(st).map(e => `<th class="chk">${(e.nombre||'').slice(0,9)}</th>`).join('') + `<th>PEM total</th><th></th>`;
+}
+function renderFases(st) {
+  const body = document.getElementById('fases-body');
+  body.innerHTML = '';
+  const els = elementosActuales(st);
+  st.fases.forEach((fase, idx) => {
+    const tr = document.createElement('tr');
+    let checks = '';
+    els.forEach(e => {
+      const checked = fase.marcados.includes(e.id) ? 'checked' : '';
+      checks += `<td class="chk"><input type="checkbox" data-fase="${idx}" data-el="${e.id}" ${checked} onchange="onToggleFase(this)"></td>`;
+    });
+    tr.innerHTML = `
+      <td><input class="nombre" data-fase-nombre="${idx}" value="${fase.nombre}" oninput="onNombreFase(this)"></td>
+      ${checks}
+      <td><div class="fval calc" id="fase-total-${idx}"></div></td>
+      <td>${st.fases.length > 1 ? `<button class="btn-del" onclick="borrarFase(${idx})">✕</button>` : ''}</td>`;
+    body.appendChild(tr);
+  });
+}
+function onToggleFase(chk) {
+  const st = STATE[PROMO_ACTUAL];
+  const idx = parseInt(chk.dataset.fase), elId = chk.dataset.el;
+  if (chk.checked) { if (!st.fases[idx].marcados.includes(elId)) st.fases[idx].marcados.push(elId); }
+  else { st.fases[idx].marcados = st.fases[idx].marcados.filter(x => x !== elId); }
+  recalc();
+}
+function onNombreFase(input) {
+  STATE[PROMO_ACTUAL].fases[parseInt(input.dataset.faseNombre)].nombre = input.value;
+}
+function anadirFase() {
+  const st = STATE[PROMO_ACTUAL];
+  st.fases.push({ nombre: 'FASE ' + (st.fases.length + 1), marcados: [] });
+  renderFases(st); recalc();
+}
+function borrarFase(idx) {
+  const st = STATE[PROMO_ACTUAL];
+  st.fases.splice(idx, 1);
+  renderFases(st); recalc();
+}
+
+// ═══════════════ ENTRADAS EN COBERTURA (configurable) ═══════════════
+function buildEntradasHead(st) {
+  const headRow = document.getElementById('entradas-head-row');
+  headRow.innerHTML = `<th>Entrada</th>` + elementosActuales(st).map(e => `<th class="chk">${(e.nombre||'').slice(0,9)}</th>`).join('') + `<th>Cobertura (G sumado)</th><th>Prima neta prevista</th><th></th>`;
+}
+function renderEntradas(st) {
+  const body = document.getElementById('entradas-body');
+  body.innerHTML = '';
+  const els = elementosActuales(st);
+  st.entradas.forEach((entrada, idx) => {
+    const tr = document.createElement('tr');
+    let checks = '';
+    els.forEach(e => {
+      const checked = entrada.marcados.includes(e.id) ? 'checked' : '';
+      checks += `<td class="chk"><input type="checkbox" data-entrada="${idx}" data-el="${e.id}" ${checked} onchange="onToggleEntrada(this)"></td>`;
+    });
+    tr.innerHTML = `
+      <td><input class="nombre" data-entrada-nombre="${idx}" value="${entrada.nombre}" oninput="onNombreEntrada(this)"></td>
+      ${checks}
+      <td><div class="fval calc" id="entrada-cobertura-${idx}"></div></td>
+      <td><div class="fval calc" id="entrada-prima-${idx}"></div></td>
+      <td>${st.entradas.length > 1 ? `<button class="btn-del" onclick="borrarEntrada(${idx})">✕</button>` : ''}</td>`;
+    body.appendChild(tr);
+  });
+}
+function onToggleEntrada(chk) {
+  const st = STATE[PROMO_ACTUAL];
+  const idx = parseInt(chk.dataset.entrada), elId = chk.dataset.el;
+  if (chk.checked) { if (!st.entradas[idx].marcados.includes(elId)) st.entradas[idx].marcados.push(elId); }
+  else { st.entradas[idx].marcados = st.entradas[idx].marcados.filter(x => x !== elId); }
+  recalc();
+}
+function onNombreEntrada(input) {
+  STATE[PROMO_ACTUAL].entradas[parseInt(input.dataset.entradaNombre)].nombre = input.value;
+}
+function anadirEntrada() {
+  const st = STATE[PROMO_ACTUAL];
+  sincronizarPagosEntradas_(st);
+  const ordinales = ['1ª', '2ª', '3ª', '4ª', '5ª', '6ª', '7ª', '8ª'];
+  const n = st.entradas.length;
+  st.entradas.push({
+    nombre: 'ENTRADA ' + (n + 1), marcados: [],
+    pagoConcepto: (ordinales[n] || (n + 1) + 'ª') + ' ENTRADA', pagoFecha: '', pagoPrimaReal: 0, pagoIpsTasas: 0
+  });
+  renderPromo();
+}
+function borrarEntrada(idx) {
+  const st = STATE[PROMO_ACTUAL];
+  sincronizarPagosEntradas_(st);
+  st.entradas.splice(idx, 1);
+  renderPromo();
+}
+// Guarda en STATE los campos de pago de cada entrada tal como están en
+// pantalla ahora mismo, antes de añadir/quitar una fila (si no, se pierde
+// lo que el usuario acababa de teclear al reconstruir la tabla).
+function sincronizarPagosEntradas_(st) {
+  st.entradas.forEach((e, i) => {
+    const campoJ = document.getElementById('pago-entrada' + i + '-j');
+    if (!campoJ) return;
+    e.pagoConcepto = campoJ.value;
+    e.pagoFecha = document.getElementById('pago-entrada' + i + '-k').value;
+    e.pagoPrimaReal = num('pago-entrada' + i + '-l');
+    e.pagoIpsTasas = num('pago-entrada' + i + '-m');
+  });
+}
+
+// ═══════════════ CÁLCULO ═══════════════
+function recalc() {
+  const st = STATE[PROMO_ACTUAL];
+  const nV = st.villaNombres.length, nB = st.bloqueNombres.length;
+
+  const c93 = num('c93'), q93 = num('q93'), s93 = num('s93'), z93 = num('z93'), m2total = num('m2-total');
+  const multVilla = num('mult-villa') / 100, multBloque = num('mult-bloque') / 100, multPiscina = num('mult-piscina') / 100;
+
+  const cVillas = []; for (let i = 0; i < nV; i++) cVillas.push(num('v' + i + '-pem'));
+  const cBloques = []; for (let i = 0; i < nB; i++) cBloques.push(num('b' + i + '-pem'));
+  const unidBloques = []; for (let i = 0; i < nB; i++) unidBloques.push(num('b' + i + '-unid'));
+  const cPiscina = num('c-piscina');
+
+  const c92 = cVillas.reduce((a, b) => a + b, 0) + cBloques.reduce((a, b) => a + b, 0) + cPiscina;
+
+  // referencias de nombre/PEM en decenal y OCT
+  for (let i = 0; i < nV; i++) {
+    const nombre = document.getElementById('v' + i + '-nombre').value;
+    set('v' + i + '-nombre-dec', nombre); set('v' + i + '-nombre-oct', nombre);
+    set('v' + i + '-pem-ref', eur(cVillas[i])); set('v' + i + '-pem-oct', eur(cVillas[i]));
+  }
+  for (let i = 0; i < nB; i++) {
+    const nombre = document.getElementById('b' + i + '-nombre').value;
+    set('b' + i + '-nombre-dec', nombre); set('b' + i + '-nombre-oct', nombre);
+    set('b' + i + '-pem-ref', eur(cBloques[i])); set('b' + i + '-pem-oct', eur(cBloques[i]));
+  }
+  set('nombre-piscina-dec', document.getElementById('nombre-piscina').value);
+  set('c-piscina-ref', eur(cPiscina));
+  set('c-piscina-oct', eur(cPiscina));
+
+  // ── DECENAL: D, E, F, G ──
+  const dVillas = [], gVillas = [];
+  for (let i = 0; i < nV; i++) {
+    const c = cVillas[i];
+    const d = c92 > 0 ? c93 * c / c92 : 0;
+    const e = c * multVilla;
+    const f = e * 0.05, g = e * 1.05;
+    dVillas.push(d); gVillas.push(g);
+    set('v' + i + '-d', eur(d)); set('v' + i + '-e', eur(e)); set('v' + i + '-f', eur(f)); set('v' + i + '-g', eur(g));
+  }
+  const dBloques = [], gBloques = [];
+  for (let i = 0; i < nB; i++) {
+    const c = cBloques[i];
+    const d = c92 > 0 ? c93 * c / c92 : 0;
+    const e = c * multBloque;
+    const f = e * 0.05, g = e * 1.05;
+    dBloques.push(d); gBloques.push(g);
+    set('b' + i + '-d', eur(d)); set('b' + i + '-e', eur(e)); set('b' + i + '-f', eur(f)); set('b' + i + '-g', eur(g));
+  }
+  const dPiscina = c92 > 0 ? c93 * cPiscina / c92 : 0;
+  const ePiscina = cPiscina * multPiscina;
+  const fPiscina = ePiscina * 0.05, gPiscina = ePiscina * 1.05;
+  set('d-piscina', eur(dPiscina)); set('e-piscina', eur(ePiscina)); set('f-piscina', eur(fPiscina)); set('g-piscina', eur(gPiscina));
+
+  const r93 = c93 * q93 / 100;
+  const t93 = r93 + s93;
+
+  for (let i = 0; i < nV; i++) {
+    const v = c93 > 0 ? dVillas[i] * t93 / c93 : 0;
+    set('v' + i + '-v', eur(v));
+  }
+  // La piscina se reparte entre TODAS las viviendas de TODOS los bloques
+  // (no solo las del primero) — con un único bloque coincide con /unidades
+  // de ese bloque, pero con varios bloques hay que dividir por la suma de
+  // todas sus unidades. Confirmado con los datos reales de 1SV (V16≈V17).
+  const totalUnidBloques = unidBloques.reduce((a, b) => a + (b || 0), 0) || 1;
+  const piscinaPorUnidadDecenal = c93 > 0 ? (dPiscina * t93 / c93) / totalUnidBloques : 0;
+  for (let i = 0; i < nB; i++) {
+    const unidades = unidBloques[i] || 1;
+    const v = (c93 > 0 ? dBloques[i] * t93 / c93 : 0) / unidades + piscinaPorUnidadDecenal;
+    const w = v * unidades;
+    set('b' + i + '-v', eur(v)); set('b' + i + '-w', eur(w));
+  }
+
+  const d93check = dVillas.reduce((a, b) => a + b, 0) + dBloques.reduce((a, b) => a + b, 0) + dPiscina;
+  const diffD = Math.abs(d93check - c93);
+  const checkD = document.getElementById('check-d93');
+  checkD.textContent = `Suma del reparto proporcional = ${eur(d93check)} frente a la suma asegurada provisional = ${eur(c93)}. Diferencia: ${eur(diffD)}.`;
+  checkD.className = 'aviso ' + (diffD < 0.02 ? 'ok' : 'mal');
+
+  // ── OCT ──
+  const aaVillas = [];
+  for (let i = 0; i < nV; i++) {
+    const aa = c92 > 0 ? cVillas[i] * z93 / c92 : 0;
+    aaVillas.push(aa);
+    set('v' + i + '-aa', eur(aa));
+  }
+  let abBloquesSum = 0;
+  const piscinaPorUnidadOct = c92 > 0 ? (cPiscina * z93 / c92) / totalUnidBloques : 0;
+  for (let i = 0; i < nB; i++) {
+    const unidades = unidBloques[i] || 1;
+    const aa = (c92 > 0 ? cBloques[i] * z93 / c92 : 0) / unidades + piscinaPorUnidadOct;
+    const ab = aa * unidades;
+    abBloquesSum += ab;
+    set('b' + i + '-aa', eur(aa)); set('b' + i + '-ab', eur(ab));
+    set('b' + i + '-pem-combi-oct', eur(cBloques[i] + cPiscina));
+  }
+  set('z93-total', eur(z93));
+  const ac93 = m2total > 0 ? z93 / m2total : 0;
+  set('ac93', eur(ac93));
+
+  const ab93check = aaVillas.reduce((a, b) => a + b, 0) + abBloquesSum;
+  const diffAB = Math.abs(ab93check - z93);
+  const checkAB = document.getElementById('check-ab93');
+  checkAB.textContent = `Suma del reparto OCT = ${eur(ab93check)} frente al OCT total = ${eur(z93)}. Diferencia: ${eur(diffAB)}.`;
+  checkAB.className = 'aviso ' + (diffAB < 0.02 ? 'ok' : 'mal');
+
+  // ── Fases PEM ──
+  const els = elementosActuales(st);
+  const cPorElemento = {};
+  els.forEach(e => {
+    if (e.id === 'piscina') cPorElemento[e.id] = cPiscina;
+    else if (e.id[0] === 'v') cPorElemento[e.id] = cVillas[parseInt(e.id.slice(1))];
+    else cPorElemento[e.id] = cBloques[parseInt(e.id.slice(1))];
+  });
+  st.fases.forEach((fase, idx) => {
+    const total = fase.marcados.reduce((a, id) => a + (cPorElemento[id] || 0), 0);
+    set('fase-total-' + idx, eur(total));
+  });
+  set('pem-total-general', eur(c92));
+
+  // ── Entradas en cobertura ──
+  const gPorElemento = {};
+  els.forEach(e => {
+    if (e.id === 'piscina') gPorElemento[e.id] = gPiscina;
+    else if (e.id[0] === 'v') gPorElemento[e.id] = gVillas[parseInt(e.id.slice(1))];
+    else gPorElemento[e.id] = gBloques[parseInt(e.id.slice(1))];
+  });
+  let hTotal = 0, iTotal = 0;
+  const primaPorEntradaIdx = [];
+  st.entradas.forEach((entrada, idx) => {
+    const cobertura = entrada.marcados.reduce((a, id) => a + (gPorElemento[id] || 0), 0);
+    const prima = cobertura * q93 / 100;
+    set('entrada-cobertura-' + idx, eur(cobertura));
+    set('entrada-prima-' + idx, eur(prima));
+    primaPorEntradaIdx[idx] = prima;
+    hTotal += cobertura; iTotal += prima;
+  });
+  set('h91', eur(hTotal)); set('i91', eur(iTotal));
+
+  // ── Totales decenal: provisional vs definitiva ──
+  const g91 = gVillas.reduce((a, b) => a + b, 0) + gBloques.reduce((a, b) => a + b, 0) + gPiscina;
+  set('prov-suma', eur(c93)); set('prov-prima-neta', eur(r93)); set('prov-ips', eur(s93));
+  set('prov-prima-total', eur(t93)); set('prov-prima-m2', eur(m2total > 0 ? t93 / m2total : 0));
+
+  const primaNetaDef = g91 * q93 / 100;
+  const ipsDef = c93 > 0 ? s93 * (g91 / c93) : 0;
+  const primaTotalDef = primaNetaDef + ipsDef;
+  set('def-suma', eur(g91)); set('def-prima-neta', eur(primaNetaDef)); set('def-ips', eur(ipsDef));
+  set('def-prima-total', eur(primaTotalDef)); set('def-prima-m2', eur(m2total > 0 ? primaTotalDef / m2total : 0));
+
+  // ── Pagos: entrega a cuenta (sin previsto) + una fila por entrada (con previsto) ──
+  const entregaL = num('entrega-l'), entregaM = num('entrega-m');
+  set('entrega-n', eur(entregaL + entregaM));
+  let sumL = entregaL, sumM = entregaM;
+  st.entradas.forEach((_, i) => {
+    const l = num('pago-entrada' + i + '-l'), m = num('pago-entrada' + i + '-m');
+    set('pago-entrada' + i + '-n', eur(l + m));
+    set('pago-entrada' + i + '-previsto', eur(primaPorEntradaIdx[i] || 0));
+    sumL += l; sumM += m;
+  });
+  set('l91', eur(sumL)); set('m91', eur(sumM)); set('n91', eur(sumL + sumM));
+  set('i91-pagos', eur(iTotal));
+  set('j91', eur(sumL - iTotal));
+}
+
+function iniciarApp() {
+  buildTabs();
+  renderPromo();
+  if (DATA_URL) precargarDesdeBackend_();
+}
+
+// Intenta traer cada promoción del Sheet vinculado (GeneradorDecenales.gs).
+// Si DATA_URL no está configurado, o la llamada falla (sin desplegar
+// todavía, sin red, lo que sea), se queda con los datos ya cargados desde
+// PROMOCIONES_INIT — así la herramienta nunca se queda en blanco por un
+// fallo de backend.
+function precargarDesdeBackend_() {
+  ORDEN_PROMOS.forEach(codigo => {
+    fetch(DATA_URL, { method: 'POST', body: JSON.stringify({ accion: 'cargar', promocion: codigo }) })
+      .then(r => r.json())
+      .then(res => {
+        if (!res.ok || !res.datos) return;
+        aplicarDatosBackend_(codigo, res.datos);
+        if (codigo === PROMO_ACTUAL) renderPromo();
+      })
+      .catch(() => { /* se queda con los datos locales, sin avisar — no es un error del usuario */ });
+  });
+}
+
+function aplicarDatosBackend_(codigo, d) {
+  const st = STATE[codigo];
+  if (d.villas && d.villas.length === st.villaPem.length) {
+    d.villas.forEach((v, i) => { st.villaPem[i] = v.pem; st.villaNombres[i] = v.nombre; });
+  }
+  if (d.bloques && d.bloques.length === st.bloquePem.length) {
+    d.bloques.forEach((b, i) => {
+      st.bloquePem[i] = b.pem; st.bloqueNombres[i] = b.nombre;
+      if (b.unidades) st.bloqueUnidades[i] = b.unidades;
+    });
+  }
+  if (d.piscina) st.piscinaPem = d.piscina.pem;
+  if (d.parametros) {
+    st.c93 = d.parametros.c93 || st.c93;
+    st.q93 = d.parametros.q93 || st.q93;
+    st.s93 = d.parametros.s93 || st.s93;
+    st.z93 = d.parametros.z93 || st.z93;
+    if (d.parametros.m2) st.m2 = d.parametros.m2;
+  }
+  if (d.pagos && d.pagos.length) {
+    // pagos[0] = entrega a cuenta, el resto en el mismo orden que las entradas.
+    const [primero, ...resto] = d.pagos;
+    if (primero) {
+      st.entregaCuenta = {
+        concepto: primero.concepto || st.entregaCuenta.concepto,
+        fecha: primero.fecha ? String(primero.fecha).slice(0, 10) : '',
+        primaReal: primero.primaReal || 0, ipsTasas: primero.ipsTasas || 0
+      };
+    }
+    resto.forEach((p, i) => {
+      if (!st.entradas[i]) return;
+      st.entradas[i].pagoConcepto = p.concepto || st.entradas[i].pagoConcepto;
+      st.entradas[i].pagoFecha = p.fecha ? String(p.fecha).slice(0, 10) : '';
+      st.entradas[i].pagoPrimaReal = p.primaReal || 0;
+      st.entradas[i].pagoIpsTasas = p.ipsTasas || 0;
+    });
+  }
+}
+</script>
+</body>
+</html>
