@@ -186,6 +186,8 @@
     <div class="promo-tabs" id="promo-tabs"></div>
   </div>
 
+  <div class="aviso mal" id="carga-error" style="display:none;"></div>
+
   <div class="leyenda" id="promo-leyenda">
     <div class="leyenda-item"><span class="swatch manual"></span> Dato manual (editable)</div>
     <div class="leyenda-item"><span class="swatch calc"></span> Calculado (fórmula)</div>
@@ -582,188 +584,26 @@ function formatField(el) { el.value = fmtNum(parseNum(el.value)); }
 function seedField(id, value) { const el = document.getElementById(id); if (el) el.value = fmtNum(value || 0); }
 function seedText(id, value) { const el = document.getElementById(id); if (el) el.value = value || ''; }
 
-// ═══════════════ DATOS DE PARTIDA (S. Asegurada Prov. = dato de la aseguradora; el resto se deriva) ═══════════════
-// Datos exactos leídos de CONTROL_DECENALES.XLSX, hoja "Desglose" (las 5
-// promociones estaban todas ahí, en bloques apilados — 3SB es el único
-// bloque sin rellenar en el Excel, así que es el único que queda a 0).
-const PROMOCIONES_INIT = {
-  '1SB': {
-    viviendas: 22,
-    villas: [68417.71, 65251.58, 65251.58, 65251.58, 65251.58, 68417.71],
-    bloques: [{ pem: 827538.25, unidades: 16 }],
-    piscina: 27405.85,
-    c93: 1503343.01, q93: 0.31, s93: 441.08, z93: 2900, m2: 2891,
-    multVilla: 233, multBloque: 180, multPiscina: 120,
-    entregaCuenta: { concepto: 'ENTREGA A CUENTA 30%', fecha: '2025-04-01', primaReal: 1623.61, ipsTasas: 138.01 },
-    // 2 entradas en cobertura (villas | bloque+piscina) → 2 pagos además de la entrega, en el mismo orden
-    entradasPagos: [
-      { fecha: '2026-04-22', primaReal: 2205.48, ipsTasas: 176.44 },
-      { fecha: '', primaReal: 0, ipsTasas: 0 }
-    ]
-  },
-  '2SB': {
-    viviendas: 16,
-    villas: [62459.80, 62459.80, 62459.80, 62459.80],
-    bloques: [{ pem: 756875.03, unidades: 13 }],
-    piscina: 27389.33,
-    c93: 1230583.24, q93: 0.31, s93: 310.90, z93: 2780, m2: 2358,
-    multVilla: 233, multBloque: 180, multPiscina: 120,
-    entregaCuenta: { concepto: 'ENTREGA A CUENTA 30%', fecha: '2026-02-12', primaReal: 1144.44, ipsTasas: 97.28 },
-    entradasPagos: [
-      { fecha: '', primaReal: 0, ipsTasas: 0 },
-      { fecha: '', primaReal: 0, ipsTasas: 0 }
-    ]
-  },
-  '1SV': {
-    viviendas: 41,
-    villas: [61318.40, 61318.40, 61318.40, 61318.40, 61318.40, 61318.40, 61318.39, 61318.39, 61318.39],
-    bloques: [{ pem: 706941.45, unidades: 16 }, { pem: 706941.46, unidades: 16 }],
-    piscina: 36706.33,
-    c93: 2262773.94, q93: 0.36, s93: 663.89, z93: 3500, m2: 5305,
-    // % de incremento propios de 1SV (no son el 233/180/120 redondo de las demás)
-    multVilla: 233.3811, multBloque: 180.00000254617976, multPiscina: 119.9999509621358,
-    // En el Excel real, 1SV tenía 3 entradas en cobertura, no 2 — por eso
-    // hay 3 pagos aparte de la entrega. No pude reconstruir con certeza qué
-    // elemento exacto entraba en cada una (varias villas valen lo mismo, no
-    // hay forma de distinguirlas por importe), así que uso un reparto
-    // limpio y editable: villas 1-6 | villas 7-9 | bloques+piscina.
-    entradasGrupos: [
-      { nombre: 'ENTRADA 1', tipo: ['villas0-5'] },
-      { nombre: 'ENTRADA 2', tipo: ['villas6-8'] },
-      { nombre: 'ENTRADA 3', tipo: ['bloques', 'piscina'] }
-    ],
-    // Confirmado con el Excel real (filas 25-29): 4 fases, no 2 — reparte
-    // villas y bloques por separado en vez de agruparlos todos juntos.
-    fasesGrupos: [
-      { nombre: 'FASE 1', tipo: ['villas0-5'] },
-      { nombre: 'FASE 2', tipo: ['bloque0', 'piscina'] },
-      { nombre: 'FASE 3', tipo: ['villas6-8'] },
-      { nombre: 'FASE 4', tipo: ['bloque1'] }
-    ],
-    entregaCuenta: { concepto: 'ENTREGA A CUENTA 30%', fecha: '2024-04-11', primaReal: 2443.80, ipsTasas: 207.72 },
-    entradasPagos: [
-      { fecha: '2024-11-19', primaReal: 2896.11, ipsTasas: 231.69 },
-      { fecha: '2024-06-06', primaReal: 5167.04, ipsTasas: 416.90 },
-      { fecha: '2025-11-25', primaReal: 4160.22, ipsTasas: 339.06 }
-    ]
-  },
-  '2SV': {
-    viviendas: 24,
-    villas: [68295.69, 68295.69, 68295.69, 68295.69, 68295.69, 68295.69, 81796.58, 81796.59],
-    bloques: [{ pem: 805982.54, unidades: 16 }],
-    piscina: 25261.62,
-    c93: 1698175.27, q93: 0.31, s93: 429.04, z93: 2900, m2: 3433,
-    multVilla: 233, multBloque: 180, multPiscina: 120,
-    // Aquí sí está confirmado con el Excel real: villas 1-6 | villas 7-8 | bloque+piscina.
-    entradasGrupos: [
-      { nombre: 'ENTRADA 1', tipo: ['villas0-5'] },
-      { nombre: 'ENTRADA 2', tipo: ['villas6-7'] },
-      { nombre: 'ENTRADA 3', tipo: ['bloques', 'piscina'] }
-    ],
-    entregaCuenta: { concepto: 'ENTREGA A CUENTA 30%', fecha: '2025-05-02', primaReal: 1579.31, ipsTasas: 134.24 },
-    entradasPagos: [
-      { fecha: '', primaReal: 0, ipsTasas: 0 },
-      { fecha: '', primaReal: 0, ipsTasas: 0 },
-      { fecha: '', primaReal: 0, ipsTasas: 0 }
-    ]
-  },
-  '3SB': {
-    viviendas: 44,
-    villas: [0, 0, 0, 0, 0, 0, 0],
-    bloques: [{ pem: 0, unidades: 13 }, { pem: 0, unidades: 12 }, { pem: 0, unidades: 12 }],
-    piscina: 0,
-    c93: 0, q93: 0, s93: 0, z93: 0, m2: 0,
-    multVilla: 233, multBloque: 180, multPiscina: 120,
-    entregaCuenta: { concepto: 'ENTREGA A CUENTA 30%', fecha: '', primaReal: 0, ipsTasas: 0 },
-    entradasPagos: [
-      { fecha: '', primaReal: 0, ipsTasas: 0 },
-      { fecha: '', primaReal: 0, ipsTasas: 0 }
-    ]
-  }
-};
-const ORDEN_PROMOS = ['1SV', '2SV', '1SB', '2SB', '3SB'];
-
 // ═══════════════ ESTADO EN MEMORIA (se conserva al cambiar de pestaña) ═══════════════
+// Los datos de partida ya NO viven aquí — antes había una copia local por
+// promoción (PROMOCIONES_INIT) como reserva por si el backend fallaba, pero
+// eso significaba mantener los mismos números en dos sitios (el Sheet y el
+// HTML) y que se desincronizaran. Ahora la única fuente es el Sheet, vía
+// GeneradorDecenales.gs: cada promoción arranca vacía y se rellena al
+// cargar (ver precargarDesdeBackend_/aplicarDatosBackend_ más abajo).
+const ORDEN_PROMOS = ['1SV', '2SV', '1SB', '2SB', '3SB'];
 let STATE = {};
-function nombresVillasDefault(n) {
-  const arr = [];
-  for (let i = 1; i <= n; i++) arr.push('VILLA ' + i);
-  return arr;
-}
-function nombresBloquesDefault(n) {
-  const arr = [];
-  for (let i = 1; i <= n; i++) arr.push('BLOQUE ' + i);
-  return arr;
-}
-function defaultFases(nVillas, nBloques, grupos) {
-  if (grupos) {
-    return grupos.map(g => ({ nombre: g.nombre, marcados: resolverGrupo_(g.tipo, nVillas, nBloques) }));
-  }
-  const villaIds = []; for (let i = 0; i < nVillas; i++) villaIds.push('v' + i);
-  const bloqueIds = []; for (let i = 0; i < nBloques; i++) bloqueIds.push('b' + i);
-  if (bloqueIds.length <= 2) {
-    return [
-      { nombre: 'FASE 1', marcados: villaIds },
-      { nombre: 'FASE 2', marcados: bloqueIds.concat(['piscina']) }
-    ];
-  }
-  const fases = [{ nombre: 'FASE 1', marcados: villaIds }];
-  bloqueIds.forEach((bid, i) => {
-    fases.push({ nombre: 'FASE ' + (i + 2), marcados: i === 0 ? [bid, 'piscina'] : [bid] });
-  });
-  return fases;
-}
-function defaultEntradas(nVillas, nBloques, grupos) {
-  if (grupos) {
-    return grupos.map(g => ({ nombre: g.nombre, marcados: resolverGrupo_(g.tipo, nVillas, nBloques) }));
-  }
-  const villaIds = []; for (let i = 0; i < nVillas; i++) villaIds.push('v' + i);
-  const bloqueIds = []; for (let i = 0; i < nBloques; i++) bloqueIds.push('b' + i);
-  return [
-    { nombre: 'ENTRADA 1', marcados: villaIds },
-    { nombre: 'ENTRADA 2', marcados: bloqueIds.concat(['piscina']) }
-  ];
-}
-// Traduce atajos ('villas0-5', 'bloques', 'bloque0', 'piscina') a ids reales.
-function resolverGrupo_(tipos, nVillas, nBloques) {
-  const ids = [];
-  tipos.forEach(t => {
-    if (t === 'bloques') { for (let i = 0; i < nBloques; i++) ids.push('b' + i); }
-    else if (t === 'piscina') { ids.push('piscina'); }
-    else {
-      const mBloque = t.match(/^bloque(\d+)$/);
-      if (mBloque) { if (+mBloque[1] < nBloques) ids.push('b' + mBloque[1]); return; }
-      const m = t.match(/^villas(\d+)-(\d+)$/);
-      if (m) { for (let i = +m[1]; i <= +m[2] && i < nVillas; i++) ids.push('v' + i); }
-    }
-  });
-  return ids;
-}
 function initState(codigo) {
-  const src = PROMOCIONES_INIT[codigo];
-  const entradas = defaultEntradas(src.villas.length, src.bloques.length, src.entradasGrupos);
-  const entradasPagos = src.entradasPagos || [];
-  const ordinales = ['1ª', '2ª', '3ª', '4ª', '5ª', '6ª', '7ª'];
-  entradas.forEach((e, i) => {
-    const p = entradasPagos[i] || { fecha: '', primaReal: 0, ipsTasas: 0 };
-    e.pagoConcepto = p.concepto || ((ordinales[i] || (i + 1) + 'ª') + ' ENTRADA');
-    e.pagoFecha = p.fecha; e.pagoPrimaReal = p.primaReal; e.pagoIpsTasas = p.ipsTasas;
-  });
   return {
-    viviendas: src.viviendas,
-    villaNombres: nombresVillasDefault(src.villas.length),
-    villaPem: src.villas.slice(),
-    bloqueNombres: nombresBloquesDefault(src.bloques.length),
-    bloquePem: src.bloques.map(b => b.pem),
-    bloqueUnidades: src.bloques.map(b => b.unidades),
-    piscinaNombre: 'PISCINA COLECTIVA',
-    piscinaPem: src.piscina,
-    c93: src.c93, q93: src.q93, s93: src.s93, z93: src.z93, m2: src.m2,
-    informesParciales: src.informesParciales || 0,
-    multVilla: src.multVilla, multBloque: src.multBloque, multPiscina: src.multPiscina,
-    fases: defaultFases(src.villas.length, src.bloques.length, src.fasesGrupos),
-    entradas: entradas,
-    entregaCuenta: Object.assign({ concepto: 'ENTREGA A CUENTA 30%', fecha: '', primaReal: 0, ipsTasas: 0 }, src.entregaCuenta || {})
+    cargado: false,
+    viviendas: 0,
+    villaNombres: [], villaPem: [],
+    bloqueNombres: [], bloquePem: [], bloqueUnidades: [],
+    piscinaNombre: 'PISCINA COLECTIVA', piscinaPem: 0,
+    c93: 0, q93: 0, s93: 0, z93: 0, m2: 0, informesParciales: 0,
+    multVilla: 0, multBloque: 0, multPiscina: 0,
+    fases: [], entradas: [],
+    entregaCuenta: { concepto: 'ENTREGA A CUENTA 30%', fecha: '', primaReal: 0, ipsTasas: 0 }
   };
 }
 ORDEN_PROMOS.forEach(c => { STATE[c] = initState(c); });
@@ -833,6 +673,8 @@ function switchPromo(codigo) {
     document.getElementById('promo-content').style.display = 'block';
     document.getElementById('promo-leyenda').style.display = 'flex';
     document.getElementById('comparativo-content').style.display = 'none';
+    if (STATE[codigo].cargado) ocultarErrorCarga_();
+    else mostrarErrorCarga_(codigo, DATA_URL ? 'todavía cargando o no llegó respuesta' : 'DATA_URL no está configurado en el HTML');
     renderPromo();
   }
 }
@@ -1420,17 +1262,17 @@ function recalc() {
 function iniciarApp() {
   buildTabs();
   renderPromo();
-  if (DATA_URL) precargarDesdeBackend_();
+  if (DATA_URL) {
+    precargarDesdeBackend_();
+  } else {
+    mostrarErrorCarga_(PROMO_ACTUAL, 'DATA_URL no está configurado en el HTML');
+  }
 }
 
-// Intenta traer cada promoción del Sheet vinculado (GeneradorDecenales.gs).
-// Si DATA_URL no está configurado, o la llamada falla (sin desplegar
-// todavía, sin red, lo que sea), se queda con los datos ya cargados desde
-// PROMOCIONES_INIT — así la herramienta nunca se queda en blanco por un
-// fallo de backend. Cada intento deja rastro en consola (éxito o fallo) para
-// poder comprobar desde DevTools si el backend respondió de verdad o si se
-// está viendo la reserva local — a simple vista son iguales, así que sin
-// esto no hay forma de distinguirlos.
+// Intenta traer cada promoción del Sheet vinculado (GeneradorDecenales.gs) —
+// única fuente de datos: si falla, esa promoción se queda vacía y se avisa
+// (ver mostrarErrorCarga_). Cada intento deja rastro en consola (éxito o
+// fallo) para poder comprobar desde DevTools qué ha pasado.
 function precargarDesdeBackend_() {
   console.log('[decenales] DATA_URL configurado, pidiendo datos a las', ORDEN_PROMOS.length, 'promociones…');
   ORDEN_PROMOS.forEach(codigo => {
@@ -1438,56 +1280,108 @@ function precargarDesdeBackend_() {
       .then(r => r.json())
       .then(res => {
         if (!res.ok || !res.datos) {
-          console.warn('[decenales]', codigo, '→ el backend respondió pero sin datos (ok=' + res.ok + ', motivo=' + res.motivo + '). Usando reserva local.');
+          console.warn('[decenales]', codigo, '→ el backend respondió pero sin datos (ok=' + res.ok + ', motivo=' + res.motivo + ').');
+          mostrarErrorCarga_(codigo, 'El backend respondió sin datos (' + (res.motivo || 'motivo desconocido') + ').');
           return;
         }
         aplicarDatosBackend_(codigo, res.datos);
-        console.log('[decenales]', codigo, '→ cargado del backend OK. C93 =', res.datos.PARAMETROS_DECENAL?.[0]?.c93);
-        if (codigo === PROMO_ACTUAL) renderPromo();
+        console.log('[decenales]', codigo, '→ cargado del backend OK. C93 =', STATE[codigo].c93);
+        if (codigo === PROMO_ACTUAL) { ocultarErrorCarga_(); renderPromo(); }
       })
       .catch(err => {
-        console.warn('[decenales]', codigo, '→ fallo de red/CORS al pedir el backend, usando reserva local:', err);
+        console.warn('[decenales]', codigo, '→ fallo de red/CORS al pedir el backend:', err);
+        mostrarErrorCarga_(codigo, 'Fallo de red/CORS: ' + err);
       });
   });
 }
 
+function ocultarErrorCarga_() {
+  const el = document.getElementById('carga-error');
+  if (el) el.style.display = 'none';
+}
+
+
+function mostrarErrorCarga_(codigo, motivo) {
+  if (codigo === PROMO_ACTUAL) {
+    const el = document.getElementById('carga-error');
+    if (el) {
+      el.style.display = 'block';
+      el.textContent = 'No se han podido cargar los datos de ' + codigo + ' desde el Sheet (' + motivo + '). Sin backend no hay datos que mostrar — revisa DATA_URL, el despliegue de Apps Script, o la consola para más detalle.';
+    }
+  }
+}
+
+// Convierte "VILLA 1, VILLA 2" en ['v0','v1'] comparando contra los nombres
+// reales ya cargados para esta promoción (villas → 'vN', bloques → 'bN',
+// piscina → 'piscina'). Así FASES y ENTRADAS, que en el Sheet se guardan
+// como listas de nombres legibles, se traducen a los ids que usa el motor.
+function nombresAIds_(elementos, st) {
+  return String(elementos || '').split(',').map(s => s.trim()).filter(Boolean).map(nombre => {
+    let idx = st.villaNombres.indexOf(nombre);
+    if (idx !== -1) return 'v' + idx;
+    idx = st.bloqueNombres.indexOf(nombre);
+    if (idx !== -1) return 'b' + idx;
+    if (nombre === st.piscinaNombre) return 'piscina';
+    console.warn('[decenales] elemento "' + nombre + '" no reconocido al traducir fases/entradas');
+    return null;
+  }).filter(Boolean);
+}
+
+// Única función que rellena STATE — el Sheet es la única fuente, así que
+// esto reemplaza el objeto entero en vez de sólo pisar algunos campos.
 function aplicarDatosBackend_(codigo, d) {
   const st = STATE[codigo];
-  if (d.villas && d.villas.length === st.villaPem.length) {
-    d.villas.forEach((v, i) => { st.villaPem[i] = v.pem; st.villaNombres[i] = v.nombre; });
-  }
-  if (d.bloques && d.bloques.length === st.bloquePem.length) {
-    d.bloques.forEach((b, i) => {
-      st.bloquePem[i] = b.pem; st.bloqueNombres[i] = b.nombre;
-      if (b.unidades) st.bloqueUnidades[i] = b.unidades;
-    });
-  }
-  if (d.piscina) st.piscinaPem = d.piscina.pem;
-  if (d.parametros) {
-    st.c93 = d.parametros.c93 || st.c93;
-    st.q93 = d.parametros.q93 || st.q93;
-    st.s93 = d.parametros.s93 || st.s93;
-    st.z93 = d.parametros.z93 || st.z93;
-    if (d.parametros.m2) st.m2 = d.parametros.m2;
-  }
-  if (d.pagos && d.pagos.length) {
-    // pagos[0] = entrega a cuenta, el resto en el mismo orden que las entradas.
-    const [primero, ...resto] = d.pagos;
-    if (primero) {
-      st.entregaCuenta = {
-        concepto: primero.concepto || st.entregaCuenta.concepto,
-        fecha: primero.fecha ? String(primero.fecha).slice(0, 10) : '',
-        primaReal: primero.primaReal || 0, ipsTasas: primero.ipsTasas || 0
-      };
-    }
-    resto.forEach((p, i) => {
-      if (!st.entradas[i]) return;
-      st.entradas[i].pagoConcepto = p.concepto || st.entradas[i].pagoConcepto;
-      st.entradas[i].pagoFecha = p.fecha ? String(p.fecha).slice(0, 10) : '';
-      st.entradas[i].pagoPrimaReal = p.primaReal || 0;
-      st.entradas[i].pagoIpsTasas = p.ipsTasas || 0;
-    });
-  }
+
+  st.villaNombres = (d.VILLAS || []).map(v => String(v.nombre || ''));
+  st.villaPem = (d.VILLAS || []).map(v => Number(v.pem) || 0);
+
+  st.bloqueNombres = (d.BLOQUES || []).map(b => String(b.nombre || ''));
+  st.bloquePem = (d.BLOQUES || []).map(b => Number(b.pem) || 0);
+  st.bloqueUnidades = (d.BLOQUES || []).map(b => Number(b.unidades) || 1);
+
+  const piscina = (d.PISCINA || [])[0];
+  st.piscinaNombre = piscina ? String(piscina.nombre || 'PISCINA COLECTIVA') : 'PISCINA COLECTIVA';
+  st.piscinaPem = piscina ? Number(piscina.pem) || 0 : 0;
+
+  const pdec = (d.PARAMETROS_DECENAL || [])[0] || {};
+  st.c93 = Number(pdec.c93) || 0;
+  st.q93 = Number(pdec.q93) || 0;
+  st.s93 = Number(pdec.s93) || 0;
+  st.multVilla = Number(pdec.multVilla) || 0;
+  st.multBloque = Number(pdec.multBloque) || 0;
+  st.multPiscina = Number(pdec.multPiscina) || 0;
+  st.m2 = Number(pdec.m2) || 0;
+
+  const poct = (d.PARAMETROS_OCT || [])[0] || {};
+  st.z93 = Number(poct.z93) || 0;
+  st.informesParciales = Number(poct.informesParciales) || 0;
+
+  st.fases = (d.FASES || []).map(f => ({ nombre: f.nombre, marcados: nombresAIds_(f.elementos, st) }));
+
+  const entradasBase = (d.ENTRADAS || []).map(e => ({ nombre: e.nombre, marcados: nombresAIds_(e.elementos, st) }));
+  const pagos = d.PAGOS || [];
+  const primero = pagos[0];
+  const resto = pagos.slice(1);
+  st.entregaCuenta = primero ? {
+    concepto: primero.concepto || 'ENTREGA A CUENTA',
+    fecha: primero.fecha ? String(primero.fecha).slice(0, 10) : '',
+    primaReal: Number(primero.primaReal) || 0,
+    ipsTasas: Number(primero.ipsTasas) || 0
+  } : { concepto: 'ENTREGA A CUENTA', fecha: '', primaReal: 0, ipsTasas: 0 };
+
+  st.entradas = entradasBase.map((e, i) => {
+    const p = resto[i] || {};
+    return {
+      nombre: e.nombre, marcados: e.marcados,
+      pagoConcepto: p.concepto || e.nombre,
+      pagoFecha: p.fecha ? String(p.fecha).slice(0, 10) : '',
+      pagoPrimaReal: Number(p.primaReal) || 0,
+      pagoIpsTasas: Number(p.ipsTasas) || 0
+    };
+  });
+
+  st.viviendas = st.villaNombres.length + st.bloqueUnidades.reduce((a, b) => a + b, 0);
+  st.cargado = true;
 }
 </script>
 </body>
