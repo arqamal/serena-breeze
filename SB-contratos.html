@@ -86,10 +86,16 @@
 
   /* estado card */
   .estado-card { border: 1px solid var(--border); padding: 20px 22px; margin-bottom: 28px; }
+  .docs-list { border: 1px solid var(--border); }
+  .docs-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; padding: 12px 14px; border-bottom: 1px solid var(--border); }
+  .docs-row:last-child { border-bottom: none; }
+  .docs-row-nombre { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--black); }
+  .docs-row-acciones { display: flex; gap: 6px; flex-wrap: nowrap; }
+  .docs-row-acciones .btn { padding: 6px 10px; font-size: 10px; letter-spacing: 1px; white-space: nowrap; }
   .estado-badge { display: inline-block; font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; margin-bottom: 10px; line-height: 1.4; box-sizing: border-box; vertical-align: middle; }
   .estado-badge.libre { background: #f0faf0; color: #2d7a2d; border: 1px solid #b8e0b8; }
   .estado-badge.reserva { background: #FEF3EA; color: #E87722; border: 1px solid #F5C89A; }
-  .estado-badge.contrato { background: #eef2ff; color: #3949ab; border: 1px solid #c5cae9; }
+  .estado-badge.compraventa { background: #eef2ff; color: #3949ab; border: 1px solid #c5cae9; }
   .estado-linea { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); line-height: 1.7; }
   .estado-linea b { font-weight: 400; color: var(--black); }
   .estado-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
@@ -152,22 +158,25 @@
   table.data-table th:nth-child(4), table.data-table td:nth-child(4) { width: 36%; }
   /* tabla de contactos (Cliente/Agencia/Legal) en el detalle — 5 columnas,
      anchos propios (mayor especificidad de origen que las del listado) */
-  table.contactos-table th:nth-child(1), table.contactos-table td:nth-child(1) { width: 14%; }
-  table.contactos-table th:nth-child(2), table.contactos-table td:nth-child(2) { width: 30%; }
-  table.contactos-table th:nth-child(3), table.contactos-table td:nth-child(3) { width: 24%; }
-  table.contactos-table th:nth-child(4), table.contactos-table td:nth-child(4) { width: 24%; }
-  table.contactos-table th:nth-child(5), table.contactos-table td:nth-child(5) { width: 8%; text-align: center; }
+  table.contactos-table th:nth-child(1), table.contactos-table td:nth-child(1) { width: 10%; }
+  table.contactos-table th:nth-child(2), table.contactos-table td:nth-child(2) { width: 18%; }
+  table.contactos-table th:nth-child(3), table.contactos-table td:nth-child(3) { width: 20%; }
+  table.contactos-table th:nth-child(4), table.contactos-table td:nth-child(4) { width: 16%; }
+  table.contactos-table th:nth-child(5), table.contactos-table td:nth-child(5) { width: 16%; }
+  table.contactos-table th:nth-child(6), table.contactos-table td:nth-child(6) { width: 14%; }
+  table.contactos-table th:nth-child(7), table.contactos-table td:nth-child(7) { width: 6%; text-align: center; }
   table.contactos-table td input[type="text"], table.cliente-table td input[type="text"] { width: 100%; border: 1px solid var(--border); padding: 6px 8px; font-family: 'Roboto', sans-serif; font-size: 12.5px; background: var(--white); }
   table.contactos-table td input[type="text"].catalogo, table.cliente-table td input[type="text"].catalogo { background: #EEF4FB; border-color: #C9DCF0; }
   table.contactos-table td input[type="text"].catalogo:focus, table.cliente-table td input[type="text"].catalogo:focus { background: var(--white); }
   table.contactos-table td.tipo-label, table.cliente-table td.tipo-label { font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: .5px; color: var(--black); text-transform: uppercase; }
   /* tabla de cliente — 6 columnas (label + nombre/dirección/teléfono/correo + mailchimp) */
-  table.cliente-table th:nth-child(1), table.cliente-table td:nth-child(1) { width: 10%; }
-  table.cliente-table th:nth-child(2), table.cliente-table td:nth-child(2) { width: 22%; }
-  table.cliente-table th:nth-child(3), table.cliente-table td:nth-child(3) { width: 26%; }
-  table.cliente-table th:nth-child(4), table.cliente-table td:nth-child(4) { width: 16%; }
-  table.cliente-table th:nth-child(5), table.cliente-table td:nth-child(5) { width: 18%; }
-  table.cliente-table th:nth-child(6), table.cliente-table td:nth-child(6) { width: 8%; text-align: center; }
+  table.cliente-table th:nth-child(1), table.cliente-table td:nth-child(1) { width: 9%; }
+  table.cliente-table th:nth-child(2), table.cliente-table td:nth-child(2) { width: 18%; }
+  table.cliente-table th:nth-child(3), table.cliente-table td:nth-child(3) { width: 22%; }
+  table.cliente-table th:nth-child(4), table.cliente-table td:nth-child(4) { width: 13%; }
+  table.cliente-table th:nth-child(5), table.cliente-table td:nth-child(5) { width: 14%; }
+  table.cliente-table th:nth-child(6), table.cliente-table td:nth-child(6) { width: 16%; }
+  table.cliente-table th:nth-child(7), table.cliente-table td:nth-child(7) { width: 8%; text-align: center; }
   table.data-table th { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); background: var(--off-white); font-weight: 400; }
   table.data-table td { padding: 8px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   table.data-table tr:last-child td { border-bottom: none; }
@@ -282,15 +291,15 @@ const UNIDADES = {
 // contrato). appliesTo indica en qué formularios aparece.
 const CAMPOS_FORM = [
   { seccion: 'Cliente(s)' },
-  { key: 'cliente1', label: 'Cliente 1 (nombre completo)', appliesTo: ['reserva','contrato'] },
-  { key: 'nie_cliente1', label: 'NIE / Pasaporte cliente 1', appliesTo: ['reserva','contrato'] },
-  { key: 'mail_cliente1', label: 'Email cliente 1', appliesTo: ['reserva','contrato'] },
-  { key: 'tlf_cliente1', label: 'Teléfono cliente 1', appliesTo: ['reserva','contrato'] },
-  { key: 'cliente2', label: 'Cliente 2 (opcional)', appliesTo: ['reserva','contrato'] },
-  { key: 'nie_cliente2', label: 'NIE / Pasaporte cliente 2', appliesTo: ['reserva','contrato'] },
-  { key: 'mail_cliente2', label: 'Email cliente 2', appliesTo: ['reserva','contrato'] },
-  { key: 'tlf_cliente2', label: 'Teléfono cliente 2', appliesTo: ['reserva','contrato'] },
-  { key: 'dom_cliente', label: 'Domicilio del/de los cliente(s)', appliesTo: ['reserva','contrato'], full: true }
+  { key: 'cliente1', label: 'Cliente 1 (nombre completo)', appliesTo: ['reserva','compraventa'] },
+  { key: 'nie_cliente1', label: 'NIE / Pasaporte cliente 1', appliesTo: ['reserva','compraventa'] },
+  { key: 'mail_cliente1', label: 'Email cliente 1', appliesTo: ['reserva','compraventa'] },
+  { key: 'tlf_cliente1', label: 'Teléfono cliente 1', appliesTo: ['reserva','compraventa'] },
+  { key: 'cliente2', label: 'Cliente 2 (opcional)', appliesTo: ['reserva','compraventa'] },
+  { key: 'nie_cliente2', label: 'NIE / Pasaporte cliente 2', appliesTo: ['reserva','compraventa'] },
+  { key: 'mail_cliente2', label: 'Email cliente 2', appliesTo: ['reserva','compraventa'] },
+  { key: 'tlf_cliente2', label: 'Teléfono cliente 2', appliesTo: ['reserva','compraventa'] },
+  { key: 'dom_cliente', label: 'Domicilio del/de los cliente(s)', appliesTo: ['reserva','compraventa'], full: true }
   // Precio, Forma de pago y Plazos ya no son campos de texto simples: se
   // renderizan aparte en mostrarFormulario() porque llevan cálculo
   // automático (subtotal/total), conversión a letras (pago_reserv) o
@@ -433,14 +442,14 @@ function accionesFila(v) {
   }
   if (v.tipo === 'reserva') {
     return `
-      <button class="btn btn-primary" onclick="entrarYAbrir('${v.cod_viv}','contrato','nuevo')">Compraventa</button>
+      <button class="btn btn-primary" onclick="entrarYAbrir('${v.cod_viv}','compraventa','nuevo')">Compraventa</button>
       <button class="btn btn-secondary" onclick="entrarYAbrir('${v.cod_viv}','reserva','editar')">Editar</button>
       ${v.pdf_url ? `<a class="btn btn-link" href="${v.pdf_url}" target="_blank">PDF</a>` : ''}
       <button class="btn btn-danger" onclick="cancelarDesdeListado('${v.cod_viv}')">Cancelar</button>`;
   }
   // contrato
   return `
-    <button class="btn btn-secondary" onclick="entrarYAbrir('${v.cod_viv}','contrato','editar')">Editar</button>
+    <button class="btn btn-secondary" onclick="entrarYAbrir('${v.cod_viv}','compraventa','editar')">Editar</button>
     ${v.pdf_url ? `<a class="btn btn-link" href="${v.pdf_url}" target="_blank">PDF</a>` : ''}
     <button class="btn btn-danger" onclick="cancelarDesdeListado('${v.cod_viv}')">Cancelar</button>`;
 }
@@ -449,7 +458,7 @@ function renderListado(viviendas) {
   const badge = v => {
     if (!v.tipo) return `<span class="estado-badge libre chip">Libre</span>`;
     if (v.tipo === 'reserva') return `<span class="estado-badge reserva chip">Reserva</span>`;
-    return `<span class="estado-badge contrato chip">Compraventa</span>`;
+    return `<span class="estado-badge compraventa chip">Compraventa</span>`;
   };
   const porCodigo = {};
   viviendas.forEach(v => { porCodigo[v.cod_viv] = v; });
@@ -481,9 +490,9 @@ function renderListado(viviendas) {
 
 function cancelarDesdeListado(codViv) {
   const fila = (LISTADO_DATA || []).find(v => v.cod_viv === codViv);
-  const esContrato = fila && fila.tipo === 'contrato';
+  const esContrato = fila && fila.tipo === 'compraventa';
   const aviso = esContrato
-    ? '¿Seguro que quieres cancelar el contrato de compraventa de ' + codViv + '? Esto también cancelará la reserva que le dio origen. No se puede deshacer desde aquí.'
+    ? '¿Seguro que quieres cancelar la compraventa de ' + codViv + '? Esto también cancelará la reserva que le dio origen. No se puede deshacer desde aquí.'
     : '¿Seguro que quieres cancelar la reserva de ' + codViv + '? No se puede deshacer desde aquí.';
   if (!confirm(aviso)) return;
   llamarBackend({ accion: 'cancelar', promocion: SESSION_PROMO, cod_viv: codViv })
@@ -553,27 +562,28 @@ function renderEstado(data) {
 
   if (!activa) {
     badgeClase = 'libre'; badgeTexto = 'Vivienda libre';
-    lineas = 'No hay ninguna reserva ni contrato activo para esta vivienda.';
+    lineas = 'No hay ninguna reserva ni compraventa activa para esta vivienda.';
     acciones = `<button class="btn btn-primary" onclick="mostrarFormulario('reserva','nuevo')">Generar reserva</button>`;
   } else if (activa.tipo === 'reserva') {
     badgeClase = 'reserva'; badgeTexto = 'Reserva activa';
     lineas = `<b>${escapeHtml(activa.cliente1 || '—')}</b>${activa.cliente2 ? ' y <b>' + escapeHtml(activa.cliente2) + '</b>' : ''} · reservada el ${fmtFecha(activa.timestamp)}`;
     acciones = `
-      <button class="btn btn-primary" onclick="mostrarFormulario('contrato','nuevo')">Generar compraventa</button>
+      <button class="btn btn-primary" onclick="mostrarFormulario('compraventa','nuevo')">Generar compraventa</button>
       <button class="btn btn-secondary" onclick="mostrarFormulario('reserva','editar')">Editar reserva</button>
       <button class="btn btn-danger" onclick="confirmarCancelacion()">Cancelar reserva</button>`;
   } else { // contrato
-    badgeClase = 'contrato'; badgeTexto = 'Contrato de compraventa activo';
+    badgeClase = 'compraventa'; badgeTexto = 'Compraventa activa';
     lineas = `<b>${escapeHtml(activa.cliente1 || '—')}</b>${activa.cliente2 ? ' y <b>' + escapeHtml(activa.cliente2) + '</b>' : ''} · compraventa generada el ${fmtFecha(activa.timestamp)}`;
     acciones = `
-      <button class="btn btn-secondary" onclick="mostrarFormulario('contrato','editar')">Editar contrato</button>
-      <button class="btn btn-danger" onclick="confirmarCancelacion()">Cancelar contrato</button>`;
+      <button class="btn btn-secondary" onclick="mostrarFormulario('compraventa','editar')">Editar compraventa</button>
+      <button class="btn btn-danger" onclick="confirmarCancelacion()">Cancelar compraventa</button>`;
   }
 
   document.getElementById('contenido').innerHTML = `
     <div class="sec-title">Detalle ${escapeHtml(data.cod_viv)}</div>
     ${renderClienteBlock(activa, data.contactos)}
     ${renderContactosBlock(data.contactos)}
+    ${renderVendedorBlock(data.contactos)}
     <div class="estado-card">
       <span class="estado-badge ${badgeClase}">${badgeTexto}</span>
       <div class="estado-linea">${lineas}</div>
@@ -594,6 +604,46 @@ function renderEstado(data) {
 // "Contactos" — solo el Mailchimp (compartido entre los dos, no hay
 // casilla por comprador) vive en Contactos.cliente. Aviso obligatorio al
 // tocar cualquier campo: esto puede estar ya en documentos firmados.
+// Estima el país a partir del texto de la dirección — por palabras clave
+// conocidas, nunca 100% fiable, por eso el campo es editable y esto solo
+// rellena si está vacío (no pisa lo que ya hayas puesto a mano).
+const MAPA_PAISES = [
+  [['españa', 'spain'], 'España'],
+  [['reino unido', 'united kingdom', ' uk', 'england', 'inglaterra', 'scotland', 'escocia', 'wales', 'gales'], 'Reino Unido'],
+  [['alemania', 'germany', 'deutschland'], 'Alemania'],
+  [['francia', 'france'], 'Francia'],
+  [['bélgica', 'belgica', 'belgium'], 'Bélgica'],
+  [['países bajos', 'paises bajos', 'netherlands', 'holanda'], 'Países Bajos'],
+  [['irlanda', 'ireland'], 'Irlanda'],
+  [['suecia', 'sweden'], 'Suecia'],
+  [['noruega', 'norway'], 'Noruega'],
+  [['dinamarca', 'denmark'], 'Dinamarca'],
+  [['suiza', 'switzerland'], 'Suiza'],
+  [['italia', 'italy'], 'Italia'],
+  [['portugal'], 'Portugal'],
+  [['rusia', 'russia'], 'Rusia'],
+  [['polonia', 'poland'], 'Polonia'],
+  [['estados unidos', 'united states', ' usa', 'u.s.a'], 'Estados Unidos'],
+  [['canadá', 'canada'], 'Canadá'],
+  [['marruecos', 'morocco'], 'Marruecos'],
+  [['ucrania', 'ukraine'], 'Ucrania']
+];
+function estimarPaisDesdeDireccion(direccion) {
+  if (!direccion) return '';
+  const texto = direccion.toLowerCase();
+  for (const [claves, nombre] of MAPA_PAISES) {
+    if (claves.some(k => texto.includes(k))) return nombre;
+  }
+  return 'España'; // por defecto — la mayoría de direcciones sin país explícito son de aquí
+}
+function estimarPaisCliente() {
+  const direccion = document.getElementById('cliente-1-direccion').value.trim();
+  [1, 2].forEach(n => {
+    const campo = document.getElementById('cliente-' + n + '-pais');
+    if (campo && !campo.value.trim()) campo.value = estimarPaisDesdeDireccion(direccion);
+  });
+}
+
 function renderClienteBlock(activa, contactos) {
   if (!activa) return ''; // sin reserva/contrato activo no hay datos de cliente que mostrar
   const mailchimpDe = n => ((contactos || []).find(c => c.tipo === 'cliente' + n) || {}).mailchimp;
@@ -601,6 +651,7 @@ function renderClienteBlock(activa, contactos) {
   const cli = n => ({
     nombre: activa['cliente' + n] || '',
     direccion: activa.dom_cliente || '', // compartida entre cliente1 y cliente2, a propósito
+    pais: activa.pais_cliente || '', // compartida también, igual que dirección
     telefono: activa['tlf_cliente' + n] || '',
     correo: activa['mail_cliente' + n] || ''
   });
@@ -610,7 +661,8 @@ function renderClienteBlock(activa, contactos) {
     return `<tr>
       <td class="tipo-label">Cliente ${n}</td>
       <td><input type="text" class="${claseSiRelleno(c.nombre)}" id="cliente-${n}-nombre" value="${escapeHtml(c.nombre)}" onfocus="avisoEditarCliente()"></td>
-      <td><input type="text" class="${claseSiRelleno(c.direccion)}" id="cliente-${n}-direccion" value="${escapeHtml(c.direccion)}" onfocus="avisoEditarCliente()"></td>
+      <td><input type="text" class="${claseSiRelleno(c.direccion)}" id="cliente-${n}-direccion" value="${escapeHtml(c.direccion)}" onfocus="avisoEditarCliente()" onblur="estimarPaisCliente()"></td>
+      <td><input type="text" class="${claseSiRelleno(c.pais)}" id="cliente-${n}-pais" value="${escapeHtml(c.pais)}" onfocus="avisoEditarCliente()"></td>
       <td><input type="text" class="${claseSiRelleno(c.telefono)}" id="cliente-${n}-telefono" value="${escapeHtml(c.telefono)}" onfocus="avisoEditarCliente()"></td>
       <td><input type="text" class="${claseSiRelleno(c.correo)}" id="cliente-${n}-correo" value="${escapeHtml(c.correo)}" onfocus="avisoEditarCliente()"></td>
       <td style="text-align:center;"><input type="checkbox" id="cliente-${n}-mailchimp" ${mailchimpDe(n) ? 'checked' : ''}></td>
@@ -621,7 +673,7 @@ function renderClienteBlock(activa, contactos) {
     <div id="cliente-aviso"></div>
     <div class="viviendas-table-wrap" style="margin-bottom:12px;">
       <table class="data-table cliente-table">
-        <thead><tr><th></th><th>Nombre</th><th>Dirección</th><th>Teléfono</th><th>Correo</th><th>Mailchimp</th></tr></thead>
+        <thead><tr><th></th><th>Nombre</th><th>Dirección</th><th>País</th><th>Teléfono</th><th>Correo</th><th>Mailchimp</th></tr></thead>
         <tbody>${filas}</tbody>
       </table>
     </div>
@@ -644,6 +696,7 @@ function guardarClienteDetalle() {
     cliente1: document.getElementById('cliente-1-nombre').value.trim(),
     cliente2: document.getElementById('cliente-2-nombre').value.trim(),
     dom_cliente: document.getElementById('cliente-1-direccion').value.trim(),
+    pais_cliente: document.getElementById('cliente-1-pais').value.trim(),
     tlf_cliente1: document.getElementById('cliente-1-telefono').value.trim(),
     tlf_cliente2: document.getElementById('cliente-2-telefono').value.trim(),
     mail_cliente1: document.getElementById('cliente-1-correo').value.trim(),
@@ -672,8 +725,10 @@ function renderContactosBlock(contactos) {
     return `<tr>
       <td class="tipo-label">${etiquetas[tipo]}</td>
       <td><input type="text" class="${claseSiRelleno(c.nombre)}" id="contacto-${tipo}-nombre" value="${escapeHtml(c.nombre || '')}"></td>
+      <td><input type="text" class="${claseSiRelleno(c.domicilio)}" id="contacto-${tipo}-domicilio" value="${escapeHtml(c.domicilio || '')}"></td>
       <td><input type="text" class="${claseSiRelleno(c.responsable)}" id="contacto-${tipo}-responsable" value="${escapeHtml(c.responsable || '')}"></td>
-      <td><input type="text" class="${claseSiRelleno(c.contacto)}" id="contacto-${tipo}-contacto" value="${escapeHtml(c.contacto || '')}"></td>
+      <td><input type="text" class="${claseSiRelleno(c.email)}" id="contacto-${tipo}-email" value="${escapeHtml(c.email || '')}"></td>
+      <td><input type="text" class="${claseSiRelleno(c.telefono)}" id="contacto-${tipo}-telefono" value="${escapeHtml(c.telefono || '')}"></td>
       <td><input type="checkbox" id="contacto-${tipo}-mailchimp" ${c.mailchimp ? 'checked' : ''}></td>
     </tr>`;
   }).join('');
@@ -681,7 +736,7 @@ function renderContactosBlock(contactos) {
   return `
     <div class="viviendas-table-wrap" style="margin-bottom:12px;">
       <table class="data-table contactos-table">
-        <thead><tr><th></th><th>Nombre</th><th>Responsable</th><th>Contacto</th><th>Mailchimp</th></tr></thead>
+        <thead><tr><th></th><th>Nombre</th><th>Domicilio</th><th>Responsable</th><th>Email</th><th>Teléfono</th><th>Mailchimp</th></tr></thead>
         <tbody>${filas}</tbody>
       </table>
     </div>
@@ -695,8 +750,10 @@ function guardarContactos() {
   const contactos = ['agencia', 'legal'].map(tipo => ({
     tipo,
     nombre: document.getElementById('contacto-' + tipo + '-nombre').value.trim(),
+    domicilio: document.getElementById('contacto-' + tipo + '-domicilio').value.trim(),
     responsable: document.getElementById('contacto-' + tipo + '-responsable').value.trim(),
-    contacto: document.getElementById('contacto-' + tipo + '-contacto').value.trim(),
+    email: document.getElementById('contacto-' + tipo + '-email').value.trim(),
+    telefono: document.getElementById('contacto-' + tipo + '-telefono').value.trim(),
     mailchimp: document.getElementById('contacto-' + tipo + '-mailchimp').checked
   }));
   const msg = document.getElementById('contactos-msg');
@@ -709,26 +766,81 @@ function guardarContactos() {
     .catch(() => { msg.innerHTML = `<div class="msg error">No se pudo conectar con el servidor. Inténtalo de nuevo.</div>`; });
 }
 
+// Vendedor — cuadro aparte, una sola fila, mismos campos que Agencia/Legal
+// pero con su propio guardado independiente.
+function renderVendedorBlock(contactos) {
+  const c = (contactos || []).find(x => x.tipo === 'vendedor') || {};
+  const claseSiRelleno = v => v ? 'catalogo' : '';
+  return `
+    <div class="viviendas-table-wrap" style="margin-bottom:12px;">
+      <table class="data-table contactos-table">
+        <thead><tr><th></th><th>Nombre</th><th>Domicilio</th><th>Responsable</th><th>Email</th><th>Teléfono</th><th>Mailchimp</th></tr></thead>
+        <tbody><tr>
+          <td class="tipo-label">Vendedor</td>
+          <td><input type="text" class="${claseSiRelleno(c.nombre)}" id="vendedor-nombre" value="${escapeHtml(c.nombre || '')}"></td>
+          <td><input type="text" class="${claseSiRelleno(c.domicilio)}" id="vendedor-domicilio" value="${escapeHtml(c.domicilio || '')}"></td>
+          <td><input type="text" class="${claseSiRelleno(c.responsable)}" id="vendedor-responsable" value="${escapeHtml(c.responsable || '')}"></td>
+          <td><input type="text" class="${claseSiRelleno(c.email)}" id="vendedor-email" value="${escapeHtml(c.email || '')}"></td>
+          <td><input type="text" class="${claseSiRelleno(c.telefono)}" id="vendedor-telefono" value="${escapeHtml(c.telefono || '')}"></td>
+          <td><input type="checkbox" id="vendedor-mailchimp" ${c.mailchimp ? 'checked' : ''}></td>
+        </tr></tbody>
+      </table>
+    </div>
+    <div id="vendedor-msg"></div>
+    <div class="estado-actions" style="margin-bottom:28px;">
+      <button class="btn btn-secondary" onclick="guardarVendedor()">Guardar vendedor</button>
+    </div>`;
+}
+
+function guardarVendedor() {
+  const contactos = [{
+    tipo: 'vendedor',
+    nombre: document.getElementById('vendedor-nombre').value.trim(),
+    domicilio: document.getElementById('vendedor-domicilio').value.trim(),
+    responsable: document.getElementById('vendedor-responsable').value.trim(),
+    email: document.getElementById('vendedor-email').value.trim(),
+    telefono: document.getElementById('vendedor-telefono').value.trim(),
+    mailchimp: document.getElementById('vendedor-mailchimp').checked
+  }];
+  const msg = document.getElementById('vendedor-msg');
+  msg.innerHTML = `<div class="msg info">Guardando…</div>`;
+  llamarBackend({ accion: 'guardar_contactos', promocion: SESSION_PROMO, cod_viv: SESSION_COD_VIV, contactos })
+    .then(data => {
+      if (!data.ok) { msg.innerHTML = `<div class="msg error">${escapeHtml(data.error || 'No se pudo guardar.')}</div>`; return; }
+      msg.innerHTML = `<div class="msg success">Vendedor guardado.</div>`;
+    })
+    .catch(() => { msg.innerHTML = `<div class="msg error">No se pudo conectar con el servidor. Inténtalo de nuevo.</div>`; });
+}
+
 function renderDocumentosBlock(documentos) {
   if (!documentos) return '';
+  const filaDoc = (nombre, url, acciones) => {
+    if (!url) return '';
+    return `<div class="docs-row">
+      <div class="docs-row-nombre">${nombre}</div>
+      <div class="docs-row-acciones">${acciones}</div>
+    </div>`;
+  };
   const bloque = (doc, tipoEvento, etiqueta) => {
     if (!doc || !doc.pdf_url) return '';
-    let html = `<div class="estado-actions" style="margin-bottom:8px;">`;
-    html += `<a class="btn btn-link" href="${doc.pdf_url}" target="_blank">PDF de ${etiqueta}</a>`;
-    if (doc.pdf_firmado_url) html += `<a class="btn btn-link" href="${doc.pdf_firmado_url}" target="_blank">PDF de ${etiqueta} firmado (${escapeHtml(doc.fecha_firma || '')})</a>`;
+    let accionesPrincipal = `<a class="btn btn-link" href="${doc.pdf_url}" target="_blank">Abrir</a>`;
     if (doc.doc_url) {
-      html += `<a class="btn btn-link" href="${doc.doc_url}" target="_blank">Abrir Doc editable</a>`;
-      html += `<button class="btn btn-secondary" onclick="regenerarPdfDesdeDoc('${tipoEvento}')">Regenerar PDF desde este Doc</button>`;
+      accionesPrincipal += `<a class="btn btn-link" href="${doc.doc_url}" target="_blank">Doc editable</a>`;
+      accionesPrincipal += `<button class="btn btn-secondary" onclick="regenerarPdfDesdeDoc('${tipoEvento}')">Regenerar</button>`;
     }
-    html += `</div>`;
+    let html = filaDoc('PDF de ' + etiqueta, doc.pdf_url, accionesPrincipal);
+    if (doc.pdf_firmado_url) {
+      html += filaDoc('PDF de ' + etiqueta + ' firmado (' + escapeHtml(doc.fecha_firma || '') + ')', doc.pdf_firmado_url,
+        `<a class="btn btn-link" href="${doc.pdf_firmado_url}" target="_blank">Abrir</a>`);
+    }
     return html;
   };
-  const contenido = bloque(documentos.reserva, 'reserva', 'reserva') + bloque(documentos.contrato, 'contrato', 'compraventa');
+  const contenido = bloque(documentos.reserva, 'reserva', 'reserva') + bloque(documentos.contrato, 'compraventa', 'compraventa');
   if (!contenido) return '';
   return `
     <div class="estado-card" style="margin-top:16px;">
       <div class="form-section-label" style="margin-top:0;">Documentos</div>
-      ${contenido}
+      <div class="docs-list">${contenido}</div>
       <div id="regenerar-msg"></div>
     </div>`;
 }
@@ -782,7 +894,7 @@ function quitarAdjunto(idx) {
   ADJUNTOS_FILES.splice(idx, 1);
   renderAdjuntosList();
 }
-let FIRMA_TIPO_EVENTO_ACTUAL = null; // 'reserva'|'contrato' de la fila activa mostrada, para el drag-and-drop
+let FIRMA_TIPO_EVENTO_ACTUAL = null; // 'reserva'|'compraventa' de la fila activa mostrada, para el drag-and-drop
 
 function renderFirmaBlock(activa) {
   if (!activa) return '';
@@ -792,7 +904,7 @@ function renderFirmaBlock(activa) {
   const firmado = !!activa['firmado_' + sufijo];
   const fecha = activa['fecha_firma_' + sufijo];
   const url = activa['pdf_firmado_' + sufijo + '_url'];
-  const etiqueta = activa.tipo === 'reserva' ? 'reserva' : 'contrato';
+  const etiqueta = activa.tipo === 'reserva' ? 'reserva' : 'compraventa';
 
   return `
     <div class="estado-card" style="margin-top:16px;">
@@ -875,9 +987,9 @@ function enviarFirmado() {
 
 function confirmarCancelacion() {
   const activa = ULTIMA_PRECARGA ? ULTIMA_PRECARGA.activa : null;
-  const esContrato = activa && activa.tipo === 'contrato';
+  const esContrato = activa && activa.tipo === 'compraventa';
   const aviso = esContrato
-    ? '¿Seguro que quieres cancelar el contrato de compraventa? Esto también cancelará la reserva que le dio origen. Se registra en el Sheet y no se puede deshacer desde aquí.'
+    ? '¿Seguro que quieres cancelar la compraventa? Esto también cancelará la reserva que le dio origen. Se registra en el Sheet y no se puede deshacer desde aquí.'
     : '¿Seguro que quieres cancelar la reserva? Esta acción se registra en el Sheet y no se puede deshacer desde aquí.';
   if (!confirm(aviso)) return;
   document.getElementById('load-indicator').style.display = 'block';
@@ -1153,18 +1265,18 @@ function mostrarFormulario(tipo, modo) {
   const activa = ULTIMA_PRECARGA ? ULTIMA_PRECARGA.activa : null;
   const semilla = ULTIMA_PRECARGA ? ULTIMA_PRECARGA.semilla : null;
   // modo 'editar': se precarga con los valores ACTUALES de la fila activa
-  // (sea reserva o contrato). modo 'nuevo' + tipo 'contrato': se precarga
+  // (sea reserva o compraventa). modo 'nuevo' + tipo 'compraventa': se precarga
   // desde la reserva activa. modo 'nuevo' + tipo 'reserva': se precarga
   // desde la fila semilla (tipo=null) — nunca desde eventos cancelados.
   const precargados = (modo === 'editar' && activa) ? activa
-    : (tipo === 'contrato' && activa) ? activa
+    : (tipo === 'compraventa' && activa) ? activa
     : (tipo === 'reserva' && modo === 'nuevo' && semilla) ? semilla
     : {};
   const val = k => (precargados[k] !== undefined && precargados[k] !== null) ? precargados[k] : '';
   const esP = k => val(k) !== '';
 
   const titulo = modo === 'editar'
-    ? (tipo === 'reserva' ? 'Editar reserva' : 'Editar contrato')
+    ? (tipo === 'reserva' ? 'Editar reserva' : 'Editar compraventa')
     : (tipo === 'reserva' ? 'Nueva reserva' : 'Generar compraventa');
   let html = `<div class="sec-title">${titulo} — ${escapeHtml(SESSION_COD_VIV)}</div>`;
 
@@ -1311,7 +1423,7 @@ function mostrarFormulario(tipo, modo) {
       <span>Adjuntos (opcional)</span><span class="acordeon-flecha">▾</span>
     </div>
     <div class="acordeon-cuerpo">
-    <div class="catalogo-note">PDF sueltos (planos, anexos...) que se fusionan al final del contrato antes de guardarlo. Las páginas apaisadas se giran a vertical. No es obligatorio.</div>
+    <div class="catalogo-note">PDF sueltos (planos, anexos...) que se fusionan al final del documento antes de guardarlo. Las páginas apaisadas se giran a vertical. No es obligatorio.</div>
     <div class="upload-zone" id="adjuntos-upload-zone" onclick="document.getElementById('adjuntos-input').click()">
       <input type="file" id="adjuntos-input" accept="application/pdf" multiple style="display:none" onchange="onAdjuntosSeleccionados(this)">
       <label class="upload-zone-label">Haz clic o arrastra aquí uno o varios PDF</label>
@@ -1411,6 +1523,7 @@ function enviarFormulario(tipo, modo) {
   btn.textContent = modo === 'editar' ? 'Guardando…' : 'Generando…';
   document.getElementById('form-msg').innerHTML = '';
 
+  const etiquetaTipo = tipo === 'reserva' ? 'la reserva' : 'la compraventa';
   llamarBackend({
     accion: modo === 'editar' ? 'editar' : (tipo === 'reserva' ? 'generar_reserva' : 'generar_contrato'),
     promocion: SESSION_PROMO,
@@ -1422,7 +1535,7 @@ function enviarFormulario(tipo, modo) {
       btn.disabled = false;
       btn.textContent = textoOriginal;
       if (!data.ok) {
-        document.getElementById('form-msg').innerHTML = `<div class="msg error">${escapeHtml(data.error || 'No se pudo generar el contrato.')}</div>`;
+        document.getElementById('form-msg').innerHTML = `<div class="msg error">${escapeHtml(data.error || 'No se pudo generar ' + etiquetaTipo + '.')}</div>`;
         return;
       }
       const archivos = ADJUNTOS_FILES.slice();
@@ -1430,7 +1543,7 @@ function enviarFormulario(tipo, modo) {
         // Backend viejo (sin desplegar la versión que devuelve pdf_base64):
         // avisar en vez de ignorar los adjuntos en silencio.
         document.getElementById('form-msg').innerHTML =
-          `<div class="msg error">Generado correctamente, PERO no se pudieron fusionar los ${archivos.length} adjunto(s): el servidor no mandó los bytes del PDF (falta desplegar la última versión de GeneradorContratos.gs). El contrato en sí está bien guardado — <a href="${data.pdf_url}" target="_blank">abrir</a>.</div>`;
+          `<div class="msg error">Generado correctamente, PERO no se pudieron fusionar los ${archivos.length} adjunto(s): el servidor no mandó los bytes del PDF (falta desplegar la última versión de GeneradorContratos.gs). ${tipo === 'reserva' ? 'La reserva' : 'La compraventa'} en sí está bien guardada — <a href="${data.pdf_url}" target="_blank">abrir</a>.</div>`;
         setTimeout(cargarEstado, 3000);
         return;
       }
@@ -1441,7 +1554,7 @@ function enviarFormulario(tipo, modo) {
           .then(res2 => {
             if (!res2.ok) {
               document.getElementById('form-msg').innerHTML =
-                `<div class="msg error">El contrato se generó bien, pero no se pudieron fusionar los adjuntos: ${escapeHtml(res2.error || 'error desconocido')}. El PDF sin adjuntos ya está guardado — <a href="${data.pdf_url}" target="_blank">abrir</a>.</div>`;
+                `<div class="msg error">${tipo === 'reserva' ? 'La reserva' : 'La compraventa'} se generó bien, pero no se pudieron fusionar los adjuntos: ${escapeHtml(res2.error || 'error desconocido')}. El PDF sin adjuntos ya está guardado — <a href="${data.pdf_url}" target="_blank">abrir</a>.</div>`;
               setTimeout(cargarEstado, 2500);
               return;
             }
@@ -1451,7 +1564,7 @@ function enviarFormulario(tipo, modo) {
           })
           .catch(err => {
             document.getElementById('form-msg').innerHTML =
-              `<div class="msg error">El contrato se generó bien, pero falló la fusión de adjuntos (${escapeHtml(String(err && err.message || err))}). El PDF sin adjuntos ya está guardado — <a href="${data.pdf_url}" target="_blank">abrir</a>.</div>`;
+              `<div class="msg error">${tipo === 'reserva' ? 'La reserva' : 'La compraventa'} se generó bien, pero falló la fusión de adjuntos (${escapeHtml(String(err && err.message || err))}). El PDF sin adjuntos ya está guardado — <a href="${data.pdf_url}" target="_blank">abrir</a>.</div>`;
             setTimeout(cargarEstado, 2500);
           });
         return;
