@@ -1427,17 +1427,27 @@ function iniciarApp() {
 // Si DATA_URL no está configurado, o la llamada falla (sin desplegar
 // todavía, sin red, lo que sea), se queda con los datos ya cargados desde
 // PROMOCIONES_INIT — así la herramienta nunca se queda en blanco por un
-// fallo de backend.
+// fallo de backend. Cada intento deja rastro en consola (éxito o fallo) para
+// poder comprobar desde DevTools si el backend respondió de verdad o si se
+// está viendo la reserva local — a simple vista son iguales, así que sin
+// esto no hay forma de distinguirlos.
 function precargarDesdeBackend_() {
+  console.log('[decenales] DATA_URL configurado, pidiendo datos a las', ORDEN_PROMOS.length, 'promociones…');
   ORDEN_PROMOS.forEach(codigo => {
     fetch(DATA_URL, { method: 'POST', body: JSON.stringify({ accion: 'cargar', promocion: codigo }) })
       .then(r => r.json())
       .then(res => {
-        if (!res.ok || !res.datos) return;
+        if (!res.ok || !res.datos) {
+          console.warn('[decenales]', codigo, '→ el backend respondió pero sin datos (ok=' + res.ok + ', motivo=' + res.motivo + '). Usando reserva local.');
+          return;
+        }
         aplicarDatosBackend_(codigo, res.datos);
+        console.log('[decenales]', codigo, '→ cargado del backend OK. C93 =', res.datos.PARAMETROS_DECENAL?.[0]?.c93);
         if (codigo === PROMO_ACTUAL) renderPromo();
       })
-      .catch(() => { /* se queda con los datos locales, sin avisar — no es un error del usuario */ });
+      .catch(err => {
+        console.warn('[decenales]', codigo, '→ fallo de red/CORS al pedir el backend, usando reserva local:', err);
+      });
   });
 }
 
