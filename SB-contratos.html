@@ -1194,13 +1194,34 @@ function recalcularPagos() {
   const total = parsearMiles(document.getElementById('f-total').value);
   const reserva = parsearMiles(document.getElementById('f-pago_reserv').value);
   const base = total - reserva;
-  if (base <= 0) return;
-  const pago1 = base * 0.25;
-  const pago2 = base * 0.25;
-  const pago3 = base - pago1 - pago2;
-  document.getElementById('f-pago_1').value = formatearMiles(pago1);
-  document.getElementById('f-pago_2').value = formatearMiles(pago2);
-  document.getElementById('f-pago_3').value = formatearMiles(pago3);
+  if (base > 0) {
+    const pago1 = base * 0.25;
+    const pago2 = base * 0.25;
+    const pago3 = base - pago1 - pago2;
+    document.getElementById('f-pago_1').value = formatearMiles(pago1);
+    document.getElementById('f-pago_2').value = formatearMiles(pago2);
+    document.getElementById('f-pago_3').value = formatearMiles(pago3);
+  }
+  comprobarSumaPagos();
+}
+// Aviso si reserva + pago_1 + pago_2 + pago_3 no suma el total — no
+// bloquea el envío, solo avisa (puede haber una razón legítima para
+// no cuadrar exacto), pero así no pasa desapercibido si te dejas algo
+// al escribir un reparto a mano.
+function comprobarSumaPagos() {
+  const el = document.getElementById('aviso-suma-pagos');
+  if (!el) return; // reserva no tiene el bloque de 3 pagos completo si tipo==='reserva' con layout distinto — por seguridad
+  const total = parsearMiles(document.getElementById('f-total').value);
+  const reserva = parsearMiles(document.getElementById('f-pago_reserv').value);
+  const p1 = parsearMiles(document.getElementById('f-pago_1').value);
+  const p2 = parsearMiles(document.getElementById('f-pago_2').value);
+  const p3 = parsearMiles(document.getElementById('f-pago_3').value);
+  if (!total) { el.innerHTML = ''; return; }
+  const suma = reserva + p1 + p2 + p3;
+  const diferencia = Math.round((suma - total) * 100) / 100; // evita ruido de decimales flotantes
+  if (Math.abs(diferencia) < 0.01) { el.innerHTML = ''; return; }
+  const signo = diferencia > 0 ? 'de más' : 'de menos';
+  el.innerHTML = `<div class="msg error">La suma de reserva + pago 1 + pago 2 + pago 3 (${formatearMiles(suma)} €) no coincide con el total (${formatearMiles(total)} €) — ${formatearMiles(Math.abs(diferencia))} € ${signo}.</div>`;
 }
 function actualizarFechaPago(n) {
   const f = parseFechaInput(document.getElementById('f-fecha_pago_' + n + '_raw').value);
@@ -1354,10 +1375,11 @@ function mostrarFormulario(tipo, modo) {
     <div class="form-row">
       <div class="form-field"><label class="form-label">Fecha pago ${n}</label><input type="date" class="form-input" id="f-fecha_pago_${n}_raw" onchange="actualizarFechaPago(${n})"></div>
       <div class="form-field ancho"><label class="form-label">Fecha en letras (ES / EN)</label><div class="form-input precargado" id="prev-fecha_pago_${n}" style="min-height:20px;">—</div></div>
-      <div class="form-field"><label class="form-label">Importe pago ${n} (€)</label><input type="text" inputmode="numeric" class="form-input importe ${esP('pago_' + n) ? 'precargado' : ''}" id="f-pago_${n}" value="${escapeHtml(val('pago_' + n) ? formatearMiles(parsearMiles(val('pago_' + n))) : '')}" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>
+      <div class="form-field"><label class="form-label">Importe pago ${n} (€)</label><input type="text" inputmode="numeric" class="form-input importe ${esP('pago_' + n) ? 'precargado' : ''}" id="f-pago_${n}" value="${escapeHtml(val('pago_' + n) ? formatearMiles(parsearMiles(val('pago_' + n))) : '')}" oninput="comprobarSumaPagos()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>
     </div>`;
   });
   html += `<div class="pie-nota-form">Cómo se calculan: pago 1 = 25% del total menos la reserva. Pago 2 = el mismo importe que el pago 1. Pago 3 = el resto (el otro 50%). Se recalculan solos al cambiar el total o la reserva, pero puedes escribir encima si necesitas otro reparto.</div>
+    <div id="aviso-suma-pagos"></div>
     </div></div>`;
 
   // ── Plazos: selector de trimestre, igual patrón que SB-fechas.html ──
