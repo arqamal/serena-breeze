@@ -277,6 +277,10 @@
         <div class="flabel">Tasas + IPS (€)</div>
         <input type="text" inputmode="decimal" class="fval manual" id="s93" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_DECENAL" data-fila="0" data-col="2">
       </div>
+      <div class="field">
+        <div class="flabel">m² totales (para prima/m²)</div>
+        <input type="text" inputmode="decimal" class="fval manual" id="m2-total" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_DECENAL" data-fila="0" data-col="6">
+      </div>
     </div>
     <div class="sub-nota" style="margin-top:16px;">% de incremento sobre PEM para calcular la suma asegurada definitiva:</div>
     <div class="fila-ancha">
@@ -393,12 +397,6 @@
             </tr>
           </tbody>
         </table>
-      </div>
-      <div class="fila-ancha" style="margin-top:14px;">
-        <div class="field">
-          <div class="flabel">m² totales (para prima/m²)</div>
-          <input type="text" inputmode="decimal" class="fval manual" id="m2-total" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_DECENAL" data-fila="0" data-col="6">
-        </div>
       </div>
       <div class="aviso" id="check-d93">Verificación reparto</div>
     </div>
