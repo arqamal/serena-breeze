@@ -257,6 +257,7 @@
     <div class="totales-grid">
       <div class="total-box destacado"><div class="flabel">Total proyecto completo (PEM)</div><div class="num" id="pem-total-general"></div></div>
     </div>
+    <div class="aviso" id="check-fases">Verificación fases</div>
   </section>
 
   <!-- ══════════════ SEGURO DECENAL ══════════════ -->
@@ -469,6 +470,7 @@
   <div id="comparativo-content" style="display:none;">
     <div class="subseccion">Comparativo entre promociones</div>
     <div class="sub-nota">Se recalcula solo a partir de los datos actuales de cada promoción (incluidos los cambios que aún no hayas guardado en esta sesión). "VILLA" y "APART" toman la primera villa y el primer bloque de cada promoción como referencia.</div>
+    <div class="aviso mal" id="comparativo-sin-cargar" style="display:none;"></div>
     <div class="leyenda">
       <div class="leyenda-item"><span class="swatch" style="background:#FDECEA;border:2px solid #C0392B;"></span> Más caro</div>
       <div class="leyenda-item"><span class="swatch" style="background:#FEF3EA;border-color:#F5C89A;"></span> 50% superior</div>
@@ -818,9 +820,7 @@ function switchPromo(codigo) {
     document.getElementById('comparativo-content').style.display = 'block';
     document.getElementById('promo-titulo').textContent = 'Comparativo';
     document.getElementById('promo-desc').textContent = 'Vista comparada de las 5 promociones.';
-    // El comparativo necesita las 5 a la vez — si alguna no se ha pedido
-    // todavía (el usuario no ha pasado por su pestaña), se piden ahora.
-    ORDEN_PROMOS.forEach(c => { if (!STATE[c].cargado && !STATE[c].cargando) cargarPromocionBackend_(c); });
+    cargarFaltantesParaComparativo_();
     renderComparativo();
   } else {
     document.getElementById('promo-content').style.display = 'block';
@@ -866,11 +866,41 @@ function calcularResumen(st) {
   };
 }
 
+// Carga las promociones que falten para el comparativo UNA A UNA — antes
+// era un forEach que las lanzaba las 5 en paralelo, y eso reproducía
+// exactamente el mismo problema de concurrencia contra Apps Script que ya
+// habíamos arreglado en la carga normal, solo que aquí no se veía ningún
+// aviso porque mostrarErrorCarga_ solo pinta si esa promoción es la pestaña
+// activa — y "Comparativo" nunca lo es. Ahora, secuencial, y si una falla
+// se marca en la propia tabla (ver renderComparativo) en vez de en silencio.
+async function cargarFaltantesParaComparativo_() {
+  for (const c of ORDEN_PROMOS) {
+    if (!STATE[c].cargado && !STATE[c].cargando) {
+      await cargarPromocionBackend_(c);
+      if (PROMO_ACTUAL === 'COMPARATIVO') renderComparativo();
+    }
+  }
+}
+
 function renderComparativo() {
   volcarEstadoActualSiProcede_();
-  const headHtml = '<th></th>' + ORDEN_PROMOS.map(c => `<th>${c} <span style="color:var(--slate-gray);font-weight:400;">(${fmtNum(STATE[c].q93)})</span></th>`).join('');
+  const headHtml = '<th></th>' + ORDEN_PROMOS.map(c => {
+    const aviso = !STATE[c].cargado ? ' ⚠️' : '';
+    return `<th>${c}${aviso} <span style="color:var(--slate-gray);font-weight:400;">(${fmtNum(STATE[c].q93)})</span></th>`;
+  }).join('');
   document.getElementById('comparativo-head-decenal').innerHTML = headHtml;
   document.getElementById('comparativo-head-oct').innerHTML = headHtml;
+
+  const sinCargar = ORDEN_PROMOS.filter(c => !STATE[c].cargado);
+  const avisoEl = document.getElementById('comparativo-sin-cargar');
+  if (avisoEl) {
+    if (sinCargar.length) {
+      avisoEl.style.display = 'block';
+      avisoEl.textContent = 'No se han podido cargar todavía: ' + sinCargar.join(', ') + ' — sus columnas muestran 0,00 € porque no son datos reales. Vuelve a esta pestaña en un momento para reintentarlo.';
+    } else {
+      avisoEl.style.display = 'none';
+    }
+  }
 
   const filasDecenal = [
     { label: 'VILLA', val: r => r.villaDecenal },
@@ -1402,11 +1432,19 @@ function recalc() {
     else if (e.id[0] === 'v') cPorElemento[e.id] = cVillas[parseInt(e.id.slice(1))];
     else cPorElemento[e.id] = cBloques[parseInt(e.id.slice(1))];
   });
+  let sumaFases = 0;
   st.fases.forEach((fase, idx) => {
     const total = fase.marcados.reduce((a, id) => a + (cPorElemento[id] || 0), 0);
     set('fase-total-' + idx, eur(total));
+    sumaFases += total;
   });
   set('pem-total-general', eur(c92));
+  const diffFases = Math.abs(sumaFases - c92);
+  const checkFases = document.getElementById('check-fases');
+  if (checkFases) {
+    checkFases.textContent = `Suma de las fases = ${eur(sumaFases)} frente al total proyecto completo = ${eur(c92)}. Diferencia: ${eur(diffFases)}.`;
+    checkFases.className = 'aviso ' + (diffFases < 0.02 ? 'ok' : 'mal');
+  }
 
   // ── Entradas en cobertura ──
   const gPorElemento = {};
