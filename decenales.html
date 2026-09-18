@@ -664,6 +664,16 @@ document.addEventListener('blur', e => {
   const valor = el.dataset.tipo === 'texto' ? el.value : parseNum(el.value);
   guardarCampoBackend_(el.dataset.seccion, Number(el.dataset.fila), Number(el.dataset.col), valor);
 }, true);
+// Al entrar en un campo numérico (fval manual, no los de texto tipo nombre),
+// selecciona todo el contenido — si no, con "0,00" ya escrito, teclear
+// "458" se inserta a la izquierda del cursor y sale "4580,00" en vez de
+// reemplazarlo. focus tampoco burbujea, así que va en fase de captura igual que blur.
+document.addEventListener('focus', e => {
+  const el = e.target;
+  if (el && el.tagName === 'INPUT' && el.classList.contains('fval') && el.classList.contains('manual') && el.type === 'text') {
+    el.select();
+  }
+}, true);
 function seedText(id, value) { const el = document.getElementById(id); if (el) el.value = value || ''; }
 
 // ═══════════════ ESTADO EN MEMORIA (se conserva al cambiar de pestaña) ═══════════════
