@@ -589,6 +589,7 @@ function renderEstado(data) {
     </div>
     ${renderDocumentosBlock(data.documentos)}
     ${renderFirmaBlock(activa)}`;
+  if (document.getElementById('cliente-1-pais')) estimarPaisCliente();
 }
 
 // Lista los hasta 4 PDF posibles de una vivienda (reserva / reserva
