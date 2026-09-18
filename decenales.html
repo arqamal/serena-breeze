@@ -220,8 +220,8 @@
           <colgroup><col class="col-nombre"><col class="col-pem"></colgroup>
           <thead><tr><th>Elemento</th><th>PEM total (€)</th></tr></thead>
           <tbody><tr>
-            <td><input class="nombre" id="nombre-piscina" oninput="recalc()"></td>
-            <td><input type="text" inputmode="decimal" class="fval manual" id="c-piscina" oninput="recalc()" onblur="formatField(this)"></td>
+            <td><input class="nombre" id="nombre-piscina" oninput="recalc()" data-seccion="PISCINA" data-fila="0" data-col="0" data-tipo="texto"></td>
+            <td><input type="text" inputmode="decimal" class="fval manual" id="c-piscina" oninput="recalc()" onblur="formatField(this)" data-seccion="PISCINA" data-fila="0" data-col="1"></td>
           </tr></tbody>
         </table>
       </div>
@@ -253,30 +253,30 @@
     <div class="fila-ancha">
       <div class="field">
         <div class="flabel">Suma asegurada provisional total (€)</div>
-        <input type="text" inputmode="decimal" class="fval manual" id="c93" oninput="recalc()" onblur="formatField(this)">
+        <input type="text" inputmode="decimal" class="fval manual" id="c93" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_DECENAL" data-fila="0" data-col="0">
       </div>
       <div class="field">
         <div class="flabel">Tasa total %</div>
-        <input type="text" inputmode="decimal" class="fval manual" id="q93" oninput="recalc()" onblur="formatField(this)">
+        <input type="text" inputmode="decimal" class="fval manual" id="q93" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_DECENAL" data-fila="0" data-col="1">
       </div>
       <div class="field">
         <div class="flabel">Tasas + IPS (€)</div>
-        <input type="text" inputmode="decimal" class="fval manual" id="s93" oninput="recalc()" onblur="formatField(this)">
+        <input type="text" inputmode="decimal" class="fval manual" id="s93" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_DECENAL" data-fila="0" data-col="2">
       </div>
     </div>
     <div class="sub-nota" style="margin-top:16px;">% de incremento sobre PEM para calcular la suma asegurada definitiva:</div>
     <div class="fila-ancha">
       <div class="field">
         <div class="flabel">% incremento villas</div>
-        <input type="text" inputmode="decimal" class="fval manual" id="mult-villa" oninput="recalc()" onblur="formatField(this)">
+        <input type="text" inputmode="decimal" class="fval manual" id="mult-villa" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_DECENAL" data-fila="0" data-col="3">
       </div>
       <div class="field">
         <div class="flabel">% incremento bloque</div>
-        <input type="text" inputmode="decimal" class="fval manual" id="mult-bloque" oninput="recalc()" onblur="formatField(this)">
+        <input type="text" inputmode="decimal" class="fval manual" id="mult-bloque" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_DECENAL" data-fila="0" data-col="4">
       </div>
       <div class="field">
         <div class="flabel">% incremento piscina</div>
-        <input type="text" inputmode="decimal" class="fval manual" id="mult-piscina" oninput="recalc()" onblur="formatField(this)">
+        <input type="text" inputmode="decimal" class="fval manual" id="mult-piscina" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_DECENAL" data-fila="0" data-col="5">
       </div>
     </div>
 
@@ -362,7 +362,7 @@
       <div class="fila-ancha" style="margin-top:14px;">
         <div class="field">
           <div class="flabel">m² totales (para prima/m²)</div>
-          <input type="text" inputmode="decimal" class="fval manual" id="m2-total" oninput="recalc()" onblur="formatField(this)">
+          <input type="text" inputmode="decimal" class="fval manual" id="m2-total" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_DECENAL" data-fila="0" data-col="6">
         </div>
       </div>
       <div class="aviso" id="check-d93">Verificación reparto</div>
@@ -396,14 +396,14 @@
     <div class="fila-ancha">
       <div class="field">
         <div class="flabel">OCT total (€)</div>
-        <input type="text" inputmode="decimal" class="fval manual" id="z93" oninput="recalc()" onblur="formatField(this)">
+        <input type="text" inputmode="decimal" class="fval manual" id="z93" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_OCT" data-fila="0" data-col="0">
       </div>
     </div>
     <div class="sub-nota" style="margin-top:16px;">Importe aparte, no entra en ningún reparto ni total de arriba — solo se guarda aquí.</div>
     <div class="fila-ancha">
       <div class="field">
         <div class="flabel">Informes parciales (€)</div>
-        <input type="text" inputmode="decimal" class="fval manual" id="informes-parciales" oninput="recalc()" onblur="formatField(this)">
+        <input type="text" inputmode="decimal" class="fval manual" id="informes-parciales" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_OCT" data-fila="0" data-col="1">
       </div>
     </div>
 
@@ -595,6 +595,36 @@ function anchoTabla(widths, n) {
 function set(id, txt) { const el = document.getElementById(id); if (el) el.textContent = txt; }
 function formatField(el) { el.value = fmtNum(parseNum(el.value)); }
 function seedField(id, value) { const el = document.getElementById(id); if (el) el.value = fmtNum(value || 0); }
+
+// ═══════════════ GUARDADO EN EL SHEET (al editar) ═══════════════
+// Un campo por llamada, igual que en el backend — nunca la fila entera.
+function guardarCampoBackend_(seccion, filaIdx, columnaIdx, valor) {
+  if (!DATA_URL) return;
+  if (!STATE[PROMO_ACTUAL] || !STATE[PROMO_ACTUAL].cargado) {
+    console.warn('[decenales] no se guarda', seccion, filaIdx, columnaIdx, '— esta promoción no llegó a cargar del backend, así que no hay fila real a la que escribir.');
+    return;
+  }
+  fetch(DATA_URL, {
+    method: 'POST',
+    body: JSON.stringify({ accion: 'guardar', promocion: PROMO_ACTUAL, seccion, fila: filaIdx, columna: columnaIdx, valor })
+  })
+    .then(r => r.json())
+    .then(res => {
+      if (!res.ok) console.warn('[decenales] guardar', seccion, filaIdx, columnaIdx, '→ fallo:', res.motivo || res.detalle);
+      else console.log('[decenales] guardado', seccion, filaIdx, columnaIdx, '=', valor);
+    })
+    .catch(err => console.warn('[decenales] guardar', seccion, filaIdx, columnaIdx, '→ error de red:', err));
+}
+// Delegado en document (fase de captura, porque blur no burbujea) para no
+// tener que repetir el guardado campo a campo: cualquier input con
+// data-seccion se guarda solo al perder el foco. data-tipo="texto" manda el
+// valor tal cual; si no, se manda como número (parseNum).
+document.addEventListener('blur', e => {
+  const el = e.target;
+  if (!el || !el.dataset || el.dataset.seccion === undefined) return;
+  const valor = el.dataset.tipo === 'texto' ? el.value : parseNum(el.value);
+  guardarCampoBackend_(el.dataset.seccion, Number(el.dataset.fila), Number(el.dataset.col), valor);
+}, true);
 function seedText(id, value) { const el = document.getElementById(id); if (el) el.value = value || ''; }
 
 // ═══════════════ ESTADO EN MEMORIA (se conserva al cambiar de pestaña) ═══════════════
@@ -805,8 +835,8 @@ function renderPromo() {
   st.villaNombres.forEach((nombre, i) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><input class="nombre" id="v${i}-nombre" value="${nombre}" oninput="recalc()"></td>
-      <td><input type="text" inputmode="decimal" class="fval manual" id="v${i}-pem" oninput="recalc()" onblur="formatField(this)"></td>`;
+      <td><input class="nombre" id="v${i}-nombre" value="${nombre}" oninput="recalc()" data-seccion="VILLAS" data-fila="${i}" data-col="0" data-tipo="texto"></td>
+      <td><input type="text" inputmode="decimal" class="fval manual" id="v${i}-pem" oninput="recalc()" onblur="formatField(this)" data-seccion="VILLAS" data-fila="${i}" data-col="1"></td>`;
     pemVillasBody.appendChild(tr);
     seedField('v' + i + '-pem', st.villaPem[i]);
   });
@@ -824,9 +854,9 @@ function renderPromo() {
           <colgroup><col class="col-nombre"><col class="col-pem"><col class="col-unid"></colgroup>
           <thead><tr><th>Bloque</th><th>PEM total (€)</th><th>Nº viviendas</th></tr></thead>
           <tbody><tr>
-            <td><input class="nombre" id="b${i}-nombre" value="${nombre}" oninput="recalc()"></td>
-            <td><input type="text" inputmode="decimal" class="fval manual" id="b${i}-pem" oninput="recalc()" onblur="formatField(this)"></td>
-            <td><input type="text" inputmode="decimal" class="fval manual" id="b${i}-unid" oninput="recalc()" onblur="formatField(this)"></td>
+            <td><input class="nombre" id="b${i}-nombre" value="${nombre}" oninput="recalc()" data-seccion="BLOQUES" data-fila="${i}" data-col="0" data-tipo="texto"></td>
+            <td><input type="text" inputmode="decimal" class="fval manual" id="b${i}-pem" oninput="recalc()" onblur="formatField(this)" data-seccion="BLOQUES" data-fila="${i}" data-col="1"></td>
+            <td><input type="text" inputmode="decimal" class="fval manual" id="b${i}-unid" oninput="recalc()" onblur="formatField(this)" data-seccion="BLOQUES" data-fila="${i}" data-col="2"></td>
           </tr></tbody>
         </table>
       </div>`;
@@ -951,10 +981,10 @@ function renderPromo() {
   pagosBody.innerHTML = '';
   const trEntrega = document.createElement('tr');
   trEntrega.innerHTML = `
-    <td><input class="fval manual" style="text-align:left" id="entrega-concepto" oninput="recalc()"></td>
-    <td><input type="date" class="fval manual" id="entrega-fecha" oninput="recalc()"></td>
-    <td><input type="text" inputmode="decimal" class="fval manual" id="entrega-l" oninput="recalc()" onblur="formatField(this)"></td>
-    <td><input type="text" inputmode="decimal" class="fval manual" id="entrega-m" oninput="recalc()" onblur="formatField(this)"></td>
+    <td><input class="fval manual" style="text-align:left" id="entrega-concepto" oninput="recalc()" data-seccion="PAGOS" data-fila="0" data-col="0" data-tipo="texto"></td>
+    <td><input type="date" class="fval manual" id="entrega-fecha" oninput="recalc()" data-seccion="PAGOS" data-fila="0" data-col="1" data-tipo="texto"></td>
+    <td><input type="text" inputmode="decimal" class="fval manual" id="entrega-l" oninput="recalc()" onblur="formatField(this)" data-seccion="PAGOS" data-fila="0" data-col="2"></td>
+    <td><input type="text" inputmode="decimal" class="fval manual" id="entrega-m" oninput="recalc()" onblur="formatField(this)" data-seccion="PAGOS" data-fila="0" data-col="3"></td>
     <td class="fval calc" id="entrega-n"></td>
     <td class="fval calc">—</td>`;
   pagosBody.appendChild(trEntrega);
@@ -966,10 +996,10 @@ function renderPromo() {
   st.entradas.forEach((e, i) => {
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><input class="fval manual" style="text-align:left" id="pago-entrada${i}-j" oninput="recalc()"></td>
-      <td><input type="date" class="fval manual" id="pago-entrada${i}-k" oninput="recalc()"></td>
-      <td><input type="text" inputmode="decimal" class="fval manual" id="pago-entrada${i}-l" oninput="recalc()" onblur="formatField(this)"></td>
-      <td><input type="text" inputmode="decimal" class="fval manual" id="pago-entrada${i}-m" oninput="recalc()" onblur="formatField(this)"></td>
+      <td><input class="fval manual" style="text-align:left" id="pago-entrada${i}-j" oninput="recalc()" data-seccion="PAGOS" data-fila="${i + 1}" data-col="0" data-tipo="texto"></td>
+      <td><input type="date" class="fval manual" id="pago-entrada${i}-k" oninput="recalc()" data-seccion="PAGOS" data-fila="${i + 1}" data-col="1" data-tipo="texto"></td>
+      <td><input type="text" inputmode="decimal" class="fval manual" id="pago-entrada${i}-l" oninput="recalc()" onblur="formatField(this)" data-seccion="PAGOS" data-fila="${i + 1}" data-col="2"></td>
+      <td><input type="text" inputmode="decimal" class="fval manual" id="pago-entrada${i}-m" oninput="recalc()" onblur="formatField(this)" data-seccion="PAGOS" data-fila="${i + 1}" data-col="3"></td>
       <td class="fval calc" id="pago-entrada${i}-n"></td>
       <td class="fval calc" id="pago-entrada${i}-previsto"></td>`;
     pagosBody.appendChild(tr);
@@ -996,6 +1026,12 @@ function elementosActuales(st) {
   els.push({ id: 'piscina', nombre: st.piscinaNombre || 'PISCINA' });
   return els;
 }
+// Convierte ['v0','b1'] en "VILLA 1, BLOQUE 2" — el formato en que el Sheet
+// guarda la columna "Elementos incluidos" de FASES/ENTRADAS.
+function idsANombres_(ids, st) {
+  const els = elementosActuales(st);
+  return ids.map(id => { const e = els.find(x => x.id === id); return e ? e.nombre : null; }).filter(Boolean).join(', ');
+}
 function buildFasesHead(st) {
   const headRow = document.getElementById('fases-head-row');
   headRow.innerHTML = `<th>Fase</th>` + elementosActuales(st).map(e => `<th class="chk">${(e.nombre||'').slice(0,9)}</th>`).join('') + `<th>PEM total</th><th></th>`;
@@ -1012,7 +1048,7 @@ function renderFases(st) {
       checks += `<td class="chk"><input type="checkbox" data-fase="${idx}" data-el="${e.id}" ${checked} onchange="onToggleFase(this)"></td>`;
     });
     tr.innerHTML = `
-      <td><input class="nombre" data-fase-nombre="${idx}" value="${fase.nombre}" oninput="onNombreFase(this)"></td>
+      <td><input class="nombre" data-fase-nombre="${idx}" value="${fase.nombre}" oninput="onNombreFase(this)" onblur="guardarCampoBackend_('FASES', ${idx}, 0, this.value)"></td>
       ${checks}
       <td><div class="fval calc" id="fase-total-${idx}"></div></td>
       <td>${st.fases.length > 1 ? `<button class="btn-del" onclick="borrarFase(${idx})">✕</button>` : ''}</td>`;
@@ -1025,6 +1061,7 @@ function onToggleFase(chk) {
   if (chk.checked) { if (!st.fases[idx].marcados.includes(elId)) st.fases[idx].marcados.push(elId); }
   else { st.fases[idx].marcados = st.fases[idx].marcados.filter(x => x !== elId); }
   recalc();
+  guardarCampoBackend_('FASES', idx, 1, idsANombres_(st.fases[idx].marcados, st));
 }
 function onNombreFase(input) {
   STATE[PROMO_ACTUAL].fases[parseInt(input.dataset.faseNombre)].nombre = input.value;
@@ -1057,7 +1094,7 @@ function renderEntradas(st) {
       checks += `<td class="chk"><input type="checkbox" data-entrada="${idx}" data-el="${e.id}" ${checked} onchange="onToggleEntrada(this)"></td>`;
     });
     tr.innerHTML = `
-      <td><input class="nombre" data-entrada-nombre="${idx}" value="${entrada.nombre}" oninput="onNombreEntrada(this)"></td>
+      <td><input class="nombre" data-entrada-nombre="${idx}" value="${entrada.nombre}" oninput="onNombreEntrada(this)" onblur="guardarCampoBackend_('ENTRADAS', ${idx}, 0, this.value)"></td>
       ${checks}
       <td><div class="fval calc" id="entrada-cobertura-${idx}"></div></td>
       <td><div class="fval calc" id="entrada-prima-${idx}"></div></td>
@@ -1071,6 +1108,7 @@ function onToggleEntrada(chk) {
   if (chk.checked) { if (!st.entradas[idx].marcados.includes(elId)) st.entradas[idx].marcados.push(elId); }
   else { st.entradas[idx].marcados = st.entradas[idx].marcados.filter(x => x !== elId); }
   recalc();
+  guardarCampoBackend_('ENTRADAS', idx, 1, idsANombres_(st.entradas[idx].marcados, st));
 }
 function onNombreEntrada(input) {
   STATE[PROMO_ACTUAL].entradas[parseInt(input.dataset.entradaNombre)].nombre = input.value;
@@ -1286,26 +1324,30 @@ function iniciarApp() {
 // única fuente de datos: si falla, esa promoción se queda vacía y se avisa
 // (ver mostrarErrorCarga_). Cada intento deja rastro en consola (éxito o
 // fallo) para poder comprobar desde DevTools qué ha pasado.
-function precargarDesdeBackend_() {
-  console.log('[decenales] DATA_URL configurado, pidiendo datos a las', ORDEN_PROMOS.length, 'promociones…');
-  ORDEN_PROMOS.forEach(codigo => {
-    fetch(DATA_URL, { method: 'POST', body: JSON.stringify({ accion: 'cargar', promocion: codigo }) })
-      .then(r => r.json())
-      .then(res => {
-        if (!res.ok || !res.datos) {
-          console.warn('[decenales]', codigo, '→ el backend respondió pero sin datos (ok=' + res.ok + ', motivo=' + res.motivo + ').');
-          mostrarErrorCarga_(codigo, 'El backend respondió sin datos (' + (res.motivo || 'motivo desconocido') + ').');
-          return;
-        }
-        aplicarDatosBackend_(codigo, res.datos);
-        console.log('[decenales]', codigo, '→ cargado del backend OK. C93 =', STATE[codigo].c93);
-        if (codigo === PROMO_ACTUAL) { ocultarErrorCarga_(); renderPromo(); }
-      })
-      .catch(err => {
-        console.warn('[decenales]', codigo, '→ fallo de red/CORS al pedir el backend:', err);
-        mostrarErrorCarga_(codigo, 'Fallo de red/CORS: ' + err);
-      });
-  });
+// Pide las 5 promociones UNA A UNA (no en paralelo). Antes se lanzaban las
+// 5 llamadas simultáneas con forEach — bajo esa carga concurrente contra el
+// mismo Apps Script y el mismo Sheet, Google a veces devolvía respuestas a
+// medias (ok:true sin "datos", o el 404 de 3SB). Secuencial es más lento en
+// total, pero cada llamada corre sin competir por el mismo recurso.
+async function precargarDesdeBackend_() {
+  console.log('[decenales] DATA_URL configurado, pidiendo datos a las', ORDEN_PROMOS.length, 'promociones (una a una)…');
+  for (const codigo of ORDEN_PROMOS) {
+    try {
+      const r = await fetch(DATA_URL, { method: 'POST', body: JSON.stringify({ accion: 'cargar', promocion: codigo }) });
+      const res = await r.json();
+      if (!res.ok || !res.datos) {
+        console.warn('[decenales]', codigo, '→ el backend respondió pero sin datos (ok=' + res.ok + ', motivo=' + res.motivo + ').');
+        mostrarErrorCarga_(codigo, 'El backend respondió sin datos (' + (res.motivo || 'motivo desconocido') + ').');
+        continue;
+      }
+      aplicarDatosBackend_(codigo, res.datos);
+      console.log('[decenales]', codigo, '→ cargado del backend OK. C93 =', STATE[codigo].c93);
+      if (codigo === PROMO_ACTUAL) { ocultarErrorCarga_(); renderPromo(); }
+    } catch (err) {
+      console.warn('[decenales]', codigo, '→ fallo de red/CORS al pedir el backend:', err);
+      mostrarErrorCarga_(codigo, 'Fallo de red/CORS: ' + err);
+    }
+  }
 }
 
 function ocultarErrorCarga_() {
