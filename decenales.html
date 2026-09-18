@@ -1030,6 +1030,12 @@ function renderPromo() {
   tablaDecPiscina.style.width = anchoTabla(WIDTHS_DEC, 6) + 'px';
   tablaDecPiscina.querySelector('colgroup')?.remove();
   tablaDecPiscina.insertAdjacentHTML('afterbegin', colgroupHtml(WIDTHS_DEC, 6));
+  const tablaDecSotano = document.getElementById('tabla-dec-sotano');
+  if (tablaDecSotano) {
+    tablaDecSotano.style.width = anchoTabla(WIDTHS_DEC, 6) + 'px';
+    tablaDecSotano.querySelector('colgroup')?.remove();
+    tablaDecSotano.insertAdjacentHTML('afterbegin', colgroupHtml(WIDTHS_DEC, 6));
+  }
   const tablaOctVillas = document.getElementById('tabla-oct-villas');
   tablaOctVillas.style.width = anchoTabla(WIDTHS_OCT_VILLAS, 3) + 'px';
   tablaOctVillas.querySelector('colgroup')?.remove();
