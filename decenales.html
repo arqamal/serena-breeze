@@ -500,17 +500,21 @@
   </div>
 
   <div class="pie-nota">
-    Réplica funcional del seguro decenal y el OCT de las 5 promociones. Los campos con fondo crema son los únicos datos que se introducen a mano; todo lo demás se recalcula solo. Decenal y OCT son magnitudes independientes — el único vínculo entre ambas es que se reparten sobre el mismo PEM base, y la piscina colectiva se reparte entre las viviendas de <b>todos</b> los bloques (no solo el primero). Mientras el backend no esté desplegado, los datos de partida son los de <code>decenales_base_datos.xlsx</code> — edítalos aquí con confianza, pero no se guardan solos hasta que <code>DATA_URL</code> apunte a tu Apps Script.
+    Réplica funcional del seguro decenal y el OCT de las 5 promociones. Los campos con fondo crema son los únicos datos que se introducen a mano; todo lo demás se recalcula solo. Decenal y OCT son magnitudes independientes — el único vínculo entre ambas es que se reparten sobre el mismo PEM base, y la piscina colectiva se reparte entre las viviendas de <b>todos</b> los bloques (no solo el primero). Los datos viven en el Sheet <code>decenales_base_datos</code> de Drive y los usuarios en la pestaña <code>_usuarios</code>; el Worker de Cloudflare lee y escribe ambos por la API oficial de Google Sheets. Cada cambio se guarda al salir del campo.
   </div>
 </main>
 </div><!-- /app-wrapper -->
 
 <script>
-// ═══════════════ LOGIN (mismo patrón que SB-contratos.html) ═══════════════
-// Rellena estas dos URLs cuando despliegues AuthUsuarios.gs y
-// GeneradorDecenales.gs como Apps Script Web Apps (ver cabecera del .gs).
-const LOGIN_URL = ''; // ej. 'https://script.google.com/macros/s/AKfycb.../exec' (AuthUsuarios)
-const DATA_URL = 'https://script.google.com/macros/s/AKfycbxx33EZsowitXf1YS8pwMt50UzQDScEfDBMomunESeAsZwClUkjHEUPTj5vnPaGsgF7/exec';  // GeneradorDecenales
+// ═══════════════ LOGIN + BACKEND (Cloudflare Worker) ═══════════════
+// Un único backend para todo: el Worker de cloudflare/worker.js. Hace el
+// login contra la pestaña _usuarios del Sheet de Drive (mismo formato que
+// AuthUsuarios.gs) y lee/escribe el Sheet de decenales por la API oficial
+// de Google Sheets — Apps Script ya no interviene en ningún punto.
+// Pega aquí la URL que te dé `wrangler deploy` (termina en .workers.dev).
+const WORKER_URL = 'https://decenales-api.arquitectura-90b.workers.dev';
+const LOGIN_URL = WORKER_URL;
+const DATA_URL = WORKER_URL;
 const HERRAMIENTA = 'decenales';
 const TOKEN_KEY = 'sb_decenales_token';
 
@@ -522,7 +526,7 @@ function doLogin() {
   err.style.display = 'none';
   if (!usuario || !pass) return;
   if (!LOGIN_URL) {
-    err.textContent = 'LOGIN_URL no está configurado todavía — despliega AuthUsuarios.gs y pega la URL en el HTML.';
+    err.textContent = 'WORKER_URL no está configurado en el HTML — despliega el Worker y pega su URL.';
     err.style.display = 'block';
     return;
   }
@@ -582,11 +586,22 @@ window.addEventListener('load', () => {
   document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   intentarSesionGuardada().then(entrado => {
     if (!entrado && !LOGIN_URL) {
-      // Backend aún no desplegado: entra directo, sin bloquear el trabajo de hoy.
-      entrarApp_('');
+      const err = document.getElementById('login-error');
+      err.textContent = 'WORKER_URL no está configurado en el HTML — despliega el Worker y pega su URL.';
+      err.style.display = 'block';
     }
   });
 });
+
+// Cuando el Worker responde token_invalido en una llamada de datos (sesión
+// caducada — 12 h — o secreto rotado), se vuelve al login con aviso en vez
+// de dejar la app abierta sin poder guardar nada.
+function sesionCaducada_() {
+  cerrarSesion();
+  const err = document.getElementById('login-error');
+  err.textContent = 'La sesión ha caducado. Vuelve a entrar.';
+  err.style.display = 'block';
+}
 </script>
 
 <script>
@@ -634,32 +649,29 @@ function formatField(el) { el.value = fmtNum(parseNum(el.value)); }
 function seedField(id, value) { const el = document.getElementById(id); if (el) el.value = fmtNum(value || 0); }
 
 // ═══════════════ LLAMADA AL BACKEND CON REINTENTOS ═══════════════
-// Apps Script responde a un POST con un 302 hacia
-// script.googleusercontent.com/macros/echo?user_content_key=…, y el
-// navegador hace un GET ahí para recoger el JSON. Esa clave es de un solo
-// uso y caduca en segundos: cuando ese segundo paso falla del lado de
-// Google (ejecución en frío, redespliegue reciente, cuenta Workspace), llega
-// un 404 en HTML ("<!DOCTYPE…") en vez del JSON. Es intermitente y rotatorio,
-// y la ejecución en sí ya terminó bien — por eso el Logger siempre da datos
-// limpios. No se arregla desde el .gs: se arregla reintentando. Solo se
-// reintenta ante ese tipo de fallo (red / HTML en vez de JSON); un
-// {ok:false} del backend es un error real y se devuelve tal cual.
+// Con el Worker de Cloudflare la respuesta es JSON directo, sin el redirect
+// de un solo uso que tenía Apps Script — el reintento se queda como red de
+// seguridad ante un corte de red puntual, y no debería dispararse en uso
+// normal. Solo se reintenta ante fallo de red / respuesta que no es JSON;
+// un {ok:false} del backend es un error real y se devuelve tal cual.
 const REINTENTOS_BACKEND = 3;
 const ESPERA_REINTENTO_MS = [600, 1500, 3000];
 async function llamarBackend_(payload, etiqueta) {
+  // Todas las llamadas de datos van con el token de sesión — el Worker no
+  // lee ni escribe nada sin él. (Con Apps Script no había esta protección.)
+  const conToken = { token: localStorage.getItem(TOKEN_KEY) || '', ...payload };
   let ultimoError = null;
   for (let intento = 1; intento <= REINTENTOS_BACKEND; intento++) {
     try {
-      const r = await fetch(DATA_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const r = await fetch(DATA_URL, { method: 'POST', body: JSON.stringify(conToken) });
       const texto = await r.text();
       let res;
       try {
         res = JSON.parse(texto);
       } catch (e) {
-        // HTML en vez de JSON: el fallo intermitente de entrega. Guardamos un
-        // trozo del cuerpo para que en consola se vea QUÉ llegó, no solo que no era JSON.
         throw new Error('respuesta no-JSON (HTTP ' + r.status + '): ' + texto.slice(0, 80).replace(/\s+/g, ' '));
       }
+      if (res && res.motivo === 'token_invalido') { sesionCaducada_(); }
       return res; // JSON válido (ok:true u ok:false) → se devuelve sin reintentar
     } catch (err) {
       ultimoError = err;
@@ -1552,7 +1564,7 @@ function mostrarErrorCarga_(codigo, motivo) {
     const el = document.getElementById('carga-error');
     if (el) {
       el.style.display = 'block';
-      el.textContent = 'No se han podido cargar los datos de ' + codigo + ' desde el Sheet (' + motivo + '). Sin backend no hay datos que mostrar — revisa DATA_URL, el despliegue de Apps Script, o la consola para más detalle.';
+      el.textContent = 'No se han podido cargar los datos de ' + codigo + ' desde el Sheet (' + motivo + '). Sin backend no hay datos que mostrar — revisa WORKER_URL, el despliegue del Worker (wrangler), o la consola para más detalle.';
     }
   }
 }
