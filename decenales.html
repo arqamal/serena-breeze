@@ -639,6 +639,7 @@ let STATE = {};
 function initState(codigo) {
   return {
     cargado: false,
+    cargando: false,
     viviendas: 0,
     villaNombres: [], villaPem: [],
     bloqueNombres: [], bloquePem: [], bloqueUnidades: [],
@@ -711,13 +712,17 @@ function switchPromo(codigo) {
     document.getElementById('comparativo-content').style.display = 'block';
     document.getElementById('promo-titulo').textContent = 'Comparativo';
     document.getElementById('promo-desc').textContent = 'Vista comparada de las 5 promociones.';
+    // El comparativo necesita las 5 a la vez — si alguna no se ha pedido
+    // todavía (el usuario no ha pasado por su pestaña), se piden ahora.
+    ORDEN_PROMOS.forEach(c => { if (!STATE[c].cargado && !STATE[c].cargando) cargarPromocionBackend_(c); });
     renderComparativo();
   } else {
     document.getElementById('promo-content').style.display = 'block';
     document.getElementById('promo-leyenda').style.display = 'flex';
     document.getElementById('comparativo-content').style.display = 'none';
     if (STATE[codigo].cargado) ocultarErrorCarga_();
-    else mostrarErrorCarga_(codigo, DATA_URL ? 'todavía cargando o no llegó respuesta' : 'DATA_URL no está configurado en el HTML');
+    else if (DATA_URL && !STATE[codigo].cargando) cargarPromocionBackend_(codigo);
+    else mostrarErrorCarga_(codigo, DATA_URL ? 'cargando…' : 'DATA_URL no está configurado en el HTML');
     renderPromo();
   }
 }
@@ -1314,7 +1319,8 @@ function iniciarApp() {
   buildTabs();
   renderPromo();
   if (DATA_URL) {
-    precargarDesdeBackend_();
+    mostrarErrorCarga_(PROMO_ACTUAL, 'cargando…');
+    cargarPromocionBackend_(PROMO_ACTUAL); // solo la pestaña con la que se abre — el resto, bajo demanda al entrar
   } else {
     mostrarErrorCarga_(PROMO_ACTUAL, 'DATA_URL no está configurado en el HTML');
   }
@@ -1324,29 +1330,30 @@ function iniciarApp() {
 // única fuente de datos: si falla, esa promoción se queda vacía y se avisa
 // (ver mostrarErrorCarga_). Cada intento deja rastro en consola (éxito o
 // fallo) para poder comprobar desde DevTools qué ha pasado.
-// Pide las 5 promociones UNA A UNA (no en paralelo). Antes se lanzaban las
-// 5 llamadas simultáneas con forEach — bajo esa carga concurrente contra el
-// mismo Apps Script y el mismo Sheet, Google a veces devolvía respuestas a
-// medias (ok:true sin "datos", o el 404 de 3SB). Secuencial es más lento en
-// total, pero cada llamada corre sin competir por el mismo recurso.
-async function precargarDesdeBackend_() {
-  console.log('[decenales] DATA_URL configurado, pidiendo datos a las', ORDEN_PROMOS.length, 'promociones (una a una)…');
-  for (const codigo of ORDEN_PROMOS) {
-    try {
-      const r = await fetch(DATA_URL, { method: 'POST', body: JSON.stringify({ accion: 'cargar', promocion: codigo }) });
-      const res = await r.json();
-      if (!res.ok || !res.datos) {
-        console.warn('[decenales]', codigo, '→ el backend respondió pero sin datos (ok=' + res.ok + ', motivo=' + res.motivo + ').');
-        mostrarErrorCarga_(codigo, 'El backend respondió sin datos (' + (res.motivo || 'motivo desconocido') + ').');
-        continue;
-      }
-      aplicarDatosBackend_(codigo, res.datos);
-      console.log('[decenales]', codigo, '→ cargado del backend OK. C93 =', STATE[codigo].c93);
-      if (codigo === PROMO_ACTUAL) { ocultarErrorCarga_(); renderPromo(); }
-    } catch (err) {
-      console.warn('[decenales]', codigo, '→ fallo de red/CORS al pedir el backend:', err);
-      mostrarErrorCarga_(codigo, 'Fallo de red/CORS: ' + err);
+// Pide UNA promoción al backend (bajo demanda: al entrar en su pestaña, o
+// al entrar en Comparativo si aún faltaba). Antes se pedían las 5 de golpe
+// al abrir la página, lo que hacía esperar a la primera pestaña por las
+// otras 4 sin necesidad — ahora cada una se pide solo cuando hace falta, y
+// queda en caché (STATE[codigo].cargado) para no repetirla.
+async function cargarPromocionBackend_(codigo) {
+  STATE[codigo].cargando = true;
+  try {
+    const r = await fetch(DATA_URL, { method: 'POST', body: JSON.stringify({ accion: 'cargar', promocion: codigo }) });
+    const res = await r.json();
+    if (!res.ok || !res.datos) {
+      console.warn('[decenales]', codigo, '→ el backend respondió pero sin datos (ok=' + res.ok + ', motivo=' + res.motivo + ').');
+      mostrarErrorCarga_(codigo, 'El backend respondió sin datos (' + (res.motivo || 'motivo desconocido') + ').');
+      return;
     }
+    aplicarDatosBackend_(codigo, res.datos);
+    console.log('[decenales]', codigo, '→ cargado del backend OK. C93 =', STATE[codigo].c93);
+    if (codigo === PROMO_ACTUAL) { ocultarErrorCarga_(); renderPromo(); }
+    else if (PROMO_ACTUAL === 'COMPARATIVO') { renderComparativo(); }
+  } catch (err) {
+    console.warn('[decenales]', codigo, '→ fallo de red/CORS al pedir el backend:', err);
+    mostrarErrorCarga_(codigo, 'Fallo de red/CORS: ' + err);
+  } finally {
+    STATE[codigo].cargando = false;
   }
 }
 
