@@ -187,6 +187,8 @@
   </div>
 
   <div class="aviso mal" id="carga-error" style="display:none;"></div>
+  <div class="aviso mal" id="guardado-error" style="display:none;"></div>
+  <div class="aviso mal" id="secciones-faltantes" style="display:none;"></div>
 
   <div class="leyenda" id="promo-leyenda">
     <div class="leyenda-item"><span class="swatch manual"></span> Dato manual (editable)</div>
@@ -675,17 +677,33 @@ async function guardarCampoBackend_(seccion, filaIdx, columnaIdx, valor) {
   if (!DATA_URL) return;
   if (!STATE[PROMO_ACTUAL] || !STATE[PROMO_ACTUAL].cargado) {
     console.warn('[decenales] no se guarda', seccion, filaIdx, columnaIdx, '— esta promoción no llegó a cargar del backend, así que no hay fila real a la que escribir.');
+    mostrarErrorGuardado_('No se ha guardado: esta promoción no llegó a cargar del Sheet, así que no hay fila real donde escribir. Recarga la pestaña.');
     return;
   }
   const etiqueta = 'guardar ' + PROMO_ACTUAL + ' ' + seccion + '[' + filaIdx + ',' + columnaIdx + ']';
   try {
     const res = await llamarBackend_({ accion: 'guardar', promocion: PROMO_ACTUAL, seccion, fila: filaIdx, columna: columnaIdx, valor }, etiqueta);
-    if (!res.ok) console.warn('[decenales]', etiqueta, '→ el backend lo rechazó:', res.motivo || res.detalle);
-    else console.log('[decenales] guardado', PROMO_ACTUAL, seccion, filaIdx, columnaIdx, '=', valor);
+    if (!res.ok) {
+      // Esto es un rechazo REAL del backend (llegó JSON válido, pero dijo que no) — lo
+      // más habitual es que falte la sección entera en el Sheet ("Fila fuera de rango").
+      console.warn('[decenales]', etiqueta, '→ el backend lo rechazó:', res.motivo || res.detalle);
+      mostrarErrorGuardado_('No se ha guardado (' + seccion + '): ' + (res.detalle || res.motivo || 'el backend lo rechazó') + '.');
+    } else {
+      console.log('[decenales] guardado', PROMO_ACTUAL, seccion, filaIdx, columnaIdx, '=', valor);
+      ocultarErrorGuardado_();
+    }
   } catch (err) {
     console.error('[decenales]', etiqueta, '→ NO GUARDADO tras', REINTENTOS_BACKEND, 'intentos:', err.message);
-    mostrarErrorCarga_(PROMO_ACTUAL, 'No se pudo guardar un cambio (' + seccion + ') tras ' + REINTENTOS_BACKEND + ' intentos. Vuelve a editar ese campo.');
+    mostrarErrorGuardado_('No se ha guardado un cambio (' + seccion + ') tras ' + REINTENTOS_BACKEND + ' intentos (' + err.message + '). Vuelve a editar ese campo.');
   }
+}
+function mostrarErrorGuardado_(mensaje) {
+  const el = document.getElementById('guardado-error');
+  if (el) { el.textContent = mensaje; el.style.display = 'block'; }
+}
+function ocultarErrorGuardado_() {
+  const el = document.getElementById('guardado-error');
+  if (el) el.style.display = 'none';
 }
 // Delegado en document (fase de captura, porque blur no burbujea) para no
 // tener que repetir el guardado campo a campo: cualquier input con
@@ -730,6 +748,7 @@ function initState(codigo) {
     c93: 0, q93: 0, s93: 0, z93: 0, m2: 0, informesParciales: 0,
     multVilla: 0, multBloque: 0, multPiscina: 0,
     fases: [], entradas: [],
+    seccionesFaltantes: [],
     entregaCuenta: { concepto: 'ENTREGA A CUENTA 30%', fecha: '', primaReal: 0, ipsTasas: 0 }
   };
 }
@@ -810,6 +829,7 @@ function switchPromo(codigo) {
     if (STATE[codigo].cargado) ocultarErrorCarga_();
     else if (DATA_URL && !STATE[codigo].cargando) cargarPromocionBackend_(codigo);
     else mostrarErrorCarga_(codigo, DATA_URL ? 'cargando…' : 'DATA_URL no está configurado en el HTML');
+    actualizarAvisoSeccionesFaltantes_(codigo);
     renderPromo();
   }
 }
@@ -1467,7 +1487,7 @@ async function cargarPromocionBackend_(codigo) {
     }
     aplicarDatosBackend_(codigo, res.datos);
     console.log('[decenales]', etiqueta, '→ OK. C93 =', STATE[codigo].c93);
-    if (codigo === PROMO_ACTUAL) { ocultarErrorCarga_(); renderPromo(); }
+    if (codigo === PROMO_ACTUAL) { ocultarErrorCarga_(); actualizarAvisoSeccionesFaltantes_(codigo); renderPromo(); }
     else if (PROMO_ACTUAL === 'COMPARATIVO') { renderComparativo(); }
   } catch (err) {
     console.error('[decenales]', etiqueta, '→ NO CARGADO tras', REINTENTOS_BACKEND, 'intentos:', err.message);
@@ -1491,6 +1511,19 @@ function mostrarErrorCarga_(codigo, motivo) {
       el.textContent = 'No se han podido cargar los datos de ' + codigo + ' desde el Sheet (' + motivo + '). Sin backend no hay datos que mostrar — revisa DATA_URL, el despliegue de Apps Script, o la consola para más detalle.';
     }
   }
+}
+
+// Aviso proactivo (no espera a que falle un guardado): si esta promoción no
+// tiene la sección PARÁMETROS DECENAL/OCT en el Sheet, cualquier campo de
+// esa sección se ve normal pero no tiene dónde guardarse.
+function actualizarAvisoSeccionesFaltantes_(codigo) {
+  const el = document.getElementById('secciones-faltantes');
+  if (!el || codigo !== PROMO_ACTUAL) return;
+  const faltan = STATE[codigo].seccionesFaltantes || [];
+  if (faltan.length === 0) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.textContent = 'A ' + codigo + ' le falta en el Sheet la sección ' + faltan.join(' y ') +
+    ' — los campos correspondientes se ven normales, pero no se van a guardar hasta que añadas ese bloque en la pestaña (mismo formato que en las demás promociones).';
 }
 
 // Convierte "VILLA 1, VILLA 2" en ['v0','v1'] comparando contra los nombres
@@ -1545,6 +1578,15 @@ function aplicarDatosBackend_(codigo, d) {
   const poct = (d.PARAMETROS_OCT || [])[0] || {};
   st.z93 = Number(poct.z93) || 0;
   st.informesParciales = Number(poct.informesParciales) || 0;
+
+  // Estas dos secciones deberían tener SIEMPRE una fila en cada pestaña —
+  // si vienen vacías, no es que el valor sea 0: es que la etiqueta
+  // "PARÁMETROS DECENAL"/"PARÁMETROS OCT" no existe en esa pestaña del
+  // Sheet, así que nada de lo que se edite ahí tiene dónde guardarse.
+  // Se detecta aquí, al cargar, en vez de esperar a que falle un guardado.
+  st.seccionesFaltantes = [];
+  if (!(d.PARAMETROS_DECENAL || []).length) st.seccionesFaltantes.push('PARÁMETROS DECENAL');
+  if (!(d.PARAMETROS_OCT || []).length) st.seccionesFaltantes.push('PARÁMETROS OCT');
 
   st.fases = (d.FASES || []).map(f => ({ nombre: f.nombre, marcados: nombresAIds_(f.elementos, st) }));
 
