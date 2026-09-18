@@ -213,6 +213,20 @@
 
     <div id="pem-bloques-container"></div>
 
+    <div class="caja" id="caja-sotano" style="display:none;">
+      <div class="caja-title">Sótano</div>
+      <div class="scroll-x">
+        <table class="filas tabla-pem" style="width:450px">
+          <colgroup><col class="col-nombre"><col class="col-pem"></colgroup>
+          <thead><tr><th>Elemento</th><th>PEM total (€)</th></tr></thead>
+          <tbody><tr>
+            <td><input class="nombre" id="nombre-sotano" oninput="recalc()" data-seccion="SOTANO" data-fila="0" data-col="0" data-tipo="texto"></td>
+            <td><input type="text" inputmode="decimal" class="fval manual" id="c-sotano" oninput="recalc()" onblur="formatField(this)" data-seccion="SOTANO" data-fila="0" data-col="1"></td>
+          </tr></tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="caja">
       <div class="caja-title">Piscina colectiva</div>
       <div class="scroll-x">
@@ -296,9 +310,30 @@
 
     <div id="dec-bloques-container"></div>
 
+    <div class="caja" id="caja-dec-sotano" style="display:none;">
+      <div class="caja-title">Sótano</div>
+      <div class="caja-sub">No tiene prima propia: su coste se reparte dentro del precio por vivienda de todos los bloques, igual que la piscina.</div>
+      <div class="scroll-x">
+        <table class="filas tabla-reparto-dec" id="tabla-dec-sotano">
+          <thead><tr>
+            <th>Elemento</th><th>PEM (ref.)</th><th>Suma aseg. prov. (D)</th><th>PEM aseg. def. (E)</th>
+            <th>Otros gastos 5% (F)</th><th>Suma aseg. definitiva (G)</th>
+          </tr></thead>
+          <tbody><tr>
+            <td><div class="fval calc" id="nombre-sotano-dec"></div></td>
+            <td><div class="fval calc" id="c-sotano-ref"></div></td>
+            <td><div class="fval calc" id="d-sotano"></div></td>
+            <td><div class="fval calc" id="e-sotano"></div></td>
+            <td><div class="fval calc" id="f-sotano"></div></td>
+            <td><div class="fval calc" id="g-sotano"></div></td>
+          </tr></tbody>
+        </table>
+      </div>
+    </div>
+
     <div class="caja">
       <div class="caja-title">Piscina colectiva</div>
-      <div class="caja-sub">No tiene prima propia: su coste se reparte dentro del precio por vivienda del primer bloque.</div>
+      <div class="caja-sub">No tiene prima propia: su coste se reparte dentro del precio por vivienda de todos los bloques.</div>
       <div class="scroll-x">
         <table class="filas tabla-reparto-dec" id="tabla-dec-piscina">
           <thead><tr>
@@ -693,6 +728,7 @@ function initState(codigo) {
     villaNombres: [], villaPem: [],
     bloqueNombres: [], bloquePem: [], bloqueUnidades: [],
     piscinaNombre: 'PISCINA COLECTIVA', piscinaPem: 0,
+    sotanoNombre: 'SÓTANO', sotanoPem: 0, tieneSotano: false,
     c93: 0, q93: 0, s93: 0, z93: 0, m2: 0, informesParciales: 0,
     multVilla: 0, multBloque: 0, multPiscina: 0,
     fases: [], entradas: [],
@@ -717,6 +753,10 @@ function volcarEstadoActual() {
   });
   st.piscinaNombre = document.getElementById('nombre-piscina').value;
   st.piscinaPem = num('c-piscina');
+  if (st.tieneSotano) {
+    st.sotanoNombre = document.getElementById('nombre-sotano').value;
+    st.sotanoPem = num('c-sotano');
+  }
   st.c93 = num('c93'); st.q93 = num('q93'); st.s93 = num('s93'); st.z93 = num('z93'); st.m2 = num('m2-total');
   st.informesParciales = num('informes-parciales');
   st.multVilla = num('mult-villa'); st.multBloque = num('mult-bloque'); st.multPiscina = num('mult-piscina');
@@ -919,9 +959,15 @@ function renderPromo() {
     seedField('b' + i + '-unid', st.bloqueUnidades[i]);
   });
 
-  // ── PEM base: piscina ──
+  // ── PEM base: piscina y sótano (si existe) ──
   seedText('nombre-piscina', st.piscinaNombre);
   seedField('c-piscina', st.piscinaPem);
+  document.getElementById('caja-sotano').style.display = st.tieneSotano ? 'block' : 'none';
+  document.getElementById('caja-dec-sotano').style.display = st.tieneSotano ? 'block' : 'none';
+  if (st.tieneSotano) {
+    seedText('nombre-sotano', st.sotanoNombre);
+    seedField('c-sotano', st.sotanoPem);
+  }
 
   // ── Fases PEM ──
   buildFasesHead(st);
@@ -1004,22 +1050,26 @@ function renderPromo() {
     octVillasBody.appendChild(tr);
   });
 
-  // ── OCT: bloques (todos incluyen su parte de la piscina) ──
+  // ── OCT: bloques (todos incluyen su parte de la piscina, y del sótano si existe) ──
   const octBloquesCont = document.getElementById('oct-bloques-container');
   octBloquesCont.innerHTML = '';
+  const colSotanoOct = st.tieneSotano ? `<th>PEM sótano (ref.)</th>` : '';
+  const colSotanoOctW = st.tieneSotano ? 155 : 0;
   st.bloqueNombres.forEach((nombre, i) => {
     const div = document.createElement('div');
     div.className = 'caja';
+    const notaSotano = st.tieneSotano ? ' y del sótano' : '';
     div.innerHTML = `
       <div class="caja-title">${nombre}</div>
-      <div class="caja-sub">Incluye su parte proporcional de la piscina colectiva, repartida entre las viviendas de todos los bloques.</div>
+      <div class="caja-sub">Incluye su parte proporcional de la piscina colectiva${notaSotano}, repartida entre las viviendas de todos los bloques.</div>
       <div class="scroll-x">
-        <table class="filas tabla-oct" style="width:${anchoTabla(WIDTHS_OCT_MERGE, 6)}px">
-          ${colgroupHtml(WIDTHS_OCT_MERGE, 6)}
-          <thead><tr><th>Elemento</th><th>PEM bloque (ref.)</th><th>PEM piscina (ref.)</th><th>PEM combinado (ref.)</th><th>OCT por vivienda</th><th>OCT total bloque</th></tr></thead>
+        <table class="filas tabla-oct" style="width:${anchoTabla(WIDTHS_OCT_MERGE, 6) + colSotanoOctW}px">
+          <colgroup><col style="width:170px"><col style="width:155px">${st.tieneSotano ? '<col style="width:155px">' : ''}<col style="width:155px"><col style="width:165px"><col style="width:150px"><col style="width:150px"></colgroup>
+          <thead><tr><th>Elemento</th><th>PEM bloque (ref.)</th>${colSotanoOct}<th>PEM piscina (ref.)</th><th>PEM combinado (ref.)</th><th>OCT por vivienda</th><th>OCT total bloque</th></tr></thead>
           <tbody><tr>
             <td><div class="fval calc" id="b${i}-nombre-oct"></div></td>
             <td><div class="fval calc" id="b${i}-pem-oct"></div></td>
+            ${st.tieneSotano ? `<td><div class="fval calc" id="c-sotano-oct"></div></td>` : ''}
             <td><div class="fval calc" id="c-piscina-oct"></div></td>
             <td><div class="fval calc" id="b${i}-pem-combi-oct"></div></td>
             <td><div class="fval calc" id="b${i}-aa"></div></td>
@@ -1077,6 +1127,7 @@ function elementosActuales(st) {
   const els = [];
   st.villaNombres.forEach((n, i) => els.push({ id: 'v' + i, nombre: n }));
   st.bloqueNombres.forEach((n, i) => els.push({ id: 'b' + i, nombre: n }));
+  if (st.tieneSotano) els.push({ id: 'sotano', nombre: st.sotanoNombre || 'SÓTANO' });
   els.push({ id: 'piscina', nombre: st.piscinaNombre || 'PISCINA' });
   return els;
 }
@@ -1210,8 +1261,9 @@ function recalc() {
   const cBloques = []; for (let i = 0; i < nB; i++) cBloques.push(num('b' + i + '-pem'));
   const unidBloques = []; for (let i = 0; i < nB; i++) unidBloques.push(num('b' + i + '-unid'));
   const cPiscina = num('c-piscina');
+  const cSotano = st.tieneSotano ? num('c-sotano') : 0;
 
-  const c92 = cVillas.reduce((a, b) => a + b, 0) + cBloques.reduce((a, b) => a + b, 0) + cPiscina;
+  const c92 = cVillas.reduce((a, b) => a + b, 0) + cBloques.reduce((a, b) => a + b, 0) + cPiscina + cSotano;
 
   // referencias de nombre/PEM en decenal y OCT
   for (let i = 0; i < nV; i++) {
@@ -1227,6 +1279,11 @@ function recalc() {
   set('nombre-piscina-dec', document.getElementById('nombre-piscina').value);
   set('c-piscina-ref', eur(cPiscina));
   set('c-piscina-oct', eur(cPiscina));
+  if (st.tieneSotano) {
+    set('nombre-sotano-dec', document.getElementById('nombre-sotano').value);
+    set('c-sotano-ref', eur(cSotano));
+    set('c-sotano-oct', eur(cSotano));
+  }
 
   // ── DECENAL: D, E, F, G ──
   const dVillas = [], gVillas = [];
@@ -1252,6 +1309,16 @@ function recalc() {
   const fPiscina = ePiscina * 0.05, gPiscina = ePiscina * 1.05;
   set('d-piscina', eur(dPiscina)); set('e-piscina', eur(ePiscina)); set('f-piscina', eur(fPiscina)); set('g-piscina', eur(gPiscina));
 
+  // Sótano: idéntico a la piscina en todo — mismo % de incremento
+  // (multPiscina), mismo reparto entre todos los bloques. Solo existe si el
+  // backend trajo una sección SÓTANO para esta promoción (por ahora, 3SB).
+  const dSotano = st.tieneSotano && c92 > 0 ? c93 * cSotano / c92 : 0;
+  const eSotano = cSotano * multPiscina;
+  const fSotano = eSotano * 0.05, gSotano = eSotano * 1.05;
+  if (st.tieneSotano) {
+    set('d-sotano', eur(dSotano)); set('e-sotano', eur(eSotano)); set('f-sotano', eur(fSotano)); set('g-sotano', eur(gSotano));
+  }
+
   const r93 = c93 * q93 / 100;
   const t93 = r93 + s93;
 
@@ -1259,20 +1326,22 @@ function recalc() {
     const v = c93 > 0 ? dVillas[i] * t93 / c93 : 0;
     set('v' + i + '-v', eur(v));
   }
-  // La piscina se reparte entre TODAS las viviendas de TODOS los bloques
-  // (no solo las del primero) — con un único bloque coincide con /unidades
-  // de ese bloque, pero con varios bloques hay que dividir por la suma de
-  // todas sus unidades. Confirmado con los datos reales de 1SV (V16≈V17).
+  // La piscina (y el sótano, si existe) se reparten entre TODAS las
+  // viviendas de TODOS los bloques (no solo las del primero) — con un único
+  // bloque coincide con /unidades de ese bloque, pero con varios bloques hay
+  // que dividir por la suma de todas sus unidades. Confirmado con los datos
+  // reales de 1SV (V16≈V17).
   const totalUnidBloques = unidBloques.reduce((a, b) => a + (b || 0), 0) || 1;
   const piscinaPorUnidadDecenal = c93 > 0 ? (dPiscina * t93 / c93) / totalUnidBloques : 0;
+  const sotanoPorUnidadDecenal = st.tieneSotano && c93 > 0 ? (dSotano * t93 / c93) / totalUnidBloques : 0;
   for (let i = 0; i < nB; i++) {
     const unidades = unidBloques[i] || 1;
-    const v = (c93 > 0 ? dBloques[i] * t93 / c93 : 0) / unidades + piscinaPorUnidadDecenal;
+    const v = (c93 > 0 ? dBloques[i] * t93 / c93 : 0) / unidades + piscinaPorUnidadDecenal + sotanoPorUnidadDecenal;
     const w = v * unidades;
     set('b' + i + '-v', eur(v)); set('b' + i + '-w', eur(w));
   }
 
-  const d93check = dVillas.reduce((a, b) => a + b, 0) + dBloques.reduce((a, b) => a + b, 0) + dPiscina;
+  const d93check = dVillas.reduce((a, b) => a + b, 0) + dBloques.reduce((a, b) => a + b, 0) + dPiscina + dSotano;
   const diffD = Math.abs(d93check - c93);
   const checkD = document.getElementById('check-d93');
   checkD.textContent = `Suma del reparto proporcional = ${eur(d93check)} frente a la suma asegurada provisional = ${eur(c93)}. Diferencia: ${eur(diffD)}.`;
@@ -1287,13 +1356,14 @@ function recalc() {
   }
   let abBloquesSum = 0;
   const piscinaPorUnidadOct = c92 > 0 ? (cPiscina * z93 / c92) / totalUnidBloques : 0;
+  const sotanoPorUnidadOct = st.tieneSotano && c92 > 0 ? (cSotano * z93 / c92) / totalUnidBloques : 0;
   for (let i = 0; i < nB; i++) {
     const unidades = unidBloques[i] || 1;
-    const aa = (c92 > 0 ? cBloques[i] * z93 / c92 : 0) / unidades + piscinaPorUnidadOct;
+    const aa = (c92 > 0 ? cBloques[i] * z93 / c92 : 0) / unidades + piscinaPorUnidadOct + sotanoPorUnidadOct;
     const ab = aa * unidades;
     abBloquesSum += ab;
     set('b' + i + '-aa', eur(aa)); set('b' + i + '-ab', eur(ab));
-    set('b' + i + '-pem-combi-oct', eur(cBloques[i] + cPiscina));
+    set('b' + i + '-pem-combi-oct', eur(cBloques[i] + cPiscina + cSotano));
   }
   set('z93-total', eur(z93));
   const ac93 = m2total > 0 ? z93 / m2total : 0;
@@ -1310,6 +1380,7 @@ function recalc() {
   const cPorElemento = {};
   els.forEach(e => {
     if (e.id === 'piscina') cPorElemento[e.id] = cPiscina;
+    else if (e.id === 'sotano') cPorElemento[e.id] = cSotano;
     else if (e.id[0] === 'v') cPorElemento[e.id] = cVillas[parseInt(e.id.slice(1))];
     else cPorElemento[e.id] = cBloques[parseInt(e.id.slice(1))];
   });
@@ -1323,6 +1394,7 @@ function recalc() {
   const gPorElemento = {};
   els.forEach(e => {
     if (e.id === 'piscina') gPorElemento[e.id] = gPiscina;
+    else if (e.id === 'sotano') gPorElemento[e.id] = gSotano;
     else if (e.id[0] === 'v') gPorElemento[e.id] = gVillas[parseInt(e.id.slice(1))];
     else gPorElemento[e.id] = gBloques[parseInt(e.id.slice(1))];
   });
@@ -1339,7 +1411,7 @@ function recalc() {
   set('h91', eur(hTotal)); set('i91', eur(iTotal));
 
   // ── Totales decenal: provisional vs definitiva ──
-  const g91 = gVillas.reduce((a, b) => a + b, 0) + gBloques.reduce((a, b) => a + b, 0) + gPiscina;
+  const g91 = gVillas.reduce((a, b) => a + b, 0) + gBloques.reduce((a, b) => a + b, 0) + gPiscina + gSotano;
   set('prov-suma', eur(c93)); set('prov-prima-neta', eur(r93)); set('prov-ips', eur(s93));
   set('prov-prima-total', eur(t93)); set('prov-prima-m2', eur(m2total > 0 ? t93 / m2total : 0));
 
@@ -1434,6 +1506,7 @@ function nombresAIds_(elementos, st) {
     idx = st.bloqueNombres.indexOf(nombre);
     if (idx !== -1) return 'b' + idx;
     if (nombre === st.piscinaNombre) return 'piscina';
+    if (st.tieneSotano && nombre === st.sotanoNombre) return 'sotano';
     console.warn('[decenales] elemento "' + nombre + '" no reconocido al traducir fases/entradas');
     return null;
   }).filter(Boolean);
@@ -1454,6 +1527,13 @@ function aplicarDatosBackend_(codigo, d) {
   const piscina = (d.PISCINA || [])[0];
   st.piscinaNombre = piscina ? String(piscina.nombre || 'PISCINA COLECTIVA') : 'PISCINA COLECTIVA';
   st.piscinaPem = piscina ? Number(piscina.pem) || 0 : 0;
+
+  // Sótano: idéntico a piscina, pero opcional — solo aparece si el backend
+  // trae una sección SÓTANO en la pestaña de esta promoción (hoy, 3SB).
+  const sotano = (d.SOTANO || [])[0];
+  st.tieneSotano = !!sotano;
+  st.sotanoNombre = sotano ? String(sotano.nombre || 'SÓTANO') : 'SÓTANO';
+  st.sotanoPem = sotano ? Number(sotano.pem) || 0 : 0;
 
   const pdec = (d.PARAMETROS_DECENAL || [])[0] || {};
   st.c93 = Number(pdec.c93) || 0;
