@@ -625,7 +625,21 @@ const MAPA_PAISES = [
   [['estados unidos', 'united states', ' usa', 'u.s.a'], 'Estados Unidos'],
   [['canadá', 'canada'], 'Canadá'],
   [['marruecos', 'morocco'], 'Marruecos'],
-  [['ucrania', 'ukraine'], 'Ucrania']
+  [['ucrania', 'ukraine'], 'Ucrania'],
+  [['hungría', 'hungria', 'hungary'], 'Hungría'],
+  [['austria'], 'Austria'],
+  [['suiza', 'switzerland'], 'Suiza'],
+  [['chequia', 'czech republic', 'czechia'], 'Chequia'],
+  [['rumanía', 'rumania', 'romania'], 'Rumanía'],
+  [['bulgaria'], 'Bulgaria'],
+  [['grecia', 'greece'], 'Grecia'],
+  [['finlandia', 'finland'], 'Finlandia'],
+  [['eslovaquia', 'slovakia'], 'Eslovaquia'],
+  [['croacia', 'croatia'], 'Croacia'],
+  [['lituania', 'lithuania'], 'Lituania'],
+  [['letonia', 'latvia'], 'Letonia'],
+  [['estonia'], 'Estonia'],
+  [['luxemburgo', 'luxembourg'], 'Luxemburgo']
 ];
 function estimarPaisDesdeDireccion(direccion) {
   if (!direccion) return '';
@@ -633,7 +647,7 @@ function estimarPaisDesdeDireccion(direccion) {
   for (const [claves, nombre] of MAPA_PAISES) {
     if (claves.some(k => texto.includes(k))) return nombre;
   }
-  return 'España'; // por defecto — la mayoría de direcciones sin país explícito son de aquí
+  return ''; // si no reconoce ningún país, mejor vacío (y que lo rellenes tú) que adivinar mal
 }
 function estimarPaisCliente() {
   const direccion = document.getElementById('cliente-1-direccion').value.trim();
@@ -647,10 +661,14 @@ function renderClienteBlock(activa, contactos) {
   if (!activa) return ''; // sin reserva/contrato activo no hay datos de cliente que mostrar
   const mailchimpDe = n => ((contactos || []).find(c => c.tipo === 'cliente' + n) || {}).mailchimp;
   const claseSiRelleno = v => v ? 'catalogo' : '';
+  const hayCliente2 = !!activa.cliente2;
   const cli = n => ({
     nombre: activa['cliente' + n] || '',
-    direccion: activa.dom_cliente || '', // compartida entre cliente1 y cliente2, a propósito
-    pais: activa.pais_cliente || '', // compartida también, igual que dirección
+    // dirección/país son compartidas entre cliente1 y cliente2, a
+    // propósito — pero si no hay cliente2, no tiene sentido enseñar la
+    // dirección duplicada en una fila de un comprador que no existe
+    direccion: (n === 2 && !hayCliente2) ? '' : (activa.dom_cliente || ''),
+    pais: (n === 2 && !hayCliente2) ? '' : (activa.pais_cliente || ''),
     telefono: activa['tlf_cliente' + n] || '',
     correo: activa['mail_cliente' + n] || ''
   });
