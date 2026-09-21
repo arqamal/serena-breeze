@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serena Breeze — Reuniones</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #FFFFFF;
+    --off-white: #F7F6F4;
+    --border: #E0DDD8;
+    --mid: #B0AA9F;
+    --slate-gray: #6B7280;
+    --text: #2A2520;
+    --black: #111111;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 14px; font-weight: 400; }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    position: fixed; inset: 0; background: var(--white);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999;
+  }
+  .login-box { width: 100%; max-width: 380px; padding: 48px 40px; border: 1px solid var(--border); }
+  .login-logo { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 3px; text-transform: uppercase; color: var(--black); margin-bottom: 6px; }
+  .login-sub { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); margin-bottom: 40px; }
+  .login-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+  .login-label { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); }
+  .login-input { border: 1px solid var(--border); padding: 12px 14px; font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--text); background: var(--white); outline: none; transition: border-color .2s; border-radius: 0; width: 100%; }
+  .login-input:focus { border-color: var(--black); }
+  .login-btn { width: 100%; margin-top: 8px; font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; background: var(--black); color: white; border: none; padding: 14px; cursor: pointer; transition: background .2s; }
+  .login-btn:hover { background: #333; }
+  .login-btn:disabled { opacity: .55; cursor: default; }
+  .login-btn:disabled:hover { background: var(--black); }
+  .login-error { font-family: 'Roboto', sans-serif; font-size: 12px; color: #C0392B; margin-top: 14px; text-align: center; display: none; }
+
+  /* ── APP ── */
+  #app-wrapper { display: none; }
+
+  .hero { padding: 56px 48px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+  .hero-eyebrow { font-family: 'Roboto', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 16px; }
+  .hero h1 { font-family: 'Oswald', sans-serif; font-size: clamp(28px, 4vw, 44px); font-weight: 400; text-transform: uppercase; color: var(--black); line-height: 1.05; margin-bottom: 14px; }
+  .hero-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.8; max-width: 480px; }
+  .hero-user { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 1px; color: var(--mid); white-space: nowrap; padding-top: 8px; }
+  .hero-user span { color: var(--text); font-weight: 400; }
+
+  main { max-width: 900px; margin: 0 auto; padding: 40px 48px 100px; }
+
+  /* ── PESTAÑAS DE VISTA (Formulario / Reunión) ── */
+  .view-tabs { display: flex; border: 1px solid var(--border); margin-bottom: 40px; width: fit-content; }
+  .view-tab { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; padding: 14px 32px; cursor: pointer; background: var(--white); color: var(--slate-gray); border: none; border-right: 1px solid var(--border); transition: all .15s; }
+  .view-tab:last-child { border-right: none; }
+  .view-tab.active { background: var(--black); color: white; }
+  .view-tab:hover:not(.active) { background: var(--off-white); color: var(--text); }
+
+  .form-row { display: flex; flex-direction: column; gap: 24px; margin-bottom: 8px; }
+  .form-row-split { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 24px; }
+  .fgroup { display: flex; flex-direction: column; gap: 9px; }
+  .flabel { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); }
+  .flabel .req { color: #C0392B; }
+  .finput { border: 1px solid var(--border); padding: 12px 14px; font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--text); background: var(--white); outline: none; transition: border-color .2s; border-radius: 0; -webkit-appearance: none; width: 100%; }
+  .finput:focus { border-color: var(--black); }
+  .finput::placeholder { color: var(--mid); }
+  textarea.finput { resize: vertical; min-height: 120px; line-height: 1.6; }
+
+  /* ── GRUPOS DE BOTONES ── */
+  .btn-group { display: flex; flex-wrap: wrap; gap: 8px; padding: 2px; }
+  .btn-group.invalid { outline: 2px solid #F0C4BC; outline-offset: 4px; }
+  .btn-option {
+    font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 12px 18px; cursor: pointer; background: var(--white); color: var(--slate-gray);
+    border: 1px solid var(--border); border-radius: 0; -webkit-appearance: none; transition: all .15s;
+  }
+  .btn-option:hover:not(.active) { border-color: var(--black); color: var(--text); }
+  .btn-option.active { background: var(--black); color: white; border-color: var(--black); }
+  .btn-option.btn-option-sm { padding: 8px 14px; font-size: 11px; }
+
+  .form-footer { border-top: 1px solid var(--border); padding-top: 28px; margin-top: 36px; display: flex; justify-content: flex-end; }
+  .btn-submit { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; background: var(--black); color: white; border: none; padding: 16px 48px; cursor: pointer; transition: background .2s; }
+  .btn-submit:hover { background: #333; }
+  .btn-submit:disabled { background: var(--mid); cursor: not-allowed; }
+
+  .success-screen { display: none; text-align: center; padding: 80px 48px; }
+  .success-line { width: 48px; height: 2px; background: var(--black); margin: 0 auto 40px; }
+  .success-screen h2 { font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 400; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 18px; }
+  .success-screen p { font-family: 'Roboto', sans-serif; font-weight: 300; color: var(--slate-gray); line-height: 1.8; max-width: 420px; margin: 0 auto 32px; }
+  .btn-secondary { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; background: transparent; color: var(--slate-gray); border: 1px solid var(--border); padding: 14px 32px; cursor: pointer; transition: all .2s; }
+  .btn-secondary:hover { border-color: var(--black); color: var(--black); }
+
+  .sending-overlay { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.85); z-index: 998; align-items: center; justify-content: center; flex-direction: column; gap: 20px; }
+  .sending-overlay.active { display: flex; }
+  .spinner { width: 36px; height: 36px; border: 2px solid var(--border); border-top-color: var(--black); border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .sending-text { font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); }
+
+  /* ── VISTA REUNIÓN ── */
+  .reunion-topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+  .refresh-btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 11px 18px; background: transparent; color: var(--slate-gray); border: 1px solid var(--border); transition: all .15s; }
+  .refresh-btn:hover { background: var(--off-white); color: var(--black); }
+  #reunion-loading, #reunion-empty { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--slate-gray); padding: 28px; text-align: center; border: 1px solid var(--border); display: none; }
+
+  .reunion-filtros { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .filtro-group { display: flex; flex-direction: column; gap: 9px; }
+  .filtro-limpiar { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--slate-gray); text-decoration: underline; cursor: pointer; background: none; border: none; padding: 0; align-self: flex-end; }
+  .filtro-limpiar:hover { color: var(--black); }
+
+  .area-block { margin-bottom: 40px; }
+  .area-title { font-family: 'Oswald', sans-serif; font-size: 15px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--black); padding: 12px 16px; background: var(--off-white); border: 1px solid var(--border); }
+
+  .tema-card { border: 1px solid var(--border); border-top: none; padding: 22px 24px; }
+  .tema-card.seguimiento { background: var(--off-white); }
+  .tema-card-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .tema-obra { font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: .5px; color: var(--black); }
+  .tema-badge { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 9px; border: 1px solid var(--border); color: var(--slate-gray); }
+  .tema-badge.prio-alta { color: #C0392B; border-color: #F0C4BC; background: #FBE3E1; }
+  .tema-badge.prio-media { color: #a3660b; border-color: #f3d9ab; background: #FCEFD9; }
+  .tema-badge.prio-baja { color: var(--slate-gray); }
+  .tema-badge.requiere { color: var(--black); border-color: var(--black); }
+  .tema-badge.seguimiento-tag { color: var(--slate-gray); font-style: italic; border-style: dashed; }
+  .tema-titulo { font-family: 'Roboto', sans-serif; font-size: 15px; font-weight: 400; color: var(--text); margin-bottom: 6px; }
+  .tema-desc { font-family: 'Roboto', sans-serif; font-size: 13px; font-weight: 300; color: var(--slate-gray); line-height: 1.6; margin-bottom: 6px; }
+  .tema-meta { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--mid); margin-bottom: 18px; }
+  .tema-card .form-row { gap: 16px; margin-bottom: 4px; }
+  .tema-card .form-footer { margin-top: 20px; padding-top: 20px; justify-content: space-between; align-items: center; }
+  .tema-guardado-msg { font-family: 'Roboto', sans-serif; font-size: 11px; color: #2d7a2d; letter-spacing: .5px; text-transform: uppercase; opacity: 0; transition: opacity .3s; }
+  .tema-guardado-msg.show { opacity: 1; }
+  .tema-card.saliendo { opacity: 0; transform: translateY(-6px); transition: all .3s; }
+  .btn-danger { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; background: transparent; color: #C0392B; border: 1px solid #F0C4BC; padding: 12px 20px; cursor: pointer; transition: all .15s; }
+  .btn-danger:hover { background: #FBE3E1; border-color: #C0392B; }
+  .btn-danger:disabled { opacity: .55; cursor: not-allowed; }
+
+  @media (max-width: 768px) {
+    .hero, main { padding-left: 24px; padding-right: 24px; }
+    .hero { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Serena Breeze</div>
+    <div class="login-sub">Reuniones · Uso interno</div>
+    <div class="login-field">
+      <label class="login-label">Usuario</label>
+      <input class="login-input" id="login-user" type="text" placeholder="Usuario" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Contraseña</label>
+      <input class="login-input" id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Acceder →</button>
+    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
+  </div>
+</div>
+
+<!-- ── APP ── -->
+<div id="app-wrapper">
+
+  <div class="hero">
+    <div>
+      <div class="hero-eyebrow">Uso interno — Amal Inmobiliaria</div>
+      <h1>Reuniones</h1>
+      <p class="hero-desc">Registra temas para la reunión semanal y, durante la reunión, trátalos por área.</p>
+    </div>
+    <div class="hero-user">Conectado como<br><span id="hero-user-name">—</span><br><a href="#" onclick="cerrarSesion(); return false;" style="font-family:'Roboto',sans-serif; font-size:11px; color:inherit; opacity:.7; text-decoration:none;">Cerrar sesión</a></div>
+  </div>
+
+  <main>
+
+    <div class="view-tabs">
+      <button type="button" class="view-tab active" id="tab-formulario" data-view="formulario">Nuevo tema</button>
+      <button type="button" class="view-tab" id="tab-reunion" data-view="reunion" style="display:none;">Reunión</button>
+    </div>
+
+    <!-- ══════════════ VISTA: FORMULARIO ══════════════ -->
+    <div id="view-formulario">
+
+      <form id="temaForm" novalidate>
+
+        <div class="form-row">
+
+          <div class="fgroup">
+            <label class="flabel">Obra <span class="req">*</span></label>
+            <div class="btn-group" id="obra-group" data-field="obra">
+              <button type="button" class="btn-option" data-value="1SV">1SV</button>
+              <button type="button" class="btn-option" data-value="2SV">2SV</button>
+              <button type="button" class="btn-option" data-value="1SB">1SB</button>
+              <button type="button" class="btn-option" data-value="2SB">2SB</button>
+              <button type="button" class="btn-option" data-value="3SB">3SB</button>
+              <button type="button" class="btn-option" data-value="4SB">4SB</button>
+              <button type="button" class="btn-option" data-value="General">General</button>
+            </div>
+          </div>
+
+          <div class="fgroup">
+            <label class="flabel">Área <span class="req">*</span></label>
+            <div class="btn-group" id="area-group" data-field="area">
+              <button type="button" class="btn-option" data-value="Planificación">Planificación</button>
+              <button type="button" class="btn-option" data-value="Oficina Técnica y Diseño">Oficina Técnica y Diseño</button>
+              <button type="button" class="btn-option" data-value="Pedidos">Pedidos</button>
+              <button type="button" class="btn-option" data-value="Postventa">Postventa</button>
+              <button type="button" class="btn-option" data-value="Otros">Otros</button>
+            </div>
+          </div>
+
+          <div class="fgroup">
+            <label class="flabel" for="tema">Tema <span class="req">*</span></label>
+            <input class="finput" id="tema" name="tema" type="text" placeholder="Título breve del tema…" required>
+          </div>
+
+          <div class="fgroup">
+            <label class="flabel" for="descripcion">Descripción</label>
+            <textarea id="descripcion" name="descripcion" class="finput" placeholder="Detalle lo que haga falta para entender el tema (opcional)…"></textarea>
+          </div>
+
+          <div class="form-row-split">
+            <div class="fgroup">
+              <label class="flabel">Prioridad <span class="req">*</span></label>
+              <div class="btn-group" id="prioridad-group" data-field="prioridad">
+                <button type="button" class="btn-option" data-value="Alta">Alta</button>
+                <button type="button" class="btn-option" data-value="Media">Media</button>
+                <button type="button" class="btn-option" data-value="Baja">Baja</button>
+              </div>
+            </div>
+
+            <div class="fgroup">
+              <label class="flabel">¿Requiere decisión? <span class="req">*</span></label>
+              <div class="btn-group" id="requiereDecision-group" data-field="requiereDecision">
+                <button type="button" class="btn-option" data-value="Si">Sí</button>
+                <button type="button" class="btn-option" data-value="No">No</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="form-footer">
+          <button type="submit" class="btn-submit" id="btnSubmit">Enviar tema</button>
+        </div>
+
+      </form>
+
+      <!-- SUCCESS -->
+      <div class="success-screen" id="successScreen">
+        <div class="success-line"></div>
+        <h2>Tema registrado</h2>
+        <p>Se ha guardado correctamente y aparecerá en el orden del día del próximo lunes.</p>
+        <button class="btn-secondary" id="btnAnother">Enviar otro tema</button>
+      </div>
+
+    </div>
+
+    <!-- ══════════════ VISTA: REUNIÓN ══════════════ -->
+    <div id="view-reunion" style="display:none;">
+
+      <div class="reunion-topbar">
+        <div class="hero-desc" style="margin:0;">Temas pendientes y en seguimiento, agrupados por área. Los "Requiere decisión" y de prioridad alta salen primero.</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button type="button" class="refresh-btn" id="btnRecargarTemas">Recargar ↻</button>
+          <button type="button" class="btn-submit" id="btnGenerarActa" style="padding:11px 18px; font-size:11px;">Generar y enviar acta</button>
+        </div>
+      </div>
+
+      <div class="reunion-filtros">
+        <div class="filtro-group">
+          <label class="flabel">Filtrar por área</label>
+          <div class="btn-group" id="filtro-area">
+            <button type="button" class="btn-option btn-option-sm" data-value="Planificación">Planificación</button>
+            <button type="button" class="btn-option btn-option-sm" data-value="Oficina Técnica y Diseño">Oficina Técnica y Diseño</button>
+            <button type="button" class="btn-option btn-option-sm" data-value="Pedidos">Pedidos</button>
+            <button type="button" class="btn-option btn-option-sm" data-value="Postventa">Postventa</button>
+            <button type="button" class="btn-option btn-option-sm" data-value="Otros">Otros</button>
+          </div>
+        </div>
+        <div class="filtro-group">
+          <label class="flabel">Filtrar por obra</label>
+          <div class="btn-group" id="filtro-obra"></div>
+        </div>
+        <button type="button" class="filtro-limpiar" id="btnLimpiarFiltros">Limpiar filtros</button>
+      </div>
+
+      <div id="reunion-loading">Cargando temas…</div>
+      <div id="reunion-empty">No hay temas pendientes ni en seguimiento.</div>
+      <div id="reunion-areas"></div>
+
+    </div>
+
+  </main>
+
+</div>
+
+<!-- SENDING OVERLAY -->
+<div class="sending-overlay" id="sendingOverlay">
+  <div class="spinner"></div>
+  <div class="sending-text">Guardando…</div>
+</div>
+
+<script>
+// ─── CONFIGURACIÓN ──────────────────────────────────────────────────
+// LOGIN_URL: login centralizado (AuthUsuarios.gs).
+// REUNIONES_URL: GeneradorReuniones.gs — TODO, aún no existe. Necesita
+// tres acciones: submit_tema, listar_temas, guardar_acta.
+const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
+const REUNIONES_URL = 'https://script.google.com/macros/s/AKfycbyYwl0UdmNAgjUatzEP8_D0Yf3oa19SJrEqR6dkamGbhYldBgFRGSuQ4NWrXLlzV0PnRA/exec';
+const CLAVE_TOKEN_SESION = 'amal_token'; // compartida entre TODAS las herramientas (mismo origen github.io)
+
+const AREAS_ORDEN = ['Planificación', 'Oficina Técnica y Diseño', 'Pedidos', 'Postventa', 'Otros'];
+const OBRAS_ORDEN = ['1SV', '2SV', '1SB', '2SB', '3SB', '4SB', 'General'];
+const PRIORIDAD_RANK = { 'Alta': 0, 'Media': 1, 'Baja': 2 };
+
+let SESSION_USUARIO = null;              // usuario de login — se usa para comprobar permisos en el backend
+let SESSION_NOMBRE = null;               // nombre para mostrar y para el acta/email
+let SESSION_REUNIONES_EDITA_ACTA = false; // si puede entrar en la pestaña Reunión
+
+// Valor seleccionado en cada grupo de botones del formulario
+const btnGroupValues = { obra: null, area: null, prioridad: null, requiereDecision: null };
+
+function intentarSesionGuardada() {
+  const token = localStorage.getItem(CLAVE_TOKEN_SESION);
+  if (!token) return Promise.resolve(false);
+  return fetch(LOGIN_URL, {
+    method: 'POST',
+    body: JSON.stringify({ accion: 'login', token: token, herramienta: 'reuniones' })
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) {
+        localStorage.removeItem(CLAVE_TOKEN_SESION);
+        return false;
+      }
+      aplicarSesion(data);
+      return true;
+    })
+    .catch(() => false);
+}
+
+function aplicarSesion(data) {
+  SESSION_USUARIO = data.usuario;
+  SESSION_NOMBRE = data.nombre || data.usuario;
+  SESSION_REUNIONES_EDITA_ACTA = !!data.reuniones_edita_acta;
+  if (data.token) localStorage.setItem(CLAVE_TOKEN_SESION, data.token);
+}
+
+function cerrarSesion() {
+  localStorage.removeItem(CLAVE_TOKEN_SESION);
+  location.reload();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  intentarSesionGuardada().then(entrado => {
+    if (entrado) entrarApp();
+  });
+
+  function entrarApp() {
+    document.getElementById('hero-user-name').textContent = SESSION_NOMBRE;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-wrapper').style.display = 'block';
+    if (SESSION_REUNIONES_EDITA_ACTA) {
+      document.getElementById('tab-reunion').style.display = '';
+    }
+    sendHeight();
+  }
+
+  // ── LOGIN ──────────────────────────────────────────────
+  window.doLogin = function () {
+    const u = document.getElementById('login-user').value.trim();
+    const p = document.getElementById('login-pass').value;
+    const btn = document.getElementById('login-btn');
+    const errorEl = document.getElementById('login-error');
+    errorEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Comprobando…';
+
+    fetch(LOGIN_URL, {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'login', usuario: u, pass: p, herramienta: 'reuniones' })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data.ok) {
+          aplicarSesion(data);
+          entrarApp();
+        } else if (data.motivo === 'sin_acceso') {
+          errorEl.textContent = 'Tu usuario no tiene acceso al sistema de reuniones.';
+          errorEl.style.display = 'block';
+        } else {
+          errorEl.textContent = 'Usuario o contraseña incorrectos';
+          errorEl.style.display = 'block';
+        }
+      })
+      .catch(() => {
+        errorEl.textContent = 'No se pudo comprobar el acceso. Inténtalo de nuevo.';
+        errorEl.style.display = 'block';
+      })
+      .finally(() => {
+        btn.disabled = false;
+        btn.textContent = 'Acceder →';
+      });
+  };
+
+  ['login-user', 'login-pass'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
+  });
+
+  // ── PESTAÑAS DE VISTA ──────────────────────────────────
+  document.querySelectorAll('.view-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.view-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      const view = tab.dataset.view;
+      document.getElementById('view-formulario').style.display = view === 'formulario' ? 'block' : 'none';
+      document.getElementById('view-reunion').style.display = view === 'reunion' ? 'block' : 'none';
+      if (view === 'reunion') cargarTemas();
+      sendHeight();
+    });
+  });
+
+  // ── GRUPOS DE BOTONES (formulario) ──────────────────────
+  document.querySelectorAll('#temaForm .btn-group').forEach(group => {
+    group.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-option');
+      if (!btn) return;
+      group.querySelectorAll('.btn-option').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      btnGroupValues[group.dataset.field] = btn.dataset.value;
+      group.classList.remove('invalid');
+    });
+  });
+
+  function resetBtnGroups() {
+    document.querySelectorAll('#temaForm .btn-group').forEach(g => {
+      g.querySelectorAll('.btn-option').forEach(b => b.classList.remove('active'));
+      g.classList.remove('invalid');
+    });
+    Object.keys(btnGroupValues).forEach(k => btnGroupValues[k] = null);
+  }
+
+  // ── FORM SUBMIT (nuevo tema) ────────────────────────────
+  document.getElementById('temaForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    document.getElementById('sendingOverlay').classList.add('active');
+    document.getElementById('btnSubmit').disabled = true;
+
+    const payload = {
+      accion: 'submit_tema',
+      obra: btnGroupValues.obra,
+      area: btnGroupValues.area,
+      tema: document.getElementById('tema').value.trim(),
+      descripcion: document.getElementById('descripcion').value.trim(),
+      prioridad: btnGroupValues.prioridad,
+      requiereDecision: btnGroupValues.requiereDecision,
+      usuario: SESSION_USUARIO,
+      nombre: SESSION_NOMBRE
+    };
+
+    try {
+      const res = await fetch(REUNIONES_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || data.motivo || 'Error desconocido');
+
+      document.getElementById('sendingOverlay').classList.remove('active');
+      document.getElementById('temaForm').style.display = 'none';
+      document.getElementById('successScreen').style.display = 'block';
+      sendHeight();
+
+    } catch (err) {
+      document.getElementById('sendingOverlay').classList.remove('active');
+      document.getElementById('btnSubmit').disabled = false;
+      alert('No se pudo guardar el tema. Inténtalo de nuevo.\n\n' + err.message);
+    }
+  });
+
+  document.getElementById('btnAnother').addEventListener('click', () => {
+    document.getElementById('temaForm').reset();
+    resetBtnGroups();
+    document.getElementById('successScreen').style.display = 'none';
+    document.getElementById('temaForm').style.display = 'block';
+    document.getElementById('btnSubmit').disabled = false;
+    sendHeight();
+  });
+
+  function validateForm() {
+    let valid = true;
+    document.querySelectorAll('#temaForm .finput[required]').forEach(el => {
+      el.style.borderColor = '';
+      if (!el.value.trim()) {
+        el.style.borderColor = '#C0392B';
+        if (valid) el.focus();
+        valid = false;
+      }
+    });
+    ['obra', 'area', 'prioridad', 'requiereDecision'].forEach(field => {
+      const group = document.getElementById(field + '-group');
+      if (!btnGroupValues[field]) {
+        group.classList.add('invalid');
+        valid = false;
+      }
+    });
+    if (!valid) alert('Completa los campos obligatorios.');
+    return valid;
+  }
+
+  // ── VISTA REUNIÓN ────────────────────────────────────────
+  let temasActuales = [];       // último resultado de listar_temas, para filtrar sin recargar
+  const filtroAreas = new Set();
+  const filtroObras = new Set();
+
+  document.getElementById('btnRecargarTemas').addEventListener('click', cargarTemas);
+
+  document.getElementById('btnGenerarActa').addEventListener('click', generarActaManual);
+
+  async function generarActaManual() {
+    if (!confirm('¿Generar y enviar el acta de hoy? Incluye los temas actualizados hoy y se envía a los destinatarios reales del equipo — no es una prueba.')) return;
+
+    const btn = document.getElementById('btnGenerarActa');
+    btn.disabled = true;
+    btn.textContent = 'Generando…';
+
+    try {
+      const res = await fetch(REUNIONES_URL, {
+        method: 'POST',
+        body: JSON.stringify({ accion: 'generar_acta_manual', usuario: SESSION_USUARIO })
+      });
+      const data = await res.json();
+      if (!data.ok) {
+        if (data.motivo === 'sin_temas_hoy') {
+          alert('No hay temas actualizados hoy — no se ha enviado ningún acta.');
+        } else {
+          throw new Error(data.motivo || data.error || 'Error desconocido');
+        }
+      } else {
+        alert('Acta generada y enviada.');
+      }
+    } catch (err) {
+      alert('No se pudo generar el acta.\n\n' + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Generar y enviar acta';
+    }
+  }
+
+  document.getElementById('filtro-area').addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-option');
+    if (!btn) return;
+    toggleFiltro(filtroAreas, btn);
+    aplicarFiltrosYRenderizar();
+  });
+
+  document.getElementById('filtro-obra').addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-option');
+    if (!btn) return;
+    toggleFiltro(filtroObras, btn);
+    aplicarFiltrosYRenderizar();
+  });
+
+  document.getElementById('btnLimpiarFiltros').addEventListener('click', () => {
+    filtroAreas.clear();
+    filtroObras.clear();
+    document.querySelectorAll('#filtro-area .btn-option, #filtro-obra .btn-option').forEach(b => b.classList.remove('active'));
+    aplicarFiltrosYRenderizar();
+  });
+
+  function toggleFiltro(set, btn) {
+    const valor = btn.dataset.value;
+    if (set.has(valor)) { set.delete(valor); btn.classList.remove('active'); }
+    else { set.add(valor); btn.classList.add('active'); }
+  }
+
+  // Genera los botones de filtro de Obra según las obras presentes en los
+  // temas cargados (no tiene sentido mostrar un filtro de "4SB" si ahora
+  // mismo no hay ningún tema de 4SB pendiente).
+  function actualizarFiltroObras(temas) {
+    const presentes = new Set(temas.map(t => t.obra));
+    const cont = document.getElementById('filtro-obra');
+    cont.innerHTML = '';
+    OBRAS_ORDEN.filter(o => presentes.has(o)).forEach(obra => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn-option btn-option-sm' + (filtroObras.has(obra) ? ' active' : '');
+      btn.dataset.value = obra;
+      btn.textContent = obra;
+      cont.appendChild(btn);
+    });
+  }
+
+  function aplicarFiltrosYRenderizar() {
+    const filtrados = temasActuales.filter(t =>
+      (filtroAreas.size === 0 || filtroAreas.has(t.area)) &&
+      (filtroObras.size === 0 || filtroObras.has(t.obra))
+    );
+    renderTemas(filtrados);
+    document.getElementById('reunion-empty').style.display = filtrados.length === 0 ? 'block' : 'none';
+    document.getElementById('reunion-empty').textContent = temasActuales.length === 0
+      ? 'No hay temas pendientes ni en seguimiento.'
+      : 'Ningún tema coincide con los filtros elegidos.';
+    sendHeight();
+  }
+
+  async function cargarTemas() {
+    const loading = document.getElementById('reunion-loading');
+    const empty = document.getElementById('reunion-empty');
+    const areasEl = document.getElementById('reunion-areas');
+    empty.style.display = 'none';
+    areasEl.innerHTML = '';
+    loading.style.display = 'block';
+
+    try {
+      const res = await fetch(REUNIONES_URL, {
+        method: 'POST',
+        body: JSON.stringify({ accion: 'listar_temas', usuario: SESSION_USUARIO })
+      });
+      const data = await res.json();
+      loading.style.display = 'none';
+      if (!data.ok) throw new Error(data.motivo || 'Error desconocido');
+
+      temasActuales = data.temas || [];
+      actualizarFiltroObras(temasActuales);
+      aplicarFiltrosYRenderizar();
+    } catch (err) {
+      loading.style.display = 'none';
+      areasEl.innerHTML = '<div id="reunion-empty" style="display:block;">No se pudieron cargar los temas. ' + err.message + '</div>';
+    }
+    sendHeight();
+  }
+
+  function renderTemas(temas) {
+    const areasEl = document.getElementById('reunion-areas');
+    areasEl.innerHTML = '';
+
+    AREAS_ORDEN.forEach(area => {
+      const temasArea = temas
+        .filter(t => t.area === area)
+        .sort((a, b) => {
+          const reqA = a.requiereDecision === 'Si' ? 0 : 1;
+          const reqB = b.requiereDecision === 'Si' ? 0 : 1;
+          if (reqA !== reqB) return reqA - reqB;
+          const prA = PRIORIDAD_RANK[a.prioridad] ?? 3;
+          const prB = PRIORIDAD_RANK[b.prioridad] ?? 3;
+          return prA - prB;
+        });
+      if (temasArea.length === 0) return;
+
+      const block = document.createElement('div');
+      block.className = 'area-block';
+      block.innerHTML = '<div class="area-title">' + escapeHtml(area) + '</div>';
+      temasArea.forEach(t => block.appendChild(crearTarjetaTema(t)));
+      areasEl.appendChild(block);
+    });
+  }
+
+  function crearTarjetaTema(t) {
+    const card = document.createElement('div');
+    card.className = 'tema-card' + (t.estado === 'En seguimiento' ? ' seguimiento' : '');
+    card.dataset.id = t.id_tema;
+
+    const prioClase = t.prioridad === 'Alta' ? 'prio-alta' : (t.prioridad === 'Media' ? 'prio-media' : 'prio-baja');
+
+    card.innerHTML = `
+      <div class="tema-card-head">
+        <span class="tema-obra">${escapeHtml(t.obra)}</span>
+        <span class="tema-badge ${prioClase}">${escapeHtml(t.prioridad)}</span>
+        ${t.requiereDecision === 'Si' ? '<span class="tema-badge requiere">Requiere decisión</span>' : ''}
+        ${t.estado === 'En seguimiento' ? '<span class="tema-badge seguimiento-tag">En seguimiento</span>' : ''}
+      </div>
+      <div class="tema-titulo">${escapeHtml(t.tema)}</div>
+      ${t.descripcion ? '<div class="tema-desc">' + escapeHtml(t.descripcion) + '</div>' : ''}
+      <div class="tema-meta">Enviado por ${escapeHtml(t.nombre || t.usuario || '—')}</div>
+
+      <div class="form-row">
+        <div class="fgroup">
+          <label class="flabel">Decisión</label>
+          <textarea class="finput campo-decision" placeholder="¿Qué se decide sobre este tema?">${escapeHtml(t.decision || '')}</textarea>
+        </div>
+        <div class="form-row-split">
+          <div class="fgroup">
+            <label class="flabel">Responsable</label>
+            <input class="finput campo-responsable" type="text" value="${escapeAttr(t.responsable || '')}" placeholder="¿Quién lo lleva?">
+          </div>
+          <div class="fgroup">
+            <label class="flabel">Fecha objetivo</label>
+            <input class="finput campo-fecha" type="date" value="${escapeAttr(t.fechaObjetivo || '')}">
+          </div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">Estado</label>
+          <div class="btn-group campo-estado-group">
+            <button type="button" class="btn-option btn-option-sm${t.estado === 'Pendiente' ? ' active' : ''}" data-value="Pendiente">Pendiente</button>
+            <button type="button" class="btn-option btn-option-sm${t.estado === 'En seguimiento' ? ' active' : ''}" data-value="En seguimiento">En seguimiento</button>
+            <button type="button" class="btn-option btn-option-sm${t.estado === 'Tratado en reunión' ? ' active' : ''}" data-value="Tratado en reunión">Tratado en reunión</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-footer">
+        <button type="button" class="btn-danger btn-eliminar-tema">Eliminar tema</button>
+        <div style="display:flex; align-items:center; gap:16px;">
+          <span class="tema-guardado-msg">Guardado ✓</span>
+          <button type="button" class="btn-submit btn-guardar-tema">Guardar</button>
+        </div>
+      </div>
+    `;
+
+    // Estado por defecto si el tema es nuevo y aún no tiene ninguno marcado
+    const estadoGroup = card.querySelector('.campo-estado-group');
+    if (!estadoGroup.querySelector('.active')) {
+      const pendienteBtn = estadoGroup.querySelector('[data-value="Pendiente"]');
+      pendienteBtn.classList.add('active');
+    }
+    estadoGroup.addEventListener('click', (e) => {
+      const btn = e.target.closest('.btn-option');
+      if (!btn) return;
+      estadoGroup.querySelectorAll('.btn-option').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+
+    card.querySelector('.btn-guardar-tema').addEventListener('click', () => guardarTema(card, t));
+    card.querySelector('.btn-eliminar-tema').addEventListener('click', () => eliminarTema(card));
+
+    return card;
+  }
+
+  function eliminarTema(card) {
+    if (!confirm('¿Eliminar este tema? No se puede deshacer.')) return;
+    const btn = card.querySelector('.btn-eliminar-tema');
+    btn.disabled = true;
+    btn.textContent = 'Eliminando…';
+
+    fetch(REUNIONES_URL, {
+      method: 'POST',
+      body: JSON.stringify({ accion: 'borrar_tema', id_tema: card.dataset.id, usuario: SESSION_USUARIO })
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok) throw new Error(data.motivo || data.error || 'Error desconocido');
+        temasActuales = temasActuales.filter(x => x.id_tema !== card.dataset.id);
+        card.classList.add('saliendo');
+        setTimeout(() => { card.remove(); sendHeight(); }, 300);
+      })
+      .catch(err => {
+        btn.disabled = false;
+        btn.textContent = 'Eliminar tema';
+        alert('No se pudo eliminar. Inténtalo de nuevo.\n\n' + err.message);
+      });
+  }
+
+  async function guardarTema(card, temaOriginal) {
+    const btn = card.querySelector('.btn-guardar-tema');
+    const msg = card.querySelector('.tema-guardado-msg');
+    const estado = card.querySelector('.campo-estado-group .active').dataset.value;
+
+    const payload = {
+      accion: 'guardar_acta',
+      id_tema: card.dataset.id,
+      decision: card.querySelector('.campo-decision').value.trim(),
+      responsable: card.querySelector('.campo-responsable').value.trim(),
+      fechaObjetivo: card.querySelector('.campo-fecha').value,
+      estado: estado,
+      usuario: SESSION_USUARIO
+    };
+
+    btn.disabled = true;
+    btn.textContent = 'Guardando…';
+    msg.classList.remove('show');
+
+    try {
+      const res = await fetch(REUNIONES_URL, { method: 'POST', body: JSON.stringify(payload) });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.motivo || data.error || 'Error desconocido');
+
+      if (estado === 'Tratado en reunión') {
+        temasActuales = temasActuales.filter(x => x.id_tema !== card.dataset.id);
+        card.classList.add('saliendo');
+        setTimeout(() => {
+          card.remove();
+          sendHeight();
+        }, 300);
+      } else {
+        msg.classList.add('show');
+        btn.disabled = false;
+        btn.textContent = 'Guardar';
+        setTimeout(() => msg.classList.remove('show'), 2000);
+      }
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Guardar';
+      alert('No se pudo guardar. Inténtalo de nuevo.\n\n' + err.message);
+    }
+  }
+
+  function escapeHtml(str) {
+    return String(str || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function escapeAttr(str) {
+    return escapeHtml(str);
+  }
+
+  // ── IFRAME HEIGHT COMMUNICATION ───────────────────────
+  function sendHeight() {
+    window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, '*');
+  }
+  sendHeight();
+  new ResizeObserver(sendHeight).observe(document.body);
+
+});
+</script>
+</body>
+</html>
