@@ -1375,7 +1375,7 @@ function mostrarFormulario(tipo, modo) {
     html += `
     <div class="form-row">
       <div class="form-field"><label class="form-label">Fecha pago ${n}</label><input type="date" class="form-input" id="f-fecha_pago_${n}_raw" onchange="actualizarFechaPago(${n})"></div>
-      <div class="form-field ancho"><label class="form-label">Fecha en letras (ES / EN)</label><div class="form-input precargado" id="prev-fecha_pago_${n}" style="min-height:20px;">—</div></div>
+      <div class="form-field ancho"><label class="form-label">Fecha en letras (ES / EN)</label><div class="form-input precargado" id="prev-fecha_pago_${n}" style="min-height:20px;">${escapeHtml(val('fecha_pago_' + n)) ? escapeHtml(val('fecha_pago_' + n)) + '  /  ' + escapeHtml(val('fecha_pago_' + n + '_en')) : '—'}</div></div>
       <div class="form-field"><label class="form-label">Importe pago ${n} (€)</label><input type="text" inputmode="numeric" class="form-input importe ${esP('pago_' + n) ? 'precargado' : ''}" id="f-pago_${n}" value="${escapeHtml(val('pago_' + n) ? formatearMiles(parsearMiles(val('pago_' + n))) : '')}" oninput="comprobarSumaPagos()" onblur="formatearCampo(this)" onchange="formatearCampo(this)"></div>
     </div>`;
   });
