@@ -137,12 +137,20 @@
   .tema-guardado-msg.show { opacity: 1; }
   .tema-card.saliendo { opacity: 0; transform: translateY(-6px); transition: all .3s; }
 
-  .historico-card { border: 1px solid var(--border); border-top: none; padding: 18px 24px; }
-  .historico-card .tema-card-head { margin-bottom: 8px; }
-  .historico-card .tema-decision { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); margin-bottom: 4px; }
+  #historico-lista { border-top: 1px solid var(--border); }
+  .historico-card { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; border: 1px solid var(--border); border-top: none; padding: 12px 20px; }
+  .historico-card .tema-card-head { margin-bottom: 4px; }
+  .historico-card .tema-titulo { margin-bottom: 3px; }
+  .historico-card .tema-decision { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); margin-bottom: 2px; }
   .historico-card .tema-decision b { color: var(--black); font-weight: 400; }
-  .historico-card .tema-detalles { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--slate-gray); margin-bottom: 12px; }
-  .historico-card .form-footer { border-top: none; margin-top: 0; padding-top: 0; justify-content: flex-end; }
+  .historico-card .tema-detalles { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--slate-gray); }
+  .historico-card .historico-info { flex: 1 1 320px; min-width: 0; }
+  .historico-card .btn-reabrir-tema { flex-shrink: 0; }
+  .tema-badge.area-planificacion { color: #2C5F8A; border-color: #B8D4E8; background: #EAF3FA; }
+  .tema-badge.area-oficina { color: #6B4C9A; border-color: #D9C8EF; background: #F3ECFA; }
+  .tema-badge.area-pedidos { color: #1F7A5C; border-color: #B7E0CF; background: #E8F7F0; }
+  .tema-badge.area-postventa { color: #A83E5D; border-color: #F0C6D6; background: #FBEAF1; }
+  .tema-badge.area-otros { color: #5B5B5B; border-color: #D8D8D8; background: #F0F0F0; }
   .btn-danger { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; background: transparent; color: #C0392B; border: 1px solid #F0C4BC; padding: 12px 20px; cursor: pointer; transition: all .15s; }
   .btn-danger:hover { background: #FBE3E1; border-color: #C0392B; }
   .btn-danger:disabled { opacity: .55; cursor: not-allowed; }
@@ -887,6 +895,14 @@ document.addEventListener('DOMContentLoaded', () => {
     sendHeight();
   }
 
+  const AREA_CLASE = {
+    'Planificación': 'area-planificacion',
+    'Oficina Técnica y Diseño': 'area-oficina',
+    'Pedidos': 'area-pedidos',
+    'Postventa': 'area-postventa',
+    'Otros': 'area-otros'
+  };
+
   function crearTarjetaHistorico(t) {
     const card = document.createElement('div');
     card.className = 'historico-card';
@@ -897,17 +913,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (t.fechaObjetivo) detalles.push('Fecha objetivo: ' + escapeHtml(t.fechaObjetivo));
 
     card.innerHTML = `
-      <div class="tema-card-head">
-        <span class="tema-obra">${escapeHtml(t.obra)}</span>
-        <span class="tema-badge">${escapeHtml(t.area)}</span>
-        <span class="tema-badge">${escapeHtml(t.fechaReunion)}</span>
+      <div class="historico-info">
+        <div class="tema-card-head">
+          <span class="tema-obra">${escapeHtml(t.obra)}</span>
+          <span class="tema-badge ${AREA_CLASE[t.area] || 'area-otros'}">${escapeHtml(t.area)}</span>
+          <span class="tema-badge">${escapeHtml(t.fechaReunion)}</span>
+        </div>
+        <div class="tema-titulo">${escapeHtml(t.tema)}</div>
+        ${t.decision ? '<div class="tema-decision"><b>Decisión:</b> ' + escapeHtml(t.decision) + '</div>' : ''}
+        ${detalles.length ? '<div class="tema-detalles">' + detalles.join(' · ') + '</div>' : ''}
       </div>
-      <div class="tema-titulo">${escapeHtml(t.tema)}</div>
-      ${t.decision ? '<div class="tema-decision"><b>Decisión:</b> ' + escapeHtml(t.decision) + '</div>' : ''}
-      ${detalles.length ? '<div class="tema-detalles">' + detalles.join(' · ') + '</div>' : ''}
-      <div class="form-footer">
-        <button type="button" class="btn-secondary btn-reabrir-tema">Volver a tratar</button>
-      </div>
+      <button type="button" class="btn-secondary btn-reabrir-tema">Volver a tratar</button>
     `;
 
     card.querySelector('.btn-reabrir-tema').addEventListener('click', () => reabrirTema(card));
