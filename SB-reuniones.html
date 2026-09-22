@@ -100,6 +100,7 @@
   .acciones-topbar .refresh-btn:last-child { border-right: none; }
   .refresh-btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 11px 18px; background: transparent; color: var(--slate-gray); border: none; transition: all .15s; }
   .refresh-btn:hover { background: var(--off-white); color: var(--black); }
+  .refresh-btn.activo-historico { background: var(--black); color: white; }
   .check-seguimiento { display: inline-flex; align-items: center; gap: 10px; font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); cursor: pointer; user-select: none; }
   .check-seguimiento input { position: absolute; opacity: 0; width: 0; height: 0; }
   .check-box { width: 18px; height: 18px; border: 1px solid var(--border); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s; position: relative; }
@@ -537,7 +538,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const filtroAreas = new Set();
   const filtroObras = new Set();
 
-  document.getElementById('btnRecargarTemas').addEventListener('click', cargarTemas);
+  document.getElementById('btnRecargarTemas').addEventListener('click', () => {
+    const enHistorico = document.getElementById('panel-historico').style.display !== 'none';
+    if (enHistorico) cargarHistorico(true); else cargarTemas();
+  });
 
   document.getElementById('btnGenerarActa').addEventListener('click', generarActaManual);
 
@@ -816,39 +820,65 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── HISTÓRICO ────────────────────────────────────────
   document.getElementById('btnHistorico').addEventListener('click', () => {
-    document.getElementById('panel-temas').style.display = 'none';
-    document.getElementById('panel-historico').style.display = 'block';
-    cargarHistorico();
+    const yaAbierto = document.getElementById('panel-historico').style.display !== 'none';
+    if (yaAbierto) {
+      volverDeHistorico();
+    } else {
+      document.getElementById('panel-temas').style.display = 'none';
+      document.getElementById('panel-historico').style.display = 'block';
+      document.getElementById('btnHistorico').classList.add('activo-historico');
+      cargarHistorico(true);
+    }
   });
 
-  document.getElementById('btnVolverDeHistorico').addEventListener('click', () => {
+  document.getElementById('btnVolverDeHistorico').addEventListener('click', volverDeHistorico);
+
+  function volverDeHistorico() {
     document.getElementById('panel-historico').style.display = 'none';
     document.getElementById('panel-temas').style.display = 'block';
+    document.getElementById('btnHistorico').classList.remove('activo-historico');
     sendHeight();
-  });
+  }
 
-  async function cargarHistorico() {
+  let historicoOffset = 0;
+  const HISTORICO_PAGINA = 25;
+
+  async function cargarHistorico(reiniciar) {
+    if (reiniciar) historicoOffset = 0;
     const loading = document.getElementById('historico-loading');
     const empty = document.getElementById('historico-empty');
     const lista = document.getElementById('historico-lista');
     empty.style.display = 'none';
-    lista.innerHTML = '';
+    if (reiniciar) lista.innerHTML = '';
+    document.getElementById('btnCargarMasHistorico')?.remove();
     loading.style.display = 'block';
 
     try {
       const res = await fetch(REUNIONES_URL, {
         method: 'POST',
-        body: JSON.stringify({ accion: 'listar_historico', usuario: SESSION_USUARIO })
+        body: JSON.stringify({ accion: 'listar_historico', usuario: SESSION_USUARIO, offset: historicoOffset, limit: HISTORICO_PAGINA })
       });
       const data = await res.json();
       loading.style.display = 'none';
       if (!data.ok) throw new Error(data.motivo || 'Error desconocido');
 
       const temas = data.temas || [];
-      if (temas.length === 0) {
+      if (temas.length === 0 && historicoOffset === 0) {
         empty.style.display = 'block';
       } else {
         temas.forEach(t => lista.appendChild(crearTarjetaHistorico(t)));
+        historicoOffset += temas.length;
+        if (data.hasMore) {
+          const btnMas = document.createElement('button');
+          btnMas.type = 'button';
+          btnMas.id = 'btnCargarMasHistorico';
+          btnMas.className = 'btn-secondary';
+          btnMas.style.margin = '20px auto 0';
+          btnMas.style.display = 'block';
+          btnMas.textContent = 'Cargar 25 más (' + (data.total - historicoOffset) + ' restantes)';
+          btnMas.addEventListener('click', () => cargarHistorico(false));
+          lista.after(btnMas);
+        }
       }
     } catch (err) {
       loading.style.display = 'none';
@@ -876,7 +906,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ${t.decision ? '<div class="tema-decision"><b>Decisión:</b> ' + escapeHtml(t.decision) + '</div>' : ''}
       ${detalles.length ? '<div class="tema-detalles">' + detalles.join(' · ') + '</div>' : ''}
       <div class="form-footer">
-        <button type="button" class="btn-secondary btn-reabrir-tema">Volver a reunión</button>
+        <button type="button" class="btn-secondary btn-reabrir-tema">Volver a tratar</button>
       </div>
     `;
 
@@ -902,7 +932,7 @@ document.addEventListener('DOMContentLoaded', () => {
       temasActuales = []; // fuerza a recargar la lista de temas la próxima vez que se entre en Reunión
     } catch (err) {
       btn.disabled = false;
-      btn.textContent = 'Volver a reunión';
+      btn.textContent = 'Volver a tratar';
       alert('No se pudo reabrir el tema.\n\n' + err.message);
     }
   }
