@@ -594,7 +594,7 @@ function renderEstado(data) {
       <span class="estado-badge ${badgeClase}">${badgeTexto}</span>
       <div class="estado-linea">${lineas}</div>
       <div class="estado-actions">${acciones}</div>
-      ${docEditado ? '<div class="catalogo-note" style="margin-top:14px; margin-bottom:0; border-left-color:#c0392b;">⚠️ El documento de ' + (activa.tipo === 'reserva' ? 'esta reserva' : 'esta compraventa') + ' se ha editado a mano en Google Docs. Si entras en "Editar", usa "Guardar sin generar PDF" para corregir datos sin perder esa edición — el botón que regenera el PDF desde la plantilla te avisará también antes de dejarte continuar.</div>' : ''}
+      ${docEditado ? '<div class="catalogo-note" style="margin-top:14px; margin-bottom:0; border-left-color:#c0392b;">⚠️ El documento de ' + (activa.tipo === 'reserva' ? 'esta reserva' : 'esta compraventa') + ' se ha editado a mano en Google Docs. Si entras en "Editar ' + (activa.tipo === 'reserva' ? 'reserva' : 'compraventa') + '", usa "Guardar sin generar PDF" para corregir datos en la base de datos sin perder esa edición. Tendrás que cambiar los datos también volviendo a editar el Docs y cambiándolos allí, después regenera el PDF.</div>' : ''}
     </div>
     ${renderDocumentosBlock(data.documentos)}
     ${renderFirmaBlock(activa)}`;
@@ -887,7 +887,7 @@ function renderDocumentosBlock(documentos) {
       <div class="form-section-label" style="margin-top:0;">Documentos</div>
       <div class="docs-list">${contenido}</div>
       <div id="regenerar-msg"></div>
-      ${hayEditado ? '<div class="catalogo-note" style="margin-top:12px; margin-bottom:0; border-left-color:#c0392b;">⚠️ Al menos uno de los documentos de esta vivienda se ha editado a mano en Google Docs. Mientras eso sea así, no uses "Editar reserva"/"Editar compraventa" para ese documento — volvería a generar el PDF desde la plantilla y se perdería la edición manual. Usa "Guardar sin generar PDF" si solo necesitas corregir un dato, o "Regenerar" (arriba) para volver a exportar el Doc tal como está ahora.</div>' : ''}
+      ${hayEditado ? '<div class="catalogo-note" style="margin-top:12px; margin-bottom:0; border-left-color:#c0392b;">⚠️ Al menos uno de los documentos de esta vivienda se ha editado a mano en Google Docs. Mientras eso sea así, no uses "Editar reserva"/"Editar compraventa" para ese documento — volvería a generar el PDF desde la plantilla y se perdería la edición manual. Usa "Guardar sin generar PDF" si solo necesitas corregir un dato en la base de datos, o "Regenerar" para volver a exportar el Doc tal como está ahora.</div>' : ''}
     </div>`;
 }
 
