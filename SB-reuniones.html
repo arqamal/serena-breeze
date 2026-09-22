@@ -135,6 +135,13 @@
   .tema-guardado-msg { font-family: 'Roboto', sans-serif; font-size: 11px; color: #2d7a2d; letter-spacing: .5px; text-transform: uppercase; opacity: 0; transition: opacity .3s; }
   .tema-guardado-msg.show { opacity: 1; }
   .tema-card.saliendo { opacity: 0; transform: translateY(-6px); transition: all .3s; }
+
+  .historico-card { border: 1px solid var(--border); border-top: none; padding: 18px 24px; }
+  .historico-card .tema-card-head { margin-bottom: 8px; }
+  .historico-card .tema-decision { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); margin-bottom: 4px; }
+  .historico-card .tema-decision b { color: var(--black); font-weight: 400; }
+  .historico-card .tema-detalles { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--slate-gray); margin-bottom: 12px; }
+  .historico-card .form-footer { border-top: none; margin-top: 0; padding-top: 0; justify-content: flex-end; }
   .btn-danger { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; background: transparent; color: #C0392B; border: 1px solid #F0C4BC; padding: 12px 20px; cursor: pointer; transition: all .15s; }
   .btn-danger:hover { background: #FBE3E1; border-color: #C0392B; }
   .btn-danger:disabled { opacity: .55; cursor: not-allowed; }
@@ -180,6 +187,7 @@
       </div>
       <div class="acciones-topbar">
         <button type="button" class="refresh-btn" id="btnRecargarTemas" style="display:none;">↻ Recargar</button>
+        <button type="button" class="refresh-btn" id="btnHistorico" style="display:none;">Histórico</button>
         <button type="button" class="refresh-btn" id="btnGenerarActa" style="display:none;">Generar y enviar acta</button>
         <button type="button" class="refresh-btn" onclick="cerrarSesion()">Cerrar sesión</button>
       </div>
@@ -267,27 +275,38 @@
     <!-- ══════════════ VISTA: REUNIÓN ══════════════ -->
     <div id="view-reunion" style="display:none;">
 
-      <div class="reunion-filtros">
-        <div class="filtro-group">
-          <label class="flabel">Filtrar por área</label>
-          <div class="btn-group" id="filtro-area">
-            <button type="button" class="btn-option btn-option-sm" data-value="Planificación">Planificación</button>
-            <button type="button" class="btn-option btn-option-sm" data-value="Oficina Técnica y Diseño">Oficina Técnica y Diseño</button>
-            <button type="button" class="btn-option btn-option-sm" data-value="Pedidos">Pedidos</button>
-            <button type="button" class="btn-option btn-option-sm" data-value="Postventa">Postventa</button>
-            <button type="button" class="btn-option btn-option-sm" data-value="Otros">Otros</button>
+      <div id="panel-temas">
+        <div class="reunion-filtros">
+          <div class="filtro-group">
+            <label class="flabel">Filtrar por área</label>
+            <div class="btn-group" id="filtro-area">
+              <button type="button" class="btn-option btn-option-sm" data-value="Planificación">Planificación</button>
+              <button type="button" class="btn-option btn-option-sm" data-value="Oficina Técnica y Diseño">Oficina Técnica y Diseño</button>
+              <button type="button" class="btn-option btn-option-sm" data-value="Pedidos">Pedidos</button>
+              <button type="button" class="btn-option btn-option-sm" data-value="Postventa">Postventa</button>
+              <button type="button" class="btn-option btn-option-sm" data-value="Otros">Otros</button>
+            </div>
           </div>
+          <div class="filtro-group">
+            <label class="flabel">Filtrar por obra</label>
+            <div class="btn-group" id="filtro-obra"></div>
+          </div>
+          <button type="button" class="filtro-limpiar" id="btnLimpiarFiltros">Limpiar filtros</button>
         </div>
-        <div class="filtro-group">
-          <label class="flabel">Filtrar por obra</label>
-          <div class="btn-group" id="filtro-obra"></div>
-        </div>
-        <button type="button" class="filtro-limpiar" id="btnLimpiarFiltros">Limpiar filtros</button>
+
+        <div id="reunion-loading">Cargando temas…</div>
+        <div id="reunion-empty">No hay temas pendientes ni en seguimiento.</div>
+        <div id="reunion-areas"></div>
       </div>
 
-      <div id="reunion-loading">Cargando temas…</div>
-      <div id="reunion-empty">No hay temas pendientes ni en seguimiento.</div>
-      <div id="reunion-areas"></div>
+      <div id="panel-historico" style="display:none;">
+        <div class="reunion-filtros" style="border-bottom:none; padding-bottom:0;">
+          <button type="button" class="filtro-limpiar" id="btnVolverDeHistorico">← Volver a temas</button>
+        </div>
+        <div id="historico-loading" style="display:none;">Cargando histórico…</div>
+        <div id="historico-empty" style="display:none;">Todavía no hay ningún tema tratado en reunión.</div>
+        <div id="historico-lista"></div>
+      </div>
 
     </div>
 
@@ -419,6 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('view-formulario').style.display = view === 'formulario' ? 'block' : 'none';
       document.getElementById('view-reunion').style.display = view === 'reunion' ? 'block' : 'none';
       document.getElementById('btnRecargarTemas').style.display = view === 'reunion' ? '' : 'none';
+      document.getElementById('btnHistorico').style.display = view === 'reunion' ? '' : 'none';
       document.getElementById('btnGenerarActa').style.display = view === 'reunion' ? '' : 'none';
       if (view === 'reunion') cargarTemas();
       sendHeight();
@@ -792,6 +812,99 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   function escapeAttr(str) {
     return escapeHtml(str);
+  }
+
+  // ── HISTÓRICO ────────────────────────────────────────
+  document.getElementById('btnHistorico').addEventListener('click', () => {
+    document.getElementById('panel-temas').style.display = 'none';
+    document.getElementById('panel-historico').style.display = 'block';
+    cargarHistorico();
+  });
+
+  document.getElementById('btnVolverDeHistorico').addEventListener('click', () => {
+    document.getElementById('panel-historico').style.display = 'none';
+    document.getElementById('panel-temas').style.display = 'block';
+    sendHeight();
+  });
+
+  async function cargarHistorico() {
+    const loading = document.getElementById('historico-loading');
+    const empty = document.getElementById('historico-empty');
+    const lista = document.getElementById('historico-lista');
+    empty.style.display = 'none';
+    lista.innerHTML = '';
+    loading.style.display = 'block';
+
+    try {
+      const res = await fetch(REUNIONES_URL, {
+        method: 'POST',
+        body: JSON.stringify({ accion: 'listar_historico', usuario: SESSION_USUARIO })
+      });
+      const data = await res.json();
+      loading.style.display = 'none';
+      if (!data.ok) throw new Error(data.motivo || 'Error desconocido');
+
+      const temas = data.temas || [];
+      if (temas.length === 0) {
+        empty.style.display = 'block';
+      } else {
+        temas.forEach(t => lista.appendChild(crearTarjetaHistorico(t)));
+      }
+    } catch (err) {
+      loading.style.display = 'none';
+      lista.innerHTML = '<div id="historico-empty" style="display:block;">No se pudo cargar el histórico. ' + err.message + '</div>';
+    }
+    sendHeight();
+  }
+
+  function crearTarjetaHistorico(t) {
+    const card = document.createElement('div');
+    card.className = 'historico-card';
+    card.dataset.id = t.id_tema;
+
+    const detalles = [];
+    if (t.responsable) detalles.push('Responsable: ' + escapeHtml(t.responsable));
+    if (t.fechaObjetivo) detalles.push('Fecha objetivo: ' + escapeHtml(t.fechaObjetivo));
+
+    card.innerHTML = `
+      <div class="tema-card-head">
+        <span class="tema-obra">${escapeHtml(t.obra)}</span>
+        <span class="tema-badge">${escapeHtml(t.area)}</span>
+        <span class="tema-badge">${escapeHtml(t.fechaReunion)}</span>
+      </div>
+      <div class="tema-titulo">${escapeHtml(t.tema)}</div>
+      ${t.decision ? '<div class="tema-decision"><b>Decisión:</b> ' + escapeHtml(t.decision) + '</div>' : ''}
+      ${detalles.length ? '<div class="tema-detalles">' + detalles.join(' · ') + '</div>' : ''}
+      <div class="form-footer">
+        <button type="button" class="btn-secondary btn-reabrir-tema">Volver a reunión</button>
+      </div>
+    `;
+
+    card.querySelector('.btn-reabrir-tema').addEventListener('click', () => reabrirTema(card));
+    return card;
+  }
+
+  async function reabrirTema(card) {
+    const btn = card.querySelector('.btn-reabrir-tema');
+    btn.disabled = true;
+    btn.textContent = 'Reabriendo…';
+
+    try {
+      const res = await fetch(REUNIONES_URL, {
+        method: 'POST',
+        body: JSON.stringify({ accion: 'reabrir_tema', id_tema: card.dataset.id, usuario: SESSION_USUARIO })
+      });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.motivo || data.error || 'Error desconocido');
+
+      card.classList.add('saliendo');
+      setTimeout(() => { card.remove(); sendHeight(); }, 300);
+      temasActuales = []; // fuerza a recargar la lista de temas la próxima vez que se entre en Reunión
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Volver a reunión';
+      alert('No se pudo reabrir el tema.\n\n' + err.message);
+    }
   }
 
   // ── IFRAME HEIGHT COMMUNICATION ───────────────────────
