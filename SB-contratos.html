@@ -92,6 +92,7 @@
   .docs-row-nombre { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--black); }
   .docs-row-acciones { display: flex; gap: 6px; flex-wrap: nowrap; }
   .docs-row-acciones .btn { padding: 6px 10px; font-size: 10px; letter-spacing: 1px; white-space: nowrap; }
+  .docs-row-acciones .btn.doc-editado { color: #c0392b; border-color: #c0392b; font-weight: 600; }
   .estado-badge { display: inline-block; font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; margin-bottom: 10px; line-height: 1.4; box-sizing: border-box; vertical-align: middle; }
   .estado-badge.libre { background: #f0faf0; color: #2d7a2d; border: 1px solid #b8e0b8; }
   .estado-badge.reserva { background: #FEF3EA; color: #E87722; border: 1px solid #F5C89A; }
@@ -558,6 +559,13 @@ function renderEstado(data) {
   const activa = data.activa;
   let badgeClase, badgeTexto, lineas, acciones;
 
+  // Si el Doc del evento activo se editó a mano, "Editar" queda
+  // deshabilitado (regenerar desde la plantilla lo destruiría) — el
+  // resto de acciones (generar compraventa, cancelar) no le afectan,
+  // no tocan ese Doc.
+  const docRelevante = activa ? (activa.tipo === 'reserva' ? data.documentos.reserva : data.documentos.contrato) : null;
+  const docEditado = !!(docRelevante && docRelevante.editado);
+
   if (!activa) {
     badgeClase = 'libre'; badgeTexto = 'Vivienda libre';
     lineas = 'No hay ninguna reserva ni compraventa activa para esta vivienda.';
@@ -586,6 +594,7 @@ function renderEstado(data) {
       <span class="estado-badge ${badgeClase}">${badgeTexto}</span>
       <div class="estado-linea">${lineas}</div>
       <div class="estado-actions">${acciones}</div>
+      ${docEditado ? '<div class="catalogo-note" style="margin-top:14px; margin-bottom:0; border-left-color:#c0392b;">⚠️ El documento de ' + (activa.tipo === 'reserva' ? 'esta reserva' : 'esta compraventa') + ' se ha editado a mano en Google Docs. Si entras en "Editar", usa "Guardar sin generar PDF" para corregir datos sin perder esa edición — el botón que regenera el PDF desde la plantilla te avisará también antes de dejarte continuar.</div>' : ''}
     </div>
     ${renderDocumentosBlock(data.documentos)}
     ${renderFirmaBlock(activa)}`;
@@ -859,7 +868,8 @@ function renderDocumentosBlock(documentos) {
     if (!doc || !doc.pdf_url) return '';
     let accionesPrincipal = `<a class="btn btn-link" href="${doc.pdf_url}" target="_blank">Abrir</a>`;
     if (doc.doc_url) {
-      accionesPrincipal += `<a class="btn btn-link" href="${doc.doc_url}" target="_blank">Doc editable</a>`;
+      const etiquetaDoc = doc.editado ? 'Doc editable ⚠️ (editado a mano)' : 'Doc editable';
+      accionesPrincipal += `<a class="btn btn-link ${doc.editado ? 'doc-editado' : ''}" href="${doc.doc_url}" target="_blank">${etiquetaDoc}</a>`;
       accionesPrincipal += `<button class="btn btn-secondary" onclick="regenerarPdfDesdeDoc('${tipoEvento}')">Regenerar</button>`;
     }
     let html = filaDoc('PDF de ' + etiqueta, doc.pdf_url, accionesPrincipal);
@@ -871,11 +881,13 @@ function renderDocumentosBlock(documentos) {
   };
   const contenido = bloque(documentos.reserva, 'reserva', 'reserva') + bloque(documentos.contrato, 'compraventa', 'compraventa');
   if (!contenido) return '';
+  const hayEditado = (documentos.reserva && documentos.reserva.editado) || (documentos.contrato && documentos.contrato.editado);
   return `
     <div class="estado-card" style="margin-top:16px;">
       <div class="form-section-label" style="margin-top:0;">Documentos</div>
       <div class="docs-list">${contenido}</div>
       <div id="regenerar-msg"></div>
+      ${hayEditado ? '<div class="catalogo-note" style="margin-top:12px; margin-bottom:0; border-left-color:#c0392b;">⚠️ Al menos uno de los documentos de esta vivienda se ha editado a mano en Google Docs. Mientras eso sea así, no uses "Editar reserva"/"Editar compraventa" para ese documento — volvería a generar el PDF desde la plantilla y se perdería la edición manual. Usa "Guardar sin generar PDF" si solo necesitas corregir un dato, o "Regenerar" (arriba) para volver a exportar el Doc tal como está ahora.</div>' : ''}
     </div>`;
 }
 
@@ -1330,10 +1342,20 @@ function mostrarFormulario(tipo, modo) {
   const val = k => (precargados[k] !== undefined && precargados[k] !== null) ? precargados[k] : '';
   const esP = k => val(k) !== '';
 
+  // Si el Doc de este evento se editó a mano, avisar aquí y frenar el
+  // botón que regenera el PDF (no la entrada al formulario en sí).
+  const docInfo = ULTIMA_PRECARGA && ULTIMA_PRECARGA.documentos
+    ? (tipo === 'reserva' ? ULTIMA_PRECARGA.documentos.reserva : ULTIMA_PRECARGA.documentos.contrato)
+    : null;
+  const docEditadoAvisoModo = (modo === 'editar' && docInfo && docInfo.editado);
+
   const titulo = modo === 'editar'
     ? (tipo === 'reserva' ? 'Editar reserva' : 'Editar compraventa')
     : (tipo === 'reserva' ? 'Nueva reserva' : 'Generar compraventa');
   let html = `<div class="sec-title">${titulo} — ${escapeHtml(SESSION_COD_VIV)}</div>`;
+  if (docEditadoAvisoModo) {
+    html += `<div class="catalogo-note" style="border-left-color:#c0392b; margin-top:0;">⚠️ El Doc de ${tipo === 'reserva' ? 'esta reserva' : 'esta compraventa'} se ha editado a mano en Google Docs. Si le das a "Guardar cambios y regenerar PDF" abajo, se te pedirá confirmar porque se perdería esa edición. Si solo necesitas corregir un dato del Sheet, usa "Guardar sin generar PDF" en su lugar.</div>`;
+  }
 
   // ── Fecha del documento: editable, hoy por defecto ──
   const claveFechaHoy = tipo === 'reserva' ? 'fecha_hoy_r' : 'fecha_hoy_c';
@@ -1492,6 +1514,7 @@ function mostrarFormulario(tipo, modo) {
     <div id="form-msg"></div>
     <div class="estado-actions">
       <button class="btn btn-primary" id="btn-generar" onclick="enviarFormulario('${tipo}','${modo}')">${modo === 'editar' ? 'Guardar cambios y regenerar PDF' : 'Generar PDF'}</button>
+      ${modo === 'editar' ? `<button class="btn btn-secondary" onclick="guardarSinGenerarPdf('${tipo}')">Guardar sin generar PDF</button>` : ''}
       <button class="btn btn-secondary" onclick="renderEstado(ULTIMA_PRECARGA)">Cancelar</button>
     </div>`;
 
@@ -1499,8 +1522,10 @@ function mostrarFormulario(tipo, modo) {
   if (tipo === 'reserva' && !esP('fecha_pago_1')) actualizarFechaPago1DesdeReserva();
 }
 
-function enviarFormulario(tipo, modo) {
-  modo = modo || 'nuevo';
+// Lee todos los campos del formulario tal como están ahora mismo —
+// compartido entre "Generar/Guardar y regenerar PDF" y "Guardar sin
+// generar PDF", para no duplicar esta lógica en dos sitios.
+function recogerCamposFormulario(tipo) {
   const campos = {};
 
   // fecha del documento
@@ -1572,6 +1597,52 @@ function enviarFormulario(tipo, modo) {
     const el = document.getElementById('fp-' + key);
     if (el) campos[key] = el.value.trim();
   });
+
+  return campos;
+}
+
+// "Guardar sin generar PDF" — actualiza el Sheet con lo que haya en el
+// formulario, pero NO toca el PDF ni el Doc. Solo tiene sentido en modo
+// 'editar' (hace falta una fila ya existente de ese tipo).
+function guardarSinGenerarPdf(tipo) {
+  const campos = recogerCamposFormulario(tipo);
+  const btn = document.getElementById('btn-generar');
+  btn.disabled = true;
+  document.getElementById('form-msg').innerHTML = `<div class="msg info">Guardando…</div>`;
+  llamarBackend({
+    accion: 'guardar_sin_pdf',
+    promocion: SESSION_PROMO,
+    cod_viv: SESSION_COD_VIV,
+    tipo_evento: tipo,
+    usuario: SESSION_USUARIO,
+    campos: campos
+  })
+    .then(data => {
+      btn.disabled = false;
+      if (!data.ok) {
+        document.getElementById('form-msg').innerHTML = `<div class="msg error">${escapeHtml(data.error || 'No se pudo guardar.')}</div>`;
+        return;
+      }
+      document.getElementById('form-msg').innerHTML = `<div class="msg success">Datos guardados, sin tocar el PDF ni el Doc.</div>`;
+      setTimeout(cargarEstado, 1200);
+    })
+    .catch(() => {
+      btn.disabled = false;
+      document.getElementById('form-msg').innerHTML = `<div class="msg error">No se pudo conectar con el servidor. Inténtalo de nuevo.</div>`;
+    });
+}
+
+function enviarFormulario(tipo, modo) {
+  modo = modo || 'nuevo';
+  if (modo === 'editar') {
+    const docInfo = ULTIMA_PRECARGA && ULTIMA_PRECARGA.documentos
+      ? (tipo === 'reserva' ? ULTIMA_PRECARGA.documentos.reserva : ULTIMA_PRECARGA.documentos.contrato)
+      : null;
+    if (docInfo && docInfo.editado) {
+      if (!confirm('El Doc de ' + (tipo === 'reserva' ? 'esta reserva' : 'esta compraventa') + ' se ha editado a mano. Si continúas, se regenera el PDF desde la plantilla y esa edición se pierde. ¿Seguro que quieres continuar?')) return;
+    }
+  }
+  const campos = recogerCamposFormulario(tipo);
 
   const btn = document.getElementById('btn-generar');
   btn.disabled = true;
