@@ -40,19 +40,16 @@
   /* ── APP ── */
   #app-wrapper { display: none; }
 
-  .hero { padding: 56px 48px 32px; display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
-  .hero-eyebrow { font-family: 'Roboto', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 16px; }
-  .hero h1 { font-family: 'Oswald', sans-serif; font-size: clamp(28px, 4vw, 44px); font-weight: 400; text-transform: uppercase; color: var(--black); line-height: 1.05; margin-bottom: 14px; }
-  .hero-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.8; max-width: 480px; }
-  .hero-user { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 1px; color: var(--mid); white-space: nowrap; padding-top: 8px; }
-  .hero-user span { color: var(--text); font-weight: 400; }
+  .sec-eyebrow { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 10px; }
+  .sec-title { font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 400; text-transform: uppercase; color: var(--black); margin-bottom: 12px; letter-spacing: 1px; }
+  .sec-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.7; max-width: 640px; margin-bottom: 28px; }
 
-  main { max-width: 900px; margin: 0 auto; padding: 40px 48px 100px; }
+  main { max-width: 1080px; margin: 0 auto; padding: 40px 48px 80px; }
 
   /* ── PESTAÑAS DE VISTA (Formulario / Reunión) ── */
   .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
   .view-tabs { display: flex; border: 1px solid var(--border); width: fit-content; }
-  .view-tab { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; padding: 14px 32px; cursor: pointer; background: var(--white); color: var(--slate-gray); border: none; border-right: 1px solid var(--border); transition: all .15s; }
+  .view-tab { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; padding: 12px 28px; cursor: pointer; background: var(--white); color: var(--slate-gray); border: none; border-right: 1px solid var(--border); transition: all .15s; }
   .view-tab:last-child { border-right: none; }
   .view-tab.active { background: var(--black); color: white; }
   .view-tab:hover:not(.active) { background: var(--off-white); color: var(--text); }
@@ -136,8 +133,7 @@
   .btn-danger:disabled { opacity: .55; cursor: not-allowed; }
 
   @media (max-width: 768px) {
-    .hero, main { padding-left: 24px; padding-right: 24px; }
-    .hero { flex-direction: column; }
+    main { padding-left: 24px; padding-right: 24px; }
   }
 </style>
 </head>
@@ -164,26 +160,23 @@
 <!-- ── APP ── -->
 <div id="app-wrapper">
 
-  <div class="hero">
-    <div>
-      <div class="hero-eyebrow">Uso interno — Amal Inmobiliaria</div>
-      <h1>Reuniones</h1>
-      <p class="hero-desc">Registra temas para la reunión semanal y, durante la reunión, trátalos por área.</p>
-    </div>
-    <div class="hero-user">Conectado como<br><span id="hero-user-name">—</span><br><a href="#" onclick="cerrarSesion(); return false;" style="font-family:'Roboto',sans-serif; font-size:11px; color:inherit; opacity:.7; text-decoration:none;">Cerrar sesión</a></div>
-  </div>
-
   <main>
+
+    <div class="sec-eyebrow">Serena Breeze · Reuniones</div>
+    <div class="sec-title">Reuniones</div>
+    <div class="sec-desc">Registra temas para la reunión semanal y, durante la reunión, trátalos por área.</div>
 
     <div class="topbar">
       <div class="view-tabs">
         <button type="button" class="view-tab active" id="tab-formulario" data-view="formulario">Nuevo tema</button>
         <button type="button" class="view-tab" id="tab-reunion" data-view="reunion" style="display:none;">Reunión</button>
       </div>
-      <div class="acciones-topbar" id="acciones-reunion" style="display:none;">
-        <button type="button" class="refresh-btn" id="btnRecargarTemas">Recargar ↻</button>
-        <button type="button" class="refresh-btn" id="btnGenerarActa">Generar y enviar acta</button>
+      <div class="acciones-topbar">
+        <button type="button" class="refresh-btn" id="btnRecargarTemas" style="display:none;">↻ Recargar</button>
+        <button type="button" class="refresh-btn" id="btnGenerarActa" style="display:none;">Generar y enviar acta</button>
+        <button type="button" class="refresh-btn" onclick="cerrarSesion()">Cerrar sesión</button>
       </div>
+
     </div>
 
     <!-- ══════════════ VISTA: FORMULARIO ══════════════ -->
@@ -359,7 +352,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   function entrarApp() {
-    document.getElementById('hero-user-name').textContent = SESSION_NOMBRE;
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-wrapper').style.display = 'block';
     if (SESSION_REUNIONES_EDITA_ACTA) {
@@ -419,7 +411,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = tab.dataset.view;
       document.getElementById('view-formulario').style.display = view === 'formulario' ? 'block' : 'none';
       document.getElementById('view-reunion').style.display = view === 'reunion' ? 'block' : 'none';
-      document.getElementById('acciones-reunion').style.display = view === 'reunion' ? 'flex' : 'none';
+      document.getElementById('btnRecargarTemas').style.display = view === 'reunion' ? '' : 'none';
+      document.getElementById('btnGenerarActa').style.display = view === 'reunion' ? '' : 'none';
       if (view === 'reunion') cargarTemas();
       sendHeight();
     });
