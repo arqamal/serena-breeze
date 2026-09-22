@@ -98,8 +98,15 @@
   .acciones-topbar { display: flex; border: 1px solid var(--border); }
   .acciones-topbar .refresh-btn { border-right: 1px solid var(--border); }
   .acciones-topbar .refresh-btn:last-child { border-right: none; }
-  .refresh-btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 11px 18px; background: transparent; color: var(--slate-gray); border: 1px solid var(--border); transition: all .15s; }
+  .refresh-btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 11px 18px; background: transparent; color: var(--slate-gray); border: none; transition: all .15s; }
   .refresh-btn:hover { background: var(--off-white); color: var(--black); }
+  .check-seguimiento { display: inline-flex; align-items: center; gap: 10px; font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); cursor: pointer; user-select: none; }
+  .check-seguimiento input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .check-box { width: 18px; height: 18px; border: 1px solid var(--border); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all .15s; position: relative; }
+  .check-seguimiento input:checked + .check-box { background: var(--black); border-color: var(--black); }
+  .check-box::after { content: ''; width: 4px; height: 8px; border: solid white; border-width: 0 2px 2px 0; transform: rotate(45deg) translate(-1px, -1px); opacity: 0; }
+  .check-seguimiento input:checked + .check-box::after { opacity: 1; }
+  .check-seguimiento:hover .check-box { border-color: var(--black); }
   #reunion-loading, #reunion-empty { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--slate-gray); padding: 28px; text-align: center; border: 1px solid var(--border); display: none; }
 
   .reunion-filtros { display: flex; flex-wrap: wrap; gap: 28px; align-items: flex-start; margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid var(--border); }
@@ -688,7 +695,11 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="fgroup">
           <label class="flabel">Estado</label>
-          <button type="button" class="btn-option btn-option-sm campo-seguimiento-toggle${t.estado === 'En seguimiento' ? ' active' : ''}">En seguimiento</button>
+          <label class="check-seguimiento">
+            <input type="checkbox" class="campo-seguimiento-toggle"${t.estado === 'En seguimiento' ? ' checked' : ''}>
+            <span class="check-box"></span>
+            En seguimiento
+          </label>
         </div>
       </div>
 
@@ -700,10 +711,6 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
       </div>
     `;
-
-    card.querySelector('.campo-seguimiento-toggle').addEventListener('click', function () {
-      this.classList.toggle('active');
-    });
 
     card.querySelector('.btn-guardar-tema').addEventListener('click', () => guardarTema(card, t));
     card.querySelector('.btn-eliminar-tema').addEventListener('click', () => eliminarTema(card));
@@ -738,7 +745,7 @@ document.addEventListener('DOMContentLoaded', () => {
   async function guardarTema(card, temaOriginal) {
     const btn = card.querySelector('.btn-guardar-tema');
     const msg = card.querySelector('.tema-guardado-msg');
-    const enSeguimiento = card.querySelector('.campo-seguimiento-toggle').classList.contains('active');
+    const enSeguimiento = card.querySelector('.campo-seguimiento-toggle').checked;
     const estado = enSeguimiento ? 'En seguimiento' : 'Tratado en reunión';
 
     const payload = {
