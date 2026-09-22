@@ -40,7 +40,7 @@
   /* ── APP ── */
   #app-wrapper { display: none; }
 
-  .hero { padding: 56px 48px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+  .hero { padding: 56px 48px 32px; display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
   .hero-eyebrow { font-family: 'Roboto', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 16px; }
   .hero h1 { font-family: 'Oswald', sans-serif; font-size: clamp(28px, 4vw, 44px); font-weight: 400; text-transform: uppercase; color: var(--black); line-height: 1.05; margin-bottom: 14px; }
   .hero-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.8; max-width: 480px; }
@@ -50,7 +50,8 @@
   main { max-width: 900px; margin: 0 auto; padding: 40px 48px 100px; }
 
   /* ── PESTAÑAS DE VISTA (Formulario / Reunión) ── */
-  .view-tabs { display: flex; border: 1px solid var(--border); margin-bottom: 40px; width: fit-content; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+  .view-tabs { display: flex; border: 1px solid var(--border); width: fit-content; }
   .view-tab { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; padding: 14px 32px; cursor: pointer; background: var(--white); color: var(--slate-gray); border: none; border-right: 1px solid var(--border); transition: all .15s; }
   .view-tab:last-child { border-right: none; }
   .view-tab.active { background: var(--black); color: white; }
@@ -97,7 +98,9 @@
   .sending-text { font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); }
 
   /* ── VISTA REUNIÓN ── */
-  .reunion-topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+  .acciones-topbar { display: flex; border: 1px solid var(--border); }
+  .acciones-topbar .refresh-btn { border-right: 1px solid var(--border); }
+  .acciones-topbar .refresh-btn:last-child { border-right: none; }
   .refresh-btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 11px 18px; background: transparent; color: var(--slate-gray); border: 1px solid var(--border); transition: all .15s; }
   .refresh-btn:hover { background: var(--off-white); color: var(--black); }
   #reunion-loading, #reunion-empty { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--slate-gray); padding: 28px; text-align: center; border: 1px solid var(--border); display: none; }
@@ -172,9 +175,15 @@
 
   <main>
 
-    <div class="view-tabs">
-      <button type="button" class="view-tab active" id="tab-formulario" data-view="formulario">Nuevo tema</button>
-      <button type="button" class="view-tab" id="tab-reunion" data-view="reunion" style="display:none;">Reunión</button>
+    <div class="topbar">
+      <div class="view-tabs">
+        <button type="button" class="view-tab active" id="tab-formulario" data-view="formulario">Nuevo tema</button>
+        <button type="button" class="view-tab" id="tab-reunion" data-view="reunion" style="display:none;">Reunión</button>
+      </div>
+      <div class="acciones-topbar" id="acciones-reunion" style="display:none;">
+        <button type="button" class="refresh-btn" id="btnRecargarTemas">Recargar ↻</button>
+        <button type="button" class="refresh-btn" id="btnGenerarActa">Generar y enviar acta</button>
+      </div>
     </div>
 
     <!-- ══════════════ VISTA: FORMULARIO ══════════════ -->
@@ -257,14 +266,6 @@
 
     <!-- ══════════════ VISTA: REUNIÓN ══════════════ -->
     <div id="view-reunion" style="display:none;">
-
-      <div class="reunion-topbar">
-        <div class="hero-desc" style="margin:0;">Temas pendientes y en seguimiento, agrupados por área. Los "Requiere decisión" y de prioridad alta salen primero.</div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button type="button" class="refresh-btn" id="btnRecargarTemas">Recargar ↻</button>
-          <button type="button" class="btn-submit" id="btnGenerarActa" style="padding:11px 18px; font-size:11px;">Generar y enviar acta</button>
-        </div>
-      </div>
 
       <div class="reunion-filtros">
         <div class="filtro-group">
@@ -418,6 +419,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const view = tab.dataset.view;
       document.getElementById('view-formulario').style.display = view === 'formulario' ? 'block' : 'none';
       document.getElementById('view-reunion').style.display = view === 'reunion' ? 'block' : 'none';
+      document.getElementById('acciones-reunion').style.display = view === 'reunion' ? 'flex' : 'none';
       if (view === 'reunion') cargarTemas();
       sendHeight();
     });
@@ -693,11 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div class="fgroup">
           <label class="flabel">Estado</label>
-          <div class="btn-group campo-estado-group">
-            <button type="button" class="btn-option btn-option-sm${t.estado === 'Pendiente' ? ' active' : ''}" data-value="Pendiente">Pendiente</button>
-            <button type="button" class="btn-option btn-option-sm${t.estado === 'En seguimiento' ? ' active' : ''}" data-value="En seguimiento">En seguimiento</button>
-            <button type="button" class="btn-option btn-option-sm${t.estado === 'Tratado en reunión' ? ' active' : ''}" data-value="Tratado en reunión">Tratado en reunión</button>
-          </div>
+          <button type="button" class="btn-option btn-option-sm campo-seguimiento-toggle${t.estado === 'En seguimiento' ? ' active' : ''}">En seguimiento</button>
         </div>
       </div>
 
@@ -710,17 +708,8 @@ document.addEventListener('DOMContentLoaded', () => {
       </div>
     `;
 
-    // Estado por defecto si el tema es nuevo y aún no tiene ninguno marcado
-    const estadoGroup = card.querySelector('.campo-estado-group');
-    if (!estadoGroup.querySelector('.active')) {
-      const pendienteBtn = estadoGroup.querySelector('[data-value="Pendiente"]');
-      pendienteBtn.classList.add('active');
-    }
-    estadoGroup.addEventListener('click', (e) => {
-      const btn = e.target.closest('.btn-option');
-      if (!btn) return;
-      estadoGroup.querySelectorAll('.btn-option').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+    card.querySelector('.campo-seguimiento-toggle').addEventListener('click', function () {
+      this.classList.toggle('active');
     });
 
     card.querySelector('.btn-guardar-tema').addEventListener('click', () => guardarTema(card, t));
@@ -756,7 +745,8 @@ document.addEventListener('DOMContentLoaded', () => {
   async function guardarTema(card, temaOriginal) {
     const btn = card.querySelector('.btn-guardar-tema');
     const msg = card.querySelector('.tema-guardado-msg');
-    const estado = card.querySelector('.campo-estado-group .active').dataset.value;
+    const enSeguimiento = card.querySelector('.campo-seguimiento-toggle').classList.contains('active');
+    const estado = enSeguimiento ? 'En seguimiento' : 'Tratado en reunión';
 
     const payload = {
       accion: 'guardar_acta',
