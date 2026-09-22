@@ -332,18 +332,25 @@
 <script>
 // ─── CONFIGURACIÓN ──────────────────────────────────────────────────
 // LOGIN_URL: login centralizado (AuthUsuarios.gs).
-// REUNIONES_URL: GeneradorReuniones.gs — TODO, aún no existe. Necesita
-// tres acciones: submit_tema, listar_temas, guardar_acta.
-const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
-const REUNIONES_URL = 'https://script.google.com/macros/s/AKfycbyYwl0UdmNAgjUatzEP8_D0Yf3oa19SJrEqR6dkamGbhYldBgFRGSuQ4NWrXLlzV0PnRA/exec';
-const CLAVE_TOKEN_SESION = 'amal_token'; // compartida entre TODAS las herramientas (mismo origen github.io)
+// REUNIONES_URL: Cloudflare Worker — login propio (no pasa por
+// AuthUsuarios.gs) + submit_tema, listar_temas, guardar_acta, borrar_tema,
+// listar_historico, reabrir_tema (todo lo interactivo).
+// REUNIONES_ACTA_URL: Apps Script — SOLO generar_acta_manual, porque envía
+// Gmail y genera el PDF, algo que un Worker no puede hacer.
+const REUNIONES_URL = 'https://reuniones-worker.arquitectura-90b.workers.dev';
+const REUNIONES_ACTA_URL = 'https://script.google.com/macros/s/AKfycbyYwl0UdmNAgjUatzEP8_D0Yf3oa19SJrEqR6dkamGbhYldBgFRGSuQ4NWrXLlzV0PnRA/exec';
+// Clave PROPIA, no "amal_token" — el token del Worker no es compatible con
+// el de AuthUsuarios.gs (secretos distintos); si compartieran clave, cada
+// login en una herramienta invalidaría la sesión de la otra.
+const CLAVE_TOKEN_SESION = 'amal_token_reuniones';
 
 const AREAS_ORDEN = ['Planificación', 'Oficina Técnica y Diseño', 'Pedidos', 'Postventa', 'Otros'];
 const OBRAS_ORDEN = ['1SV', '2SV', '1SB', '2SB', '3SB', '4SB', 'General'];
 const PRIORIDAD_RANK = { 'Alta': 0, 'Media': 1, 'Baja': 2 };
 
-let SESSION_USUARIO = null;              // usuario de login — se usa para comprobar permisos en el backend
+let SESSION_USUARIO = null;              // usuario de login — para generar_acta_manual (Apps Script)
 let SESSION_NOMBRE = null;               // nombre para mostrar y para el acta/email
+let SESSION_TOKEN = null;                // token del Worker — va en cada llamada a REUNIONES_URL
 let SESSION_REUNIONES_EDITA_ACTA = false; // si puede entrar en la pestaña Reunión
 
 // Valor seleccionado en cada grupo de botones del formulario
@@ -352,7 +359,7 @@ const btnGroupValues = { obra: null, area: null, prioridad: null, requiereDecisi
 function intentarSesionGuardada() {
   const token = localStorage.getItem(CLAVE_TOKEN_SESION);
   if (!token) return Promise.resolve(false);
-  return fetch(LOGIN_URL, {
+  return fetch(REUNIONES_URL, {
     method: 'POST',
     body: JSON.stringify({ accion: 'login', token: token, herramienta: 'reuniones' })
   })
@@ -371,6 +378,7 @@ function intentarSesionGuardada() {
 function aplicarSesion(data) {
   SESSION_USUARIO = data.usuario;
   SESSION_NOMBRE = data.nombre || data.usuario;
+  SESSION_TOKEN = data.token;
   SESSION_REUNIONES_EDITA_ACTA = !!data.reuniones_edita_acta;
   if (data.token) localStorage.setItem(CLAVE_TOKEN_SESION, data.token);
 }
@@ -405,7 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.disabled = true;
     btn.textContent = 'Comprobando…';
 
-    fetch(LOGIN_URL, {
+    fetch(REUNIONES_URL, {
       method: 'POST',
       body: JSON.stringify({ accion: 'login', usuario: u, pass: p, herramienta: 'reuniones' })
     })
@@ -490,8 +498,8 @@ document.addEventListener('DOMContentLoaded', () => {
       descripcion: document.getElementById('descripcion').value.trim(),
       prioridad: btnGroupValues.prioridad,
       requiereDecision: btnGroupValues.requiereDecision,
-      usuario: SESSION_USUARIO,
-      nombre: SESSION_NOMBRE
+      nombre: SESSION_NOMBRE,
+      token: SESSION_TOKEN
     };
 
     try {
@@ -561,7 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btn.textContent = 'Generando…';
 
     try {
-      const res = await fetch(REUNIONES_URL, {
+      const res = await fetch(REUNIONES_ACTA_URL, {
         method: 'POST',
         body: JSON.stringify({ accion: 'generar_acta_manual', usuario: SESSION_USUARIO })
       });
@@ -651,7 +659,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const res = await fetch(REUNIONES_URL, {
         method: 'POST',
-        body: JSON.stringify({ accion: 'listar_temas', usuario: SESSION_USUARIO })
+        body: JSON.stringify({ accion: 'listar_temas', token: SESSION_TOKEN })
       });
       const data = await res.json();
       loading.style.display = 'none';
@@ -758,7 +766,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     fetch(REUNIONES_URL, {
       method: 'POST',
-      body: JSON.stringify({ accion: 'borrar_tema', id_tema: card.dataset.id, usuario: SESSION_USUARIO })
+      body: JSON.stringify({ accion: 'borrar_tema', id_tema: card.dataset.id, token: SESSION_TOKEN })
     })
       .then(r => r.json())
       .then(data => {
@@ -787,7 +795,7 @@ document.addEventListener('DOMContentLoaded', () => {
       responsable: card.querySelector('.campo-responsable').value.trim(),
       fechaObjetivo: card.querySelector('.campo-fecha').value,
       estado: estado,
-      usuario: SESSION_USUARIO
+      token: SESSION_TOKEN
     };
 
     btn.disabled = true;
@@ -864,7 +872,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const res = await fetch(REUNIONES_URL, {
         method: 'POST',
-        body: JSON.stringify({ accion: 'listar_historico', usuario: SESSION_USUARIO, offset: historicoOffset, limit: HISTORICO_PAGINA })
+        body: JSON.stringify({ accion: 'listar_historico', token: SESSION_TOKEN, offset: historicoOffset, limit: HISTORICO_PAGINA })
       });
       const data = await res.json();
       loading.style.display = 'none';
@@ -938,7 +946,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const res = await fetch(REUNIONES_URL, {
         method: 'POST',
-        body: JSON.stringify({ accion: 'reabrir_tema', id_tema: card.dataset.id, usuario: SESSION_USUARIO })
+        body: JSON.stringify({ accion: 'reabrir_tema', id_tema: card.dataset.id, token: SESSION_TOKEN })
       });
       const data = await res.json();
       if (!data.ok) throw new Error(data.motivo || data.error || 'Error desconocido');
