@@ -300,6 +300,14 @@
             <label class="flabel">Filtrar por obra</label>
             <div class="btn-group" id="filtro-obra"></div>
           </div>
+          <div class="filtro-group">
+            <label class="flabel">Filtrar por prioridad</label>
+            <div class="btn-group" id="filtro-prioridad">
+              <button type="button" class="btn-option btn-option-sm" data-value="Alta">Alta</button>
+              <button type="button" class="btn-option btn-option-sm" data-value="Media">Media</button>
+              <button type="button" class="btn-option btn-option-sm" data-value="Baja">Baja</button>
+            </div>
+          </div>
           <button type="button" class="filtro-limpiar" id="btnLimpiarFiltros">Limpiar filtros</button>
         </div>
 
@@ -553,6 +561,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let temasActuales = [];       // último resultado de listar_temas, para filtrar sin recargar
   const filtroAreas = new Set();
   const filtroObras = new Set();
+  const filtroPrioridades = new Set();
 
   document.getElementById('btnRecargarTemas').addEventListener('click', () => {
     const enHistorico = document.getElementById('panel-historico').style.display !== 'none';
@@ -605,10 +614,18 @@ document.addEventListener('DOMContentLoaded', () => {
     aplicarFiltrosYRenderizar();
   });
 
+  document.getElementById('filtro-prioridad').addEventListener('click', (e) => {
+    const btn = e.target.closest('.btn-option');
+    if (!btn) return;
+    toggleFiltro(filtroPrioridades, btn);
+    aplicarFiltrosYRenderizar();
+  });
+
   document.getElementById('btnLimpiarFiltros').addEventListener('click', () => {
     filtroAreas.clear();
     filtroObras.clear();
-    document.querySelectorAll('#filtro-area .btn-option, #filtro-obra .btn-option').forEach(b => b.classList.remove('active'));
+    filtroPrioridades.clear();
+    document.querySelectorAll('#filtro-area .btn-option, #filtro-obra .btn-option, #filtro-prioridad .btn-option').forEach(b => b.classList.remove('active'));
     aplicarFiltrosYRenderizar();
   });
 
@@ -638,7 +655,8 @@ document.addEventListener('DOMContentLoaded', () => {
   function aplicarFiltrosYRenderizar() {
     const filtrados = temasActuales.filter(t =>
       (filtroAreas.size === 0 || filtroAreas.has(t.area)) &&
-      (filtroObras.size === 0 || filtroObras.has(t.obra))
+      (filtroObras.size === 0 || filtroObras.has(t.obra)) &&
+      (filtroPrioridades.size === 0 || filtroPrioridades.has(t.prioridad))
     );
     renderTemas(filtrados);
     document.getElementById('reunion-empty').style.display = filtrados.length === 0 ? 'block' : 'none';
