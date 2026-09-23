@@ -18,129 +18,142 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 14px; font-weight: 400; }
 
-  .hero { padding: 64px 48px 48px; border-bottom: 1px solid var(--border); }
-  .hero-eyebrow { font-family: 'Roboto', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 16px; }
-  .hero h1 { font-family: 'Oswald', sans-serif; font-size: clamp(32px, 4.5vw, 52px); font-weight: 400; text-transform: uppercase; color: var(--black); line-height: 1.05; margin-bottom: 18px; max-width: 760px; }
-  .hero-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.8; max-width: 540px; }
+  main { max-width: 1080px; margin: 0 auto; padding: 40px 48px 80px; }
 
-  main { max-width: 1240px; margin: 0 auto; padding: 56px 48px 96px; }
+  /* Cabecera (igual que Reuniones) */
+  .sec-eyebrow { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 10px; }
+  .sec-title { font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 400; text-transform: uppercase; color: var(--black); margin-bottom: 12px; letter-spacing: 1px; }
+  .sec-desc { font-family: 'Roboto', sans-serif; font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.7; max-width: 640px; margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid var(--border); }
 
-  .section-label { font-family: 'Roboto', sans-serif; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  /* Bloque de sección (igual que .area-title de Reuniones) */
+  .bloque { margin-bottom: 36px; }
+  .area-title { font-family: 'Oswald', sans-serif; font-size: 15px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--black); padding: 12px 16px; background: var(--off-white); border: 1px solid var(--border); }
 
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 56px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-top: none; }
 
-  .tile { background: var(--white); padding: 32px 28px; display: flex; flex-direction: column; min-height: 220px; text-decoration: none; color: inherit; transition: background .15s; position: relative; }
+  .tile { background: var(--white); padding: 22px 24px; display: flex; flex-direction: column; min-height: 190px; text-decoration: none; color: inherit; transition: background .15s; }
   .tile:hover { background: var(--off-white); }
-  .tile-cat { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 14px; }
-  .tile-title { font-family: 'Oswald', sans-serif; font-size: 21px; font-weight: 400; text-transform: uppercase; letter-spacing: .5px; color: var(--black); line-height: 1.2; margin-bottom: 12px; }
+  .tile-cat { align-self: flex-start; font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 9px; border: 1px solid var(--border); color: var(--slate-gray); margin-bottom: 14px; }
+  .tile-title { font-family: 'Oswald', sans-serif; font-size: 17px; font-weight: 400; text-transform: uppercase; letter-spacing: .5px; color: var(--black); line-height: 1.25; margin-bottom: 8px; }
   .tile-desc { font-family: 'Roboto', sans-serif; font-size: 13px; font-weight: 300; color: var(--slate-gray); line-height: 1.6; flex-grow: 1; }
-  .tile-cta { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--black); margin-top: 20px; display: flex; align-items: center; gap: 8px; }
+  .tile-cta { align-self: flex-start; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate-gray); border: 1px solid var(--border); padding: 9px 16px; margin-top: 18px; display: inline-flex; align-items: center; gap: 8px; transition: all .15s; }
   .tile-cta .arrow { transition: transform .15s; }
-  .tile:hover .tile-cta .arrow { transform: translateX(4px); }
+  .tile:hover .tile-cta { background: var(--black); border-color: var(--black); color: var(--white); }
+  .tile:hover .tile-cta .arrow { transform: translateX(3px); }
 
-  .tile.empty { background: var(--off-white); border: 1px dashed var(--border); cursor: default; }
-  .tile.empty:hover { background: var(--off-white); }
-  .tile.empty .tile-cat { color: var(--mid); }
-  .tile.empty .tile-title { color: var(--mid); font-style: normal; }
-  .tile.empty .tile-desc { color: var(--mid); }
-  .tile.empty .plus { font-family: 'Oswald', sans-serif; font-size: 28px; color: var(--mid); margin-bottom: 12px; line-height: 1; }
-
-  footer { border-top: 1px solid var(--border); padding: 28px 48px; }
+  footer { max-width: 1080px; margin: 0 auto; border-top: 1px solid var(--border); padding: 24px 48px; }
   footer p { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--mid); letter-spacing: .5px; }
 
   @media (max-width: 768px) {
-    header, main, .hero { padding-left: 24px; padding-right: 24px; }
-    footer { padding-left: 24px; padding-right: 24px; }
+    main, footer { padding-left: 24px; padding-right: 24px; }
   }
 </style>
 </head>
 <body>
 
-<div class="hero">
-  <div class="hero-eyebrow">Uso interno — Amal Inmobiliaria</div>
-  <h1>Herramientas Amal Inmobiliaria</h1>
-  <p class="hero-desc">Acceso centralizado a los selectores y formularios web de todas las promociones de Amal Inmobiliaria. Cada herramienta se abre en una pestaña nueva.</p>
-</div>
-
 <main>
 
-  <div class="section-label">Serena Breeze 2 y 3</div>
-  <div class="grid">
+  <div class="sec-eyebrow">Uso interno · Amal Inmobiliaria</div>
+  <h1 class="sec-title">Panel de herramientas</h1>
+  <p class="sec-desc">Acceso centralizado a los selectores y formularios web de todas las promociones de Amal Inmobiliaria. Cada herramienta se abre en una pestaña nueva.</p>
 
-    <a class="tile" href="https://www.amalconsult.com/eleccion-de-materiales-sb" target="_blank" rel="noopener">
-      <div class="tile-cat">Materiales</div>
-      <div class="tile-title">Selector de materiales<br>Villas</div>
-      <div class="tile-desc">Elección de acabados de interior y exterior para las villas de Serena Breeze 2 y 3.</div>
-      <div class="tile-cta">Abrir <span class="arrow">→</span></div>
-    </a>
+  <section class="bloque">
+    <div class="area-title">Serena Breeze 2 y 3</div>
+    <div class="grid">
 
-    <a class="tile" href="https://www.amalconsult.com/eleccion-de-materiales-apt-sb" target="_blank" rel="noopener">
-      <div class="tile-cat">Materiales</div>
-      <div class="tile-title">Selector de materiales<br>Apartamentos</div>
-      <div class="tile-desc">Elección de acabados para los apartamentos de Serena Breeze 2 y 3.</div>
-      <div class="tile-cta">Abrir <span class="arrow">→</span></div>
-    </a>
+      <a class="tile" href="https://www.amalconsult.com/eleccion-de-materiales-sb" target="_blank" rel="noopener">
+        <span class="tile-cat">Materiales</span>
+        <div class="tile-title">Selector de materiales<br>Villas</div>
+        <div class="tile-desc">Elección de acabados de interior y exterior para las villas de Serena Breeze 2 y 3.</div>
+        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
+      </a>
 
-    <a class="tile" href="https://www.amalconsult.com/selector-de-extras-sb" target="_blank" rel="noopener">
-      <div class="tile-cat">Extras</div>
-      <div class="tile-title">Selector de extras</div>
-      <div class="tile-desc">Elección y presupuesto de extras por vivienda, generación de PDF y firma digital.</div>
-      <div class="tile-cta">Abrir <span class="arrow">→</span></div>
-    </a>
+      <a class="tile" href="https://www.amalconsult.com/eleccion-de-materiales-apt-sb" target="_blank" rel="noopener">
+        <span class="tile-cat">Materiales</span>
+        <div class="tile-title">Selector de materiales<br>Apartamentos</div>
+        <div class="tile-desc">Elección de acabados para los apartamentos de Serena Breeze 2 y 3.</div>
+        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
+      </a>
 
-    <a class="tile" href="https://www.amalconsult.com/aftersale-form" target="_blank" rel="noopener">
-      <div class="tile-cat">Postventa</div>
-      <div class="tile-title">Aviso de incidencias</div>
-      <div class="tile-desc">Reporte de incidencias del cliente tras la entrega, con seguimiento en Trello.</div>
-      <div class="tile-cta">Abrir <span class="arrow">→</span></div>
-    </a>
+      <a class="tile" href="https://www.amalconsult.com/selector-de-extras-sb" target="_blank" rel="noopener">
+        <span class="tile-cat">Extras</span>
+        <div class="tile-title">Selector de extras</div>
+        <div class="tile-desc">Elección y presupuesto de extras por vivienda, generación de PDF y firma digital.</div>
+        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
+      </a>
 
-    <a class="tile" href="https://www.amalconsult.com/dashboard-extras-sb" target="_blank" rel="noopener">
-      <div class="tile-cat">Extras</div>
-      <div class="tile-title">Dashboard de extras</div>
-      <div class="tile-desc">Seguimiento y consulta del estado de extras por vivienda de Serena Breeze 2 y 3.</div>
-      <div class="tile-cta">Abrir <span class="arrow">→</span></div>
-    </a>
+      <a class="tile" href="https://www.amalconsult.com/aftersale-form" target="_blank" rel="noopener">
+        <span class="tile-cat">Postventa</span>
+        <div class="tile-title">Aviso de incidencias</div>
+        <div class="tile-desc">Reporte de incidencias del cliente tras la entrega, con seguimiento en Trello.</div>
+        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
+      </a>
 
-    <a class="tile" href="https://www.amalconsult.com/precios-extras-sb" target="_blank" rel="noopener">
-      <div class="tile-cat">Extras</div>
-      <div class="tile-title">Consulta de precios de extras</div>
-      <div class="tile-desc">Listado de extras con descripción, notas y precio unitario, sin selección ni edición.</div>
-      <div class="tile-cta">Abrir <span class="arrow">→</span></div>
-    </a>
+      <a class="tile" href="https://www.amalconsult.com/dashboard-extras-sb" target="_blank" rel="noopener">
+        <span class="tile-cat">Extras</span>
+        <div class="tile-title">Dashboard de extras</div>
+        <div class="tile-desc">Seguimiento y consulta del estado de extras por vivienda de Serena Breeze 2 y 3.</div>
+        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
+      </a>
 
-    <a class="tile" href="https://www.amalconsult.com/dashboard-fechas-sb" target="_blank" rel="noopener">
-      <div class="tile-cat">Obra</div>
-      <div class="tile-title">Seguimiento de fechas</div>
-      <div class="tile-desc">Fechas clave de promoción, fase y vivienda: licencia, inicio, bloqueos, CFO y entregas de Serena Breeze.</div>
-      <div class="tile-cta">Abrir <span class="arrow">→</span></div>
-    </a>
+      <a class="tile" href="https://www.amalconsult.com/precios-extras-sb" target="_blank" rel="noopener">
+        <span class="tile-cat">Extras</span>
+        <div class="tile-title">Consulta de precios de extras</div>
+        <div class="tile-desc">Listado de extras con descripción, notas y precio unitario, sin selección ni edición.</div>
+        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
+      </a>
 
-  </div>
+      <a class="tile" href="https://www.amalconsult.com/dashboard-fechas-sb" target="_blank" rel="noopener">
+        <span class="tile-cat">Obra</span>
+        <div class="tile-title">Seguimiento de fechas</div>
+        <div class="tile-desc">Fechas clave de promoción, fase y vivienda: licencia, inicio, bloqueos, CFO y entregas de Serena Breeze.</div>
+        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
+      </a>
 
-  <div class="section-label">General</div>
-  <div class="grid">
+    </div>
+  </section>
 
-    <a class="tile" href="https://www.amalconsult.com/formulario-decisiones-obra" target="_blank" rel="noopener">
-      <div class="tile-cat">Gestión</div>
-      <div class="tile-title">Registro de decisiones</div>
-      <div class="tile-desc">Registro diario de decisiones tomadas por obra, con usuario y fecha guardados en Sheet.</div>
-      <div class="tile-cta">Abrir <span class="arrow">→</span></div>
-    </a>
+  <section class="bloque">
+    <div class="area-title">General</div>
+    <div class="grid">
 
-  </div>
+      <a class="tile" href="https://www.amalconsult.com/formulario-decisiones-obra" target="_blank" rel="noopener">
+        <span class="tile-cat">Gestión</span>
+        <div class="tile-title">Registro de decisiones</div>
+        <div class="tile-desc">Registro diario de decisiones tomadas por obra, con usuario y fecha guardados en Sheet.</div>
+        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
+      </a>
 
-  <div class="section-label">Administración</div>
-  <div class="grid">
+      <a class="tile" href="https://www.amalconsult.com/reuniones" target="_blank" rel="noopener">
+        <span class="tile-cat">Gestión</span>
+        <div class="tile-title">Reuniones</div>
+        <div class="tile-desc">Registro de temas para la reunión semanal, tratamiento por área, histórico y envío del acta. Acceso con login.</div>
+        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
+      </a>
 
-    <a class="tile" href="https://www.amalconsult.com/contratos-sb" target="_blank" rel="noopener">
-      <div class="tile-cat">Contratos</div>
-      <div class="tile-title">Generador de contratos</div>
-      <div class="tile-desc">Reservas y compraventas por vivienda: generación de PDF, edición y cancelación. Acceso con login.</div>
-      <div class="tile-cta">Abrir <span class="arrow">→</span></div>
-    </a>
+    </div>
+  </section>
 
-  </div>
+  <section class="bloque">
+    <div class="area-title">Administración</div>
+    <div class="grid">
+
+      <a class="tile" href="https://www.amalconsult.com/contratos-sb" target="_blank" rel="noopener">
+        <span class="tile-cat">Contratos</span>
+        <div class="tile-title">Generador de contratos</div>
+        <div class="tile-desc">Reservas y compraventas por vivienda: generación de PDF, edición y cancelación. Acceso con login.</div>
+        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
+      </a>
+
+      <a class="tile" href="https://www.amalconsult.com/decenales" target="_blank" rel="noopener">
+        <span class="tile-cat">Seguros</span>
+        <div class="tile-title">Decenales</div>
+        <div class="tile-desc">Gestión del seguro decenal y OCT por promoción.</div>
+        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
+      </a>
+
+    </div>
+  </section>
 
 </main>
 
