@@ -948,14 +948,14 @@ function renderFirmaBlock(activa) {
   FIRMA_TIPO_EVENTO_ACTUAL = activa.tipo;
   const sufijo = activa.tipo === 'reserva' ? 'r' : 'c';
   const firmado = !!activa['firmado_' + sufijo];
-  const fecha = activa['fecha_firma_' + sufijo];
+  const fechaSubida = activa['fecha_subida_firmado_' + sufijo];
   const url = activa['pdf_firmado_' + sufijo + '_url'];
   const etiqueta = activa.tipo === 'reserva' ? 'reserva' : 'compraventa';
 
   return `
     <div class="estado-card" style="margin-top:16px;">
       <span class="estado-badge ${firmado ? 'firmado' : ''}" style="${firmado ? '' : 'background:var(--off-white);color:var(--slate-gray);border:1px solid var(--border);'}">${firmado ? 'Firmado ✓' : 'Sin firmar'}</span>
-      <div class="estado-linea">${firmado ? 'PDF de ' + etiqueta + ' firmado subido el ' + escapeHtml(fecha || '—') + '.' : 'Adjunta aquí el PDF de ' + etiqueta + ' firmado a mano — se guarda junto al generado, no lo sustituye.'}</div>
+      <div class="estado-linea">${firmado ? 'PDF de ' + etiqueta + ' firmado subido el ' + escapeHtml(fechaSubida || '—') + '.' : 'Adjunta aquí el PDF de ' + etiqueta + ' firmado a mano — se guarda junto al generado, no lo sustituye.'}</div>
       ${url ? `<div class="estado-actions"><a class="btn btn-link" href="${url}" target="_blank">Ver PDF firmado</a></div>` : ''}
       <div id="firma-msg"></div>
       <div class="upload-zone" id="firma-upload-zone" onclick="document.getElementById('firma-input').click()">
