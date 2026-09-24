@@ -114,6 +114,7 @@
   .especial-units { color: var(--slate-gray); font-size: 12px; }
 
   .status-chip { display: inline-block; font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 10px; border-radius: 2px; vertical-align: middle; white-space: nowrap; }
+  .contract-badge { display: inline-block; font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 10px; border-radius: 2px; vertical-align: middle; white-space: nowrap; background: var(--black); color: #fff; border: 1px solid var(--black); margin-right: 6px; }
   .chip-enviado { background: #FEF3EA; color: #E87722; border: 1px solid #F5C89A; }
   .chip-firmado { background: #f0faf0; color: #2d7a2d; border: 1px solid #b8ddb8; }
   .post-badge { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: white; background: var(--black); padding: 1px 6px; margin-left: 8px; border-radius: 2px; vertical-align: middle; }
@@ -490,9 +491,12 @@ function renderDashboard() {
         </tr>`;
       }
 
+      const esContrato = String(e.incluido_contrato || '').toUpperCase() === 'TRUE';
+      const badgeContrato = esContrato ? '<span class="contract-badge" title="Incluido en contrato">C</span>' : '';
+
       return `
         <tr>
-          <td class="${nameClass}">${escapeHtml(e.extra || e.id || '')}${e.oficio ? '<span class="extra-oficio">'+escapeHtml(e.oficio)+'</span>' : ''}</td>
+          <td class="${nameClass}">${badgeContrato}${escapeHtml(e.extra || e.id || '')}${e.oficio ? '<span class="extra-oficio">'+escapeHtml(e.oficio)+'</span>' : ''}</td>
           <td class="tc">${isSub ? '' : (e.qty ?? '')}</td>
           <td class="tr">${isSub ? '' : fmtEur(e.price)}</td>
           <td class="tr">${isSub ? '' : fmtEur(total)}</td>
