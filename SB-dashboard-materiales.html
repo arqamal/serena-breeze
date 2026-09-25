@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Serena Breeze — Dashboard de Materiales</title>
+<meta name="theme-color" content="#1A1A1A">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #FFFFFF;
+    --off-white: #F7F6F4;
+    --border: #E0DDD8;
+    --mid: #B0AA9F;
+    --slate-gray: #6B7280;
+    --text: #2A2520;
+    --black: #111111;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 14px; }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 40px 48px 80px; }
+  .sec-eyebrow { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 10px; }
+  .sec-title { font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 400; text-transform: uppercase; color: var(--black); margin-bottom: 12px; letter-spacing: 1px; }
+  .sec-desc { font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.7; max-width: 640px; margin-bottom: 28px; }
+
+  /* TOP BAR */
+  .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .seg { display: flex; border: 1px solid var(--border); }
+  .seg button { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; padding: 12px 22px; cursor: pointer; background: var(--white); color: var(--slate-gray); border: none; border-right: 1px solid var(--border); transition: all .15s; }
+  .seg button:last-child { border-right: none; }
+  .seg button.active { background: var(--black); color: white; }
+  .seg button:hover:not(.active) { background: var(--off-white); color: var(--text); }
+  .seg.small button { padding: 9px 14px; font-size: 11px; letter-spacing: 1.5px; }
+
+  .search-input, .filter-select { border: 1px solid var(--border); padding: 11px 14px; font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); background: var(--white); outline: none; border-radius: 0; }
+  .search-input { flex: 1; min-width: 200px; max-width: 280px; }
+  .filter-select { min-width: 150px; }
+  .search-input:focus, .filter-select:focus { border-color: var(--black); }
+
+  .btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 11px 18px; background: transparent; color: var(--slate-gray); border: 1px solid var(--border); transition: all .15s; }
+  .btn:hover { border-color: var(--black); color: var(--black); }
+  .btn-group { display: flex; border: 1px solid var(--border); margin-left: auto; }
+  .btn-group .btn { border: none; border-right: 1px solid var(--border); }
+  .btn-group .btn:last-child { border-right: none; }
+
+  /* KPIs */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); margin-bottom: 28px; }
+  .kpi { padding: 16px 20px; border-right: 1px solid var(--border); }
+  .kpi:last-child { border-right: none; }
+  .kpi-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 6px; }
+  .kpi-value { font-family: 'Oswald', sans-serif; font-size: 26px; color: var(--black); }
+  .kpi-sub { font-size: 11px; color: var(--mid); margin-top: 2px; }
+  .progress { height: 3px; background: var(--border); margin-top: 8px; }
+  .progress > div { height: 100%; background: var(--black); }
+
+  #load-indicator { display: none; font-size: 12px; color: var(--slate-gray); padding: 8px 16px; background: var(--off-white); border: 1px solid var(--border); margin-bottom: 20px; }
+  #load-indicator.err { color: #c0392b; background: #fdf0ee; border-color: #f0c4bc; }
+  #demo-banner { display: none; font-size: 12px; color: #8a5a00; padding: 8px 16px; background: #fff8e6; border: 1px solid #f0dca8; margin-bottom: 20px; }
+  #empty-state { display: none; font-size: 14px; color: var(--slate-gray); padding: 32px; text-align: center; border: 1px solid var(--border); }
+
+  /* VIVIENDA CARD */
+  .vivienda-card { border: 1px solid var(--border); margin-bottom: 16px; }
+  .vivienda-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; background: var(--off-white); border-bottom: 1px solid var(--border); cursor: pointer; }
+  .vivienda-card.collapsed .vivienda-head { border-bottom: none; }
+  .vh-left { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .vivienda-code { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 1px; color: var(--black); }
+  .vivienda-cliente { font-size: 12px; color: var(--slate-gray); }
+  .vivienda-meta { display: flex; align-items: center; gap: 8px; }
+  .pill { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--slate-gray); background: var(--white); border: 1px solid var(--border); padding: 3px 9px; border-radius: 2px; white-space: nowrap; }
+  .pdf-btn { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); background: var(--white); border: 1px solid var(--border); padding: 3px 10px; border-radius: 2px; cursor: pointer; }
+  .pdf-btn:hover { border-color: var(--black); color: var(--black); }
+  .caret { font-size: 11px; color: var(--mid); transition: transform .15s; }
+  .vivienda-card.collapsed .caret { transform: rotate(-90deg); }
+  .vivienda-body { padding: 4px 20px 18px; }
+  .vivienda-card.collapsed .vivienda-body { display: none; }
+
+  .status-chip { display: inline-block; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 10px; border-radius: 2px; white-space: nowrap; }
+  .chip-ok { background: #f0faf0; color: #2d7a2d; border: 1px solid #b8ddb8; }
+  .chip-pend { background: #FEF3EA; color: #E87722; border: 1px solid #F5C89A; }
+  .chip-parcial { background: #EEF3FB; color: #2F5C9E; border: 1px solid #BFD0EA; }
+
+  .block-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin: 18px 0 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .mat-grid { display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 32px; }
+  .mat-row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .mat-label { color: var(--slate-gray); }
+  .mat-value { color: var(--text); text-align: right; font-weight: 400; }
+  .mat-value.vacio { color: var(--mid); font-style: italic; }
+  .mat-value.hl { background: #FFF3B0; padding: 0 4px; }
+  .obs { font-size: 13px; color: var(--text); background: var(--off-white); border: 1px solid var(--border); padding: 10px 12px; line-height: 1.6; }
+  .ficha { display: flex; gap: 24px; flex-wrap: wrap; font-size: 12px; color: var(--slate-gray); margin-top: 14px; }
+  .ficha b { color: var(--text); font-weight: 400; }
+
+  /* RESUMEN (vista agregada por material) */
+  .res-campo { border: 1px solid var(--border); margin-bottom: 16px; }
+  .res-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: var(--off-white); border-bottom: 1px solid var(--border); }
+  .res-title { font-family: 'Oswald', sans-serif; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); }
+  .res-body { padding: 6px 20px 14px; }
+  .res-row { display: grid; grid-template-columns: 1fr 60px 1fr; gap: 16px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .res-row:last-child { border-bottom: none; }
+  .res-count { font-family: 'Oswald', sans-serif; font-size: 16px; text-align: right; }
+  .res-bar { height: 6px; background: var(--border); }
+  .res-bar > div { height: 100%; background: var(--black); }
+  .res-viv { grid-column: 1 / -1; font-size: 11px; color: var(--mid); margin-top: -4px; line-height: 1.5; }
+
+  /* LOGIN */
+  #login-screen { position: fixed; inset: 0; background: var(--white); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+  .login-box { width: 100%; max-width: 380px; padding: 48px 40px; border: 1px solid var(--border); }
+  .login-logo { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 3px; text-transform: uppercase; color: var(--black); margin-bottom: 6px; }
+  .login-sub { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); margin-bottom: 40px; }
+  .login-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+  .login-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); }
+  .login-input { border: 1px solid var(--border); padding: 12px 14px; font-size: 14px; color: var(--text); outline: none; border-radius: 0; width: 100%; }
+  .login-input:focus { border-color: var(--black); }
+  .login-btn { width: 100%; margin-top: 8px; font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; background: var(--black); color: white; border: none; padding: 14px; cursor: pointer; }
+  .login-btn:disabled { opacity: .55; cursor: default; }
+  .login-error { font-size: 12px; color: #c0392b; margin-top: 14px; text-align: center; display: none; }
+  .login-demo { display: block; margin-top: 18px; text-align: center; font-size: 11px; letter-spacing: 1px; color: var(--mid); cursor: pointer; text-decoration: underline; background: none; border: none; width: 100%; }
+
+  #app-wrapper { display: none; }
+
+  @media (max-width: 768px) {
+    main { padding: 24px 16px 60px; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .kpi:nth-child(2) { border-right: none; }
+    .kpi:nth-child(-n+2) { border-bottom: 1px solid var(--border); }
+    .mat-grid { grid-template-columns: 1fr; }
+    .btn-group { margin-left: 0; }
+    .search-input { max-width: none; }
+    .vivienda-head { flex-wrap: wrap; padding: 12px 14px; }
+    .vivienda-meta { flex-wrap: wrap; }
+    .vivienda-body { padding: 4px 14px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Serena Breeze</div>
+    <div class="login-sub">Dashboard de materiales · Uso interno</div>
+    <div class="login-field">
+      <label class="login-label">Usuario</label>
+      <input class="login-input" id="login-user" type="text" placeholder="Usuario" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Contraseña</label>
+      <input class="login-input" id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Acceder →</button>
+    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
+    <button class="login-demo" id="login-demo" onclick="entrarDemo()">Ver con datos de ejemplo</button>
+  </div>
+</div>
+
+<div id="app-wrapper">
+  <main>
+    <div class="sec-eyebrow">Serena Breeze · Aftersale</div>
+    <div class="sec-title">Materiales por vivienda</div>
+    <div class="sec-desc">Elección de acabados de cada vivienda (villas y apartamentos). Vista por vivienda para revisar cada ficha, o resumen por material para ver cuántas unidades lleva cada opción de cara a pedidos.</div>
+
+    <div class="topbar">
+      <div class="seg">
+        <button id="tab-2SB" onclick="switchPromo('2SB')">2SB</button>
+        <button id="tab-3SB" onclick="switchPromo('3SB')">3SB</button>
+      </div>
+      <div class="seg small">
+        <button id="vista-viviendas" class="active" onclick="setVista('viviendas')">Por vivienda</button>
+        <button id="vista-resumen" onclick="setVista('resumen')">Resumen</button>
+      </div>
+      <div class="btn-group">
+        <button class="btn" onclick="if (CURRENT_PROMO) loadPromo(CURRENT_PROMO, true)">↻ Actualizar</button>
+        <button class="btn" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <div class="topbar">
+      <input class="search-input" id="search-input" type="text" placeholder="Buscar vivienda…" oninput="render()">
+      <select class="filter-select" id="f-tipo" onchange="onTipoChange()">
+        <option value="">Villas y apartamentos</option>
+        <option value="villa">Solo villas</option>
+        <option value="apartamento">Solo apartamentos</option>
+      </select>
+      <select class="filter-select" id="f-estado" onchange="render()">
+        <option value="">Todos los estados</option>
+        <option value="completa">Completas</option>
+        <option value="parcial">Incompletas</option>
+        <option value="pendiente">Sin elección</option>
+      </select>
+      <select class="filter-select" id="f-campo" onchange="onCampoChange()">
+        <option value="">Cualquier material</option>
+      </select>
+      <select class="filter-select" id="f-valor" onchange="render()" style="display:none">
+        <option value="">Cualquier opción</option>
+      </select>
+      <button class="btn" id="toggle-todo-btn" onclick="toggleTodo()">▴ Contraer todo</button>
+    </div>
+
+    <div id="generado" style="font-size:11px;color:var(--mid);margin:-6px 0 14px"></div>
+    <div id="demo-banner">Modo ejemplo — datos inventados. Nada de lo que ves aquí sale de la Sheet real.</div>
+    <div id="load-indicator"></div>
+    <div id="kpis" class="kpis" style="display:none"></div>
+    <div id="empty-state"></div>
+    <div id="cards-container"></div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script>
+// ─── LOGIN (AuthUsuarios.gs — login centralizado) ───────────────────
+const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
+const CLAVE_TOKEN_SESION = 'amal_token';
+// Permiso propio: columna acceso_dashboard_materiales en _usuarios.
+const HERRAMIENTA = 'dashboard-materiales';
+
+// ─── BACKEND (GeneradorDashboardMateriales.gs — solo lectura) ───────
+//   POST { accion:'consultar', promocion:'2SB'|'3SB', token, forzar? }
+//   → { ok, generado, campos:{villa:[{key,header}], apartamento:[...]},
+//       viviendas:[{ vivienda, tipo, fecha, comentarios, num_registros, materiales:{} }] }
+// Pegar aquí la URL /exec tras implementar el script como aplicación web.
+const BACKEND_MATERIALES = 'https://script.google.com/macros/s/AKfycbzdx_NdeUaG8Ne_EA-vmbMMg7yO9OnIQDdaJJp56G0zIBlLgygjJHRElWAugiYSB9GxkA/exec';
+
+// ─── CAMPOS ─────────────────────────────────────────────────────────
+// Las columnas reales llegan del backend (leídas de la cabecera de la Sheet).
+// Estas son solo el respaldo y el modo ejemplo, con las mismas claves.
+const LABELS = {
+  pav_int: 'Pavimento interior', pav_ext: 'Pavimento exterior',
+  alic_bano1: 'Alicatado baño 1', alic_bano2: 'Alicatado baño 2', alic_tv: 'Alicatado zona TV',
+  mueble_bano1: 'Mueble baño 1', lavabo_bano1: 'Lavabo baño 1',
+  mueble_bano2: 'Mueble baño 2', lavabo_bano2: 'Lavabo baño 2',
+  cocina_interior: 'Cocina · interior', cocina_zona_a: 'Cocina · zona A (frentes armario)',
+  cocina_zona_b: 'Cocina · zona B (trasera y vinoteca)', cocina_encimera: 'Cocina · encimera',
+  piscina: 'Piscina'
+};
+let CAMPOS = {
+  villa: ['pav_int','pav_ext','alic_bano1','alic_bano2','alic_tv','mueble_bano1','lavabo_bano1','mueble_bano2','lavabo_bano2','cocina_interior','cocina_zona_a','cocina_zona_b','cocina_encimera','piscina'],
+  apartamento: ['pav_int','alic_bano1','alic_bano2','lavabo_bano1','lavabo_bano2','cocina_interior','cocina_zona_a','cocina_zona_b','cocina_encimera']
+};
+function camposDe(tipo) { return (tipo === 'villa' ? CAMPOS.villa : CAMPOS.apartamento).map(k => [k, labelCampo(k)]); }
+function camposUnion() {
+  const keys = CAMPOS.villa.concat(CAMPOS.apartamento.filter(k => !CAMPOS.villa.includes(k)));
+  return keys.map(k => [k, labelCampo(k)]);
+}
+let LABELS_SHEET = {};
+function labelCampo(key) {
+  if (LABELS[key]) return LABELS[key];
+  const h = LABELS_SHEET[key] || key;
+  return h.charAt(0).toUpperCase() + h.slice(1).toLowerCase();
+}
+function aplicarCamposBackend(c) {
+  if (!c) return;
+  if (c.villa && c.villa.length) CAMPOS.villa = c.villa.map(x => x.key);
+  if (c.apartamento && c.apartamento.length) CAMPOS.apartamento = c.apartamento.map(x => x.key);
+  (c.villa || []).concat(c.apartamento || []).forEach(x => LABELS_SHEET[x.key] = x.header);
+}
+
+// ─── ESTADO ─────────────────────────────────────────────────────────
+let CURRENT_PROMO = null;
+let VISTA = 'viviendas';
+let DATA = [];
+let DEMO = false;
+const COLLAPSED = {};
+
+// ─── LOGIN ──────────────────────────────────────────────────────────
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const btn = document.getElementById('login-btn');
+  const errorEl = document.getElementById('login-error');
+  errorEl.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Comprobando…';
+  fetch(LOGIN_URL, { method: 'POST', body: JSON.stringify({ accion: 'login', usuario: u, pass: p, herramienta: HERRAMIENTA }) })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        if (data.token) localStorage.setItem(CLAVE_TOKEN_SESION, data.token);
+        entrarApp();
+      } else {
+        errorEl.textContent = data.motivo === 'sin_acceso' ? 'Tu usuario no tiene acceso al dashboard de materiales.' : 'Usuario o contraseña incorrectos';
+        errorEl.style.display = 'block';
+      }
+    })
+    .catch(() => { errorEl.textContent = 'No se pudo comprobar el acceso. Inténtalo de nuevo.'; errorEl.style.display = 'block'; })
+    .finally(() => { btn.disabled = false; btn.textContent = 'Acceder →'; });
+}
+function intentarSesionGuardada() {
+  const token = localStorage.getItem(CLAVE_TOKEN_SESION);
+  if (!token) return Promise.resolve(false);
+  return fetch(LOGIN_URL, { method: 'POST', body: JSON.stringify({ accion: 'login', token, herramienta: HERRAMIENTA }) })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) { localStorage.removeItem(CLAVE_TOKEN_SESION); return false; }
+      if (data.token) localStorage.setItem(CLAVE_TOKEN_SESION, data.token);
+      return true;
+    })
+    .catch(() => false);
+}
+function entrarApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-wrapper').style.display = 'block';
+  mostrarVacio('Elige Serena Breeze 2 o Serena Breeze 3 arriba para cargar sus materiales.');
+}
+function entrarDemo() {
+  DEMO = true;
+  document.getElementById('demo-banner').style.display = 'block';
+  entrarApp();
+}
+function cerrarSesion() { localStorage.removeItem(CLAVE_TOKEN_SESION); location.reload(); }
+
+document.addEventListener('DOMContentLoaded', () => {
+  ['login-user','login-pass'].forEach(id => document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); }));
+  intentarSesionGuardada().then(ok => { if (ok) entrarApp(); });
+});
+
+// ─── CARGA ──────────────────────────────────────────────────────────
+function switchPromo(promo) {
+  CURRENT_PROMO = promo;
+  ['2SB','3SB'].forEach(p => document.getElementById('tab-' + p).classList.toggle('active', p === promo));
+  loadPromo(promo);
+}
+function loadPromo(promo, forzar) {
+  const ind = document.getElementById('load-indicator');
+  document.getElementById('cards-container').innerHTML = '';
+  document.getElementById('empty-state').style.display = 'none';
+  ind.className = ''; ind.style.display = 'block';
+  ind.textContent = 'Cargando materiales de ' + promo + '…';
+
+  if (DEMO) {
+    setTimeout(() => { DATA = generarDemo(promo); ind.style.display = 'none'; poblarFiltroCampos(); render(); }, 250);
+    return;
+  }
+  if (BACKEND_MATERIALES.startsWith('PENDIENTE')) {
+    ind.className = 'err';
+    ind.textContent = 'Falta la URL del backend (BACKEND_MATERIALES). Mientras tanto, usa "Ver con datos de ejemplo" en la pantalla de acceso.';
+    return;
+  }
+  fetch(BACKEND_MATERIALES, {
+    method: 'POST',
+    body: JSON.stringify({ accion: 'consultar', promocion: promo, forzar: !!forzar, token: localStorage.getItem(CLAVE_TOKEN_SESION) || '' })
+  })
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(data => {
+      if (!data.ok && (data.motivo === 'sin_sesion' || data.motivo === 'sin_acceso')) {
+        localStorage.removeItem(CLAVE_TOKEN_SESION);
+        alert(data.motivo === 'sin_acceso' ? 'Tu usuario ya no tiene acceso a este dashboard.' : 'La sesión ha caducado. Vuelve a entrar.');
+        location.reload();
+        return;
+      }
+      if (!data.ok) throw new Error(data.error || data.motivo || 'respuesta sin ok:true');
+      aplicarCamposBackend(data.campos);
+      DATA = (data.viviendas || []).filter(v => v.vivienda);
+      document.getElementById('generado').textContent = data.generado ? 'Datos leídos de la Sheet: ' + data.generado : '';
+      ind.style.display = 'none';
+      poblarFiltroCampos();
+      render();
+    })
+    .catch(e => { ind.className = 'err'; ind.textContent = 'Error al cargar los datos: ' + e.message; });
+}
+
+// ─── LÓGICA ─────────────────────────────────────────────────────────
+function estadoVivienda(v) {
+  const campos = camposDe(v.tipo);
+  const m = v.materiales || {};
+  const llenos = campos.filter(([k]) => String(m[k] || '').trim()).length;
+  if (llenos === 0) return 'pendiente';
+  if (llenos < campos.length) return 'parcial';
+  return 'completa';
+}
+function chipEstado(est, v) {
+  if (est === 'completa') return '<span class="status-chip chip-ok">Completa</span>';
+  if (est === 'pendiente') return '<span class="status-chip chip-pend">Sin elección</span>';
+  const campos = camposDe(v.tipo), m = v.materiales || {};
+  const llenos = campos.filter(([k]) => String(m[k] || '').trim()).length;
+  return `<span class="status-chip chip-parcial">${llenos}/${campos.length}</span>`;
+}
+
+function filtrar() {
+  const q = (document.getElementById('search-input').value || '').trim().toUpperCase();
+  const tipo = document.getElementById('f-tipo').value;
+  const est = document.getElementById('f-estado').value;
+  const campo = document.getElementById('f-campo').value;
+  const valor = document.getElementById('f-valor').value;
+  return DATA.filter(v => {
+    if (tipo && v.tipo !== tipo) return false;
+    if (est && estadoVivienda(v) !== est) return false;
+    if (q && !String(v.vivienda).toUpperCase().includes(q)) return false;
+    if (campo && valor && String((v.materiales || {})[campo] || '') !== valor) return false;
+    return true;
+  }).sort((a, b) => compareViviendas(a.vivienda, b.vivienda));
+}
+
+function onTipoChange() { poblarFiltroCampos(); render(); }
+function poblarFiltroCampos() {
+  const sel = document.getElementById('f-campo');
+  const actual = sel.value;
+  const tipo = document.getElementById('f-tipo').value;
+  const campos = tipo ? camposDe(tipo) : camposUnion();
+  sel.innerHTML = '<option value="">Cualquier material</option>' + campos.map(([k, l]) => `<option value="${k}">${escapeHtml(l)}</option>`).join('');
+  if (campos.some(c => c[0] === actual)) sel.value = actual;
+  onCampoChange(true);
+}
+function onCampoChange(sinRender) {
+  const campo = document.getElementById('f-campo').value;
+  const selV = document.getElementById('f-valor');
+  const actual = selV.value;
+  if (!campo) { selV.style.display = 'none'; selV.value = ''; }
+  else {
+    const valores = [...new Set(DATA.map(v => String((v.materiales || {})[campo] || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+    selV.innerHTML = '<option value="">Cualquier opción</option>' + valores.map(x => `<option value="${escapeAttr(x)}">${escapeHtml(x)}</option>`).join('');
+    if (valores.includes(actual)) selV.value = actual;
+    selV.style.display = '';
+  }
+  if (sinRender !== true) render();
+}
+
+function setVista(v) {
+  VISTA = v;
+  document.getElementById('vista-viviendas').classList.toggle('active', v === 'viviendas');
+  document.getElementById('vista-resumen').classList.toggle('active', v === 'resumen');
+  document.getElementById('toggle-todo-btn').style.display = v === 'viviendas' ? '' : 'none';
+  render();
+}
+
+// ─── RENDER ─────────────────────────────────────────────────────────
+function render() {
+  if (!CURRENT_PROMO) return;
+  const lista = filtrar();
+  renderKpis(lista);
+  if (!lista.length) {
+    document.getElementById('cards-container').innerHTML = '';
+    mostrarVacio(DATA.length ? 'Ninguna vivienda coincide con el filtro.' : 'No hay viviendas para esta promoción.');
+    return;
+  }
+  document.getElementById('empty-state').style.display = 'none';
+  if (VISTA === 'resumen') renderResumen(lista); else renderViviendas(lista);
+  actualizarBotonTodo();
+}
+
+function renderKpis(lista) {
+  const el = document.getElementById('kpis');
+  const n = lista.length;
+  const c = { completa: 0, parcial: 0, pendiente: 0 };
+  lista.forEach(v => c[estadoVivienda(v)]++);
+  const pct = n ? Math.round(c.completa / n * 100) : 0;
+  el.innerHTML = `
+    <div class="kpi"><div class="kpi-label">Viviendas</div><div class="kpi-value">${n}</div>
+      <div class="kpi-sub">${lista.filter(v => v.tipo === 'villa').length} villas · ${lista.filter(v => v.tipo !== 'villa').length} apts.</div></div>
+    <div class="kpi"><div class="kpi-label">Completas</div><div class="kpi-value">${c.completa}</div>
+      <div class="progress"><div style="width:${pct}%"></div></div><div class="kpi-sub">${pct}%</div></div>
+    <div class="kpi"><div class="kpi-label">Incompletas</div><div class="kpi-value">${c.parcial}</div><div class="kpi-sub">faltan campos</div></div>
+    <div class="kpi"><div class="kpi-label">Sin elección</div><div class="kpi-value">${c.pendiente}</div><div class="kpi-sub">sin fila en la Sheet</div></div>`;
+  el.style.display = 'grid';
+}
+
+function renderViviendas(lista) {
+  const campoF = document.getElementById('f-campo').value;
+  document.getElementById('cards-container').innerHTML = lista.map(v => {
+    const est = estadoVivienda(v);
+    const m = v.materiales || {};
+    const collapsed = COLLAPSED[v.vivienda] ? ' collapsed' : '';
+    const vEsc = jsStr(v.vivienda);
+    const filas = camposDe(v.tipo).map(([k, l]) => {
+      const val = String(m[k] || '').trim();
+      const cls = 'mat-value' + (val ? '' : ' vacio') + (campoF === k && val ? ' hl' : '');
+      return `<div class="mat-row"><span class="mat-label">${escapeHtml(l)}</span><span class="${cls}">${val ? escapeHtml(val) : '—'}</span></div>`;
+    }).join('');
+    return `
+      <div class="vivienda-card${collapsed}">
+        <div class="vivienda-head" onclick="toggleCard('${vEsc}')">
+          <div class="vh-left">
+            <span class="vivienda-code">${escapeHtml(v.vivienda)}</span>
+            ${v.fecha ? `<span class="vivienda-cliente">Elegido el ${escapeHtml(v.fecha)}</span>` : ''}
+          </div>
+          <div class="vivienda-meta">
+            <span class="pill">${v.tipo === 'villa' ? 'Villa' : 'Apartamento'}</span>
+            ${v.num_registros > 1 ? `<span class="pill" title="Hay ${v.num_registros} filas de esta vivienda en la Sheet; se muestra la más reciente">${v.num_registros} registros</span>` : ''}
+            ${chipEstado(est, v)}
+            ${est !== 'pendiente' ? `<button class="pdf-btn" onclick="descargarPDF(event, '${vEsc}')">⤓ PDF</button>` : ''}
+            <span class="caret">▾</span>
+          </div>
+        </div>
+        <div class="vivienda-body">
+          ${est === 'pendiente'
+            ? '<div class="block-label">Sin elección registrada</div>'
+            : `<div class="block-label">Materiales</div><div class="mat-grid">${filas}</div>
+               ${v.comentarios ? `<div class="block-label">Comentarios</div><div class="obs">${escapeHtml(v.comentarios)}</div>` : ''}`}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderResumen(lista) {
+  const tipo = document.getElementById('f-tipo').value;
+  const campoF = document.getElementById('f-campo').value;
+  let campos = tipo ? camposDe(tipo) : camposUnion();
+  if (campoF) campos = campos.filter(c => c[0] === campoF);
+
+  const html = campos.map(([k, l]) => {
+    const aplicables = lista.filter(v => camposDe(v.tipo).some(c => c[0] === k));
+    if (!aplicables.length) return '';
+    const cuenta = {};
+    let sinElegir = [];
+    aplicables.forEach(v => {
+      const val = String((v.materiales || {})[k] || '').trim();
+      if (!val) { sinElegir.push(v.vivienda); return; }
+      (cuenta[val] = cuenta[val] || []).push(v.vivienda);
+    });
+    const max = Math.max(1, ...Object.values(cuenta).map(a => a.length));
+    const filas = Object.entries(cuenta).sort((a, b) => b[1].length - a[1].length).map(([val, vivs]) => `
+      <div class="res-row">
+        <span>${escapeHtml(val)}</span>
+        <span class="res-count">${vivs.length}</span>
+        <div class="res-bar"><div style="width:${vivs.length / max * 100}%"></div></div>
+        <div class="res-viv">${vivs.map(escapeHtml).join(' · ')}</div>
+      </div>`).join('');
+    return `
+      <div class="res-campo">
+        <div class="res-head">
+          <span class="res-title">${escapeHtml(l)}</span>
+          <span class="pill">${aplicables.length - sinElegir.length}/${aplicables.length} elegidas</span>
+        </div>
+        <div class="res-body">
+          ${filas || '<div class="res-row"><span style="color:var(--mid)">Nadie ha elegido todavía</span></div>'}
+          ${sinElegir.length && filas ? `<div class="res-row"><span style="color:var(--mid)">Sin elegir</span><span class="res-count" style="color:var(--mid)">${sinElegir.length}</span><span></span><div class="res-viv">${sinElegir.map(escapeHtml).join(' · ')}</div></div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+  document.getElementById('cards-container').innerHTML = html;
+}
+
+function toggleCard(v) { COLLAPSED[v] = !COLLAPSED[v]; render(); }
+function toggleTodo() {
+  const vivs = filtrar().map(v => v.vivienda);
+  const todos = vivs.length > 0 && vivs.every(v => COLLAPSED[v]);
+  vivs.forEach(v => COLLAPSED[v] = !todos);
+  render();
+}
+function actualizarBotonTodo() {
+  const vivs = filtrar().map(v => v.vivienda);
+  const todos = vivs.length > 0 && vivs.every(v => COLLAPSED[v]);
+  document.getElementById('toggle-todo-btn').textContent = todos ? '▾ Desplegar todo' : '▴ Contraer todo';
+}
+function mostrarVacio(txt) {
+  const e = document.getElementById('empty-state');
+  e.textContent = txt; e.style.display = 'block';
+}
+
+// ─── PDF ────────────────────────────────────────────────────────────
+function descargarPDF(ev, codigo) {
+  ev.stopPropagation();
+  if (!window.jspdf) { alert('No se ha podido cargar jsPDF.'); return; }
+  const v = DATA.find(x => x.vivienda === codigo);
+  if (!v) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const w = doc.internal.pageSize.getWidth();
+  doc.setFillColor(26, 26, 26); doc.rect(0, 0, w, 24, 'F');
+  doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+  doc.text('SERENA BREEZE — MATERIALES ' + v.vivienda, 14, 12);
+  doc.setTextColor(204, 204, 204); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+  const promoLabel = CURRENT_PROMO === '2SB' ? 'Serena Breeze 2' : 'Serena Breeze 3';
+  doc.text(promoLabel + '  ·  ' + (v.tipo === 'villa' ? 'Villa' : 'Apartamento') + '  ·  Generado el ' + new Date().toLocaleDateString('es-ES'), 14, 19);
+
+  const m = v.materiales || {};
+  doc.autoTable({
+    startY: 32,
+    head: [['Material', 'Elección']],
+    body: camposDe(v.tipo).map(([k, l]) => [l, String(m[k] || '').trim() || '—']),
+    theme: 'plain',
+    styles: { font: 'helvetica', fontSize: 9, textColor: [42, 37, 32], cellPadding: 2.2 },
+    headStyles: { fillColor: [17, 17, 17], textColor: [255, 255, 255], fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: [242, 242, 242] },
+    columnStyles: { 0: { cellWidth: 70 } }
+  });
+  let y = doc.lastAutoTable.finalY + 8;
+  doc.setFontSize(9); doc.setTextColor(51, 51, 51);
+  if (v.fecha) { doc.text('Fecha de elección: ' + v.fecha, 14, y); y += 5; }
+  if (v.comentarios) {
+    y += 3;
+    doc.setFillColor(245, 245, 245);
+    const lines = doc.splitTextToSize(v.comentarios, w - 32);
+    doc.rect(14, y - 4, w - 28, lines.length * 4.5 + 9, 'F');
+    doc.setFont('helvetica', 'bold'); doc.text('COMENTARIOS', 16, y + 1);
+    doc.setFont('helvetica', 'normal'); doc.text(lines, 16, y + 6);
+  }
+  doc.save(v.vivienda + '_materiales.pdf');
+}
+
+// ─── UTILIDADES ─────────────────────────────────────────────────────
+function compareViviendas(a, b) {
+  const ka = sortKey(a), kb = sortKey(b);
+  if (ka[0] !== kb[0]) return ka[0] - kb[0];
+  if (ka[1] !== kb[1]) return ka[1] - kb[1];
+  return String(a).localeCompare(String(b));
+}
+function sortKey(v) {
+  const m = String(v).replace(/^(2SB|3SB)/i, '').match(/^(\d+)/);
+  if (!m) return [2, 0];
+  return [m[1].length >= 3 ? 1 : 0, parseInt(m[1], 10)];
+}
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escapeAttr(s) { return escapeHtml(s); }
+function jsStr(s) { return escapeAttr(String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'")); }
+
+// ─── DATOS DE EJEMPLO (solo modo demo) ──────────────────────────────
+function generarDemo(promo) {
+  const O = {
+    pav_int: ['Unik Mink 100×100', 'Unik Stone 100×100', 'Unik Mink 60×60'],
+    pav_ext: ['Amberly Natural 23×120', 'Unik Mink 100×100', 'Unik Stone 100×100'],
+    alic_bano1: ['Unik Mink 60×120', 'Flodsten Snow 60×120', 'Unik Stone 60×120'],
+    alic_bano2: ['Unik Mink 60×120', 'Flodsten Snow 60×120'],
+    alic_tv: ['Inlay Natural 60×120', 'Flodsten Smoke 60×120', 'SIN ALICATAR'],
+    mueble_bano1: ['Flow 24 Roble Natural', 'Flow 74 Moka Mate'],
+    lavabo_bano1: ['Masai 06 Blanco', 'Masai 25 Leaf', 'Oslo 24 Roble Natural', 'Oslo 84 Nogal Vera'],
+    mueble_bano2: ['Lambda 04 Blanco', 'Lambda 19 Moka', 'Lambda 24 Roble Natural'],
+    lavabo_bano2: ['Masai 06 Blanco', 'Oslo 24 Roble Natural', 'Oslo 84 Nogal Vera'],
+    cocina_interior: ['Roble NK207', 'Roble NK208', 'Antracita', 'Coco'],
+    cocina_zona_a: ['Oliva NF212', 'Coco', 'Latte Plus', 'Cashmere Plus'],
+    cocina_zona_b: ['Roble NK207', 'Roble NK208', 'Roble NK206'],
+    cocina_encimera: ['Luna', 'Dolomiti', 'Borghini', 'Nero Saint Laurent'],
+    piscina: ['PS 25', 'PS 50', 'Samoa Turquesa']
+  };
+  let seed = promo === '2SB' ? 7 : 13;
+  const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  const pick = a => a[Math.floor(rnd() * a.length)];
+  const cat = promo === '2SB'
+    ? { villas: ['2SB1','2SB2','2SB3','2SB4'], apts: ['2SB101','2SB102','2SB103','2SB104','2SB105','2SB111','2SB112','2SB113','2SB114','2SB115','2SB121','2SB122'] }
+    : { villas: ['3SB1','3SB2','3SB3','3SB4','3SB5','3SB6','3SB7'], apts: ['3SB101','3SB102','3SB111','3SB112','3SB121','3SB201','3SB202','3SB211','3SB301','3SB311','3SB321'] };
+  const mk = (codigo, tipo) => {
+    const r = rnd();
+    const keys = tipo === 'villa' ? CAMPOS.villa : CAMPOS.apartamento;
+    const m = {};
+    if (r > 0.25) {
+      const cuantos = r > 0.45 ? keys.length : Math.ceil(keys.length / 3);
+      keys.slice(0, cuantos).forEach(k => m[k] = pick(O[k] || ['—']));
+    }
+    const vacio = !Object.keys(m).length;
+    const d = 1 + Math.floor(rnd() * 27), mes = 5 + Math.floor(rnd() * 4);
+    return {
+      vivienda: codigo, tipo,
+      fecha: vacio ? '' : String(d).padStart(2, '0') + '/' + String(mes).padStart(2, '0') + '/2026 ' + (9 + Math.floor(rnd() * 9)) + ':' + String(Math.floor(rnd() * 60)).padStart(2, '0'),
+      comentarios: !vacio && rnd() > 0.65 ? (Object.keys(m).length < keys.length ? 'Pendientes los demás materiales' : 'Cocina como el apartamento piloto') : '',
+      num_registros: vacio ? 0 : (rnd() > 0.85 ? 2 : 1),
+      materiales: m
+    };
+  };
+  return cat.villas.map(c => mk(c, 'villa')).concat(cat.apts.map(c => mk(c, 'apartamento')));
+}
+</script>
+</body>
+</html>
