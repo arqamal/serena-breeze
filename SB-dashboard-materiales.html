@@ -199,6 +199,7 @@
     </div>
 
     <div id="generado" style="font-size:11px;color:var(--mid);margin:-6px 0 14px"></div>
+    <div id="aviso-traduccion" style="display:none;font-size:12px;color:#c0392b;padding:8px 16px;background:#fdf0ee;border:1px solid #f0c4bc;margin-bottom:20px"></div>
     <div id="demo-banner">Modo ejemplo — datos inventados. Nada de lo que ves aquí sale de la Sheet real.</div>
     <div id="load-indicator"></div>
     <div id="kpis" class="kpis" style="display:none"></div>
@@ -353,6 +354,9 @@ function loadPromo(promo, forzar) {
       aplicarCamposBackend(data.campos);
       DATA = (data.viviendas || []).filter(v => v.vivienda);
       document.getElementById('generado').textContent = data.generado ? 'Datos leídos de la Sheet: ' + data.generado : '';
+      const avisoTr = document.getElementById('aviso-traduccion');
+      avisoTr.textContent = data.traduccion_error ? 'No se han podido traducir los comentarios: ' + data.traduccion_error : '';
+      avisoTr.style.display = data.traduccion_error ? 'block' : 'none';
       ind.style.display = 'none';
       poblarFiltroCampos();
       render();
