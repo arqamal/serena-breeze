@@ -891,6 +891,59 @@ function renderDocumentosBlock(documentos) {
     </div>`;
 }
 
+// Elección genérica de "qué hacer con los adjuntos sueltos ya
+// guardados en Drive" cuando el PDF que se acaba de generar/regenerar
+// NO los lleva (porque se regeneró desde el Doc, o porque se editó el
+// formulario sin tocar el recuadro de adjuntos). Se usa tanto desde
+// regenerarPdfDesdeDoc como desde enviarFormulario — msgElId apunta al
+// div de mensajes de cada sitio (#regenerar-msg / #form-msg).
+let ADJUNTOS_PENDIENTES = null; // { pdfBase64, adjuntos, tipoEvento, msgElId, tras }
+
+function mostrarEleccionAdjuntosGuardados(pdfBase64, adjuntos, tipoEvento, msgElId, tras) {
+  ADJUNTOS_PENDIENTES = { pdfBase64, adjuntos, tipoEvento, msgElId, tras: tras || null };
+  const msg = document.getElementById(msgElId);
+  const n = adjuntos.length;
+  msg.innerHTML = `
+    <div class="msg info">
+      Esta ${tipoEvento === 'reserva' ? 'reserva' : 'compraventa'} tiene ${n} PDF adjunto(s) guardado(s) de antes que este PDF no lleva. ¿Qué haces con ellos?
+      <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn" onclick="confirmarMantenerAdjuntosGuardados()">Mantenerlos (fusionar de nuevo)</button>
+        <button type="button" class="btn" style="border-color:#c0392b; color:#c0392b;" onclick="confirmarDescartarAdjuntosGuardados()">Descartarlos</button>
+      </div>
+    </div>`;
+}
+
+function confirmarMantenerAdjuntosGuardados() {
+  if (!ADJUNTOS_PENDIENTES) return;
+  const { pdfBase64, adjuntos, tipoEvento, msgElId, tras } = ADJUNTOS_PENDIENTES;
+  const msg = document.getElementById(msgElId);
+  msg.innerHTML = `<div class="msg info">Volviendo a fusionar ${adjuntos.length} adjunto(s) guardado(s)…</div>`;
+  refusionarAdjuntosGuardados(pdfBase64, adjuntos, tipoEvento)
+    .then(res2 => {
+      if (!res2.ok) { msg.innerHTML = `<div class="msg error">${escapeHtml(res2.error || 'No se pudo volver a fusionar los adjuntos.')}</div>`; return; }
+      msg.innerHTML = `<div class="msg success">PDF guardado con sus adjuntos. <a href="${res2.pdf_url}" target="_blank">Abrir</a></div>`;
+      ADJUNTOS_PENDIENTES = null;
+      setTimeout(tras || cargarEstado, 1200);
+    })
+    .catch(err => { msg.innerHTML = `<div class="msg error">Falló la fusión de adjuntos (${escapeHtml(String(err && err.message || err))}).</div>`; });
+}
+
+function confirmarDescartarAdjuntosGuardados() {
+  if (!ADJUNTOS_PENDIENTES) return;
+  const { pdfBase64, tipoEvento, msgElId, tras } = ADJUNTOS_PENDIENTES;
+  if (!confirm('Se eliminarán los PDF adjuntos guardados de esta ' + (tipoEvento === 'reserva' ? 'reserva' : 'compraventa') + ' y el PDF se quedará solo con el documento generado. ¿Continuar?')) return;
+  const msg = document.getElementById(msgElId);
+  msg.innerHTML = `<div class="msg info">Guardando el PDF sin adjuntos y eliminando los guardados…</div>`;
+  llamarBackend({ accion: 'sustituir_pdf_sin_adjuntos', promocion: SESSION_PROMO, cod_viv: SESSION_COD_VIV, tipo_evento: tipoEvento, pdf_base64: pdfBase64 })
+    .then(res2 => {
+      if (!res2.ok) { msg.innerHTML = `<div class="msg error">${escapeHtml(res2.error || 'No se pudo guardar.')}</div>`; return; }
+      msg.innerHTML = `<div class="msg success">PDF guardado sin adjuntos. <a href="${res2.pdf_url}" target="_blank">Abrir</a></div>`;
+      ADJUNTOS_PENDIENTES = null;
+      setTimeout(tras || cargarEstado, 1200);
+    })
+    .catch(() => { msg.innerHTML = `<div class="msg error">No se pudo conectar con el servidor. Inténtalo de nuevo.</div>`; });
+}
+
 function regenerarPdfDesdeDoc(tipoEvento) {
   if (!confirm('¿Regenerar el PDF de ' + (tipoEvento === 'reserva' ? 'reserva' : 'compraventa') + ' a partir del Doc editable, tal como esté ahora mismo? El PDF anterior se sustituye.')) return;
   const msg = document.getElementById('regenerar-msg');
@@ -899,14 +952,7 @@ function regenerarPdfDesdeDoc(tipoEvento) {
     .then(data => {
       if (!data.ok) { msg.innerHTML = `<div class="msg error">${escapeHtml(data.error || 'No se pudo regenerar.')}</div>`; return; }
       if (data.requiere_fusion) {
-        msg.innerHTML = `<div class="msg info">Volviendo a fusionar ${data.adjuntos_guardados.length} adjunto(s) guardado(s)…</div>`;
-        refusionarAdjuntosGuardados(data.pdf_base64, data.adjuntos_guardados, tipoEvento)
-          .then(res2 => {
-            if (!res2.ok) { msg.innerHTML = `<div class="msg error">${escapeHtml(res2.error || 'No se pudo volver a fusionar los adjuntos.')}</div>`; return; }
-            msg.innerHTML = `<div class="msg success">PDF regenerado con sus adjuntos. <a href="${res2.pdf_url}" target="_blank">Abrir</a></div>`;
-            setTimeout(cargarEstado, 1500);
-          })
-          .catch(err => { msg.innerHTML = `<div class="msg error">Falló la fusión de adjuntos (${escapeHtml(String(err && err.message || err))}).</div>`; });
+        mostrarEleccionAdjuntosGuardados(data.pdf_base64, data.adjuntos_guardados, tipoEvento, 'regenerar-msg');
         return;
       }
       msg.innerHTML = `<div class="msg success">PDF regenerado. <a href="${data.pdf_url}" target="_blank">Abrir</a></div>`;
@@ -1694,6 +1740,16 @@ function enviarFormulario(tipo, modo) {
               `<div class="msg error">${tipo === 'reserva' ? 'La reserva' : 'La compraventa'} se generó bien, pero falló la fusión de adjuntos (${escapeHtml(String(err && err.message || err))}). El PDF sin adjuntos ya está guardado — <a href="${data.pdf_url}" target="_blank">abrir</a>.</div>`;
             setTimeout(cargarEstado, 2500);
           });
+        return;
+      }
+      // No se seleccionaron adjuntos nuevos en este envío. Si además esta
+      // vivienda ya tenía PDF sueltos guardados de una fusión anterior
+      // (solo puede pasar al editar: generarContrato_ para "nuevo" nunca
+      // manda adjuntos_guardados), el PDF que se acaba de generar NO los
+      // lleva — se ofrece mantenerlos o descartarlos en vez de dejarlos
+      // huérfanos en silencio.
+      if (data.adjuntos_guardados && data.adjuntos_guardados.length && data.pdf_base64) {
+        mostrarEleccionAdjuntosGuardados(data.pdf_base64, data.adjuntos_guardados, tipo, 'form-msg', cargarEstado);
         return;
       }
       document.getElementById('form-msg').innerHTML =
