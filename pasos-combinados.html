@@ -301,6 +301,7 @@
     <div class="card" onclick="selG('alic_tv','Inlay Natural 60×120',this,'g-tv')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/INLAY%2060x120.jpg') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Inlay Natural</div><div class="card-dims">60 × 120 cm</div></div></div>
     <div class="card" onclick="selG('alic_tv','Flodsten Smoke 60×120',this,'g-tv')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/Flodsten%20Smoke%2060x120.png') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Flodsten Smoke</div><div class="card-dims">60 × 120 cm</div></div></div>
     <div class="card" onclick="selG('alic_tv','Flodsten Snow 60×120',this,'g-tv')"><div class="card-swatch" style="height:130px;background:url('https://arqamal.github.io/serena-breeze/img/alic/Flodsten%20Snow%2060x120.png') center/cover no-repeat;"></div><div class="card-info"><div class="card-name">Flodsten Snow</div><div class="card-dims">60 × 120 cm</div></div></div>
+    <div class="card" onclick="selG('alic_tv','Sin alicatar',this,'g-tv')"><div class="card-swatch" style="height:130px;background:#FFFFFF;"></div><div class="card-info"><div class="card-name">Sin alicatar</div><div class="card-dims">—</div></div></div>
   </div>
   <div class="nav-btns"><button class="btn btn-back" onclick="prev(3)" data-i18n="btn_back">← Anterior</button><button class="btn btn-next" onclick="next(3)" data-i18n="btn_next">Siguiente →</button></div>
 </div>
@@ -893,6 +894,14 @@
   }
 
   function selBano1Mueble(nombre, el) {
+    if (el.classList.contains('selected')) {
+      delete S['bano1_mueble'];
+      bano1Mueble = '';
+      el.classList.remove('selected');
+      updateBano1Ref();
+      tick();
+      return;
+    }
     const muebleCode = nombre === 'Roble Natural' ? 'RN' : 'MM';
     S['bano1_mueble'] = 'Flow ' + (FLOW_LABELS[nombre] || nombre);
     bano1Mueble = muebleCode;
@@ -903,6 +912,14 @@
   }
 
   function selBano1Lavabo(nombre, el) {
+    if (el.classList.contains('selected')) {
+      delete S['bano1_lavabo'];
+      bano1Lavabo = '';
+      el.classList.remove('selected');
+      updateBano1Ref();
+      tick();
+      return;
+    }
     S['bano1_lavabo'] = 'Masai ' + (MASAI_LABELS[nombre] || nombre);
     bano1Lavabo = nombre;
     document.getElementById('cg-bano1-lavabo').querySelectorAll('.ccard').forEach(c => c.classList.remove('selected'));
@@ -957,6 +974,14 @@
   }
 
   function selBano2Frente(nombre, el) {
+    if (el.classList.contains('selected')) {
+      delete S['bano2_frente'];
+      bano2Frente = '';
+      el.classList.remove('selected');
+      updateBano2Ref();
+      tick();
+      return;
+    }
     S['bano2_frente'] = 'Lambda ' + (LAMBDA_LABELS[nombre] || nombre);
     if (nombre === 'Roble Natural') bano2Frente = 'RN';
     else if (nombre === 'Negro Azabache') bano2Frente = 'Negro';
@@ -968,6 +993,14 @@
   }
 
   function selBano2Lavabo(nombre, el) {
+    if (el.classList.contains('selected')) {
+      delete S['bano2_lavabo'];
+      bano2Lavabo = '';
+      el.classList.remove('selected');
+      updateBano2Ref();
+      tick();
+      return;
+    }
     S['bano2_lavabo'] = 'Masai ' + (MASAI_LABELS[nombre] || nombre);
     if (nombre === 'Negro azabache') bano2Lavabo = 'negro';
     else bano2Lavabo = nombre.toLowerCase();
@@ -978,6 +1011,12 @@
   }
 
   function selEnc(key, val, el) {
+    if (el.classList.contains('selected')) {
+      delete S[key];
+      el.classList.remove('selected');
+      tick();
+      return;
+    }
     S[key] = val;
     document.getElementById('grid-compac').querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
     document.getElementById('grid-porc').querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
@@ -985,6 +1024,12 @@
     tick();
   }
   function selPool(val, el) {
+    if (el.classList.contains('selected')) {
+      delete S['piscina'];
+      el.classList.remove('selected');
+      tick();
+      return;
+    }
     S['piscina'] = val;
     document.querySelectorAll('#pool-gresite .card, #pool-porcelanico .card')
       .forEach(c => c.classList.remove('selected'));
@@ -992,6 +1037,12 @@
     tick();
   }
   function selAll(key, val, el, gids) {
+    if (el.classList.contains('selected')) {
+      delete S[key];
+      el.classList.remove('selected');
+      tick();
+      return;
+    }
     S[key] = val;
     gids.forEach(gid => {
       document.getElementById(gid).querySelectorAll('.card,.ccard').forEach(c => c.classList.remove('selected'));
@@ -1000,12 +1051,24 @@
     tick();
   }
   function sel(key, val, el) {
+    if (el.classList.contains('selected')) {
+      delete S[key];
+      el.classList.remove('selected');
+      tick();
+      return;
+    }
     S[key] = val;
     el.closest('.grid').querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected');
     tick();
   }
   function selG(key, val, el, gid) {
+    if (el.classList.contains('selected')) {
+      delete S[key];
+      el.classList.remove('selected');
+      tick();
+      return;
+    }
     S[key] = val;
     document.getElementById(gid).querySelectorAll('.card,.ccard').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected');

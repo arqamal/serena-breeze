@@ -717,11 +717,19 @@
   const OSLO_BASE = 'https://arqamal.github.io/serena-breeze/img/banoapart/';
 
   function selBanoApt(key, nombre, bano, el, gid) {
+    const wrap = document.getElementById(bano + '-ref-wrap');
+    if (el.classList.contains('selected')) {
+      delete S[key];
+      el.classList.remove('selected');
+      const msg = LANG === 'es' ? 'Seleccione el acabado para ver el mueble' : 'Select the finish to see the vanity unit';
+      wrap.innerHTML = '<p style="font-family:\'Roboto\',sans-serif; font-size:13px; color:var(--mid); text-align:center; padding:40px;">' + msg + '</p>';
+      tick();
+      return;
+    }
     const OSLO_LABELS = {'Blanco Mate':'27 Blanco Mate','Roble Natural':'24 Roble Natural','Nogal Vera':'84 Nogal Vera','Moka Mate':'46 Moka Mate','Mist Mate':'75 Mist Mate'};
     S[key] = 'Oslo ' + (OSLO_LABELS[nombre] || nombre);
     document.getElementById(gid).querySelectorAll('.ccard').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected');
-    const wrap = document.getElementById(bano + '-ref-wrap');
     const file = OSLO_IMGS[nombre];
     if (file) {
       wrap.innerHTML = '<img src="' + OSLO_BASE + file + '" alt="Oslo ' + nombre + '" style="width:100%;display:block;" onload="sendHeight()">';
@@ -781,6 +789,12 @@
   }
 
   function selEnc(key, val, el) {
+    if (el.classList.contains('selected')) {
+      delete S[key];
+      el.classList.remove('selected');
+      tick();
+      return;
+    }
     S[key] = val;
     document.getElementById('grid-compac').querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected');
@@ -788,6 +802,12 @@
   }
 
   function selAll(key, val, el, gids) {
+    if (el.classList.contains('selected')) {
+      delete S[key];
+      el.classList.remove('selected');
+      tick();
+      return;
+    }
     S[key] = val;
     gids.forEach(gid => {
       const g = document.getElementById(gid);
@@ -797,12 +817,24 @@
     tick();
   }
   function sel(key, val, el) {
+    if (el.classList.contains('selected')) {
+      delete S[key];
+      el.classList.remove('selected');
+      tick();
+      return;
+    }
     S[key] = val;
     el.closest('.grid').querySelectorAll('.card').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected');
     tick();
   }
   function selG(key, val, el, gid) {
+    if (el.classList.contains('selected')) {
+      delete S[key];
+      el.classList.remove('selected');
+      tick();
+      return;
+    }
     S[key] = val;
     document.getElementById(gid).querySelectorAll('.card,.ccard').forEach(c => c.classList.remove('selected'));
     el.classList.add('selected');
