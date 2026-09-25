@@ -1248,7 +1248,15 @@ function formatearMiles(n) {
   return negativo + entero + decimales;
 }
 function parsearMiles(s) {
-  if (!s) return 0;
+  if (s === null || s === undefined || s === '') return 0;
+  // Si ya es un número (viene directo del Excel vía val(), sin pasar por
+  // un <input>), NO tocarlo: es un JS number normal (156847.5), y
+  // String(156847.5) da "156847.5" — ese punto es el DECIMAL, no un
+  // separador de miles. Tratarlo como texto español y borrar el punto
+  // lo convertía en 1568475 (×10). Solo las cadenas que vienen de un
+  // <input> (formato español, con puntos de miles y coma decimal)
+  // necesitan el replace de abajo.
+  if (typeof s === 'number') return s;
   return parseFloat(String(s).replace(/\./g, '').replace(',', '.')) || 0;
 }
 function formatearCampo(el) {
@@ -1593,6 +1601,18 @@ function recogerCamposFormulario(tipo) {
     const el = document.getElementById('f-' + c.key);
     if (el) campos[c.key] = el.value.trim();
   });
+
+  // País del cliente: el formulario principal no tiene campo propio para
+  // esto (solo existe como input editable en el Detalle de vivienda) —
+  // se autoestima aquí a partir de la dirección, igual que en Detalle,
+  // para que quede guardado en el Excel desde el momento en que se
+  // genera/edita, sin depender de que alguien pase luego por Detalle. Si
+  // no se reconoce ningún país en la dirección, no se manda nada (no se
+  // pisa en blanco un valor ya correcto guardado antes).
+  if (campos.dom_cliente) {
+    const paisEstim = estimarPaisDesdeDireccion(campos.dom_cliente);
+    if (paisEstim) campos.pais_cliente = paisEstim;
+  }
 
   // precio: se reformatean por si acaso (blur no se disparó) y el IVA se
   // manda con el símbolo % — es un tipo, no un importe.
