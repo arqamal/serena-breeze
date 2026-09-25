@@ -88,6 +88,8 @@
   .mat-value.vacio { color: var(--mid); font-style: italic; }
   .mat-value.hl { background: #FFF3B0; padding: 0 4px; }
   .obs { font-size: 13px; color: var(--text); background: var(--off-white); border: 1px solid var(--border); padding: 10px 12px; line-height: 1.6; }
+  .obs-tr { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--border); color: var(--slate-gray); font-style: italic; }
+  .obs-tr span { display: block; font-style: normal; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--mid); margin-bottom: 3px; }
   .ficha { display: flex; gap: 24px; flex-wrap: wrap; font-size: 12px; color: var(--slate-gray); margin-top: 14px; }
   .ficha b { color: var(--text); font-weight: 400; }
 
@@ -484,7 +486,7 @@ function renderViviendas(lista) {
           ${est === 'pendiente'
             ? '<div class="block-label">Sin elección registrada</div>'
             : `<div class="block-label">Materiales</div><div class="mat-grid">${filas}</div>
-               ${v.comentarios ? `<div class="block-label">Comentarios</div><div class="obs">${escapeHtml(v.comentarios)}</div>` : ''}`}
+               ${v.comentarios ? `<div class="block-label">Comentarios</div><div class="obs">${escapeHtml(v.comentarios)}${v.comentarios_es ? `<div class="obs-tr"><span>Traducción automática</span>${escapeHtml(v.comentarios_es)}</div>` : ''}</div>` : ''}`}
         </div>
       </div>`;
   }).join('');
@@ -580,9 +582,17 @@ function descargarPDF(ev, codigo) {
     y += 3;
     doc.setFillColor(245, 245, 245);
     const lines = doc.splitTextToSize(v.comentarios, w - 32);
-    doc.rect(14, y - 4, w - 28, lines.length * 4.5 + 9, 'F');
+    const linesTr = v.comentarios_es ? doc.splitTextToSize(v.comentarios_es, w - 32) : [];
+    const alto = lines.length * 4.5 + 9 + (linesTr.length ? linesTr.length * 4.5 + 9 : 0);
+    doc.rect(14, y - 4, w - 28, alto, 'F');
     doc.setFont('helvetica', 'bold'); doc.text('COMENTARIOS', 16, y + 1);
     doc.setFont('helvetica', 'normal'); doc.text(lines, 16, y + 6);
+    if (linesTr.length) {
+      const yTr = y + 6 + lines.length * 4.5 + 4;
+      doc.setFont('helvetica', 'bold'); doc.setTextColor(120, 120, 120); doc.text('TRADUCCIÓN AUTOMÁTICA', 16, yTr);
+      doc.setFont('helvetica', 'italic'); doc.text(linesTr, 16, yTr + 5);
+      doc.setTextColor(51, 51, 51); doc.setFont('helvetica', 'normal');
+    }
   }
   doc.save(v.vivienda + '_materiales.pdf');
 }
@@ -640,7 +650,11 @@ function generarDemo(promo) {
     return {
       vivienda: codigo, tipo,
       fecha: vacio ? '' : String(d).padStart(2, '0') + '/' + String(mes).padStart(2, '0') + '/2026 ' + (9 + Math.floor(rnd() * 9)) + ':' + String(Math.floor(rnd() * 60)).padStart(2, '0'),
-      comentarios: !vacio && rnd() > 0.65 ? (Object.keys(m).length < keys.length ? 'Pendientes los demás materiales' : 'Cocina como el apartamento piloto') : '',
+      ...(() => {
+        if (vacio || rnd() <= 0.55) return { comentarios: '', comentarios_es: '' };
+        if (rnd() > 0.5) return { comentarios: 'Like the showhouse appartment', comentarios_es: 'Como el apartamento piloto' };
+        return { comentarios: Object.keys(m).length < keys.length ? 'Pendientes los demás materiales' : 'Cocina como el apartamento piloto', comentarios_es: '' };
+      })(),
       num_registros: vacio ? 0 : (rnd() > 0.85 ? 2 : 1),
       materiales: m
     };
