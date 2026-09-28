@@ -818,27 +818,54 @@ function generarDemo(promo) {
 }
 
 // ── IFRAME HEIGHT COMMUNICATION ───────────────────────
-// Con el login visible el body mide ~0 (la pantalla de login es fixed y la
-// app está oculta), así que se manda una altura mínima para que la caja de
-// acceso se vea entera dentro del iframe de Webflow.
-function sendHeight() {
-  var login = document.getElementById('login-screen');
-  var loginVisible = login && getComputedStyle(login).display !== 'none';
-  var h;
-  if (loginVisible) {
-    var box = login.querySelector('.login-box');
-    h = Math.max(560, (box ? box.offsetHeight : 0) + 96);
-  } else {
-    h = document.body.scrollHeight;
+// Varios disparadores en vez de uno solo: el body puede crecer por fetch
+// asíncrono (login -> carga de datos -> pintado de tarjetas), por fuentes
+// que tardan en cargar, o por cambios que un solo ResizeObserver sin
+// referencia guardada podría perder. Se guardan las referencias, se
+// observa también el contenedor donde se insertan las tarjetas, y hay un
+// polling de respaldo los primeros segundos.
+(function () {
+  function calcHeight() {
+    var login = document.getElementById('login-screen');
+    var loginVisible = login && getComputedStyle(login).display !== 'none';
+    if (loginVisible) {
+      var box = login.querySelector('.login-box');
+      return Math.max(560, (box ? box.offsetHeight : 0) + 96);
+    }
+    return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
   }
-  window.parent.postMessage({ iframeHeight: h }, '*');
-}
-sendHeight();
-new ResizeObserver(sendHeight).observe(document.body);
-new MutationObserver(sendHeight).observe(
-  document.getElementById('login-screen'),
-  { attributes: true, attributeFilter: ['style'] }
-);
+  var ultimaAltura = 0;
+  function sendHeight() {
+    var h = calcHeight();
+    if (h !== ultimaAltura) {
+      ultimaAltura = h;
+      window.parent.postMessage({ iframeHeight: h }, '*');
+    }
+  }
+  window.sendHeight = sendHeight; // accesible desde consola para depurar a mano
+
+  sendHeight();
+  window.addEventListener('load', sendHeight);
+  window.addEventListener('resize', sendHeight);
+
+  var roBody = new ResizeObserver(sendHeight);
+  roBody.observe(document.body);
+
+  var moLogin = new MutationObserver(sendHeight);
+  moLogin.observe(document.getElementById('login-screen'), { attributes: true, attributeFilter: ['style'] });
+
+  var appWrapper = document.getElementById('app-wrapper');
+  var moApp = new MutationObserver(sendHeight);
+  moApp.observe(appWrapper, { attributes: true, attributeFilter: ['style'], childList: true, subtree: true });
+
+  // Red de seguridad: reintenta cada 400ms durante los primeros 8s, por si
+  // algo (fuentes, fetch, layout tardío) se escapa a los observers de arriba.
+  var intentos = 0;
+  var poll = setInterval(function () {
+    sendHeight();
+    if (++intentos > 20) clearInterval(poll);
+  }, 400);
+})();
 </script>
 </body>
 </html>
