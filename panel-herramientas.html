@@ -33,7 +33,6 @@
 
   .tile { background: var(--white); padding: 22px 24px; display: flex; flex-direction: column; min-height: 190px; text-decoration: none; color: inherit; transition: background .15s; }
   .tile:hover { background: var(--off-white); }
-  .tile-cat { align-self: flex-start; font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 9px; border: 1px solid var(--border); color: var(--slate-gray); margin-bottom: 14px; }
   .tile-title { font-family: 'Oswald', sans-serif; font-size: 17px; font-weight: 400; text-transform: uppercase; letter-spacing: .5px; color: var(--black); line-height: 1.25; margin-bottom: 8px; }
   .tile-desc { font-family: 'Roboto', sans-serif; font-size: 13px; font-weight: 300; color: var(--slate-gray); line-height: 1.6; flex-grow: 1; }
   .tile-cta { align-self: flex-start; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate-gray); border: 1px solid var(--border); padding: 9px 16px; margin-top: 18px; display: inline-flex; align-items: center; gap: 8px; transition: all .15s; }
@@ -58,61 +57,23 @@
   <p class="sec-desc">Acceso centralizado a los selectores y formularios web de todas las promociones de Amal Inmobiliaria. Cada herramienta se abre en una pestaña nueva.</p>
 
   <section class="bloque">
-    <div class="area-title">Serena Breeze 2 y 3</div>
+    <div class="area-title">Obra</div>
     <div class="grid">
 
-      <a class="tile" href="https://www.amalconsult.com/eleccion-de-materiales-sb" target="_blank" rel="noopener">
-        <span class="tile-cat">Materiales</span>
-        <div class="tile-title">Selector de materiales<br>Villas</div>
-        <div class="tile-desc">Elección de acabados de interior y exterior para las villas de Serena Breeze 2 y 3.</div>
-        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
-      </a>
-
-      <a class="tile" href="https://www.amalconsult.com/eleccion-de-materiales-apt-sb" target="_blank" rel="noopener">
-        <span class="tile-cat">Materiales</span>
-        <div class="tile-title">Selector de materiales<br>Apartamentos</div>
-        <div class="tile-desc">Elección de acabados para los apartamentos de Serena Breeze 2 y 3.</div>
-        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
-      </a>
-
       <a class="tile" href="https://www.amalconsult.com/dashboard-materiales" target="_blank" rel="noopener">
-        <span class="tile-cat">Materiales</span>
-        <div class="tile-title">Dashboard de materiales</div>
+        <div class="tile-title">Dashboard materiales</div>
         <div class="tile-desc">Consulta de la elección de acabados por vivienda y resumen por material de Serena Breeze 2 y 3. Acceso con login.</div>
         <span class="tile-cta">Abrir <span class="arrow">→</span></span>
       </a>
 
-      <a class="tile" href="https://www.amalconsult.com/selector-de-extras-sb" target="_blank" rel="noopener">
-        <span class="tile-cat">Extras</span>
-        <div class="tile-title">Selector de extras</div>
-        <div class="tile-desc">Elección y presupuesto de extras por vivienda, generación de PDF y firma digital.</div>
-        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
-      </a>
-
-      <a class="tile" href="https://www.amalconsult.com/aftersale-form" target="_blank" rel="noopener">
-        <span class="tile-cat">Postventa</span>
-        <div class="tile-title">Aviso de incidencias</div>
-        <div class="tile-desc">Reporte de incidencias del cliente tras la entrega, con seguimiento en Trello.</div>
-        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
-      </a>
-
       <a class="tile" href="https://www.amalconsult.com/dashboard-extras-sb" target="_blank" rel="noopener">
-        <span class="tile-cat">Extras</span>
-        <div class="tile-title">Dashboard de extras</div>
+        <div class="tile-title">Dashboard extras</div>
         <div class="tile-desc">Seguimiento y consulta del estado de extras por vivienda de Serena Breeze 2 y 3.</div>
         <span class="tile-cta">Abrir <span class="arrow">→</span></span>
       </a>
 
-      <a class="tile" href="https://www.amalconsult.com/precios-extras-sb" target="_blank" rel="noopener">
-        <span class="tile-cat">Extras</span>
-        <div class="tile-title">Consulta de precios de extras</div>
-        <div class="tile-desc">Listado de extras con descripción, notas y precio unitario, sin selección ni edición.</div>
-        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
-      </a>
-
       <a class="tile" href="https://www.amalconsult.com/dashboard-fechas-sb" target="_blank" rel="noopener">
-        <span class="tile-cat">Obra</span>
-        <div class="tile-title">Seguimiento de fechas</div>
+        <div class="tile-title">Dashboard fechas</div>
         <div class="tile-desc">Fechas clave de promoción, fase y vivienda: licencia, inicio, bloqueos, CFO y entregas de Serena Breeze.</div>
         <span class="tile-cta">Abrir <span class="arrow">→</span></span>
       </a>
@@ -121,20 +82,37 @@
   </section>
 
   <section class="bloque">
-    <div class="area-title">General</div>
+    <div class="area-title">Materiales</div>
     <div class="grid">
 
-      <a class="tile" href="https://www.amalconsult.com/formulario-decisiones-obra" target="_blank" rel="noopener">
-        <span class="tile-cat">Gestión</span>
-        <div class="tile-title">Registro de decisiones</div>
-        <div class="tile-desc">Registro diario de decisiones tomadas por obra, con usuario y fecha guardados en Sheet.</div>
+      <a class="tile" href="https://www.amalconsult.com/eleccion-de-materiales-sb" target="_blank" rel="noopener">
+        <div class="tile-title">2SB/3SB Selector de materiales villas</div>
+        <div class="tile-desc">Elección de acabados de interior y exterior para las villas de Serena Breeze 2 y 3.</div>
         <span class="tile-cta">Abrir <span class="arrow">→</span></span>
       </a>
 
-      <a class="tile" href="https://www.amalconsult.com/reuniones" target="_blank" rel="noopener">
-        <span class="tile-cat">Gestión</span>
-        <div class="tile-title">Reuniones</div>
-        <div class="tile-desc">Registro de temas para la reunión semanal, tratamiento por área, histórico y envío del acta. Acceso con login.</div>
+      <a class="tile" href="https://www.amalconsult.com/eleccion-de-materiales-apt-sb" target="_blank" rel="noopener">
+        <div class="tile-title">2SB/3SB Selector de materiales apartamentos</div>
+        <div class="tile-desc">Elección de acabados para los apartamentos de Serena Breeze 2 y 3.</div>
+        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
+      </a>
+
+    </div>
+  </section>
+
+  <section class="bloque">
+    <div class="area-title">Extras</div>
+    <div class="grid">
+
+      <a class="tile" href="https://www.amalconsult.com/selector-de-extras-sb" target="_blank" rel="noopener">
+        <div class="tile-title">Selector de extras</div>
+        <div class="tile-desc">Elección y presupuesto de extras por vivienda, generación de PDF y firma digital.</div>
+        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
+      </a>
+
+      <a class="tile" href="https://www.amalconsult.com/precios-extras-sb" target="_blank" rel="noopener">
+        <div class="tile-title">Consulta de precios de extras</div>
+        <div class="tile-desc">Listado de extras con descripción, notas y precio unitario, sin selección ni edición.</div>
         <span class="tile-cta">Abrir <span class="arrow">→</span></span>
       </a>
 
@@ -146,16 +124,46 @@
     <div class="grid">
 
       <a class="tile" href="https://www.amalconsult.com/contratos-sb" target="_blank" rel="noopener">
-        <span class="tile-cat">Contratos</span>
         <div class="tile-title">Generador de contratos</div>
         <div class="tile-desc">Reservas y compraventas por vivienda: generación de PDF, edición y cancelación. Acceso con login.</div>
         <span class="tile-cta">Abrir <span class="arrow">→</span></span>
       </a>
 
       <a class="tile" href="https://www.amalconsult.com/decenales" target="_blank" rel="noopener">
-        <span class="tile-cat">Seguros</span>
-        <div class="tile-title">Decenales</div>
+        <div class="tile-title">Control de decenales</div>
         <div class="tile-desc">Gestión del seguro decenal y OCT por promoción.</div>
+        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
+      </a>
+
+    </div>
+  </section>
+
+  <section class="bloque">
+    <div class="area-title">General</div>
+    <div class="grid">
+
+      <a class="tile" href="https://www.amalconsult.com/reuniones" target="_blank" rel="noopener">
+        <div class="tile-title">Reuniones</div>
+        <div class="tile-desc">Registro de temas para la reunión semanal, tratamiento por área, histórico y envío del acta. Acceso con login.</div>
+        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
+      </a>
+
+      <a class="tile" href="https://www.amalconsult.com/formulario-decisiones-obra" target="_blank" rel="noopener">
+        <div class="tile-title">Registro de decisiones</div>
+        <div class="tile-desc">Registro diario de decisiones tomadas por obra, con usuario y fecha guardados en Sheet.</div>
+        <span class="tile-cta">Abrir <span class="arrow">→</span></span>
+      </a>
+
+    </div>
+  </section>
+
+  <section class="bloque">
+    <div class="area-title">Postventa</div>
+    <div class="grid">
+
+      <a class="tile" href="https://www.amalconsult.com/aftersale-form" target="_blank" rel="noopener">
+        <div class="tile-title">Aviso de incidencias</div>
+        <div class="tile-desc">Reporte de incidencias del cliente tras la entrega, con seguimiento en Trello.</div>
         <span class="tile-cta">Abrir <span class="arrow">→</span></span>
       </a>
 
