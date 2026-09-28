@@ -803,6 +803,48 @@ const URL_DETALLE_VIVIENDA = 'SB-vivienda-detalle.html'; // TODO: sustituir por 
 function urlDetalleVivienda_(promocion, vivienda) {
   return URL_DETALLE_VIVIENDA + '?promo=' + encodeURIComponent(promocion) + '&vivienda=' + encodeURIComponent(vivienda);
 }
+
+// ── IFRAME HEIGHT COMMUNICATION ───────────────────────
+(function () {
+  function calcHeight() {
+    var login = document.getElementById('login-screen');
+    var loginVisible = login && getComputedStyle(login).display !== 'none';
+    if (loginVisible) {
+      var box = login.querySelector('.login-box');
+      return Math.max(560, (box ? box.offsetHeight : 0) + 96);
+    }
+    return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+  }
+  var ultimaAltura = 0;
+  function sendHeight() {
+    var h = calcHeight();
+    if (h !== ultimaAltura) {
+      ultimaAltura = h;
+      window.parent.postMessage({ iframeHeight: h }, '*');
+    }
+  }
+  window.sendHeight = sendHeight;
+
+  sendHeight();
+  window.addEventListener('load', sendHeight);
+  window.addEventListener('resize', sendHeight);
+
+  var roBody = new ResizeObserver(sendHeight);
+  roBody.observe(document.body);
+
+  var moLogin = new MutationObserver(sendHeight);
+  moLogin.observe(document.getElementById('login-screen'), { attributes: true, attributeFilter: ['style'] });
+
+  var appWrapper = document.getElementById('app-wrapper');
+  var moApp = new MutationObserver(sendHeight);
+  moApp.observe(appWrapper, { attributes: true, attributeFilter: ['style'], childList: true, subtree: true });
+
+  var intentos = 0;
+  var poll = setInterval(function () {
+    sendHeight();
+    if (++intentos > 20) clearInterval(poll);
+  }, 400);
+})();
 </script>
 </body>
 </html>
