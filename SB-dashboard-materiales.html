@@ -34,8 +34,13 @@
   .seg.small button { padding: 9px 14px; font-size: 11px; letter-spacing: 1.5px; }
 
   .search-input, .filter-select { border: 1px solid var(--border); padding: 11px 14px; font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); background: var(--white); outline: none; border-radius: 0; }
-  .search-input { flex: 1; min-width: 200px; max-width: 280px; }
-  .filter-select { min-width: 150px; }
+  /* Fila de filtros: todo en una línea; los desplegables se reparten el
+     espacio que queda y recortan el texto si no cabe. */
+  .topbar.filtros { flex-wrap: nowrap; gap: 8px; align-items: stretch; }
+  .topbar.filtros > * { height: 40px; padding-top: 0; padding-bottom: 0; }
+  .search-input { width: 84px; flex: 0 0 84px; padding-left: 10px; padding-right: 8px; }
+  .filter-select { flex: 1 1 0; min-width: 0; padding-left: 10px; padding-right: 6px; text-overflow: ellipsis; }
+  .btn-todo { flex: 0 0 auto; white-space: nowrap; padding: 11px 12px; letter-spacing: 1.5px; }
   .search-input:focus, .filter-select:focus { border-color: var(--black); }
 
   .btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 11px 18px; background: transparent; color: var(--slate-gray); border: 1px solid var(--border); transition: all .15s; }
@@ -44,9 +49,14 @@
   .btn-group .btn { border: none; border-right: 1px solid var(--border); }
   .btn-group .btn:last-child { border-right: none; }
 
+  #generado { display: block; font-size: 11px; color: var(--mid); margin-bottom: 12px; }
+  #generado:empty { display: none; }
+
   /* KPIs */
-  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); margin-bottom: 28px; }
-  .kpi { padding: 16px 20px; border-right: 1px solid var(--border); }
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); margin-bottom: 20px; }
+  .kpi { padding: 16px 20px; border-right: 1px solid var(--border); cursor: pointer; transition: background .15s; position: relative; }
+  .kpi:hover { background: var(--off-white); }
+  .kpi.active { background: var(--off-white); box-shadow: inset 0 -3px 0 var(--black); }
   .kpi:last-child { border-right: none; }
   .kpi-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 6px; }
   .kpi-value { font-family: 'Oswald', sans-serif; font-size: 26px; color: var(--black); }
@@ -93,17 +103,17 @@
   .ficha { display: flex; gap: 24px; flex-wrap: wrap; font-size: 12px; color: var(--slate-gray); margin-top: 14px; }
   .ficha b { color: var(--text); font-weight: 400; }
 
-  /* RESUMEN (vista agregada por material) */
-  .res-campo { border: 1px solid var(--border); margin-bottom: 16px; }
-  .res-head { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: var(--off-white); border-bottom: 1px solid var(--border); }
-  .res-title { font-family: 'Oswald', sans-serif; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); }
-  .res-body { padding: 6px 20px 14px; }
-  .res-row { display: grid; grid-template-columns: 1fr 60px 1fr; gap: 16px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
-  .res-row:last-child { border-bottom: none; }
-  .res-count { font-family: 'Oswald', sans-serif; font-size: 16px; text-align: right; }
-  .res-bar { height: 6px; background: var(--border); }
-  .res-bar > div { height: 100%; background: var(--black); }
-  .res-viv { grid-column: 1 / -1; font-size: 11px; color: var(--mid); margin-top: -4px; line-height: 1.5; }
+  /* POR ELEMENTO / POR MATERIAL */
+  .grp-row { display: grid; grid-template-columns: minmax(0, 1fr) 44px minmax(80px, 180px); gap: 16px; align-items: center; padding: 9px 0 3px; font-size: 13px; }
+  .grp-name { color: var(--text); }
+  .grp-name.dim { color: var(--mid); }
+  .grp-count { font-family: 'Oswald', sans-serif; font-size: 16px; text-align: right; }
+  .grp-count.dim { color: var(--mid); }
+  .grp-bar { height: 6px; background: var(--border); }
+  .grp-bar > div { height: 100%; background: var(--black); }
+  .grp-viv { font-size: 11px; color: var(--slate-gray); padding: 0 0 9px; border-bottom: 1px solid var(--border); line-height: 1.6; letter-spacing: .3px; }
+  .grp-block:last-child .grp-viv { border-bottom: none; }
+  .hl-text { background: #FFF3B0; padding: 0 3px; }
 
   /* LOGIN */
   #login-screen { position: fixed; inset: 0; background: var(--white); display: flex; align-items: center; justify-content: center; z-index: 9999; }
@@ -128,7 +138,11 @@
     .kpi:nth-child(-n+2) { border-bottom: 1px solid var(--border); }
     .mat-grid { grid-template-columns: 1fr; }
     .btn-group { margin-left: 0; }
-    .search-input { max-width: none; }
+    .topbar.filtros { flex-wrap: wrap; }
+    .search-input { flex: 1 1 100%; width: auto; }
+    .filter-select { flex: 1 1 45%; }
+    .btn-todo { flex: 1 1 100%; }
+    .grp-row { grid-template-columns: minmax(0, 1fr) 36px 70px; gap: 10px; }
     .vivienda-head { flex-wrap: wrap; padding: 12px 14px; }
     .vivienda-meta { flex-wrap: wrap; }
     .vivienda-body { padding: 4px 14px 14px; }
@@ -159,7 +173,7 @@
   <main>
     <div class="sec-eyebrow">Serena Breeze · Aftersale</div>
     <div class="sec-title">Materiales por vivienda</div>
-    <div class="sec-desc">Elección de acabados de cada vivienda (villas y apartamentos). Vista por vivienda para revisar cada ficha, o resumen por material para ver cuántas unidades lleva cada opción de cara a pedidos.</div>
+    <div class="sec-desc">Elección de acabados de cada vivienda. Vista por vivienda, elemento y material.</div>
 
     <div class="topbar">
       <div class="seg">
@@ -168,7 +182,8 @@
       </div>
       <div class="seg small">
         <button id="vista-viviendas" class="active" onclick="setVista('viviendas')">Por vivienda</button>
-        <button id="vista-resumen" onclick="setVista('resumen')">Resumen</button>
+        <button id="vista-elementos" onclick="setVista('elementos')">Por elemento</button>
+        <button id="vista-materiales" onclick="setVista('materiales')">Por material</button>
       </div>
       <div class="btn-group">
         <button class="btn" onclick="if (CURRENT_PROMO) loadPromo(CURRENT_PROMO, true)">↻ Actualizar</button>
@@ -176,8 +191,8 @@
       </div>
     </div>
 
-    <div class="topbar">
-      <input class="search-input" id="search-input" type="text" placeholder="Buscar vivienda…" oninput="render()">
+    <div class="topbar filtros">
+      <input class="search-input" id="search-input" type="text" placeholder="Vivienda…" title="Buscar vivienda" oninput="render()">
       <select class="filter-select" id="f-tipo" onchange="onTipoChange()">
         <option value="">Villas y apartamentos</option>
         <option value="villa">Solo villas</option>
@@ -190,19 +205,20 @@
         <option value="pendiente">Sin elección</option>
       </select>
       <select class="filter-select" id="f-campo" onchange="onCampoChange()">
+        <option value="">Cualquier elemento</option>
+      </select>
+      <select class="filter-select" id="f-mat" onchange="render()">
         <option value="">Cualquier material</option>
       </select>
-      <select class="filter-select" id="f-valor" onchange="render()" style="display:none">
-        <option value="">Cualquier opción</option>
-      </select>
-      <button class="btn" id="toggle-todo-btn" onclick="toggleTodo()">▴ Contraer todo</button>
+      <button class="btn btn-todo" id="toggle-todo-btn" onclick="toggleTodo()">▴ Contraer todo</button>
     </div>
 
-    <div id="generado" style="font-size:11px;color:var(--mid);margin:-6px 0 14px"></div>
+
     <div id="aviso-traduccion" style="display:none;font-size:12px;color:#c0392b;padding:8px 16px;background:#fdf0ee;border:1px solid #f0c4bc;margin-bottom:20px"></div>
     <div id="demo-banner">Modo ejemplo — datos inventados. Nada de lo que ves aquí sale de la Sheet real.</div>
     <div id="load-indicator"></div>
     <div id="kpis" class="kpis" style="display:none"></div>
+    <span id="generado"></span>
     <div id="empty-state"></div>
     <div id="cards-container"></div>
   </main>
@@ -365,10 +381,10 @@ function loadPromo(promo, forzar) {
 }
 
 // ─── LÓGICA ─────────────────────────────────────────────────────────
+function valorDe(v, k) { return String((v.materiales || {})[k] || '').trim(); }
 function estadoVivienda(v) {
   const campos = camposDe(v.tipo);
-  const m = v.materiales || {};
-  const llenos = campos.filter(([k]) => String(m[k] || '').trim()).length;
+  const llenos = campos.filter(([k]) => valorDe(v, k)).length;
   if (llenos === 0) return 'pendiente';
   if (llenos < campos.length) return 'parcial';
   return 'completa';
@@ -376,22 +392,34 @@ function estadoVivienda(v) {
 function chipEstado(est, v) {
   if (est === 'completa') return '<span class="status-chip chip-ok">Completa</span>';
   if (est === 'pendiente') return '<span class="status-chip chip-pend">Sin elección</span>';
-  const campos = camposDe(v.tipo), m = v.materiales || {};
-  const llenos = campos.filter(([k]) => String(m[k] || '').trim()).length;
+  const campos = camposDe(v.tipo);
+  const llenos = campos.filter(([k]) => valorDe(v, k)).length;
   return `<span class="status-chip chip-parcial">${llenos}/${campos.length}</span>`;
 }
+function tieneCampo(v, k) { return (v.tipo === 'villa' ? CAMPOS.villa : CAMPOS.apartamento).includes(k); }
 
-function filtrar() {
-  const q = (document.getElementById('search-input').value || '').trim().toUpperCase();
-  const tipo = document.getElementById('f-tipo').value;
-  const est = document.getElementById('f-estado').value;
-  const campo = document.getElementById('f-campo').value;
-  const valor = document.getElementById('f-valor').value;
+// Filtros comunes a las 3 vistas. ignorarEstado: para contar la cinta de
+// KPIs sin que el propio filtro de estado deje las demás casillas a 0.
+function filtros() {
+  return {
+    q: (document.getElementById('search-input').value || '').trim().toUpperCase(),
+    tipo: document.getElementById('f-tipo').value,
+    est: document.getElementById('f-estado').value,
+    campo: document.getElementById('f-campo').value,
+    mat: document.getElementById('f-mat').value
+  };
+}
+function filtrar(ignorarEstado) {
+  const f = filtros();
   return DATA.filter(v => {
-    if (tipo && v.tipo !== tipo) return false;
-    if (est && estadoVivienda(v) !== est) return false;
-    if (q && !String(v.vivienda).toUpperCase().includes(q)) return false;
-    if (campo && valor && String((v.materiales || {})[campo] || '') !== valor) return false;
+    if (f.tipo && v.tipo !== f.tipo) return false;
+    if (!ignorarEstado && f.est && estadoVivienda(v) !== f.est) return false;
+    if (f.q && !String(v.vivienda).toUpperCase().includes(f.q)) return false;
+    if (f.campo && !tieneCampo(v, f.campo)) return false;
+    if (f.mat) {
+      const keys = f.campo ? [f.campo] : camposDe(v.tipo).map(c => c[0]);
+      if (!keys.some(k => valorDe(v, k) === f.mat)) return false;
+    }
     return true;
   }).sort((a, b) => compareViviendas(a.vivienda, b.vivienda));
 }
@@ -402,149 +430,230 @@ function poblarFiltroCampos() {
   const actual = sel.value;
   const tipo = document.getElementById('f-tipo').value;
   const campos = tipo ? camposDe(tipo) : camposUnion();
-  sel.innerHTML = '<option value="">Cualquier material</option>' + campos.map(([k, l]) => `<option value="${k}">${escapeHtml(l)}</option>`).join('');
+  sel.innerHTML = '<option value="">Cualquier elemento</option>' + campos.map(([k, l]) => `<option value="${k}">${escapeHtml(l)}</option>`).join('');
   if (campos.some(c => c[0] === actual)) sel.value = actual;
   onCampoChange(true);
 }
+// El desplegable de material solo ofrece los materiales que existen en el
+// elemento elegido (o en todos, si no hay elemento elegido).
 function onCampoChange(sinRender) {
   const campo = document.getElementById('f-campo').value;
-  const selV = document.getElementById('f-valor');
-  const actual = selV.value;
-  if (!campo) { selV.style.display = 'none'; selV.value = ''; }
-  else {
-    const valores = [...new Set(DATA.map(v => String((v.materiales || {})[campo] || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
-    selV.innerHTML = '<option value="">Cualquier opción</option>' + valores.map(x => `<option value="${escapeAttr(x)}">${escapeHtml(x)}</option>`).join('');
-    if (valores.includes(actual)) selV.value = actual;
-    selV.style.display = '';
-  }
+  const tipo = document.getElementById('f-tipo').value;
+  const selM = document.getElementById('f-mat');
+  const actual = selM.value;
+  const set = new Set();
+  DATA.forEach(v => {
+    if (tipo && v.tipo !== tipo) return;
+    const keys = campo ? [campo] : camposDe(v.tipo).map(c => c[0]);
+    keys.forEach(k => { const x = valorDe(v, k); if (x) set.add(x); });
+  });
+  const valores = [...set].sort((a, b) => a.localeCompare(b, 'es'));
+  selM.innerHTML = '<option value="">Cualquier material</option>' + valores.map(x => `<option value="${escapeAttr(x)}">${escapeHtml(x)}</option>`).join('');
+  if (valores.includes(actual)) selM.value = actual;
   if (sinRender !== true) render();
 }
 
 function setVista(v) {
   VISTA = v;
-  document.getElementById('vista-viviendas').classList.toggle('active', v === 'viviendas');
-  document.getElementById('vista-resumen').classList.toggle('active', v === 'resumen');
-  document.getElementById('toggle-todo-btn').style.display = v === 'viviendas' ? '' : 'none';
+  ['viviendas', 'elementos', 'materiales'].forEach(x => document.getElementById('vista-' + x).classList.toggle('active', x === v));
+  render();
+}
+function filtrarEstadoKpi(est) {
+  const sel = document.getElementById('f-estado');
+  sel.value = sel.value === est ? '' : est; // pulsar la casilla activa la quita
   render();
 }
 
 // ─── RENDER ─────────────────────────────────────────────────────────
+let CLAVES_VISTA = []; // claves de las tarjetas pintadas (para contraer/desplegar todo)
+
 function render() {
   if (!CURRENT_PROMO) return;
   const lista = filtrar();
-  renderKpis(lista);
-  if (!lista.length) {
-    document.getElementById('cards-container').innerHTML = '';
-    mostrarVacio(DATA.length ? 'Ninguna vivienda coincide con el filtro.' : 'No hay viviendas para esta promoción.');
-    return;
+  const kpis = document.getElementById('kpis');
+  if (VISTA === 'viviendas') renderKpis(filtrar(true)); else kpis.style.display = 'none';
+
+  let tarjetas = [];
+  if (lista.length) {
+    if (VISTA === 'elementos') tarjetas = tarjetasElementos(lista);
+    else if (VISTA === 'materiales') tarjetas = tarjetasMateriales(lista);
+    else tarjetas = tarjetasViviendas(lista);
   }
-  document.getElementById('empty-state').style.display = 'none';
-  if (VISTA === 'resumen') renderResumen(lista); else renderViviendas(lista);
+  CLAVES_VISTA = tarjetas.map(t => t.key);
+  const cont = document.getElementById('cards-container');
+  if (!tarjetas.length) {
+    cont.innerHTML = '';
+    mostrarVacio(DATA.length ? 'Nada coincide con el filtro.' : 'No hay viviendas para esta promoción.');
+  } else {
+    document.getElementById('empty-state').style.display = 'none';
+    cont.innerHTML = tarjetas.map(cardHtml).join('');
+  }
   actualizarBotonTodo();
 }
 
 function renderKpis(lista) {
   const el = document.getElementById('kpis');
+  const est = document.getElementById('f-estado').value;
   const n = lista.length;
   const c = { completa: 0, parcial: 0, pendiente: 0 };
   lista.forEach(v => c[estadoVivienda(v)]++);
   const pct = n ? Math.round(c.completa / n * 100) : 0;
+  const act = x => (est === x ? ' active' : '');
   el.innerHTML = `
-    <div class="kpi"><div class="kpi-label">Viviendas</div><div class="kpi-value">${n}</div>
+    <div class="kpi${act('')}" onclick="filtrarEstadoKpi('')" title="Mostrar todas"><div class="kpi-label">Viviendas</div><div class="kpi-value">${n}</div>
       <div class="kpi-sub">${lista.filter(v => v.tipo === 'villa').length} villas · ${lista.filter(v => v.tipo !== 'villa').length} apts.</div></div>
-    <div class="kpi"><div class="kpi-label">Completas</div><div class="kpi-value">${c.completa}</div>
+    <div class="kpi${act('completa')}" onclick="filtrarEstadoKpi('completa')" title="Mostrar solo completas"><div class="kpi-label">Completas</div><div class="kpi-value">${c.completa}</div>
       <div class="progress"><div style="width:${pct}%"></div></div><div class="kpi-sub">${pct}%</div></div>
-    <div class="kpi"><div class="kpi-label">Incompletas</div><div class="kpi-value">${c.parcial}</div><div class="kpi-sub">faltan campos</div></div>
-    <div class="kpi"><div class="kpi-label">Sin elección</div><div class="kpi-value">${c.pendiente}</div><div class="kpi-sub">sin fila en la Sheet</div></div>`;
+    <div class="kpi${act('parcial')}" onclick="filtrarEstadoKpi('parcial')" title="Mostrar solo incompletas"><div class="kpi-label">Incompletas</div><div class="kpi-value">${c.parcial}</div><div class="kpi-sub">faltan campos</div></div>
+    <div class="kpi${act('pendiente')}" onclick="filtrarEstadoKpi('pendiente')" title="Mostrar solo sin elección"><div class="kpi-label">Sin elección</div><div class="kpi-value">${c.pendiente}</div><div class="kpi-sub">sin fila en la Sheet</div></div>`;
   el.style.display = 'grid';
 }
 
-function renderViviendas(lista) {
-  const campoF = document.getElementById('f-campo').value;
-  document.getElementById('cards-container').innerHTML = lista.map(v => {
+// Tarjeta común a las 3 vistas: misma cabecera, píldoras, PDF y plegado.
+function cardHtml(t) {
+  const id = VISTA + ':' + t.key;
+  const collapsed = COLLAPSED[id] ? ' collapsed' : '';
+  const k = jsStr(t.key);
+  return `
+    <div class="vivienda-card${collapsed}">
+      <div class="vivienda-head" onclick="toggleCard('${k}')">
+        <div class="vh-left">
+          <span class="vivienda-code">${escapeHtml(t.titulo)}</span>
+          ${t.sub ? `<span class="vivienda-cliente">${t.sub}</span>` : ''}
+        </div>
+        <div class="vivienda-meta">
+          ${t.meta || ''}
+          ${t.pdf ? `<button class="pdf-btn" onclick="descargarPDF(event, '${k}')">⤓ PDF</button>` : ''}
+          <span class="caret">▾</span>
+        </div>
+      </div>
+      <div class="vivienda-body">${t.body}</div>
+    </div>`;
+}
+function hl(txt, on) { return on ? `<span class="hl-text">${escapeHtml(txt)}</span>` : escapeHtml(txt); }
+
+// ── Por vivienda ──
+function tarjetasViviendas(lista) {
+  const f = filtros();
+  return lista.map(v => {
     const est = estadoVivienda(v);
-    const m = v.materiales || {};
-    const collapsed = COLLAPSED[v.vivienda] ? ' collapsed' : '';
-    const vEsc = jsStr(v.vivienda);
     const filas = camposDe(v.tipo).map(([k, l]) => {
-      const val = String(m[k] || '').trim();
-      const cls = 'mat-value' + (val ? '' : ' vacio') + (campoF === k && val ? ' hl' : '');
+      const val = valorDe(v, k);
+      const marcar = val && ((f.campo === k && (!f.mat || f.mat === val)) || (!f.campo && f.mat === val));
+      const cls = 'mat-value' + (val ? '' : ' vacio') + (marcar ? ' hl' : '');
       return `<div class="mat-row"><span class="mat-label">${escapeHtml(l)}</span><span class="${cls}">${val ? escapeHtml(val) : '—'}</span></div>`;
     }).join('');
-    return `
-      <div class="vivienda-card${collapsed}">
-        <div class="vivienda-head" onclick="toggleCard('${vEsc}')">
-          <div class="vh-left">
-            <span class="vivienda-code">${escapeHtml(v.vivienda)}</span>
-            ${v.fecha ? `<span class="vivienda-cliente">Elegido el ${escapeHtml(v.fecha)}</span>` : ''}
-          </div>
-          <div class="vivienda-meta">
-            <span class="pill">${v.tipo === 'villa' ? 'Villa' : 'Apartamento'}</span>
-            ${v.num_registros > 1 ? `<span class="pill" title="Hay ${v.num_registros} filas de esta vivienda en la Sheet; se muestra la más reciente">${v.num_registros} registros</span>` : ''}
-            ${chipEstado(est, v)}
-            ${est !== 'pendiente' ? `<button class="pdf-btn" onclick="descargarPDF(event, '${vEsc}')">⤓ PDF</button>` : ''}
-            <span class="caret">▾</span>
-          </div>
-        </div>
-        <div class="vivienda-body">
-          ${est === 'pendiente'
-            ? '<div class="block-label">Sin elección registrada</div>'
-            : `<div class="block-label">Materiales</div><div class="mat-grid">${filas}</div>
-               ${v.comentarios ? `<div class="block-label">Comentarios</div><div class="obs">${escapeHtml(v.comentarios)}${v.comentarios_es ? `<div class="obs-tr"><span>Traducción automática</span>${escapeHtml(v.comentarios_es)}</div>` : ''}</div>` : ''}`}
-        </div>
-      </div>`;
-  }).join('');
+    return {
+      key: v.vivienda,
+      titulo: v.vivienda,
+      sub: v.fecha ? 'Elegido el ' + escapeHtml(v.fecha) : '',
+      meta: `<span class="pill">${v.tipo === 'villa' ? 'Villa' : 'Apartamento'}</span>
+             ${v.num_registros > 1 ? `<span class="pill" title="Hay ${v.num_registros} filas de esta vivienda en la Sheet; se muestra la más reciente">${v.num_registros} registros</span>` : ''}
+             ${chipEstado(est, v)}`,
+      pdf: est !== 'pendiente',
+      body: est === 'pendiente'
+        ? '<div class="block-label">Sin elección registrada</div>'
+        : `<div class="block-label">Materiales</div><div class="mat-grid">${filas}</div>
+           ${v.comentarios ? `<div class="block-label">Comentarios</div><div class="obs">${escapeHtml(v.comentarios)}${v.comentarios_es ? `<div class="obs-tr"><span>Traducción automática</span>${escapeHtml(v.comentarios_es)}</div>` : ''}</div>` : ''}`
+    };
+  });
 }
 
-function renderResumen(lista) {
-  const tipo = document.getElementById('f-tipo').value;
-  const campoF = document.getElementById('f-campo').value;
-  let campos = tipo ? camposDe(tipo) : camposUnion();
-  if (campoF) campos = campos.filter(c => c[0] === campoF);
-
-  const html = campos.map(([k, l]) => {
-    const aplicables = lista.filter(v => camposDe(v.tipo).some(c => c[0] === k));
-    if (!aplicables.length) return '';
-    const cuenta = {};
-    let sinElegir = [];
+// ── Por elemento: una tarjeta por elemento, dentro cada material con sus viviendas ──
+function datosElementos(lista) {
+  const f = filtros();
+  let campos = f.tipo ? camposDe(f.tipo) : camposUnion();
+  if (f.campo) campos = campos.filter(c => c[0] === f.campo);
+  return campos.map(([k, l]) => {
+    const aplicables = lista.filter(v => tieneCampo(v, k));
+    const grupos = {}, sinElegir = [];
     aplicables.forEach(v => {
-      const val = String((v.materiales || {})[k] || '').trim();
+      const val = valorDe(v, k);
       if (!val) { sinElegir.push(v.vivienda); return; }
-      (cuenta[val] = cuenta[val] || []).push(v.vivienda);
+      (grupos[val] = grupos[val] || []).push(v.vivienda);
     });
-    const max = Math.max(1, ...Object.values(cuenta).map(a => a.length));
-    const filas = Object.entries(cuenta).sort((a, b) => b[1].length - a[1].length).map(([val, vivs]) => `
-      <div class="res-row">
-        <span>${escapeHtml(val)}</span>
-        <span class="res-count">${vivs.length}</span>
-        <div class="res-bar"><div style="width:${vivs.length / max * 100}%"></div></div>
-        <div class="res-viv">${vivs.map(escapeHtml).join(' · ')}</div>
-      </div>`).join('');
-    return `
-      <div class="res-campo">
-        <div class="res-head">
-          <span class="res-title">${escapeHtml(l)}</span>
-          <span class="pill">${aplicables.length - sinElegir.length}/${aplicables.length} elegidas</span>
-        </div>
-        <div class="res-body">
-          ${filas || '<div class="res-row"><span style="color:var(--mid)">Nadie ha elegido todavía</span></div>'}
-          ${sinElegir.length && filas ? `<div class="res-row"><span style="color:var(--mid)">Sin elegir</span><span class="res-count" style="color:var(--mid)">${sinElegir.length}</span><span></span><div class="res-viv">${sinElegir.map(escapeHtml).join(' · ')}</div></div>` : ''}
-        </div>
-      </div>`;
-  }).join('');
-  document.getElementById('cards-container').innerHTML = html;
+    let lista2 = Object.entries(grupos).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0], 'es'));
+    if (f.mat) lista2 = lista2.filter(g => g[0] === f.mat);
+    return { key: k, label: l, total: aplicables.length, elegidas: aplicables.length - sinElegir.length,
+             grupos: lista2, sinElegir: f.mat ? [] : sinElegir };
+  }).filter(d => d.total && (d.grupos.length || d.sinElegir.length));
+}
+function tarjetasElementos(lista) {
+  return datosElementos(lista).map(d => {
+    const max = Math.max(1, ...d.grupos.map(g => g[1].length));
+    const bloques = d.grupos.map(([val, vivs]) => bloqueGrupo(escapeHtml(val), vivs.length, max, vivs)).join('')
+      + (d.sinElegir.length ? bloqueGrupo('Sin elegir', d.sinElegir.length, 0, d.sinElegir, true) : '');
+    return {
+      key: d.key,
+      titulo: d.label,
+      sub: `${d.grupos.length} opci${d.grupos.length === 1 ? 'ón' : 'ones'}`,
+      meta: `<span class="pill">${d.elegidas}/${d.total} elegidas</span>`,
+      pdf: true,
+      body: `<div class="block-label">Materiales</div>${bloques}`
+    };
+  });
 }
 
-function toggleCard(v) { COLLAPSED[v] = !COLLAPSED[v]; render(); }
+// ── Por material: materiales iguales agrupados, con elemento y viviendas ──
+function datosMateriales(lista) {
+  const f = filtros();
+  const porMat = {};
+  lista.forEach(v => {
+    camposDe(v.tipo).forEach(([k]) => {
+      if (f.campo && k !== f.campo) return;
+      const val = valorDe(v, k);
+      if (!val || (f.mat && val !== f.mat)) return;
+      const m = porMat[val] = porMat[val] || { usos: 0, viviendas: new Set(), elementos: {} };
+      m.usos++; m.viviendas.add(v.vivienda);
+      (m.elementos[k] = m.elementos[k] || []).push(v.vivienda);
+    });
+  });
+  return Object.keys(porMat).sort((a, b) => a.localeCompare(b, 'es')).map(val => {
+    const m = porMat[val];
+    const orden = camposUnion().map(c => c[0]);
+    const elementos = Object.entries(m.elementos).sort((a, b) => orden.indexOf(a[0]) - orden.indexOf(b[0]));
+    return { key: val, usos: m.usos, numViviendas: m.viviendas.size, elementos };
+  });
+}
+function tarjetasMateriales(lista) {
+  return datosMateriales(lista).map(d => {
+    const max = Math.max(1, ...d.elementos.map(e => e[1].length));
+    return {
+      key: d.key,
+      titulo: d.key,
+      sub: `${d.elementos.length} elemento${d.elementos.length === 1 ? '' : 's'}`,
+      meta: `<span class="pill">${d.numViviendas} vivienda${d.numViviendas === 1 ? '' : 's'}</span><span class="pill">${d.usos} uso${d.usos === 1 ? '' : 's'}</span>`,
+      pdf: true,
+      body: `<div class="block-label">Elementos</div>` +
+        d.elementos.map(([k, vivs]) => bloqueGrupo(escapeHtml(labelCampo(k)), vivs.length, max, vivs)).join('')
+    };
+  });
+}
+
+function bloqueGrupo(nombreHtml, n, max, vivs, dim) {
+  const f = filtros();
+  const q = f.q;
+  const vivHtml = vivs.map(x => hl(x, q && String(x).toUpperCase().includes(q))).join(' · ');
+  return `<div class="grp-block">
+    <div class="grp-row">
+      <span class="grp-name${dim ? ' dim' : ''}">${nombreHtml}</span>
+      <span class="grp-count${dim ? ' dim' : ''}">${n}</span>
+      <div class="grp-bar">${dim ? '' : `<div style="width:${n / max * 100}%"></div>`}</div>
+    </div>
+    <div class="grp-viv">${vivHtml}</div>
+  </div>`;
+}
+
+function toggleCard(key) { const id = VISTA + ':' + key; COLLAPSED[id] = !COLLAPSED[id]; render(); }
 function toggleTodo() {
-  const vivs = filtrar().map(v => v.vivienda);
-  const todos = vivs.length > 0 && vivs.every(v => COLLAPSED[v]);
-  vivs.forEach(v => COLLAPSED[v] = !todos);
+  const ids = CLAVES_VISTA.map(k => VISTA + ':' + k);
+  const todos = ids.length > 0 && ids.every(id => COLLAPSED[id]);
+  ids.forEach(id => COLLAPSED[id] = !todos);
   render();
 }
 function actualizarBotonTodo() {
-  const vivs = filtrar().map(v => v.vivienda);
-  const todos = vivs.length > 0 && vivs.every(v => COLLAPSED[v]);
+  const ids = CLAVES_VISTA.map(k => VISTA + ':' + k);
+  const todos = ids.length > 0 && ids.every(id => COLLAPSED[id]);
   document.getElementById('toggle-todo-btn').textContent = todos ? '▾ Desplegar todo' : '▴ Contraer todo';
 }
 function mostrarVacio(txt) {
@@ -553,32 +662,44 @@ function mostrarVacio(txt) {
 }
 
 // ─── PDF ────────────────────────────────────────────────────────────
-function descargarPDF(ev, codigo) {
-  ev.stopPropagation();
-  if (!window.jspdf) { alert('No se ha podido cargar jsPDF.'); return; }
-  const v = DATA.find(x => x.vivienda === codigo);
-  if (!v) return;
+function pdfCabecera(titulo, subtitulo) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const w = doc.internal.pageSize.getWidth();
   doc.setFillColor(26, 26, 26); doc.rect(0, 0, w, 24, 'F');
-  doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
-  doc.text('SERENA BREEZE — MATERIALES ' + v.vivienda, 14, 12);
+  doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(titulo.length > 40 ? 13 : 16);
+  doc.text(titulo, 14, 12);
   doc.setTextColor(204, 204, 204); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
   const promoLabel = CURRENT_PROMO === '2SB' ? 'Serena Breeze 2' : 'Serena Breeze 3';
-  doc.text(promoLabel + '  ·  ' + (v.tipo === 'villa' ? 'Villa' : 'Apartamento') + '  ·  Generado el ' + new Date().toLocaleDateString('es-ES'), 14, 19);
+  doc.text(promoLabel + '  ·  ' + subtitulo + '  ·  Generado el ' + new Date().toLocaleDateString('es-ES'), 14, 19);
+  return { doc, w };
+}
+const PDF_TABLA = {
+  theme: 'plain',
+  styles: { font: 'helvetica', fontSize: 9, textColor: [42, 37, 32], cellPadding: 2.2 },
+  headStyles: { fillColor: [17, 17, 17], textColor: [255, 255, 255], fontStyle: 'bold' },
+  alternateRowStyles: { fillColor: [242, 242, 242] }
+};
+function nombreArchivo(s) { return String(s).replace(/[^\w\-]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, ''); }
 
-  const m = v.materiales || {};
-  doc.autoTable({
+function descargarPDF(ev, key) {
+  ev.stopPropagation();
+  if (!window.jspdf) { alert('No se ha podido cargar jsPDF.'); return; }
+  if (VISTA === 'elementos') return pdfElemento(key);
+  if (VISTA === 'materiales') return pdfMaterial(key);
+  return pdfVivienda(key);
+}
+
+function pdfVivienda(codigo) {
+  const v = DATA.find(x => x.vivienda === codigo);
+  if (!v) return;
+  const { doc, w } = pdfCabecera('SERENA BREEZE — MATERIALES ' + v.vivienda, v.tipo === 'villa' ? 'Villa' : 'Apartamento');
+  doc.autoTable(Object.assign({
     startY: 32,
-    head: [['Material', 'Elección']],
-    body: camposDe(v.tipo).map(([k, l]) => [l, String(m[k] || '').trim() || '—']),
-    theme: 'plain',
-    styles: { font: 'helvetica', fontSize: 9, textColor: [42, 37, 32], cellPadding: 2.2 },
-    headStyles: { fillColor: [17, 17, 17], textColor: [255, 255, 255], fontStyle: 'bold' },
-    alternateRowStyles: { fillColor: [242, 242, 242] },
+    head: [['Elemento', 'Material']],
+    body: camposDe(v.tipo).map(([k, l]) => [l, valorDe(v, k) || '—']),
     columnStyles: { 0: { cellWidth: 70 } }
-  });
+  }, PDF_TABLA));
   let y = doc.lastAutoTable.finalY + 8;
   doc.setFontSize(9); doc.setTextColor(51, 51, 51);
   if (v.fecha) { doc.text('Fecha de elección: ' + v.fecha, 14, y); y += 5; }
@@ -599,6 +720,34 @@ function descargarPDF(ev, codigo) {
     }
   }
   doc.save(v.vivienda + '_materiales.pdf');
+}
+
+function pdfElemento(key) {
+  const d = datosElementos(filtrar()).find(x => x.key === key);
+  if (!d) return;
+  const { doc } = pdfCabecera('MATERIALES — ' + d.label.toUpperCase(), `${d.elegidas}/${d.total} viviendas con elección`);
+  const body = d.grupos.map(([val, vivs]) => [val, vivs.length, vivs.join(', ')]);
+  if (d.sinElegir.length) body.push(['Sin elegir', d.sinElegir.length, d.sinElegir.join(', ')]);
+  doc.autoTable(Object.assign({
+    startY: 32,
+    head: [['Material', 'Nº', 'Viviendas']],
+    body,
+    columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 12, halign: 'center' } }
+  }, PDF_TABLA));
+  doc.save(CURRENT_PROMO + '_elemento_' + nombreArchivo(d.label) + '.pdf');
+}
+
+function pdfMaterial(key) {
+  const d = datosMateriales(filtrar()).find(x => x.key === key);
+  if (!d) return;
+  const { doc } = pdfCabecera('MATERIAL — ' + d.key.toUpperCase(), `${d.numViviendas} viviendas · ${d.usos} usos`);
+  doc.autoTable(Object.assign({
+    startY: 32,
+    head: [['Elemento', 'Nº', 'Viviendas']],
+    body: d.elementos.map(([k, vivs]) => [labelCampo(k), vivs.length, vivs.join(', ')]),
+    columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 12, halign: 'center' } }
+  }, PDF_TABLA));
+  doc.save(CURRENT_PROMO + '_material_' + nombreArchivo(d.key) + '.pdf');
 }
 
 // ─── UTILIDADES ─────────────────────────────────────────────────────
