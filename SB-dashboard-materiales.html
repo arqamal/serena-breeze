@@ -91,7 +91,9 @@
   .chip-parcial { background: #EEF3FB; color: #2F5C9E; border: 1px solid #BFD0EA; }
 
   .block-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin: 18px 0 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-  .mat-grid { display: grid; grid-template-columns: repeat(2, 1fr); column-gap: 32px; }
+  /* Orden por columnas: se llena la columna 1 hacia abajo y luego la 2.
+     El nº de filas (--filas) se fija por tarjeta = mitad redondeada arriba. */
+  .mat-grid { display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(var(--filas, 1), auto); grid-auto-flow: column; column-gap: 32px; }
   .mat-row { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
   .mat-label { color: var(--slate-gray); }
   .mat-value { color: var(--text); text-align: right; font-weight: 400; }
@@ -136,7 +138,7 @@
     .kpis { grid-template-columns: repeat(2, 1fr); }
     .kpi:nth-child(2) { border-right: none; }
     .kpi:nth-child(-n+2) { border-bottom: 1px solid var(--border); }
-    .mat-grid { grid-template-columns: 1fr; }
+    .mat-grid { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-flow: row; }
     .btn-group { margin-left: 0; }
     .topbar.filtros { flex-wrap: wrap; }
     .search-input { flex: 1 1 100%; width: auto; }
@@ -553,7 +555,7 @@ function tarjetasViviendas(lista) {
       pdf: est !== 'pendiente',
       body: est === 'pendiente'
         ? '<div class="block-label">Sin elección registrada</div>'
-        : `<div class="block-label">Materiales</div><div class="mat-grid">${filas}</div>
+        : `<div class="block-label">Materiales</div><div class="mat-grid" style="--filas:${Math.ceil(camposDe(v.tipo).length / 2)}">${filas}</div>
            ${v.comentarios ? `<div class="block-label">Comentarios</div><div class="obs">${escapeHtml(v.comentarios)}${v.comentarios_es ? `<div class="obs-tr"><span>Traducción automática</span>${escapeHtml(v.comentarios_es)}</div>` : ''}</div>` : ''}`
     };
   });
@@ -816,11 +818,27 @@ function generarDemo(promo) {
 }
 
 // ── IFRAME HEIGHT COMMUNICATION ───────────────────────
+// Con el login visible el body mide ~0 (la pantalla de login es fixed y la
+// app está oculta), así que se manda una altura mínima para que la caja de
+// acceso se vea entera dentro del iframe de Webflow.
 function sendHeight() {
-  window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, '*');
+  var login = document.getElementById('login-screen');
+  var loginVisible = login && getComputedStyle(login).display !== 'none';
+  var h;
+  if (loginVisible) {
+    var box = login.querySelector('.login-box');
+    h = Math.max(560, (box ? box.offsetHeight : 0) + 96);
+  } else {
+    h = document.body.scrollHeight;
+  }
+  window.parent.postMessage({ iframeHeight: h }, '*');
 }
 sendHeight();
 new ResizeObserver(sendHeight).observe(document.body);
+new MutationObserver(sendHeight).observe(
+  document.getElementById('login-screen'),
+  { attributes: true, attributeFilter: ['style'] }
+);
 </script>
 </body>
 </html>
