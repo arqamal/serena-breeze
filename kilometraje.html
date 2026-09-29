@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amal Consult — Kilometraje</title>
+<meta name="theme-color" content="#1A1A1A">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #FFFFFF;
+    --off-white: #F7F6F4;
+    --border: #E0DDD8;
+    --mid: #B0AA9F;
+    --slate-gray: #6B7280;
+    --text: #2A2520;
+    --black: #111111;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 14px; }
+
+  main { max-width: 1080px; margin: 0 auto; padding: 40px 48px 80px; }
+  .sec-eyebrow { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 10px; }
+  .sec-title { font-family: 'Oswald', sans-serif; font-size: 32px; font-weight: 400; text-transform: uppercase; color: var(--black); margin-bottom: 12px; letter-spacing: 1px; }
+  .sec-desc { font-size: 14px; font-weight: 300; color: var(--slate-gray); line-height: 1.7; max-width: 640px; margin-bottom: 28px; }
+  .sec-desc b { font-weight: 400; color: var(--text); }
+
+  /* TOP BAR */
+  .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+
+  .btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 11px 18px; background: transparent; color: var(--slate-gray); border: 1px solid var(--border); transition: all .15s; }
+  .btn:hover { border-color: var(--black); color: var(--black); }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .btn-primary { background: var(--black); color: #fff; border-color: var(--black); }
+  .btn-primary:hover { color: #fff; opacity: .85; }
+  .btn-group { display: flex; border: 1px solid var(--border); margin-left: auto; }
+  .btn-group .btn { border: none; border-right: 1px solid var(--border); }
+  .btn-group .btn:last-child { border-right: none; }
+  .btn-group .btn-primary { border-right: none; }
+
+  /* KPIs (solo lectura) */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border); margin-bottom: 20px; }
+  .kpi { padding: 16px 20px; border-right: 1px solid var(--border); }
+  .kpi:last-child { border-right: none; }
+  .kpi-label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate-gray); margin-bottom: 6px; }
+  .kpi-value { font-family: 'Oswald', sans-serif; font-size: 26px; color: var(--black); }
+  .kpi-sub { font-size: 11px; color: var(--mid); margin-top: 2px; }
+
+  #aviso { display: none; font-size: 12px; color: var(--slate-gray); padding: 8px 16px; background: var(--off-white); border: 1px solid var(--border); margin-bottom: 20px; line-height: 1.6; }
+  #aviso.err { color: #c0392b; background: #fdf0ee; border-color: #f0c4bc; }
+  #aviso.ok { color: #2d7a2d; background: #f0faf0; border-color: #b8ddb8; }
+  #empty-state { display: none; font-size: 14px; color: var(--slate-gray); padding: 32px; text-align: center; border: 1px solid var(--border); margin-bottom: 16px; }
+
+  /* PANEL TRABAJADOR */
+  .panel { border: 1px solid var(--border); padding: 4px 20px 20px; margin-bottom: 20px; }
+  .block-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); margin: 18px 0 14px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .form-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px 24px; }
+  .field { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+  .field > label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); }
+  .field input, .field select { border: 1px solid var(--border); padding: 0 14px; height: 42px; font-family: 'Roboto', sans-serif; font-size: 14px; color: var(--text); background: var(--white); outline: none; border-radius: 0; width: 100%; }
+  .field input:focus, .field select:focus { border-color: var(--black); }
+  .field input[readonly] { background: var(--off-white); color: var(--slate-gray); }
+  .hint { font-size: 11px; color: var(--mid); line-height: 1.5; min-height: 16px; }
+  .hint.err { color: #c0392b; }
+  .hint.warn { color: #8a5a00; }
+  .hint.ok { color: #2d7a2d; }
+  .span2 { grid-column: span 2; }
+
+  /* VIAJE (misma tarjeta que la vivienda del dashboard) */
+  .vivienda-card { border: 1px solid var(--border); margin-bottom: 16px; }
+  .vivienda-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; background: var(--off-white); border-bottom: 1px solid var(--border); cursor: pointer; }
+  .vivienda-card.collapsed .vivienda-head { border-bottom: none; }
+  .vh-left { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; min-width: 0; }
+  .vivienda-code { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 1px; color: var(--black); }
+  .vivienda-cliente { font-size: 12px; color: var(--slate-gray); }
+  .vivienda-meta { display: flex; align-items: center; gap: 8px; }
+  .pills { display: flex; align-items: center; gap: 8px; }
+  .pill { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--slate-gray); background: var(--white); border: 1px solid var(--border); padding: 3px 9px; border-radius: 2px; white-space: nowrap; }
+  .pdf-btn { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate-gray); background: var(--white); border: 1px solid var(--border); padding: 3px 10px; border-radius: 2px; cursor: pointer; }
+  .pdf-btn:hover { border-color: var(--black); color: var(--black); }
+  .caret { font-size: 11px; color: var(--mid); transition: transform .15s; }
+  .vivienda-card.collapsed .caret { transform: rotate(-90deg); }
+  .vivienda-body { padding: 4px 20px 20px; }
+  .vivienda-card.collapsed .vivienda-body { display: none; }
+
+  .viaje-grid { display: grid; grid-template-columns: 1fr 300px; gap: 8px 40px; align-items: start; }
+  .viaje-form { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 24px; }
+  .viaje-km { grid-column: span 2; display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 16px 24px; }
+  .km-row { display: flex; gap: 8px; }
+  .km-row input { flex: 1 1 auto; min-width: 0; }
+  .km-row .btn { padding: 0 14px; height: 42px; white-space: nowrap; }
+
+  /* CALENDARIO DE FECHAS */
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; max-width: 300px; }
+  .cal-h { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: 1px; color: var(--mid); text-align: center; padding: 4px 0; }
+  .cal-d { font-family: 'Roboto', sans-serif; font-size: 13px; height: 34px; border: 1px solid var(--border); background: var(--white); color: var(--text); cursor: pointer; border-radius: 0; transition: all .15s; }
+  .cal-d.we { color: var(--mid); }
+  .cal-d:hover { border-color: var(--black); }
+  .cal-d.sel { background: var(--black); color: #fff; border-color: var(--black); }
+
+  .acciones { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+
+  /* LOGIN */
+  #login-screen { position: fixed; inset: 0; background: var(--white); display: flex; align-items: center; justify-content: center; z-index: 9999; }
+  .login-box { width: 100%; max-width: 380px; padding: 48px 40px; border: 1px solid var(--border); }
+  .login-logo { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 3px; text-transform: uppercase; color: var(--black); margin-bottom: 6px; }
+  .login-sub { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); margin-bottom: 40px; }
+  .login-field { display: flex; flex-direction: column; gap: 7px; margin-bottom: 18px; }
+  .login-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); }
+  .login-input { border: 1px solid var(--border); padding: 12px 14px; font-size: 14px; color: var(--text); outline: none; border-radius: 0; width: 100%; }
+  .login-input:focus { border-color: var(--black); }
+  .login-btn { width: 100%; margin-top: 8px; font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; background: var(--black); color: white; border: none; padding: 14px; cursor: pointer; }
+  .login-btn:disabled { opacity: .55; cursor: default; }
+  .login-error { font-size: 12px; color: #c0392b; margin-top: 14px; text-align: center; display: none; }
+
+  #app-wrapper { display: none; }
+
+  @media (max-width: 768px) {
+    main { padding: 24px 16px 60px; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .kpi:nth-child(2) { border-right: none; }
+    .kpi:nth-child(-n+2) { border-bottom: 1px solid var(--border); }
+    .form-grid { grid-template-columns: 1fr; }
+    .span2 { grid-column: span 1; }
+    .viaje-grid { grid-template-columns: 1fr; }
+    .viaje-form { grid-template-columns: 1fr; }
+    .viaje-km { grid-column: span 1; grid-template-columns: 1fr; }
+    .btn-group { margin-left: 0; }
+    .vivienda-head { flex-wrap: wrap; padding: 12px 14px; }
+    .vivienda-meta { flex-wrap: wrap; }
+    .pills { flex-wrap: wrap; }
+    .vivienda-body { padding: 4px 14px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Amal Consult</div>
+    <div class="login-sub">Kilometraje · Uso interno</div>
+    <div class="login-field">
+      <label class="login-label">Usuario</label>
+      <input class="login-input" id="login-user" type="text" placeholder="Usuario" autocomplete="username">
+    </div>
+    <div class="login-field">
+      <label class="login-label">Contraseña</label>
+      <input class="login-input" id="login-pass" type="password" placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Acceder →</button>
+    <div class="login-error" id="login-error">Usuario o contraseña incorrectos</div>
+  </div>
+</div>
+
+<div id="app-wrapper">
+  <main>
+    <div class="sec-eyebrow">Amal Consult · Administración</div>
+    <div class="sec-title">Kilometraje</div>
+    <div class="sec-desc">Desplazamientos del mes con vehículo propio. Los kilómetros se computan siempre de <b>ida y vuelta</b> a <b id="tarifa-txt">0,26 €/km</b>. Un mismo viaje repetido varios días se rellena una sola vez marcando sus fechas; el PDF lleva una página por cada fecha.</div>
+
+    <div class="topbar">
+      <div class="btn-group">
+        <button class="btn" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <div id="aviso"></div>
+
+    <div class="panel">
+      <div class="block-label">Trabajador</div>
+      <div class="form-grid">
+        <div class="field"><label for="f-nombre">Nombre y apellidos</label>
+          <input id="f-nombre" type="text" autocomplete="name" placeholder="Nombre y apellidos" oninput="guardarTrabajador()"></div>
+        <div class="field"><label for="f-nif">NIF / NIE</label>
+          <input id="f-nif" type="text" autocomplete="off" placeholder="12345678Z" oninput="guardarTrabajador()"></div>
+        <div class="field"><label for="f-mes">Mes</label>
+          <input id="f-mes" type="month" onchange="onMesChange()"></div>
+      </div>
+    </div>
+
+    <div id="kpis" class="kpis">
+      <div class="kpi"><div class="kpi-label">Desplazamientos</div><div class="kpi-value" id="k-desp">0</div><div class="kpi-sub" id="k-viajes">0 viajes</div></div>
+      <div class="kpi"><div class="kpi-label">Km totales</div><div class="kpi-value" id="k-km">0</div><div class="kpi-sub">ida y vuelta</div></div>
+      <div class="kpi"><div class="kpi-label">Tarifa</div><div class="kpi-value" id="k-tarifa">—</div><div class="kpi-sub">por km</div></div>
+      <div class="kpi"><div class="kpi-label">Total a abonar</div><div class="kpi-value" id="k-total">0,00 €</div><div class="kpi-sub" id="k-mes"></div></div>
+    </div>
+
+    <div id="empty-state">No hay viajes. Pulsa «+ Añadir viaje».</div>
+    <div id="cards-container"></div>
+
+    <datalist id="lugares"></datalist>
+
+    <div class="acciones">
+      <button class="btn" onclick="nuevoViaje()">+ Añadir viaje</button>
+      <div class="btn-group">
+        <button class="btn" onclick="descargarPdf()">⤓ Descargar PDF</button>
+        <button class="btn btn-primary" id="btn-enviar" onclick="enviar(false)">Enviar por correo →</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script>
+// ─── LOGIN (AuthUsuarios.gs — login centralizado) ───────────────────
+const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
+const CLAVE_TOKEN_SESION = 'amal_token';
+// Permiso propio: columna acceso_kilometraje en _usuarios (hay que añadir 'kilometraje' a COLUMNA_ACCESO en AuthUsuarios.gs).
+const HERRAMIENTA = 'kilometraje';
+
+// ─── BACKEND (GeneradorKilometraje.gs) ──────────────────────────────
+//   POST { accion:'config' }                        → { ok, tarifa, destinatario, empresa }
+//   POST { accion:'distancia', origen, destino }    → { ok, km }  (km solo de ida)
+//   POST { accion:'enviar', trabajador, nif, mes, desplazamientos, total_cliente, pdf_base64, confirmar_duplicado? }
+//   Todas llevan `token`. Pegar aquí la URL /exec tras implementar el script como aplicación web.
+const BACKEND = 'https://script.google.com/macros/s/AKfycbz_iBeitjy6g1dmU96OKW220NWyocPdq1hqbtk_pj6tgnX34w8hKrtrtlReWqceYaKRzg/exec';
+
+const MOTIVOS = ['Visita a cliente', 'Asistencia a obra', 'Reunión profesional'];
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const CLAVE_TRABAJADOR = 'amal_km_trabajador';
+const CLAVE_LUGARES = 'amal_km_lugares';
+
+// ─── ESTADO ─────────────────────────────────────────────────────────
+let TARIFA = 0.26;            // se sobrescribe con la de la pestaña _config
+let DESTINATARIO = '';
+let EMPRESA = 'AMAL Real Estate, S.L.';
+let MES = '';
+let VIAJES = [];              // { id, origen, destino, motivo, kmIda, fechas:[iso], calc:'', collapsed }
+let SEQ = 0;
+let NOMBRE_LOGIN = '';
+
+// ─── LOGIN ──────────────────────────────────────────────────────────
+function doLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value;
+  const btn = document.getElementById('login-btn');
+  const errorEl = document.getElementById('login-error');
+  errorEl.style.display = 'none';
+  btn.disabled = true; btn.textContent = 'Comprobando…';
+  fetch(LOGIN_URL, { method: 'POST', body: JSON.stringify({ accion: 'login', usuario: u, pass: p, herramienta: HERRAMIENTA }) })
+    .then(r => r.json())
+    .then(data => {
+      if (data.ok) {
+        if (data.token) localStorage.setItem(CLAVE_TOKEN_SESION, data.token);
+        entrarApp(data.nombre);
+      } else {
+        errorEl.textContent = data.motivo === 'sin_acceso' ? 'Tu usuario no tiene acceso a la herramienta de kilometraje.' : 'Usuario o contraseña incorrectos';
+        errorEl.style.display = 'block';
+      }
+    })
+    .catch(() => { errorEl.textContent = 'No se pudo comprobar el acceso. Inténtalo de nuevo.'; errorEl.style.display = 'block'; })
+    .finally(() => { btn.disabled = false; btn.textContent = 'Acceder →'; });
+}
+function intentarSesionGuardada() {
+  const token = localStorage.getItem(CLAVE_TOKEN_SESION);
+  if (!token) return Promise.resolve(null);
+  return fetch(LOGIN_URL, { method: 'POST', body: JSON.stringify({ accion: 'login', token, herramienta: HERRAMIENTA }) })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) { localStorage.removeItem(CLAVE_TOKEN_SESION); return null; }
+      if (data.token) localStorage.setItem(CLAVE_TOKEN_SESION, data.token);
+      return data;
+    })
+    .catch(() => null);
+}
+function entrarApp(nombre) {
+  NOMBRE_LOGIN = nombre || '';
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-wrapper').style.display = 'block';
+  iniciarFormulario();
+  cargarConfig();
+}
+function cerrarSesion() { localStorage.removeItem(CLAVE_TOKEN_SESION); location.reload(); }
+
+document.addEventListener('DOMContentLoaded', () => {
+  ['login-user','login-pass'].forEach(id => document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); }));
+  intentarSesionGuardada().then(data => { if (data) entrarApp(data.nombre); });
+});
+
+// ─── COMUNICACIÓN CON EL BACKEND ────────────────────────────────────
+function post(obj) {
+  if (BACKEND.startsWith('PENDIENTE')) return Promise.reject(new Error('Falta la URL del backend (BACKEND) en el HTML.'));
+  obj.token = localStorage.getItem(CLAVE_TOKEN_SESION) || '';
+  return fetch(BACKEND, { method: 'POST', body: JSON.stringify(obj) })
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(d => {
+      if (!d.ok && (d.motivo === 'sin_sesion' || d.motivo === 'sin_acceso')) {
+        localStorage.removeItem(CLAVE_TOKEN_SESION);
+        alert(d.motivo === 'sin_acceso' ? 'Tu usuario ya no tiene acceso a esta herramienta.' : 'La sesión ha caducado. Vuelve a entrar.');
+        location.reload();
+        return new Promise(() => {}); // no continúa: la página se recarga
+      }
+      return d;
+    });
+}
+function cargarConfig() {
+  post({ accion: 'config' })
+    .then(d => {
+      if (!d.ok) throw new Error(d.error || 'No se pudo leer la configuración');
+      TARIFA = d.tarifa; DESTINATARIO = d.destinatario || ''; EMPRESA = d.empresa || EMPRESA;
+      refrescarTodo();
+    })
+    .catch(e => aviso('No se pudo cargar la configuración: ' + e.message, 'err'));
+}
+
+// ─── FORMATO ────────────────────────────────────────────────────────
+const r2 = n => Math.round((n + Number.EPSILON) * 100) / 100;
+const fmtNum = n => Number(n).toLocaleString('es-ES', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const eur = n => Number(n).toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+const pad = n => String(n).padStart(2, '0');
+const fechaEs = iso => iso.slice(8) + '/' + iso.slice(5, 7) + '/' + iso.slice(0, 4);
+const mesTxt = mes => MESES[parseInt(mes.slice(5), 10) - 1] + ' ' + mes.slice(0, 4);
+const el = id => document.getElementById(id);
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function nombreArchivo(s) { return String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w\-]+/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, ''); }
+
+function aviso(txt, tipo) {
+  const a = el('aviso');
+  if (!txt) { a.style.display = 'none'; return; }
+  a.className = tipo || ''; a.textContent = txt; a.style.display = 'block';
+  a.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ─── TRABAJADOR / MES ───────────────────────────────────────────────
+function iniciarFormulario() {
+  let guardado = {};
+  try { guardado = JSON.parse(localStorage.getItem(CLAVE_TRABAJADOR) || '{}'); } catch (e) {}
+  el('f-nombre').value = guardado.nombre || NOMBRE_LOGIN || '';
+  el('f-nif').value = guardado.nif || '';
+  // Se rellena a final de mes; en los primeros días del mes se propone el mes anterior.
+  const hoy = new Date();
+  let y = hoy.getFullYear(), m = hoy.getMonth() + 1;
+  if (hoy.getDate() <= 10) { m--; if (m === 0) { m = 12; y--; } }
+  MES = y + '-' + pad(m);
+  el('f-mes').value = MES;
+  cargarLugares();
+  if (!VIAJES.length) nuevoViaje(); else renderViajes();
+  refrescarTodo();
+}
+function guardarTrabajador() {
+  try { localStorage.setItem(CLAVE_TRABAJADOR, JSON.stringify({ nombre: el('f-nombre').value.trim(), nif: el('f-nif').value.trim() })); } catch (e) {}
+}
+function onMesChange() {
+  const nuevo = el('f-mes').value;
+  if (!nuevo) { el('f-mes').value = MES; return; }
+  if (nuevo === MES) return;
+  if (VIAJES.some(v => v.fechas.length) && !confirm('Al cambiar de mes se borrarán las fechas marcadas. ¿Continuar?')) { el('f-mes').value = MES; return; }
+  MES = nuevo;
+  VIAJES.forEach(v => v.fechas = []);
+  renderViajes();
+  refrescarTodo();
+}
+function nifValido(s) {
+  s = String(s).toUpperCase().replace(/[\s-]/g, '');
+  const L = 'TRWAGMYFPDXBNJZSQVHLCKE';
+  let m = s.match(/^(\d{8})([A-Z])$/);
+  if (m) return L[parseInt(m[1], 10) % 23] === m[2];
+  m = s.match(/^([XYZ])(\d{7})([A-Z])$/);
+  if (m) return L[parseInt('XYZ'.indexOf(m[1]) + m[2], 10) % 23] === m[3];
+  return false;
+}
+const nifLimpio = () => el('f-nif').value.toUpperCase().replace(/[\s-]/g, '');
+
+// ─── LUGARES (sugerencias de origen/destino ya usados) ──────────────
+function cargarLugares() {
+  let l = [];
+  try { l = JSON.parse(localStorage.getItem(CLAVE_LUGARES) || '[]'); } catch (e) {}
+  el('lugares').innerHTML = l.map(x => `<option value="${escapeHtml(x)}">`).join('');
+}
+function recordarLugares() {
+  let l = [];
+  try { l = JSON.parse(localStorage.getItem(CLAVE_LUGARES) || '[]'); } catch (e) {}
+  VIAJES.forEach(v => [v.origen.trim(), v.destino.trim()].forEach(x => { if (x) { l = l.filter(y => y.toLowerCase() !== x.toLowerCase()); l.unshift(x); } }));
+  try { localStorage.setItem(CLAVE_LUGARES, JSON.stringify(l.slice(0, 40))); } catch (e) {}
+  cargarLugares();
+}
+
+// ─── VIAJES ─────────────────────────────────────────────────────────
+const get = id => VIAJES.find(v => v.id === id);
+const kmTotal = v => r2((parseFloat(v.kmIda) || 0) * 2);          // siempre ida y vuelta
+const impFecha = v => r2(kmTotal(v) * TARIFA);
+
+function nuevoViaje() {
+  VIAJES.push({ id: ++SEQ, origen: '', destino: '', motivo: '', kmIda: '', fechas: [], calc: '', collapsed: false });
+  renderViajes();
+  const last = VIAJES[VIAJES.length - 1];
+  const nodo = el('v-' + last.id);
+  if (nodo && VIAJES.length > 1) nodo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function quitarViaje(ev, id) {
+  ev.stopPropagation();
+  const v = get(id);
+  if (!v) return;
+  if ((v.origen || v.destino || v.kmIda || v.fechas.length) && !confirm('¿Eliminar este viaje?')) return;
+  VIAJES = VIAJES.filter(x => x.id !== id);
+  renderViajes();
+  refrescarTodo();
+}
+function toggleCard(id) {
+  const v = get(id); if (!v) return;
+  v.collapsed = !v.collapsed;
+  el('v-' + id).classList.toggle('collapsed', v.collapsed);
+}
+
+function cardHtml(v) {
+  const id = v.id;
+  const opts = '<option value="">Selecciona…</option>' + MOTIVOS.map(m => `<option value="${escapeHtml(m)}"${v.motivo === m ? ' selected' : ''}>${escapeHtml(m)}</option>`).join('');
+  return `
+  <div class="vivienda-card${v.collapsed ? ' collapsed' : ''}" id="v-${id}">
+    <div class="vivienda-head" onclick="toggleCard(${id})">
+      <div class="vh-left"><span class="vivienda-code" id="code-${id}"></span><span class="vivienda-cliente" id="sub-${id}"></span></div>
+      <div class="vivienda-meta">
+        <span class="pills" id="meta-${id}"></span>
+        <button class="pdf-btn" onclick="quitarViaje(event, ${id})">✕ Eliminar</button>
+        <span class="caret">▾</span>
+      </div>
+    </div>
+    <div class="vivienda-body">
+      <div class="viaje-grid">
+        <div>
+          <div class="block-label">Trayecto</div>
+          <div class="viaje-form">
+            <div class="field"><label>Origen</label>
+              <input type="text" list="lugares" autocomplete="off" placeholder="Municipio o dirección" value="${escapeHtml(v.origen)}" oninput="setCampo(${id}, 'origen', this.value)"></div>
+            <div class="field"><label>Destino</label>
+              <input type="text" list="lugares" autocomplete="off" placeholder="Municipio o dirección" value="${escapeHtml(v.destino)}" oninput="setCampo(${id}, 'destino', this.value)"></div>
+            <div class="field span2"><label>Motivo</label>
+              <select onchange="setCampo(${id}, 'motivo', this.value)">${opts}</select></div>
+            <div class="viaje-km">
+              <div class="field"><label>Km solo ida</label>
+                <div class="km-row">
+                  <input type="number" id="km-${id}" min="0" step="0.1" inputmode="decimal" placeholder="0" value="${escapeHtml(v.kmIda)}" oninput="setCampo(${id}, 'kmIda', this.value)">
+                  <button class="btn" id="calc-${id}" onclick="calcularKm(${id})">Calcular</button>
+                </div>
+                <span class="hint" id="hint-${id}"></span></div>
+              <div class="field"><label>Km ida y vuelta</label><input type="text" id="kmt-${id}" readonly tabindex="-1"></div>
+              <div class="field"><label>Importe por fecha</label><input type="text" id="imp-${id}" readonly tabindex="-1"></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="block-label">Fechas del viaje</div>
+          <div id="cal-${id}"></div>
+          <div class="hint" id="fechas-${id}" style="margin-top:10px"></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderViajes() {
+  el('cards-container').innerHTML = VIAJES.map(cardHtml).join('');
+  el('empty-state').style.display = VIAJES.length ? 'none' : 'block';
+  VIAJES.forEach(v => { pintarCal(v); refrescar(v.id); });
+  refrescarKpis();
+}
+
+function setCampo(id, k, val) {
+  const v = get(id); if (!v) return;
+  v[k] = val;
+  if (k === 'kmIda') { v.calc = ''; setHint(id, ''); }
+  refrescar(id);
+}
+
+function setHint(id, txt, tipo) {
+  const h = el('hint-' + id); if (!h) return;
+  h.textContent = txt || ''; h.className = 'hint' + (tipo ? ' ' + tipo : '');
+}
+
+function refrescar(id) {
+  const v = get(id); if (!v || !el('code-' + id)) return;
+  const n = v.fechas.length;
+  const o = v.origen.trim(), d = v.destino.trim();
+  el('code-' + id).textContent = 'Viaje ' + (VIAJES.indexOf(v) + 1);
+  el('sub-' + id).textContent = (o && d) ? o + ' → ' + d : 'Sin completar';
+  const km = kmTotal(v);
+  el('kmt-' + id).value = km ? fmtNum(km) + ' km' : '';
+  el('imp-' + id).value = km ? eur(impFecha(v)) : '';
+  el('meta-' + id).innerHTML =
+    `<span class="pill">${n} fecha${n === 1 ? '' : 's'}</span><span class="pill">${fmtNum(r2(km * n))} km</span><span class="pill">${eur(r2(impFecha(v) * n))}</span>`;
+  el('fechas-' + id).textContent = n ? 'Días: ' + v.fechas.map(f => +f.slice(8)).join(', ') : 'Marca los días en que se hizo este viaje.';
+  if (v.calc) {
+    if (v.calc !== o.toLowerCase() + '|' + d.toLowerCase()) setHint(id, 'Has cambiado el trayecto: vuelve a calcular los km.', 'warn');
+    else setHint(id, 'Calculado con Google Maps (ruta más rápida). Puedes corregirlo a mano.', 'ok');
+  }
+  refrescarKpis();
+}
+
+// ─── CALENDARIO ─────────────────────────────────────────────────────
+function pintarCal(v) {
+  const cont = el('cal-' + v.id); if (!cont) return;
+  const [y, m] = MES.split('-').map(Number);
+  const dias = new Date(y, m, 0).getDate();
+  const primero = (new Date(y, m - 1, 1).getDay() + 6) % 7; // lunes = 0
+  let h = '<div class="cal">' + ['L','M','X','J','V','S','D'].map(d => `<span class="cal-h">${d}</span>`).join('');
+  for (let i = 0; i < primero; i++) h += '<span></span>';
+  for (let d = 1; d <= dias; d++) {
+    const iso = MES + '-' + pad(d);
+    const sel = v.fechas.includes(iso);
+    const we = (primero + d - 1) % 7 >= 5;
+    h += `<button type="button" class="cal-d${sel ? ' sel' : ''}${we ? ' we' : ''}" onclick="toggleDia(${v.id}, '${iso}')">${d}</button>`;
+  }
+  cont.innerHTML = h + '</div>';
+}
+function toggleDia(id, iso) {
+  const v = get(id); if (!v) return;
+  v.fechas = v.fechas.includes(iso) ? v.fechas.filter(f => f !== iso) : v.fechas.concat(iso).sort();
+  pintarCal(v);
+  refrescar(id);
+}
+
+// ─── CÁLCULO DE KM (Google Maps vía backend) ────────────────────────
+function calcularKm(id) {
+  const v = get(id); if (!v) return;
+  const o = v.origen.trim(), d = v.destino.trim();
+  if (!o || !d) { setHint(id, 'Escribe origen y destino primero.', 'err'); return; }
+  const btn = el('calc-' + id);
+  btn.disabled = true; btn.textContent = 'Calculando…'; setHint(id, '');
+  post({ accion: 'distancia', origen: o, destino: d })
+    .then(r => {
+      if (!r.ok) throw new Error(r.error || 'No se pudo calcular');
+      v.kmIda = String(r.km);
+      v.calc = o.toLowerCase() + '|' + d.toLowerCase();
+      el('km-' + id).value = r.km;
+      refrescar(id);
+    })
+    .catch(e => setHint(id, e.message, 'err'))
+    .finally(() => { btn.disabled = false; btn.textContent = 'Calcular'; });
+}
+
+// ─── TOTALES ────────────────────────────────────────────────────────
+function desplazamientos() {
+  const out = [];
+  VIAJES.forEach((v, i) => v.fechas.forEach(f => out.push({
+    fecha: f, origen: v.origen.trim(), destino: v.destino.trim(), motivo: v.motivo,
+    km_ida: parseFloat(v.kmIda), km: kmTotal(v), importe: impFecha(v), viaje: i + 1
+  })));
+  out.sort((a, b) => a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : a.viaje - b.viaje);
+  return out;
+}
+function refrescarKpis() {
+  const d = desplazamientos();
+  el('k-desp').textContent = d.length;
+  el('k-viajes').textContent = VIAJES.filter(v => v.fechas.length).length + ' viaje(s) distinto(s)';
+  el('k-km').textContent = fmtNum(r2(d.reduce((s, x) => s + x.km, 0)));
+  el('k-total').textContent = eur(r2(d.reduce((s, x) => s + x.importe, 0)));
+  el('k-tarifa').textContent = fmtNum(TARIFA) + ' €';
+  el('k-mes').textContent = MES ? mesTxt(MES) : '';
+}
+function refrescarTodo() {
+  el('tarifa-txt').textContent = fmtNum(TARIFA) + ' €/km';
+  VIAJES.forEach(v => refrescar(v.id));
+  refrescarKpis();
+}
+
+// ─── VALIDACIÓN ─────────────────────────────────────────────────────
+function validar() {
+  if (el('f-nombre').value.trim().length < 3) return 'Falta el nombre del trabajador.';
+  if (!nifValido(nifLimpio())) return 'El NIF/NIE no es válido (comprueba número y letra).';
+  if (!MES) return 'Elige el mes.';
+  if (!VIAJES.length) return 'Añade al menos un viaje.';
+  for (let i = 0; i < VIAJES.length; i++) {
+    const v = VIAJES[i], n = 'Viaje ' + (i + 1) + ': ';
+    if (!v.origen.trim()) return n + 'falta el origen.';
+    if (!v.destino.trim()) return n + 'falta el destino.';
+    if (!v.motivo) return n + 'elige el motivo.';
+    if (!(parseFloat(v.kmIda) > 0)) return n + 'faltan los km (usa «Calcular» o escríbelos).';
+    if (!v.fechas.length) return n + 'marca al menos una fecha.';
+  }
+  return '';
+}
+
+// ─── PDF (una página por fecha) ─────────────────────────────────────
+function construirPdf() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const w = doc.internal.pageSize.getWidth(), h = doc.internal.pageSize.getHeight();
+  const nombre = el('f-nombre').value.trim(), nif = nifLimpio();
+  const D = desplazamientos();
+
+  D.forEach((x, i) => {
+    if (i > 0) doc.addPage();
+    // Cabecera (mismo bloque negro que los PDF del dashboard)
+    doc.setFillColor(26, 26, 26); doc.rect(0, 0, w, 24, 'F');
+    doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
+    doc.text('LIQUIDACIÓN DE KILOMETRAJE', 14, 12);
+    doc.setTextColor(204, 204, 204); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+    doc.text(EMPRESA + '  ·  ' + mesTxt(MES) + '  ·  Generado el ' + new Date().toLocaleDateString('es-ES'), 14, 19);
+
+    const body = [
+      ['Trabajador', nombre + '  ·  NIF ' + nif],
+      ['Fecha', fechaEs(x.fecha)],
+      ['Origen', x.origen],
+      ['Destino', x.destino],
+      ['Motivo', x.motivo],
+      ['Medio de transporte', 'Vehículo propio'],
+      ['Kilómetros', fmtNum(x.km) + ' km (ida y vuelta)'],
+      ['Total a abonar', eur(x.importe) + '  (' + fmtNum(TARIFA) + ' €/km)']
+    ];
+    doc.autoTable({
+      startY: 36, margin: { left: 14, right: 14 }, theme: 'plain', body,
+      styles: { font: 'helvetica', fontSize: 11, textColor: [42, 37, 32], cellPadding: 4 },
+      alternateRowStyles: { fillColor: [242, 242, 242] },
+      columnStyles: { 0: { cellWidth: 52, fontStyle: 'bold', textColor: [107, 114, 128] } },
+      didParseCell: d => {
+        if (d.section === 'body' && d.row.index === body.length - 1) { d.cell.styles.fontStyle = 'bold'; d.cell.styles.fontSize = 13; d.cell.styles.textColor = [17, 17, 17]; }
+      }
+    });
+
+    // Firmas
+    const y = doc.lastAutoTable.finalY + 24, bw = (w - 28 - 12) / 2;
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(107, 114, 128);
+    doc.text('Firma del trabajador:', 14, y);
+    doc.text('Conforme de la empresa:', 14 + bw + 12, y);
+    doc.setDrawColor(176, 170, 159); doc.setLineWidth(0.3);
+    doc.rect(14, y + 3, bw, 34); doc.rect(14 + bw + 12, y + 3, bw, 34);
+
+    // Pie
+    doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(176, 170, 159);
+    doc.text('Desplazamiento ' + (i + 1) + ' de ' + D.length, w - 14, h - 10, { align: 'right' });
+  });
+  return doc;
+}
+function nombrePdf() { return 'Kilometraje_' + MES + '_' + nombreArchivo(el('f-nombre').value.trim()) + '.pdf'; }
+
+function descargarPdf() {
+  aviso('');
+  const err = validar(); if (err) { aviso(err, 'err'); return; }
+  if (!window.jspdf) { aviso('No se ha podido cargar jsPDF.', 'err'); return; }
+  construirPdf().save(nombrePdf());
+}
+
+// ─── ENVÍO ──────────────────────────────────────────────────────────
+function enviar(confirmarDuplicado) {
+  aviso('');
+  const err = validar(); if (err) { aviso(err, 'err'); return; }
+  if (!window.jspdf) { aviso('No se ha podido cargar jsPDF.', 'err'); return; }
+  const D = desplazamientos();
+  const total = r2(D.reduce((s, x) => s + x.importe, 0));
+  if (!confirmarDuplicado && !confirm(`Se enviará el kilometraje de ${mesTxt(MES)} (${D.length} desplazamientos, ${eur(total)}) a ${DESTINATARIO || 'el destinatario configurado'}. ¿Continuar?`)) return;
+
+  const btn = el('btn-enviar');
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  let b64;
+  try { b64 = construirPdf().output('datauristring').split(',')[1]; }
+  catch (e) { aviso('No se pudo generar el PDF: ' + e.message, 'err'); btn.disabled = false; btn.textContent = 'Enviar por correo →'; return; }
+
+  post({
+    accion: 'enviar',
+    trabajador: el('f-nombre').value.trim(), nif: nifLimpio(), mes: MES,
+    desplazamientos: D.map(x => ({ fecha: x.fecha, origen: x.origen, destino: x.destino, motivo: x.motivo, km_ida: x.km_ida })),
+    total_cliente: total, pdf_base64: b64, confirmar_duplicado: !!confirmarDuplicado
+  })
+    .then(d => {
+      if (d.ok) {
+        recordarLugares();
+        aviso(`Enviado a ${d.enviado_a}: ${d.n} desplazamientos, ${eur(d.total)}.` + (d.aviso ? ' ' + d.aviso : ''), d.aviso ? 'err' : 'ok');
+      } else if (d.motivo === 'duplicado') {
+        if (confirm(`Ya se envió el kilometraje de ${mesTxt(MES)} para el NIF ${nifLimpio()} (el ${d.enviado}). ¿Enviarlo otra vez?`)) enviar(true);
+      } else if (d.motivo === 'tarifa_cambiada') {
+        TARIFA = d.tarifa; refrescarTodo();
+        aviso('La tarifa ha cambiado a ' + fmtNum(TARIFA) + ' €/km. Revisa los importes y vuelve a enviar.', 'err');
+      } else {
+        throw new Error(d.error || d.motivo || 'respuesta sin ok:true');
+      }
+    })
+    .catch(e => aviso('No se pudo enviar: ' + e.message, 'err'))
+    .finally(() => { btn.disabled = false; btn.textContent = 'Enviar por correo →'; });
+}
+
+// ── IFRAME HEIGHT COMMUNICATION ───────────────────────
+(function () {
+  function calcHeight() {
+    var login = document.getElementById('login-screen');
+    var loginVisible = login && getComputedStyle(login).display !== 'none';
+    if (loginVisible) {
+      var box = login.querySelector('.login-box');
+      return Math.max(560, (box ? box.offsetHeight : 0) + 96);
+    }
+    return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight);
+  }
+  var ultimaAltura = 0;
+  function sendHeight() {
+    var h = calcHeight();
+    if (h !== ultimaAltura) {
+      ultimaAltura = h;
+      window.parent.postMessage({ iframeHeight: h }, '*');
+    }
+  }
+  window.sendHeight = sendHeight;
+
+  sendHeight();
+  window.addEventListener('load', sendHeight);
+  window.addEventListener('resize', sendHeight);
+
+  var roBody = new ResizeObserver(sendHeight);
+  roBody.observe(document.body);
+
+  var moLogin = new MutationObserver(sendHeight);
+  moLogin.observe(document.getElementById('login-screen'), { attributes: true, attributeFilter: ['style'] });
+
+  var appWrapper = document.getElementById('app-wrapper');
+  var moApp = new MutationObserver(sendHeight);
+  moApp.observe(appWrapper, { attributes: true, attributeFilter: ['style'], childList: true, subtree: true });
+
+  var intentos = 0;
+  var poll = setInterval(function () {
+    sendHeight();
+    if (++intentos > 20) clearInterval(poll);
+  }, 400);
+})();
+</script>
+</body>
+</html>
