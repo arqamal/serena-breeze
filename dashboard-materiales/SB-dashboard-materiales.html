@@ -304,7 +304,9 @@ function doLogin() {
         if (data.token) localStorage.setItem(CLAVE_TOKEN_SESION, data.token);
         entrarApp();
       } else {
-        errorEl.textContent = data.motivo === 'sin_acceso' ? 'Tu usuario no tiene acceso al dashboard de materiales.' : 'Usuario o contraseña incorrectos';
+        errorEl.textContent = data.motivo === 'sin_acceso' ? 'Tu usuario no tiene acceso al dashboard de materiales.'
+          : data.motivo === 'credenciales' ? 'Usuario o contraseña incorrectos'
+          : 'Error del servidor: ' + (data.error || data.motivo || 'respuesta inesperada');
         errorEl.style.display = 'block';
       }
     })
