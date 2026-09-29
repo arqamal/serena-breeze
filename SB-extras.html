@@ -2263,6 +2263,33 @@ function fmtEur(n) {
 function sendHeight() {
   window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, '*');
 }
+window.sendHeight = sendHeight;
+
+// ── IFRAME HEIGHT: ResizeObserver + polling de respaldo ──
+(function() {
+  var _ro = null, _pollCount = 0, _pollTimer = null;
+  function startPolling() {
+    _pollCount = 0;
+    if (_pollTimer) clearInterval(_pollTimer);
+    _pollTimer = setInterval(function() {
+      sendHeight();
+      _pollCount++;
+      if (_pollCount >= 20) clearInterval(_pollTimer);
+    }, 400);
+  }
+  function initHeightObserver() {
+    sendHeight();
+    startPolling();
+    if (_ro) _ro.disconnect();
+    _ro = new ResizeObserver(sendHeight);
+    _ro.observe(document.body);
+  }
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    initHeightObserver();
+  } else {
+    document.addEventListener('DOMContentLoaded', initHeightObserver);
+  }
+})();
 
 // ─── INIT ────────────────────────────────────────────────────────────
 window.addEventListener('load', () => {
