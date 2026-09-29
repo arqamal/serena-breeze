@@ -1455,12 +1455,52 @@
     buildSummary();
   }
 
-  function sendHeight() {
-    window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, '*');
-  }
-  window.addEventListener('load', sendHeight);
+  // ── IFRAME HEIGHT COMMUNICATION ───────────────────────
+  (function() {
+    var _ro = null, _pollCount = 0, _pollTimer = null;
+
+    function sendHeight() {
+      window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, '*');
+    }
+    window.sendHeight = sendHeight;
+
+    function startPolling() {
+      _pollCount = 0;
+      if (_pollTimer) clearInterval(_pollTimer);
+      _pollTimer = setInterval(function() {
+        sendHeight();
+        _pollCount++;
+        if (_pollCount >= 20) clearInterval(_pollTimer);
+      }, 400);
+    }
+
+    function init() {
+      sendHeight();
+      startPolling();
+      if (_ro) _ro.disconnect();
+      _ro = new ResizeObserver(sendHeight);
+      _ro.observe(document.body);
+      window.addEventListener('resize', sendHeight);
+    }
+
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+      init();
+    } else {
+      document.addEventListener('DOMContentLoaded', init);
+    }
+    window.addEventListener('load', sendHeight);
+  })();
+
   const _goTo = goTo;
-  goTo = function(n) { _goTo(n); setTimeout(sendHeight, 150); };
+  goTo = function(n) { _goTo(n); setTimeout(sendHeight, 150); startPollingAfterStep(); };
+  function startPollingAfterStep() {
+    var c = 0;
+    var t = setInterval(function() {
+      sendHeight();
+      c++;
+      if (c >= 10) clearInterval(t);
+    }, 300);
+  }
 </script>
 </body>
 </html>
