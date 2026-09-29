@@ -1895,8 +1895,17 @@ function fmtFecha(ts) {
   if (isNaN(d)) return String(ts);
   return d.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
+function calcHeight_() {
+  var login = document.getElementById('login-screen');
+  var loginVisible = login && getComputedStyle(login).display !== 'none';
+  if (loginVisible) {
+    var box = login.querySelector('.login-box');
+    return Math.max(560, (box ? box.offsetHeight : 0) + 96);
+  }
+  return document.body.scrollHeight;
+}
 function sendHeight() {
-  window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, '*');
+  window.parent.postMessage({ iframeHeight: calcHeight_() }, '*');
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────
@@ -1954,6 +1963,17 @@ window.addEventListener('load', () => {
   });
 });
 new MutationObserver(sendHeight).observe(document.body, { childList: true, subtree: true, attributes: true });
+
+// ── Respaldo: ResizeObserver + polling ──
+(function() {
+  var _pollCount = 0, _pollTimer = null;
+  new ResizeObserver(sendHeight).observe(document.body);
+  _pollTimer = setInterval(function() {
+    sendHeight();
+    _pollCount++;
+    if (_pollCount >= 20) clearInterval(_pollTimer);
+  }, 400);
+})();
 </script>
 </body>
 </html>
