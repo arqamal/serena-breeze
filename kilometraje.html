@@ -97,6 +97,10 @@
   .cal-d.we { color: var(--mid); }
   .cal-d:hover { border-color: var(--black); }
   .cal-d.sel { background: var(--black); color: #fff; border-color: var(--black); }
+  .cal-nav { display: flex; align-items: center; justify-content: space-between; max-width: 300px; margin-bottom: 8px; }
+  .cal-nav-btn { font-family: 'Oswald', sans-serif; font-size: 16px; width: 34px; height: 34px; cursor: pointer; background: var(--white); color: var(--slate-gray); border: 1px solid var(--border); border-radius: 0; transition: all .15s; }
+  .cal-nav-btn:hover { border-color: var(--black); color: var(--black); }
+  .cal-mes { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--text); }
 
   .acciones { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
 
@@ -156,7 +160,7 @@
   <main>
     <div class="sec-eyebrow">Amal Consult · Administración</div>
     <div class="sec-title">Kilometraje</div>
-    <div class="sec-desc">Desplazamientos del mes con vehículo propio. Los kilómetros se computan siempre de <b>ida y vuelta</b> a <b id="tarifa-txt">0,26 €/km</b>. Un mismo viaje repetido varios días se rellena una sola vez marcando sus fechas; el PDF lleva una página por cada fecha.</div>
+    <div class="sec-desc">Desplazamientos del mes con vehículo propio. Los kilómetros se computan siempre de <b>ida y vuelta</b> a <b id="tarifa-txt">0,26 €/km</b>. Un mismo viaje repetido varios días se rellena una sola vez marcando sus fechas (puedes moverte a otros meses con las flechas del calendario); el PDF lleva una página por cada fecha.</div>
 
     <div class="topbar">
       <div class="btn-group">
@@ -226,7 +230,7 @@ let TARIFA = 0.26;            // se sobrescribe con la de la pestaña _config
 let DESTINATARIO = '';
 let EMPRESA = 'AMAL Real Estate, S.L.';
 let MES = '';
-let VIAJES = [];              // { id, origen, destino, motivo, kmIda, fechas:[iso], calc:'', collapsed }
+let VIAJES = [];              // { id, origen, destino, motivo, kmIda, fechas:[iso], calc:'', collapsed, vista:'YYYY-MM' (mes que muestra el calendario) }
 let SEQ = 0;
 let NOMBRE_LOGIN = '';
 
@@ -345,9 +349,8 @@ function onMesChange() {
   const nuevo = el('f-mes').value;
   if (!nuevo) { el('f-mes').value = MES; return; }
   if (nuevo === MES) return;
-  if (VIAJES.some(v => v.fechas.length) && !confirm('Al cambiar de mes se borrarán las fechas marcadas. ¿Continuar?')) { el('f-mes').value = MES; return; }
   MES = nuevo;
-  VIAJES.forEach(v => v.fechas = []);
+  VIAJES.forEach(v => v.vista = nuevo);   // las fechas ya marcadas se conservan
   renderViajes();
   refrescarTodo();
 }
@@ -382,7 +385,7 @@ const kmTotal = v => r2((parseFloat(v.kmIda) || 0) * 2);          // siempre ida
 const impFecha = v => r2(kmTotal(v) * TARIFA);
 
 function nuevoViaje() {
-  VIAJES.push({ id: ++SEQ, origen: '', destino: '', motivo: '', kmIda: '', fechas: [], calc: '', collapsed: false });
+  VIAJES.push({ id: ++SEQ, origen: '', destino: '', motivo: '', kmIda: '', fechas: [], calc: '', collapsed: false, vista: MES });
   renderViajes();
   const last = VIAJES[VIAJES.length - 1];
   const nodo = el('v-' + last.id);
@@ -441,6 +444,7 @@ function cardHtml(v) {
         </div>
         <div>
           <div class="block-label">Fechas del viaje</div>
+          <div class="cal-nav"><button type="button" class="cal-nav-btn" onclick="cambiarVista(${id}, -1)" title="Mes anterior">‹</button><span class="cal-mes" id="calmes-${id}"></span><button type="button" class="cal-nav-btn" onclick="cambiarVista(${id}, 1)" title="Mes siguiente">›</button></div>
           <div id="cal-${id}"></div>
           <div class="hint" id="fechas-${id}" style="margin-top:10px"></div>
         </div>
@@ -479,7 +483,7 @@ function refrescar(id) {
   el('imp-' + id).value = km ? eur(impFecha(v)) : '';
   el('meta-' + id).innerHTML =
     `<span class="pill">${n} fecha${n === 1 ? '' : 's'}</span><span class="pill">${fmtNum(r2(km * n))} km</span><span class="pill">${eur(r2(impFecha(v) * n))}</span>`;
-  el('fechas-' + id).textContent = n ? 'Días: ' + v.fechas.map(f => +f.slice(8)).join(', ') : 'Marca los días en que se hizo este viaje.';
+  el('fechas-' + id).textContent = n ? 'Fechas: ' + v.fechas.map(f => f.slice(8) + '/' + f.slice(5, 7)).join(', ') : 'Marca los días en que se hizo este viaje.';
   if (v.calc) {
     if (v.calc !== o.toLowerCase() + '|' + d.toLowerCase()) setHint(id, 'Has cambiado el trayecto: vuelve a calcular los km.', 'warn');
     else setHint(id, 'Calculado con Google Maps (ruta más rápida). Puedes corregirlo a mano.', 'ok');
@@ -490,18 +494,27 @@ function refrescar(id) {
 // ─── CALENDARIO ─────────────────────────────────────────────────────
 function pintarCal(v) {
   const cont = el('cal-' + v.id); if (!cont) return;
-  const [y, m] = MES.split('-').map(Number);
+  const vista = v.vista || MES;
+  const [y, m] = vista.split('-').map(Number);
+  el('calmes-' + v.id).textContent = MESES[m - 1] + ' ' + y;
   const dias = new Date(y, m, 0).getDate();
   const primero = (new Date(y, m - 1, 1).getDay() + 6) % 7; // lunes = 0
   let h = '<div class="cal">' + ['L','M','X','J','V','S','D'].map(d => `<span class="cal-h">${d}</span>`).join('');
   for (let i = 0; i < primero; i++) h += '<span></span>';
   for (let d = 1; d <= dias; d++) {
-    const iso = MES + '-' + pad(d);
+    const iso = vista + '-' + pad(d);
     const sel = v.fechas.includes(iso);
     const we = (primero + d - 1) % 7 >= 5;
     h += `<button type="button" class="cal-d${sel ? ' sel' : ''}${we ? ' we' : ''}" onclick="toggleDia(${v.id}, '${iso}')">${d}</button>`;
   }
   cont.innerHTML = h + '</div>';
+}
+function cambiarVista(id, delta) {
+  const v = get(id); if (!v) return;
+  let [y, m] = (v.vista || MES).split('-').map(Number);
+  m += delta; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; }
+  v.vista = y + '-' + pad(m);
+  pintarCal(v);
 }
 function toggleDia(id, iso) {
   const v = get(id); if (!v) return;
