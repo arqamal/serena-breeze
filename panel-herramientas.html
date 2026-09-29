@@ -172,5 +172,23 @@
 
 </main>
 
+<script>
+  // ── IFRAME HEIGHT COMMUNICATION ───────────────────────
+  function sendHeight() {
+    window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, '*');
+  }
+  sendHeight();
+  new ResizeObserver(sendHeight).observe(document.body);
+  window.addEventListener('load', sendHeight);
+  (function() {
+    var _c = 0;
+    var _t = setInterval(function() {
+      sendHeight();
+      _c++;
+      if (_c >= 20) clearInterval(_t);
+    }, 400);
+  })();
+</script>
+
 </body>
 </html>
