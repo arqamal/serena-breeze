@@ -287,12 +287,25 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ─── COMUNICACIÓN CON EL BACKEND ────────────────────────────────────
-function post(obj) {
-  if (BACKEND.startsWith('PENDIENTE')) return Promise.reject(new Error('Falta la URL del backend (BACKEND) en el HTML.'));
-  obj.token = localStorage.getItem(CLAVE_TOKEN_SESION) || '';
+// Apps Script falla de vez en cuando (HTTP 404/5xx en la redirección, sobre todo con peticiones simultáneas).
+// Por eso las peticiones van de una en una y las que no modifican nada se reintentan solas. `enviar` NO se reintenta:
+// un reintento podría mandar el correo dos veces.
+let COLA = Promise.resolve();
+const esperar = ms => new Promise(r => setTimeout(r, ms));
+function transporte(obj, reintentos) {
   return fetch(BACKEND, { method: 'POST', body: JSON.stringify(obj) })
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-    .then(d => {
+    .catch(e => {
+      if (reintentos > 0) return esperar(800).then(() => transporte(obj, reintentos - 1));
+      throw new Error('El servidor no responde (' + e.message + '). Inténtalo de nuevo.');
+    });
+}
+function post(obj) {
+  if (BACKEND.startsWith('PENDIENTE')) return Promise.reject(new Error('Falta la URL del backend (BACKEND) en el HTML.'));
+  const reintentos = obj.accion === 'enviar' ? 0 : 2;
+  const tarea = () => {
+    obj.token = localStorage.getItem(CLAVE_TOKEN_SESION) || '';
+    return transporte(obj, reintentos).then(d => {
       if (!d.ok && (d.motivo === 'sin_sesion' || d.motivo === 'sin_acceso')) {
         localStorage.removeItem(CLAVE_TOKEN_SESION);
         alert(d.motivo === 'sin_acceso' ? 'Tu usuario ya no tiene acceso a esta herramienta.' : 'La sesión ha caducado. Vuelve a entrar.');
@@ -301,6 +314,10 @@ function post(obj) {
       }
       return d;
     });
+  };
+  const p = COLA.then(tarea, tarea);
+  COLA = p.catch(() => {});             // la cola sigue aunque una petición falle
+  return p;
 }
 function cargarConfig() {
   post({ accion: 'config' })
@@ -549,7 +566,7 @@ function pintarLugar(id, l) {
       : '';
   } else {
     h.textContent = msg ? msg[0] : ''; h.className = 'hint' + (msg && msg[1] ? ' ' + msg[1] : '');
-    a.innerHTML = '';
+    a.innerHTML = (msg && msg[2] === 'retry') ? `<button type="button" class="chip" onclick="resolver(${id}, '${l}')">↻ Reintentar</button>` : '';
   }
 }
 function elegirLugar(id, l, i) {
@@ -585,7 +602,7 @@ function resolver(id, l) {
     .catch(e => {
       const w = get(id);
       if (!w || seq !== w[l + 'Seq']) return;
-      w[l + 'Res'] = null; w[l + 'Msg'] = [e.message, 'err']; pintarLugar(id, l);
+      w[l + 'Res'] = null; w[l + 'Msg'] = [e.message, 'err', 'retry']; pintarLugar(id, l);
     });
 }
 // Con los dos lugares comprobados calcula solo, salvo que los km se hayan escrito a mano.
