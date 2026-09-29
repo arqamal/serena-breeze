@@ -1671,6 +1671,72 @@ function aplicarDatosBackend_(codigo, d) {
   st.viviendas = st.villaNombres.length + st.bloqueUnidades.reduce((a, b) => a + b, 0);
   st.cargado = true;
 }
+
+// ── IFRAME HEIGHT COMMUNICATION ───────────────────────
+(function() {
+  var _ro = null, _moLogin = null, _moWrapper = null, _pollCount = 0, _pollTimer = null;
+
+  function calcHeight() {
+    var login = document.getElementById('login-screen');
+    var loginVisible = login && getComputedStyle(login).display !== 'none';
+    var h;
+    if (loginVisible) {
+      var box = login.querySelector('.login-box');
+      h = Math.max(560, (box ? box.offsetHeight : 0) + 96);
+    } else {
+      h = document.body.scrollHeight;
+    }
+    return h;
+  }
+
+  function sendHeight() {
+    var h = calcHeight();
+    window.parent.postMessage({ iframeHeight: h }, '*');
+  }
+  window.sendHeight = sendHeight;
+
+  function startPolling() {
+    _pollCount = 0;
+    if (_pollTimer) clearInterval(_pollTimer);
+    _pollTimer = setInterval(function() {
+      sendHeight();
+      _pollCount++;
+      if (_pollCount >= 20) clearInterval(_pollTimer);
+    }, 400);
+  }
+
+  function init() {
+    sendHeight();
+    startPolling();
+
+    if (_ro) _ro.disconnect();
+    _ro = new ResizeObserver(sendHeight);
+    _ro.observe(document.body);
+
+    var login = document.getElementById('login-screen');
+    if (login) {
+      if (_moLogin) _moLogin.disconnect();
+      _moLogin = new MutationObserver(sendHeight);
+      _moLogin.observe(login, { attributes: true, attributeFilter: ['style'] });
+    }
+
+    var wrapper = document.getElementById('app-wrapper');
+    if (wrapper) {
+      if (_moWrapper) _moWrapper.disconnect();
+      _moWrapper = new MutationObserver(sendHeight);
+      _moWrapper.observe(wrapper, { attributes: true, attributeFilter: ['style'] });
+    }
+
+    window.addEventListener('resize', sendHeight);
+  }
+
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    init();
+  } else {
+    document.addEventListener('DOMContentLoaded', init);
+  }
+  window.addEventListener('load', sendHeight);
+})();
 </script>
 </body>
 </html>
