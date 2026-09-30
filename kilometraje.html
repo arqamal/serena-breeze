@@ -211,18 +211,16 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
-// ─── LOGIN (AuthUsuarios.gs — login centralizado) ───────────────────
-const LOGIN_URL = 'https://script.google.com/macros/s/AKfycbzC9AI5br9PbD6cwCN0ombsIE7HYdIK7Uz3QoGiSZ_QHVhz8FsGJLvfJfkU51DBbL4H/exec';
-const CLAVE_TOKEN_SESION = 'amal_token';
-// Permiso propio: columna acceso_kilometraje en _usuarios (hay que añadir 'kilometraje' a COLUMNA_ACCESO en AuthUsuarios.gs).
-const HERRAMIENTA = 'kilometraje';
-
-// ─── BACKEND (GeneradorKilometraje.gs) ──────────────────────────────
+// ─── BACKEND (Cloudflare Worker: kilometraje-worker.js) ─────────────
+//   POST { accion:'login', usuario, pass } | { accion:'login', token }  → { ok, usuario, nombre, email, token }
 //   POST { accion:'config' }                        → { ok, tarifa, destinatario, empresa }
-//   POST { accion:'distancia', origen, destino }    → { ok, km }  (km solo de ida)
+//   POST { accion:'lugar', texto }                  → { ok, resultados:[{label,lat,lng}] }
+//   POST { accion:'distancia', origen, destino, origen_ll?, destino_ll? } → { ok, km }  (km solo de ida)
 //   POST { accion:'enviar', trabajador, nif, mes, desplazamientos, total_cliente, pdf_base64, confirmar_duplicado? }
-//   Todas llevan `token`. Pegar aquí la URL /exec tras implementar el script como aplicación web.
-const BACKEND = 'https://script.google.com/macros/s/AKfycbz_iBeitjy6g1dmU96OKW220NWyocPdq1hqbtk_pj6tgnX34w8hKrtrtlReWqceYaKRzg/exec';
+//   Todas (salvo login) llevan `token`. El login se valida contra la pestaña _usuarios (columna acceso_kilometraje).
+const BACKEND = 'https://kilometraje-api.arquitectura-90b.workers.dev';
+// Token propio de esta herramienta (el del login antiguo, 'amal_token', lo firmaba Apps Script y no vale aquí).
+const CLAVE_TOKEN_SESION = 'amal_km_token';
 
 const MOTIVOS = ['Visita a cliente', 'Asistencia a obra', 'Reunión profesional'];
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -246,7 +244,7 @@ function doLogin() {
   const errorEl = document.getElementById('login-error');
   errorEl.style.display = 'none';
   btn.disabled = true; btn.textContent = 'Comprobando…';
-  fetch(LOGIN_URL, { method: 'POST', body: JSON.stringify({ accion: 'login', usuario: u, pass: p, herramienta: HERRAMIENTA }) })
+  fetch(BACKEND, { method: 'POST', body: JSON.stringify({ accion: 'login', usuario: u, pass: p }) })
     .then(r => r.json())
     .then(data => {
       if (data.ok) {
@@ -263,7 +261,7 @@ function doLogin() {
 function intentarSesionGuardada() {
   const token = localStorage.getItem(CLAVE_TOKEN_SESION);
   if (!token) return Promise.resolve(null);
-  return fetch(LOGIN_URL, { method: 'POST', body: JSON.stringify({ accion: 'login', token, herramienta: HERRAMIENTA }) })
+  return fetch(BACKEND, { method: 'POST', body: JSON.stringify({ accion: 'login', token }) })
     .then(r => r.json())
     .then(data => {
       if (!data.ok) { localStorage.removeItem(CLAVE_TOKEN_SESION); return null; }
@@ -287,9 +285,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ─── COMUNICACIÓN CON EL BACKEND ────────────────────────────────────
-// Apps Script falla de vez en cuando (HTTP 404/5xx en la redirección, sobre todo con peticiones simultáneas).
-// Por eso las peticiones van de una en una y las que no modifican nada se reintentan solas. `enviar` NO se reintenta:
-// un reintento podría mandar el correo dos veces.
+// Las peticiones van de una en una (también respeta el límite de 1 consulta/s de OpenStreetMap) y las que no
+// modifican nada se reintentan solas ante un fallo de red. `enviar` NO se reintenta: podría mandar el correo dos veces.
 let COLA = Promise.resolve();
 const esperar = ms => new Promise(r => setTimeout(r, ms));
 function transporte(obj, reintentos) {
