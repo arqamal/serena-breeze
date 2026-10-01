@@ -106,6 +106,13 @@
   .cal-nav-btn:hover { border-color: var(--black); color: var(--black); }
   .cal-mes { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: var(--text); }
 
+  .btn.activo { background: var(--black); color: #fff; }
+  .hist-table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+  .hist-table th { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate-gray); text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); font-weight: 400; }
+  .hist-table td { padding: 9px 10px; font-size: 13px; vertical-align: top; }
+  .hist-table tr:nth-child(even) td { background: #F2F2F2; }
+  .hist-table .num { text-align: right; white-space: nowrap; }
+  .hist-acciones { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
   .acciones { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
 
   /* LOGIN */
@@ -134,6 +141,7 @@
     .viaje-form { grid-template-columns: 1fr; }
     .viaje-km { grid-column: span 1; grid-template-columns: 1fr; }
     .btn-group { margin-left: 0; }
+    .hist-table th:nth-child(3), .hist-table td:nth-child(3) { display: none; }
     .vivienda-head { flex-wrap: wrap; padding: 12px 14px; }
     .vivienda-meta { flex-wrap: wrap; }
     .pills { flex-wrap: wrap; }
@@ -168,12 +176,15 @@
 
     <div class="topbar">
       <div class="btn-group">
+        <button class="btn activo" id="tab-nueva" onclick="mostrarVista('nueva')">Nueva liquidación</button>
+        <button class="btn" id="tab-hist" onclick="mostrarVista('hist')">Mis liquidaciones</button>
         <button class="btn" onclick="cerrarSesion()">Cerrar sesión</button>
       </div>
     </div>
 
     <div id="aviso"></div>
 
+    <div id="vista-nueva">
     <div class="panel">
       <div class="block-label">Trabajador</div>
       <div class="form-grid">
@@ -204,6 +215,25 @@
         <button class="btn" onclick="descargarPdf()">⤓ Descargar PDF</button>
         <button class="btn btn-primary" id="btn-enviar" onclick="enviar(false)">Enviar por correo →</button>
       </div>
+    </div>
+    </div>
+
+    <div id="vista-historial" style="display:none">
+      <div class="panel">
+        <div class="block-label">Mis liquidaciones enviadas</div>
+        <div class="form-grid" style="grid-template-columns: 200px 1fr;">
+          <div class="field"><label for="h-anio">Año</label><select id="h-anio" onchange="pintarHistorial()"></select></div>
+          <div class="field"><label>&nbsp;</label><span class="hint" id="h-estado"></span></div>
+        </div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="kpi-label">Liquidaciones</div><div class="kpi-value" id="hk-liq">0</div><div class="kpi-sub">enviadas</div></div>
+        <div class="kpi"><div class="kpi-label">Desplazamientos</div><div class="kpi-value" id="hk-desp">0</div><div class="kpi-sub">fechas</div></div>
+        <div class="kpi"><div class="kpi-label">Km totales</div><div class="kpi-value" id="hk-km">0</div><div class="kpi-sub">ida y vuelta</div></div>
+        <div class="kpi"><div class="kpi-label">Total abonado</div><div class="kpi-value" id="hk-total">0,00 €</div><div class="kpi-sub" id="hk-sub"></div></div>
+      </div>
+      <div id="h-empty" style="display:none; font-size:14px; color:var(--slate-gray); padding:32px; text-align:center; border:1px solid var(--border); margin-bottom:16px;">No hay liquidaciones enviadas en este periodo.</div>
+      <div id="h-lista"></div>
     </div>
   </main>
 </div>
@@ -677,12 +707,12 @@ function validar() {
 }
 
 // ─── PDF (una página por fecha) ─────────────────────────────────────
-function construirPdf() {
+function construirPdf(ctx) {
+  ctx = ctx || { nombre: el('f-nombre').value.trim(), nif: nifLimpio(), mes: MES, tarifa: TARIFA, D: desplazamientos() };
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'mm', format: 'a4' });
   const w = doc.internal.pageSize.getWidth(), h = doc.internal.pageSize.getHeight();
-  const nombre = el('f-nombre').value.trim(), nif = nifLimpio();
-  const D = desplazamientos();
+  const nombre = ctx.nombre, nif = ctx.nif, D = ctx.D;
 
   D.forEach((x, i) => {
     if (i > 0) doc.addPage();
@@ -691,7 +721,7 @@ function construirPdf() {
     doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(16);
     doc.text('LIQUIDACIÓN DE KILOMETRAJE', 14, 12);
     doc.setTextColor(204, 204, 204); doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
-    doc.text(EMPRESA + '  ·  ' + mesTxt(MES) + '  ·  Generado el ' + new Date().toLocaleDateString('es-ES'), 14, 19);
+    doc.text(EMPRESA + '  ·  ' + mesTxt(ctx.mes) + '  ·  Generado el ' + new Date().toLocaleDateString('es-ES'), 14, 19);
 
     const body = [
       ['Trabajador', nombre + '  ·  NIF ' + nif],
@@ -701,7 +731,7 @@ function construirPdf() {
       ['Motivo', x.motivo],
       ['Medio de transporte', 'Vehículo propio'],
       ['Kilómetros', fmtNum(x.km) + ' km (ida y vuelta)'],
-      ['Total a abonar', eur(x.importe) + '  (' + fmtNum(TARIFA) + ' €/km)']
+      ['Total a abonar', eur(x.importe) + '  (' + fmtNum(ctx.tarifa) + ' €/km)']
     ];
     doc.autoTable({
       startY: 36, margin: { left: 14, right: 14 }, theme: 'plain', body,
@@ -760,6 +790,7 @@ function enviar(confirmarDuplicado) {
     .then(d => {
       if (d.ok) {
         recordarLugares();
+        HIST = null;
         aviso(`Enviado a ${d.enviado_a}: ${d.n} desplazamientos, ${eur(d.total)}.` + (d.aviso ? ' ' + d.aviso : ''), d.aviso ? 'err' : 'ok');
       } else if (d.motivo === 'duplicado') {
         if (confirm(`Ya se envió el kilometraje de ${mesTxt(MES)} para el NIF ${nifLimpio()} (el ${d.enviado}). ¿Enviarlo otra vez?`)) enviar(true);
@@ -772,6 +803,106 @@ function enviar(confirmarDuplicado) {
     })
     .catch(e => aviso('No se pudo enviar: ' + e.message, 'err'))
     .finally(() => { btn.disabled = false; btn.textContent = 'Enviar por correo →'; });
+}
+
+
+// ─── MIS LIQUIDACIONES (historial del usuario) ──────────────────────
+let HIST = null;   // liquidaciones enviadas por el usuario que ha entrado (las trae el Worker)
+function mostrarVista(v) {
+  el('vista-nueva').style.display = v === 'nueva' ? 'block' : 'none';
+  el('vista-historial').style.display = v === 'hist' ? 'block' : 'none';
+  el('tab-nueva').classList.toggle('activo', v === 'nueva');
+  el('tab-hist').classList.toggle('activo', v === 'hist');
+  aviso('');
+  if (v === 'hist') cargarHistorial();
+  if (window.sendHeight) setTimeout(window.sendHeight, 50);
+}
+function cargarHistorial() {
+  el('h-estado').textContent = 'Cargando…';
+  post({ accion: 'historial' })
+    .then(d => {
+      if (!d.ok) throw new Error(d.error || d.motivo || 'respuesta sin ok:true');
+      HIST = d.liquidaciones || [];
+      el('h-estado').textContent = '';
+      pintarHistorial();
+    })
+    .catch(e => { el('h-estado').textContent = ''; aviso('No se pudo cargar el historial: ' + e.message, 'err'); });
+}
+function agruparFilas(filas) {
+  const mapa = {}, orden = [];
+  filas.forEach(f => {
+    const k = [f.origen, f.destino, f.motivo, f.km_ida].join('|');
+    if (!mapa[k]) { mapa[k] = { origen: f.origen, destino: f.destino, motivo: f.motivo, km_ida: f.km_ida, km: f.km, fechas: [], importe: 0 }; orden.push(k); }
+    mapa[k].fechas.push(f.fecha);
+    mapa[k].importe = r2(mapa[k].importe + f.importe);
+  });
+  return orden.map(k => mapa[k]);
+}
+function pintarHistorial() {
+  if (!HIST) return;
+  const sel = el('h-anio');
+  const anios = [...new Set(HIST.map(l => (l.mes || '').slice(0, 4)).filter(Boolean))].sort().reverse();
+  const previo = sel.dataset.init ? sel.value : (anios[0] || '');   // la primera vez, el año más reciente
+  sel.innerHTML = '<option value="">Todos</option>' + anios.map(a => `<option value="${a}">${a}</option>`).join('');
+  sel.value = (previo === '' || anios.includes(previo)) ? previo : (anios[0] || '');
+  sel.dataset.init = '1';
+  const anio = sel.value;
+  const lista = HIST.map((l, i) => ({ l, i })).filter(x => !anio || (x.l.mes || '').startsWith(anio));
+
+  const desp = lista.reduce((s, x) => s + x.l.n, 0);
+  el('hk-liq').textContent = lista.length;
+  el('hk-desp').textContent = desp;
+  el('hk-km').textContent = fmtNum(r2(lista.reduce((s, x) => s + x.l.km, 0)));
+  el('hk-total').textContent = eur(r2(lista.reduce((s, x) => s + x.l.total, 0)));
+  el('hk-sub').textContent = anio ? 'en ' + anio : 'en total';
+  el('h-empty').style.display = lista.length ? 'none' : 'block';
+
+  el('h-lista').innerHTML = lista.map(({ l, i }) => {
+    const anioMes = (l.mes || '').slice(0, 4);
+    const filas = agruparFilas(l.filas).map(g => {
+      const fechas = g.fechas.map(f => f.slice(8) + '/' + f.slice(5, 7) + (f.slice(0, 4) !== anioMes ? '/' + f.slice(0, 4) : '')).join(', ');
+      return `<tr><td>${escapeHtml(fechas)}</td><td>${escapeHtml(g.origen)} – ${escapeHtml(g.destino)}</td><td>${escapeHtml(g.motivo)}</td>` +
+        `<td class="num">${fmtNum(g.km)} km × ${g.fechas.length}</td><td class="num">${eur(g.importe)}</td></tr>`;
+    }).join('');
+    return `
+    <div class="vivienda-card collapsed">
+      <div class="vivienda-head" onclick="this.parentNode.classList.toggle('collapsed'); if (window.sendHeight) setTimeout(window.sendHeight, 50)">
+        <div class="vh-left"><span class="vivienda-code">${escapeHtml(l.mes ? mesTxt(l.mes) : '—')}</span><span class="vivienda-cliente">Enviado el ${escapeHtml(l.enviado)}</span></div>
+        <div class="vivienda-meta">
+          <span class="pills"><span class="pill">${l.n} desplaz.</span><span class="pill">${fmtNum(l.km)} km</span><span class="pill">${eur(l.total)}</span></span>
+          <span class="caret">▾</span>
+        </div>
+      </div>
+      <div class="vivienda-body">
+        <table class="hist-table"><thead><tr><th>Fechas</th><th>Trayecto</th><th>Motivo</th><th class="num">Km</th><th class="num">Importe</th></tr></thead><tbody>${filas}</tbody></table>
+        <div class="hist-acciones">
+          <button class="btn" onclick="pdfHistorial(${i})">⤓ Descargar PDF</button>
+          <button class="btn" onclick="reutilizar(${i})">Usar estos viajes como plantilla</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  if (window.sendHeight) setTimeout(window.sendHeight, 50);
+}
+function pdfHistorial(i) {
+  const l = HIST && HIST[i]; if (!l) return;
+  if (!window.jspdf) { aviso('No se ha podido cargar jsPDF.', 'err'); return; }
+  const D = l.filas.map((f, k) => ({ fecha: f.fecha, origen: f.origen, destino: f.destino, motivo: f.motivo, km_ida: f.km_ida, km: f.km, importe: f.importe }));
+  construirPdf({ nombre: l.trabajador, nif: l.nif, mes: l.mes, tarifa: l.tarifa || TARIFA, D })
+    .save('Kilometraje_' + l.mes + '_' + nombreArchivo(l.trabajador) + '.pdf');
+}
+// Copia los trayectos (origen, destino, motivo, km) de una liquidación al formulario, sin fechas.
+function reutilizar(i) {
+  const l = HIST && HIST[i]; if (!l) return;
+  const hayDatos = VIAJES.some(v => v.origen || v.destino || v.kmIda || v.fechas.length);
+  if (hayDatos && !confirm('El formulario actual tiene viajes. ¿Sustituirlos por los de ' + mesTxt(l.mes) + '?')) return;
+  const grupos = agruparFilas(l.filas);
+  VIAJES = grupos.map(g => ({ id: ++SEQ, origen: g.origen, destino: g.destino, motivo: g.motivo, kmIda: String(g.km_ida), fechas: [], calc: '',
+    collapsed: false, vista: MES, oRes: null, dRes: null, oMsg: null, dMsg: null, oSeq: 0, dSeq: 0 }));
+  mostrarVista('nueva');
+  renderViajes();
+  refrescarTodo();
+  aviso(`Cargados ${grupos.length} viaje(s) de ${mesTxt(l.mes)} sin fechas. Marca en cada uno los días de ${mesTxt(MES)}.`, 'ok');
 }
 
 // ── IFRAME HEIGHT COMMUNICATION ───────────────────────
