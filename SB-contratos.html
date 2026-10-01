@@ -1574,6 +1574,14 @@ function mostrarFormulario(tipo, modo) {
 
   document.getElementById('contenido').innerHTML = html;
   if (tipo === 'reserva' && !esP('fecha_pago_1')) actualizarFechaPago1DesdeReserva();
+  // FIX 2026-10-01: subtotal/total (y el reparto de pagos que depende de
+  // ellos) solo se recalculaban al disparar oninput en precio_viv/precio_ext/iva
+  // a mano — con precios ya precargados (o con el sugerido de extras desde
+  // obtenerExtrasSinIva_), el campo se rellenaba pero el total se quedaba
+  // vacío/desfasado hasta que el usuario tocaba el campo. Se fuerza un
+  // recálculo nada más montar el formulario, igual que ya se hacía con
+  // actualizarFechaPago1DesdeReserva().
+  recalcularPrecios();
 }
 
 // Lee todos los campos del formulario tal como están ahora mismo —
