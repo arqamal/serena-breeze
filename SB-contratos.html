@@ -1263,7 +1263,16 @@ function formatearCampo(el) {
   el.value = el.value ? formatearMiles(parsearMiles(el.value)) : '';
 }
 
-function recalcularPrecios() {
+function recalcularPrecios(actualizarPagos) {
+  // actualizarPagos=false: solo recalcula subtotal/total, SIN tocar
+  // pago_1/pago_2/pago_3. Se usa al montar el formulario (ver
+  // mostrarFormulario) para no pisar un reparto de pagos ya guardado
+  // (editado a mano) con el 25/25/resto por defecto antes de que el
+  // usuario toque nada. En los oninput de precio_viv/precio_ext/iva se
+  // sigue llamando sin argumento (true por defecto): ahí sí tiene
+  // sentido recalcular los pagos, porque el usuario está cambiando el
+  // precio en vivo.
+  if (actualizarPagos === undefined) actualizarPagos = true;
   const precioViv = parsearMiles(document.getElementById('f-precio_viv').value);
   const precioExt = parsearMiles(document.getElementById('f-precio_ext').value);
   const ivaPct = parseFloat(document.getElementById('f-iva').value) || 0;
@@ -1271,7 +1280,11 @@ function recalcularPrecios() {
   const total = subtotal * (1 + ivaPct / 100);
   document.getElementById('f-subtotal').value = subtotal ? formatearMiles(subtotal) : '';
   document.getElementById('f-total').value = total ? formatearMiles(total) : '';
-  recalcularPagos();
+  if (actualizarPagos) {
+    recalcularPagos();
+  } else {
+    comprobarSumaPagos();
+  }
 }
 // Sustituye "don {{cliente1}} y doña {{cliente2}}" fijo en la plantilla
 // por un marcador ya construido — así la "y" solo aparece si hay
@@ -1580,8 +1593,10 @@ function mostrarFormulario(tipo, modo) {
   // obtenerExtrasSinIva_), el campo se rellenaba pero el total se quedaba
   // vacío/desfasado hasta que el usuario tocaba el campo. Se fuerza un
   // recálculo nada más montar el formulario, igual que ya se hacía con
-  // actualizarFechaPago1DesdeReserva().
-  recalcularPrecios();
+  // actualizarFechaPago1DesdeReserva(). actualizarPagos=false: no pisar
+  // un reparto de pago_1/2/3 ya guardado con el 25/25/resto por defecto
+  // (bug detectado el 2026-10-02).
+  recalcularPrecios(false);
 }
 
 // Lee todos los campos del formulario tal como están ahora mismo —
