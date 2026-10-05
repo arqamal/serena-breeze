@@ -1523,6 +1523,7 @@ function mostrarFormulario(tipo, modo) {
     </div>`;
   });
   html += `<div class="pie-nota-form">Cómo se calculan: pago 1 = 25% del total menos la reserva. Pago 2 = el mismo importe que el pago 1. Pago 3 = el resto (el otro 50%). Se recalculan solos al cambiar el total o la reserva, pero puedes escribir encima si necesitas otro reparto.</div>
+    <div style="margin-bottom:14px;"><button type="button" class="btn btn-secondary" onclick="recalcularPagos()">Recalcular pagos (25% / 25% / resto)</button></div>
     <div id="aviso-suma-pagos"></div>
     </div></div>`;
 
