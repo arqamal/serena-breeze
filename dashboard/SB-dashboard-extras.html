@@ -118,6 +118,7 @@
   .chip-enviado { background: #FEF3EA; color: #E87722; border: 1px solid #F5C89A; }
   .chip-firmado { background: #f0faf0; color: #2d7a2d; border: 1px solid #b8ddb8; }
   .post-badge { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: white; background: var(--black); padding: 1px 6px; margin-left: 8px; border-radius: 2px; vertical-align: middle; }
+  .solarium-badge { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #fff; background: #E87722; padding: 2px 9px; margin-left: 10px; border-radius: 2px; vertical-align: middle; }
 
   /* LOGIN (idéntico al selector de extras) */
   #login-screen { position: fixed; inset: 0; background: var(--white); display: flex; align-items: center; justify-content: center; z-index: 9999; }
@@ -529,7 +530,7 @@ function renderDashboard() {
     return `
       <div class="vivienda-card${collapsed}" id="card-${cssId(v)}">
         <div class="vivienda-head" onclick="toggleCard('${v.replace(/'/g,"\\'")}')">
-          <div class="vivienda-code">${escapeHtml(v)}${postEntrega ? '<span class="post-badge">Post-entrega</span>' : ''}</div>
+          <div class="vivienda-code">${escapeHtml(v)}${viviendaTieneSolarium(v, grupos[v]) ? '<span class="solarium-badge">SOLARIUM</span>' : ''}${postEntrega ? '<span class="post-badge">Post-entrega</span>' : ''}</div>
           <div class="vivienda-meta">
             <span class="count-pill">${totalItems} extra${totalItems===1?'':'s'}</span>
             <button class="pdf-btn" onclick="descargarPDFVivienda(event, '${v.replace(/'/g,"\\'")}')" title="Descargar PDF de esta vivienda">⤓ PDF</button>
@@ -607,7 +608,8 @@ function descargarPDFVivienda(ev, v) {
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(16);
-  doc.text('SERENA BREEZE — EXTRAS ' + v, 14, 12);
+  const gCompleto = agruparPorVivienda()[v];
+  doc.text('SERENA BREEZE — EXTRAS ' + v + (viviendaTieneSolarium(v, gCompleto) ? '  ·  SOLARIUM' : ''), 14, 12);
   doc.setTextColor(204, 204, 204); // #CCCCCC
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9);
@@ -776,6 +778,19 @@ function compareViviendas(a, b) {
   if (ka[0] !== kb[0]) return ka[0] - kb[0];
   if (ka[1] !== kb[1]) return ka[1] - kb[1];
   return String(a).localeCompare(String(b));
+}
+// Villa = número corto (1-2 dígitos, ej. 3SB1, 3SB35). Apartamentos = 3 dígitos.
+function esVilla(v) {
+  const m = String(v).replace(/^(2SB|3SB)/i, '').match(/^(\d+)/);
+  return !!m && m[1].length < 3;
+}
+// Solo villas: true si alguno de sus extras (catálogo/personalizados) es Solarium.
+// Se evalúa siempre sobre el grupo completo, no sobre el filtrado por oficio.
+function viviendaTieneSolarium(v, g) {
+  if (!g || !esVilla(v)) return false;
+  const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  // Solo si el nombre del extra es exactamente "Solarium".
+  return g.extras.some(e => norm(e.extra || e.id).trim() === 'solarium');
 }
 function viviendaSortKey(v) {
   const rest = String(v).replace(/^(2SB|3SB)/i, '');
