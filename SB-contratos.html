@@ -597,8 +597,10 @@ function renderEstado(data) {
       ${docEditado ? '<div class="catalogo-note" style="margin-top:14px; margin-bottom:0; border-left-color:#c0392b;">⚠️ El documento de ' + (activa.tipo === 'reserva' ? 'esta reserva' : 'esta compraventa') + ' se ha editado a mano en Google Docs. Si entras en "Editar ' + (activa.tipo === 'reserva' ? 'reserva' : 'compraventa') + '", usa "Guardar sin generar PDF" para corregir datos en la base de datos sin perder esa edición. Tendrás que cambiar los datos también volviendo a editar el Docs y cambiándolos allí, después regenera el PDF.</div>' : ''}
     </div>
     ${renderDocumentosBlock(data.documentos)}
-    ${renderFirmaBlock(activa)}`;
+    ${renderFirmaBlock(activa)}
+    ${renderOtrosDocsBlock()}`;
   if (document.getElementById('cliente-1-pais')) estimarPaisCliente();
+  cargarOtrosDocumentos();
 }
 
 // Lista los hasta 4 PDF posibles de una vivienda (reserva / reserva
@@ -1075,6 +1077,205 @@ function enviarFirmado() {
       mostrarMsgFirma('error', 'No se pudo conectar con el servidor. Inténtalo de nuevo.');
       if (btn) { btn.textContent = 'Enviar documento firmado →'; btn.classList.add('active'); }
     });
+}
+
+// ─── OTROS DOCUMENTOS (PDF / JPG → raíz de la carpeta de la vivienda) ──
+// Zona independiente de la de firmados: no exige reserva/compraventa
+// activa, admite varios archivos, y cada archivo va en SU PROPIA petición
+// al backend (así el límite de tamaño de Apps Script se mide por archivo y
+// un fallo no tumba al resto). Los JPG se reducen y se convierten a PDF
+// aquí, en el navegador, conservando el nombre (foto.jpg → foto.pdf).
+const OTROS_MAX_LADO_PX = 2500;   // lado largo máximo de las fotos antes de convertir
+const OTROS_CALIDAD_JPG = 0.8;    // calidad JPEG tras reducir
+const OTROS_MAX_PDF_MB = 20;      // los PDF se suben tal cual: aviso por encima de esto
+let OTROS_FILES = [];             // File[] pendientes de subir
+let OTROS_SUBIENDO = false;
+
+function renderOtrosDocsBlock() {
+  OTROS_FILES = [];
+  return `
+    <div class="estado-card" style="margin-top:16px;">
+      <div class="form-section-label" style="margin-top:0;">Otros documentos</div>
+      <div class="estado-linea">Adjunta aquí cualquier otro documento de la vivienda (PDF o JPG). Los JPG se reducen y se convierten a PDF al subirlos. Se guardan en la carpeta de la vivienda con el nombre que tengan; si ya existe uno con ese nombre, el nuevo se guarda con otro (nombre (2).pdf) y no se sobrescribe nada.</div>
+      <div id="otros-msg"></div>
+      <div class="upload-zone" id="otros-upload-zone" onclick="document.getElementById('otros-input').click()">
+        <input type="file" id="otros-input" accept="application/pdf,image/jpeg,.pdf,.jpg,.jpeg" multiple style="display:none" onchange="onOtrosSeleccionados(Array.from(this.files)); this.value='';">
+        <label class="upload-zone-label">Haz clic o arrastra aquí uno o varios PDF o JPG</label>
+        <div class="upload-zone-hint">PDF o JPG · puedes añadir varios · PDF de hasta ${OTROS_MAX_PDF_MB} MB</div>
+      </div>
+      <div class="docs-file-list" id="otros-file-list"></div>
+      <button class="btn-enviar-firmado" id="btn-enviar-otros" onclick="enviarOtrosDocumentos()">Subir otros documentos →</button>
+      <div class="form-section-label" style="margin-top:28px;">Archivos en la carpeta de la vivienda</div>
+      <div class="docs-list" id="otros-lista"><div class="docs-row"><div class="docs-row-nombre">Cargando…</div></div></div>
+    </div>`;
+}
+
+function tipoOtroDocumento_(file) {
+  const n = (file.name || '').toLowerCase();
+  if (file.type === 'application/pdf' || n.endsWith('.pdf')) return 'pdf';
+  if (file.type === 'image/jpeg' || n.endsWith('.jpg') || n.endsWith('.jpeg')) return 'jpg';
+  return null;
+}
+
+function mostrarMsgOtros(tipo, texto) {
+  const el = document.getElementById('otros-msg');
+  if (el) el.innerHTML = texto ? `<div class="msg ${tipo}">${escapeHtml(texto)}</div>` : '';
+}
+
+function onOtrosSeleccionados(files) {
+  const rechazados = [];
+  (files || []).forEach(f => {
+    const tipo = tipoOtroDocumento_(f);
+    if (!tipo) { rechazados.push(f.name + ' (formato no admitido)'); return; }
+    if (tipo === 'pdf' && f.size > OTROS_MAX_PDF_MB * 1048576) { rechazados.push(f.name + ' (supera ' + OTROS_MAX_PDF_MB + ' MB)'); return; }
+    OTROS_FILES.push(f);
+  });
+  renderOtrosFileList();
+  mostrarMsgOtros('error', rechazados.length ? 'No se han añadido: ' + rechazados.join('; ') + '. Solo PDF o JPG.' : '');
+}
+
+function renderOtrosFileList() {
+  const list = document.getElementById('otros-file-list');
+  if (!list) return;
+  list.innerHTML = OTROS_FILES.map((f, i) => `
+    <div class="docs-file-item">
+      <span>${tipoOtroDocumento_(f) === 'jpg' ? '🖼️' : '📄'} ${escapeHtml(f.name)}</span>
+      <button class="remove-btn" onclick="quitarOtro(${i})" title="Quitar de la lista">×</button>
+    </div>`).join('');
+  const zone = document.getElementById('otros-upload-zone');
+  if (zone) zone.classList.toggle('has-file', OTROS_FILES.length > 0);
+  const btn = document.getElementById('btn-enviar-otros');
+  if (btn) btn.classList.toggle('active', OTROS_FILES.length > 0 && !OTROS_SUBIENDO);
+}
+function quitarOtro(idx) {
+  if (OTROS_SUBIENDO) return;
+  OTROS_FILES.splice(idx, 1);
+  renderOtrosFileList();
+}
+
+function cargarImagen_(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('no se pudo leer la imagen')); };
+    img.src = url;
+  });
+}
+
+// JPG → PDF de una página, en el navegador. Pasa por un canvas porque (a)
+// reduce el peso y (b) respeta la orientación EXIF de las fotos de móvil
+// (pdf-lib por sí solo la ignora y salen giradas).
+async function jpgAPdfBase64_(file) {
+  if (typeof PDFLib === 'undefined') {
+    throw new Error('la librería pdf-lib no se cargó (¿bloqueada por algún filtro de red o ad-blocker?)');
+  }
+  const img = await cargarImagen_(file);
+  const w = img.naturalWidth, h = img.naturalHeight;
+  if (!w || !h) throw new Error('la imagen no tiene dimensiones válidas');
+  const escala = Math.min(1, OTROS_MAX_LADO_PX / Math.max(w, h));
+  const cw = Math.max(1, Math.round(w * escala));
+  const ch = Math.max(1, Math.round(h * escala));
+  const canvas = document.createElement('canvas');
+  canvas.width = cw; canvas.height = ch;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, cw, ch);
+  ctx.drawImage(img, 0, 0, cw, ch);
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg', OTROS_CALIDAD_JPG));
+  canvas.width = 0; canvas.height = 0; // libera memoria
+  if (!blob) throw new Error('no se pudo reducir la imagen');
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+
+  const { PDFDocument } = PDFLib;
+  const doc = await PDFDocument.create();
+  const jpg = await doc.embedJpg(bytes);
+  const k = 842 / Math.max(cw, ch); // lado largo de la página = 842 pt (A4), proporciones de la foto
+  const page = doc.addPage([cw * k, ch * k]);
+  page.drawImage(jpg, { x: 0, y: 0, width: cw * k, height: ch * k });
+  return uint8ArrayABase64(await doc.save());
+}
+
+function leerPdfBase64_(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = e => resolve(String(e.target.result).split(',')[1]);
+    reader.onerror = () => reject(new Error('no se pudo leer el archivo'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function nombreSalidaOtro_(file, tipo) {
+  // foto.jpg / foto.jpeg → foto.pdf ; los PDF conservan su nombre tal cual
+  return tipo === 'jpg' ? file.name.replace(/\.(jpe?g)$/i, '') + '.pdf' : file.name;
+}
+
+async function enviarOtrosDocumentos() {
+  if (OTROS_SUBIENDO || !OTROS_FILES.length) return;
+  OTROS_SUBIENDO = true;
+  const cod = SESSION_COD_VIV, promo = SESSION_PROMO;
+  const pendientes = OTROS_FILES.slice();
+  const subidos = [], fallidos = [];
+  renderOtrosFileList();
+
+  for (let i = 0; i < pendientes.length; i++) {
+    const f = pendientes[i];
+    mostrarMsgOtros('info', 'Subiendo ' + (i + 1) + ' de ' + pendientes.length + ': ' + f.name + '…');
+    try {
+      const tipo = tipoOtroDocumento_(f);
+      const b64 = tipo === 'jpg' ? await jpgAPdfBase64_(f) : await leerPdfBase64_(f);
+      const res = await llamarBackend({
+        accion: 'subir_otro_documento',
+        promocion: promo,
+        cod_viv: cod,
+        nombre: nombreSalidaOtro_(f, tipo),
+        pdf_base64: b64
+      });
+      if (!res.ok) throw new Error(res.error || 'error del servidor');
+      subidos.push({ origen: f, nombre: res.nombre, renombrado: !!res.renombrado, url: res.url });
+    } catch (err) {
+      fallidos.push({ origen: f, error: String((err && err.message) || err) });
+    }
+  }
+
+  OTROS_SUBIENDO = false;
+  if (SESSION_COD_VIV !== cod || !document.getElementById('otros-msg')) return; // el usuario cambió de vivienda mientras tanto
+  OTROS_FILES = fallidos.map(x => x.origen); // lo que falló se queda en la lista para reintentar
+  renderOtrosFileList();
+
+  let html = '';
+  if (subidos.length) {
+    html += `<div class="msg success">Subidos ${subidos.length}: ` + subidos.map(x =>
+      `<a href="${escapeHtml(x.url)}" target="_blank">${escapeHtml(x.nombre)}</a>` + (x.renombrado ? ' (ya existía uno con ese nombre; guardado con otro)' : '')
+    ).join(' · ') + `</div>`;
+  }
+  if (fallidos.length) {
+    html += `<div class="msg error">No se pudieron subir ${fallidos.length}: ` + fallidos.map(x =>
+      escapeHtml(x.origen.name) + ' — ' + escapeHtml(x.error)
+    ).join('; ') + `. Siguen en la lista para reintentar.</div>`;
+  }
+  document.getElementById('otros-msg').innerHTML = html;
+  cargarOtrosDocumentos();
+}
+
+function cargarOtrosDocumentos() {
+  const cod = SESSION_COD_VIV, promo = SESSION_PROMO;
+  if (!document.getElementById('otros-lista')) return;
+  const pintar = contenido => {
+    const el = document.getElementById('otros-lista');
+    if (el && SESSION_COD_VIV === cod) el.innerHTML = contenido; // descarta respuestas de otra vivienda
+  };
+  const fila = texto => `<div class="docs-row"><div class="docs-row-nombre">${escapeHtml(texto)}</div></div>`;
+  llamarBackend({ accion: 'listar_otros_documentos', promocion: promo, cod_viv: cod })
+    .then(data => {
+      if (!data.ok) { pintar(fila(data.error || 'No se pudo leer la carpeta.')); return; }
+      if (!data.archivos.length) { pintar(fila('No hay archivos sueltos en la carpeta de la vivienda.')); return; }
+      pintar(data.archivos.map(a => `<div class="docs-row">
+        <div class="docs-row-nombre">${escapeHtml(a.nombre)} <span style="color:var(--mid); font-size:11px;">· ${escapeHtml(a.fecha)}</span></div>
+        <div class="docs-row-acciones"><a class="btn btn-link" href="${escapeHtml(a.url)}" target="_blank">Abrir</a></div>
+      </div>`).join(''));
+    })
+    .catch(() => pintar(fila('No se pudo conectar con el servidor para listar la carpeta.')));
 }
 
 function confirmarCancelacion() {
@@ -1962,24 +2163,45 @@ window.addEventListener('load', () => {
   // Arrastrar y soltar (mismo patrón que SB-extras.html). El de firma y
   // el de adjuntos nunca están en pantalla a la vez (pertenecen a
   // vistas distintas), así que basta con mirar cuál de los dos existe.
+  // La zona de "Otros documentos" convive en pantalla con la de firma
+  // (detalle de vivienda), así que su drop solo se atiende si se suelta
+  // ENCIMA de ella; el comportamiento de firma/adjuntos no cambia.
   document.addEventListener('dragover', e => {
     const zonaFirma = document.getElementById('firma-upload-zone');
     const zonaAdj = document.getElementById('adjuntos-upload-zone');
-    if (zonaFirma || zonaAdj) e.preventDefault();
+    const zonaOtros = document.getElementById('otros-upload-zone');
+    if (zonaFirma || zonaAdj || zonaOtros) e.preventDefault();
+    const sobreOtros = !!(zonaOtros && e.target.closest && e.target.closest('#otros-upload-zone'));
+    if (sobreOtros) {
+      zonaOtros.style.borderColor = 'var(--black)';
+      if (zonaFirma && !zonaFirma.classList.contains('has-file')) zonaFirma.style.borderColor = '';
+      return;
+    }
     if (zonaFirma) zonaFirma.style.borderColor = 'var(--black)';
     if (zonaAdj) zonaAdj.style.borderColor = 'var(--black)';
+    if (zonaOtros && !zonaOtros.classList.contains('has-file')) zonaOtros.style.borderColor = '';
   });
   document.addEventListener('dragleave', () => {
     const zonaFirma = document.getElementById('firma-upload-zone');
     if (zonaFirma && !zonaFirma.classList.contains('has-file')) zonaFirma.style.borderColor = '';
     const zonaAdj = document.getElementById('adjuntos-upload-zone');
     if (zonaAdj && !zonaAdj.classList.contains('has-file')) zonaAdj.style.borderColor = '';
+    const zonaOtros = document.getElementById('otros-upload-zone');
+    if (zonaOtros && !zonaOtros.classList.contains('has-file')) zonaOtros.style.borderColor = '';
   });
   document.addEventListener('drop', e => {
     const zonaFirma = document.getElementById('firma-upload-zone');
     const zonaAdj = document.getElementById('adjuntos-upload-zone');
-    if (!zonaFirma && !zonaAdj) return;
+    const zonaOtros = document.getElementById('otros-upload-zone');
+    if (!zonaFirma && !zonaAdj && !zonaOtros) return;
     e.preventDefault();
+    if (zonaOtros && e.target.closest && e.target.closest('#otros-upload-zone')) {
+      if (!zonaOtros.classList.contains('has-file')) zonaOtros.style.borderColor = '';
+      if (zonaFirma && !zonaFirma.classList.contains('has-file')) zonaFirma.style.borderColor = '';
+      onOtrosSeleccionados(Array.from(e.dataTransfer.files));
+      return;
+    }
+    if (!zonaFirma && !zonaAdj) return; // solo hay zona de otros y se soltó fuera de ella
     const files = Array.from(e.dataTransfer.files).filter(f => f.type === 'application/pdf');
     if (!files.length) return;
     if (zonaAdj) {
