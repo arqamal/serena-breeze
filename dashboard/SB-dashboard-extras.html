@@ -49,6 +49,9 @@
 
   .refresh-btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; padding: 11px 18px; background: transparent; color: var(--slate-gray); border: 1px solid var(--border); transition: all .15s; }
   .refresh-btn:hover { border-color: var(--black); color: var(--black); }
+  .refresh-btn.on { background: var(--black); color: white; border-color: var(--black); }
+  .refresh-btn.on:hover { background: #333; color: white; }
+  #vista-btn { display: none; }
   .acciones-topbar { display: flex; border: 1px solid var(--border); }
   .acciones-topbar .refresh-btn { border: none; border-right: 1px solid var(--border); }
   .acciones-topbar .refresh-btn:last-child { border-right: none; }
@@ -180,6 +183,7 @@
       <select class="oficio-select" id="oficio-select" onchange="renderDashboard()">
         <option value="">Todos los oficios</option>
       </select>
+      <button class="refresh-btn" id="vista-btn" onclick="toggleVista()" title="Ver el dashboard como lo ve un usuario sin acceso a precios">Ver sin precios</button>
       <button class="refresh-btn" id="toggle-todo-btn" onclick="toggleTodo()">▴ Contraer todo</button>
       <div class="acciones-topbar">
         <button class="refresh-btn" onclick="if (CURRENT_PROMO) loadPromo(CURRENT_PROMO, true)">↻ Actualizar</button>
@@ -308,15 +312,47 @@ function puedeEditarTick(campo) {
   return !!USER_PERMISOS_DASHBOARD[campoMap[campo] || campo];
 }
 
+// Vista técnica forzada: solo aplica a usuarios CON ve_precio_total que
+// quieren ver el dashboard como lo ve quien no tiene ese permiso.
+// Se recuerda en este navegador (no viaja al backend).
+const CLAVE_VISTA_TEC = 'amal_dashboard_vista_tec';
+let VISTA_TEC_FORZADA = (function () {
+  try { return localStorage.getItem(CLAVE_VISTA_TEC) === '1'; } catch (e) { return false; }
+})();
+
 function veTecActual() {
-  // true si este usuario NO ve precio/total → activa el layout de columnas "tec"
-  return !USER_PERMISOS_DASHBOARD.ve_precio_total;
+  // true si este usuario NO ve precio/total, o si la tiene y ha activado
+  // "Ver sin precios" → activa el layout de columnas "tec" (pantalla y PDF)
+  return !USER_PERMISOS_DASHBOARD.ve_precio_total || VISTA_TEC_FORZADA;
+}
+
+function actualizarBotonVista() {
+  const btn = document.getElementById('vista-btn');
+  if (!btn) return;
+  if (!USER_PERMISOS_DASHBOARD.ve_precio_total) { btn.style.display = 'none'; return; }
+  btn.style.display = 'inline-block';
+  btn.textContent = VISTA_TEC_FORZADA ? 'Ver con precios' : 'Ver sin precios';
+  btn.classList.toggle('on', VISTA_TEC_FORZADA);
+  btn.title = VISTA_TEC_FORZADA
+    ? 'Volver a la vista con precio y total'
+    : 'Ver el dashboard como lo ve un usuario sin acceso a precios';
+}
+
+function toggleVista() {
+  if (!USER_PERMISOS_DASHBOARD.ve_precio_total) return;
+  VISTA_TEC_FORZADA = !VISTA_TEC_FORZADA;
+  try { localStorage.setItem(CLAVE_VISTA_TEC, VISTA_TEC_FORZADA ? '1' : '0'); } catch (e) {}
+  actualizarBotonVista();
+  if (CURRENT_PROMO) renderDashboard();
 }
 let DATA_EXTRAS = [];
 let DATA_ESPECIALES = [];
 const COLLAPSED = {};
 
 function mostrarEstadoSinPromo() {
+  // Se llama justo tras entrar (login o token guardado): momento en que ya
+  // se conocen los permisos → mostrar/ocultar el botón de vista.
+  actualizarBotonVista();
   document.getElementById('load-indicator').style.display = 'none';
   document.getElementById('cards-container').innerHTML = '';
   const empty = document.getElementById('empty-state');
