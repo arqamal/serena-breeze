@@ -173,6 +173,7 @@
   .cal-ev.nivel-fase, .cal-leyenda i.nivel-fase { border-left-color: #A07A2E; background: #F6EFE1; }
   .cal-ev.nivel-vivienda, .cal-leyenda i.nivel-vivienda { border-left-color: #3F6A8F; background: #E8EFF5; }
   .cal-ev.nivel-manual, .cal-leyenda i.nivel-manual { border-left-color: #6E5A8A; background: #EFEBF4; }
+  .cal-ev.nivel-limite, .cal-leyenda i.nivel-limite { border-left-color: #3E7D6B; background: #E6F2EE; } /* inicio y entrega de fase: límites, no bloqueos */
 
   /* Resalte del campo al llegar desde el calendario */
   .cal-destino { outline: 2px solid var(--black) !important; outline-offset: 2px; }
@@ -291,10 +292,10 @@
         <li>Cada fecha se guarda sola al salir del campo (o al elegir trimestre/año), sin botón de guardar.</li>
         <li><strong>Vista Calendario</strong> (conmutador arriba a la izquierda): resumen mensual de solo consulta con las 3 promociones a la vez.
           <ul class="help-sublist">
-            <li>Color por nivel: negro = Promoción, ocre = Fase, azul = Vivienda, morado = <strong>otros hitos</strong>. En <em>cursiva</em>, los campos calculados.</li>
+            <li>Colores: negro = Promoción, ocre = Bloqueos, verde = Inicio y Entrega de fase, azul = Vivienda, morado = <strong>otros hitos</strong>. En <em>cursiva</em>, los campos calculados.</li>
             <li><strong>Otros hitos</strong>: lo que no tiene un campo fijo (visitas, inspecciones, reuniones…). Quien tenga permiso de Promoción puede crearlos con <em>+ Nuevo hito</em> o pinchando en un día, y editarlos o borrarlos pinchando en ellos. Pueden ser de una promoción (y, si se quiere, de una fase o vivienda concreta) o <em>General</em>. El resto de usuarios solo los consulta.</li>
             <li>Las viviendas con el mismo hito el mismo día se agrupan en una sola línea (p. ej. <em>CFO · Apt. B1 · 16 viv.</em>); pasa el ratón por encima para ver los códigos.</li>
-            <li>Las fechas sin día concreto (de tipo mes y los trimestres de entrega de contrato) aparecen en la franja <em>En este mes</em>, encima de la cuadrícula. Los trimestres se colocan en el último mes del periodo.</li>
+            <li>Las fechas sin día concreto (de tipo mes y los trimestres de entrega de contrato) aparecen en la franja <em>En este mes</em>, encima de la cuadrícula. Los trimestres aparecen, con el periodo escrito, en todos los meses que abarca (p. ej. <em>tercer trimestre 2026 – cuarto trimestre 2026</em> sale de julio a diciembre).</li>
             <li>Pinchar un hito de Promoción, Fase o Vivienda te lleva a su campo en la vista Tabla, donde se edita como siempre.</li>
           </ul>
         </li>
@@ -433,6 +434,9 @@ const FIELDS_FASE = [
   { key: 'fecha_jardineria', label: 'Jardinería', type: 'date' },
   { key: 'fecha_entrega', label: 'Entrega de fase', type: 'month', computed: true }
 ];
+// Inicio y fin de la fase: no son bloqueos. En la tabla van con fondo gris
+// y en el calendario con su propio color (verde), no con el ocre de Bloqueos.
+const CAMPOS_LIMITE_FASE = ['fecha_inicio', 'fecha_entrega'];
 const FIELDS_VIVIENDA = [
   { key: 'fecha_fin_estimada', label: 'Final de Obra Estimada', type: 'month', nivelPermiso: 'fase' }, // la edita quien edite Fase (arquitectura+tec), no solo Vivienda
   { key: 'fecha_entrega_estimada_cliente', label: 'Entrega Estimada Cliente', type: 'month', nivelPermiso: 'fase' },
@@ -599,7 +603,6 @@ function renderBloque2_Fases() {
   fasesDePromo().forEach(fase => { html += '<th>' + escapeHtml(fase) + '</th>'; });
   html += '</tr></thead><tbody>';
 
-  const CAMPOS_LIMITE_FASE = ['fecha_inicio', 'fecha_entrega']; // inicio/fin de la fase, no un bloqueo — se resaltan distinto
   FIELDS_FASE.forEach(f => {
     const esLimite = CAMPOS_LIMITE_FASE.indexOf(f.key) !== -1;
     html += '<tr class="' + (esLimite ? 'fila-limite-fase' : '') + '"><td class="rowlabel">' + etiquetaCampo(f) + '</td>';
@@ -919,8 +922,9 @@ function escapeAttr(s) { return escapeHtml(s); }
 // dos vistas nunca den fechas distintas.
 //   - Campos 'date'      → en su día de la cuadrícula.
 //   - Campos 'month'     → franja "En este mes" (no tienen día).
-//   - Campos 'trimestre' → franja del ÚLTIMO mes del periodo (mismo criterio
-//                          que el semáforo: trimestreValorAFecha_).
+//   - Campos 'trimestre' → franja de TODOS los meses del periodo (del primer
+//                          mes del trimestre inicial al último del final),
+//                          con el periodo escrito en letra.
 //   - Viviendas con el mismo hito, misma fase y mismo valor → un solo evento.
 let VISTA = 'tabla';
 let CAL_DATOS = null;
@@ -937,7 +941,7 @@ const ETIQUETA_CAL = {
   'promocion.fecha_inicio': 'Inicio de obra',
   'promocion.fecha_fin_estimada': 'Fin estimado',
   'promocion.fecha_fin_real': 'Fin real',
-  'fase.fecha_inicio': 'Inicio',
+  'fase.fecha_inicio': 'Inicio de fase',
   'fase.fecha_instalaciones_materiales': 'Instalaciones y Materiales',
   'fase.fecha_mobiliario': 'Mobiliario y Cocina',
   'vivienda.fecha_fin_estimada': 'Fin de obra estimado',
@@ -988,14 +992,33 @@ function cargarCalendario(forzar) {
 function pad2_(n) { return (n < 10 ? '0' : '') + n; }
 function claveDia_(d) { return d.getFullYear() + '-' + pad2_(d.getMonth() + 1) + '-' + pad2_(d.getDate()); }
 
-// { dia:'AAAA-MM-DD'|null, mes:'AAAA-MM' } o null si el valor no es una fecha válida.
+// { dia:'AAAA-MM-DD'|null, meses:['AAAA-MM', …] } o null si el valor no es
+// una fecha válida. Solo los trimestres pueden ocupar más de un mes.
 function posicionCal_(tipo, valor) {
   if (!valor) return null;
   const s = String(valor);
-  if (tipo === 'date') return /^\d{4}-\d{2}-\d{2}$/.test(s) ? { dia: s, mes: s.slice(0, 7) } : null;
-  if (tipo === 'month') { const m = /^(\d{4})-(\d{2})/.exec(s); return m ? { dia: null, mes: m[1] + '-' + m[2] } : null; }
-  if (tipo === 'trimestre') { const d = trimestreValorAFecha_(s); return d ? { dia: null, mes: d.getFullYear() + '-' + pad2_(d.getMonth() + 1) } : null; }
+  if (tipo === 'date') return /^\d{4}-\d{2}-\d{2}$/.test(s) ? { dia: s, meses: [s.slice(0, 7)] } : null;
+  if (tipo === 'month') { const m = /^(\d{4})-(\d{2})/.exec(s); return m ? { dia: null, meses: [m[1] + '-' + m[2]] } : null; }
+  if (tipo === 'trimestre') { const meses = mesesDeTrimestres_(s); return meses.length ? { dia: null, meses: meses } : null; }
   return null;
+}
+
+// 'AAAAQn' → sus 3 meses · 'AAAAQn_AAAAQn' → todos los meses del rango.
+// Si el fin es anterior al inicio (no debería pasar), se toma solo el inicio.
+function mesesDeTrimestres_(valor) {
+  const partes = String(valor || '').split('_');
+  const ini = parseTrimestreCodigo_(partes[0]);
+  if (!ini) return [];
+  let fin = partes.length > 1 ? parseTrimestreCodigo_(partes[1]) : null;
+  if (!fin || (fin.anio * 4 + fin.trimestre) < (ini.anio * 4 + ini.trimestre)) fin = ini;
+  const meses = [];
+  const d = new Date(ini.anio, (ini.trimestre - 1) * 3, 1);
+  const ultimo = new Date(fin.anio, fin.trimestre * 3 - 1, 1);
+  while (d <= ultimo) {
+    meses.push(d.getFullYear() + '-' + pad2_(d.getMonth() + 1));
+    d.setMonth(d.getMonth() + 1);
+  }
+  return meses;
 }
 
 function agregarEventoCal_(lista, field, valor, ctx) {
@@ -1007,7 +1030,8 @@ function agregarEventoCal_(lista, field, valor, ctx) {
     valor: valor,
     calc: !!field.computed,
     etiqueta: ETIQUETA_CAL[ctx.nivel + '.' + field.key] || field.label,
-    etiquetaLarga: field.label + (field.sublabel ? ' ' + field.sublabel : '')
+    // En el tooltip, el nombre completo; "Fecha inicio" de fase se aclara como "Inicio de fase".
+    etiquetaLarga: (ctx.nivel === 'fase' && field.key === 'fecha_inicio') ? 'Inicio de fase' : field.label + (field.sublabel ? ' ' + field.sublabel : '')
   }));
 }
 
@@ -1033,7 +1057,8 @@ function construirEventosCalendario_(datos) {
       const vivsFase = vivsPromo.filter(v => v.fase === fase);
       const valores = Object.assign({}, base, { fecha_entrega: maxFechaViviendaCompleta_(vivsFase, 'fecha_entrega_estimada_cliente') });
       FIELDS_FASE.forEach((f, i) => agregarEventoCal_(eventos, f, valores[f.key], {
-        promo: promo, nivel: 'fase', fase: fase, faseIdx: faseIdx, viviendas: [], orden: 100 + i
+        promo: promo, nivel: 'fase', fase: fase, faseIdx: faseIdx, viviendas: [], orden: 100 + i,
+        estilo: CAMPOS_LIMITE_FASE.indexOf(f.key) !== -1 ? 'limite' : 'fase'
       }));
     });
 
@@ -1090,18 +1115,11 @@ function faseCorta_(fase) {
 function textoViviendasCal_(codigos) {
   return codigos.length <= 3 ? codigos.join(', ') : codigos.length + ' viv.';
 }
-function trimestreCorto_(valor) {
-  const partes = String(valor || '').split('_');
-  const fmt = c => { const t = parseTrimestreCodigo_(c); return t ? 'T' + t.trimestre + ' ' + t.anio : ''; };
-  const ini = fmt(partes[0]);
-  if (partes.length < 2 || partes[1] === partes[0]) return ini;
-  return ini + '–' + fmt(partes[1]);
-}
 function htmlEventoCal_(ev) {
   let t = ev.etiqueta;
   if (ev.fase) t += ' · ' + faseCorta_(ev.fase);
   if (ev.viviendas.length) t += ' · ' + textoViviendasCal_(ev.viviendas);
-  if (ev.tipo === 'trimestre') t += ' (' + trimestreCorto_(ev.valor) + ')';
+  if (ev.tipo === 'trimestre') t += ' (' + formatearRangoTrimestre_(ev.valor) + ')'; // mismo texto que en la tabla
   return '<b>' + escapeHtml(ev.promo) + '</b>' + escapeHtml(t);
 }
 function tituloEventoCal_(ev) {
@@ -1121,7 +1139,7 @@ function tituloEventoCal_(ev) {
   return t + '\nClic: ir al campo en la vista Tabla';
 }
 function chipEventoCal_(ev) {
-  return '<button type="button" class="cal-ev nivel-' + ev.nivel + (ev.calc ? ' calc' : '') + '" data-ev="' + ev.idx + '" title="' + escapeAttr(tituloEventoCal_(ev)) + '">' + htmlEventoCal_(ev) + '</button>';
+  return '<button type="button" class="cal-ev nivel-' + (ev.estilo || ev.nivel) + (ev.calc ? ' calc' : '') + '" data-ev="' + ev.idx + '" title="' + escapeAttr(tituloEventoCal_(ev)) + '">' + htmlEventoCal_(ev) + '</button>';
 }
 
 // ── Render ───────────────────────────────────────────────────────
@@ -1132,7 +1150,7 @@ function renderCalendario() {
   const hoyClave = claveDia_(new Date());
   const puedeCrear = puedeEditarHitos_();
 
-  const eventosMes = CAL_EVENTOS.filter(ev => !ev.dia && ev.mes === claveMes);
+  const eventosMes = CAL_EVENTOS.filter(ev => !ev.dia && ev.meses.indexOf(claveMes) !== -1);
   const porDia = {};
   CAL_EVENTOS.forEach(ev => { if (ev.dia) (porDia[ev.dia] = porDia[ev.dia] || []).push(ev); });
 
@@ -1175,7 +1193,8 @@ function renderCalendario() {
     '</div>' +
     '<div class="cal-leyenda">' +
       '<span><i class="nivel-promocion"></i>Promoción</span>' +
-      '<span><i class="nivel-fase"></i>Fase</span>' +
+      '<span><i class="nivel-fase"></i>Bloqueos</span>' +
+      '<span><i class="nivel-limite"></i>Inicio / Entrega de fase</span>' +
       '<span><i class="nivel-vivienda"></i>Vivienda</span>' +
       '<span><i class="nivel-manual"></i>Otros hitos</span>' +
       '<span><em>Cursiva = calculado</em></span>' +
