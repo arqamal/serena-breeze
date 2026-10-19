@@ -133,9 +133,90 @@
   .help-dot.due-orange { background: #FCEFD9; }
   .help-dot.due-red { background: #FBE3E1; }
 
+  /* CONMUTADOR DE VISTA (Tabla | Calendario) — a la izquierda de la barra */
+  .topbar-left { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+  /* VISTA CALENDARIO — resumen de solo lectura de las 3 promociones */
+  .cal-estado { font-family: 'Roboto', sans-serif; font-size: 12px; color: var(--slate-gray); padding: 8px 16px; background: var(--off-white); border: 1px solid var(--border); margin-bottom: 20px; letter-spacing: .5px; }
+  .cal-estado.err { color: #c0392b; background: #fdf0ee; border-color: #f0c4bc; }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .cal-mes-titulo { font-family: 'Oswald', sans-serif; font-size: 24px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); }
+  .cal-nav { display: flex; border: 1px solid var(--border); }
+  .cal-nav button { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; padding: 10px 16px; cursor: pointer; background: var(--white); color: var(--slate-gray); border: none; border-right: 1px solid var(--border); transition: all .15s; }
+  .cal-nav button:last-child { border-right: none; }
+  .cal-nav button:hover { background: var(--off-white); color: var(--black); }
+  .cal-leyenda { display: flex; gap: 18px; flex-wrap: wrap; font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--slate-gray); margin-bottom: 16px; }
+  .cal-leyenda span { display: inline-flex; align-items: center; gap: 6px; }
+  .cal-leyenda i { display: inline-block; width: 14px; height: 12px; border-left: 3px solid; }
+
+  .cal-mes-banda { border: 1px solid var(--border); margin-bottom: 16px; }
+  .cal-mes-banda-title { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate-gray); padding: 10px 12px; background: var(--off-white); border-bottom: 1px solid var(--border); }
+  .cal-mes-banda-body { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 12px; }
+  .cal-sin-hitos { font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--slate-gray); font-style: italic; margin-bottom: 16px; }
+
+  .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-top: 1px solid var(--border); border-left: 1px solid var(--border); }
+  .cal-dow { font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--slate-gray); padding: 8px; background: var(--off-white); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .cal-day { min-height: 96px; min-width: 0; padding: 6px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; }
+  .cal-day.otro-mes { background: var(--off-white); }
+  .cal-day.otro-mes .cal-day-num { color: var(--mid); }
+  .cal-day-num { font-family: 'Oswald', sans-serif; font-size: 13px; color: var(--text); align-self: flex-start; padding: 0 5px; }
+  .cal-day.hoy .cal-day-num { background: var(--black); color: var(--white); }
+  .cal-day-fecha-larga { display: none; font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: .5px; text-transform: uppercase; color: var(--black); }
+
+  /* Evento: color por NIVEL (no semáforo); cursiva = campo calculado */
+  .cal-ev { display: block; width: 100%; text-align: left; font-family: 'Roboto', sans-serif; font-size: 11px; line-height: 1.35; color: var(--text); padding: 3px 6px; border: none; border-left: 3px solid; cursor: pointer; overflow-wrap: anywhere; }
+  .cal-mes-banda-body .cal-ev { width: auto; }
+  .cal-ev b { font-family: 'Oswald', sans-serif; font-weight: 400; letter-spacing: .5px; margin-right: 4px; }
+  .cal-ev:hover { filter: brightness(.94); }
+  .cal-ev.calc { font-style: italic; }
+  .cal-ev.nivel-promocion, .cal-leyenda i.nivel-promocion { border-left-color: #111111; background: #ECEAE6; }
+  .cal-ev.nivel-fase, .cal-leyenda i.nivel-fase { border-left-color: #A07A2E; background: #F6EFE1; }
+  .cal-ev.nivel-vivienda, .cal-leyenda i.nivel-vivienda { border-left-color: #3F6A8F; background: #E8EFF5; }
+  .cal-ev.nivel-manual, .cal-leyenda i.nivel-manual { border-left-color: #6E5A8A; background: #EFEBF4; }
+
+  /* Resalte del campo al llegar desde el calendario */
+  .cal-destino { outline: 2px solid var(--black) !important; outline-offset: 2px; }
+
+  /* HITOS MANUALES — botón, días clicables y formulario flotante */
+  .cal-acciones { display: flex; gap: 10px; flex-wrap: wrap; }
+  .cal-nuevo { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; padding: 10px 16px; cursor: pointer; background: var(--black); color: var(--white); border: 1px solid var(--black); transition: background .15s; }
+  .cal-nuevo:hover { background: #333; }
+  .cal-day.crear { cursor: pointer; }
+  .cal-day.crear:not(.otro-mes):hover { background: #FBFAF8; }
+
+  .hito-capa { position: fixed; inset: 0; background: rgba(17, 17, 17, .18); z-index: 900; }
+  .hito-pop { position: absolute; left: 50%; transform: translateX(-50%); width: min(480px, calc(100% - 32px)); background: var(--white); border: 1px solid var(--black); padding: 22px 24px; z-index: 901; box-shadow: 0 8px 28px rgba(0, 0, 0, .12); }
+  .hito-pop-title { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); margin-bottom: 16px; }
+  .hito-form { display: flex; flex-direction: column; gap: 12px; }
+  .hito-campo { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .hito-fila3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .hito-pop select.field-input:disabled { color: var(--mid); background: var(--off-white); }
+  .hito-pop textarea.field-input { resize: vertical; min-height: 64px; line-height: 1.5; }
+  .hito-meta { font-family: 'Roboto', sans-serif; font-size: 11px; color: var(--slate-gray); line-height: 1.6; }
+  .hito-error { display: none; font-family: 'Roboto', sans-serif; font-size: 12px; color: #c0392b; background: #fdf0ee; border: 1px solid #f0c4bc; padding: 8px 10px; }
+  .hito-acciones { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; margin-top: 4px; }
+  .hito-btn { font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; padding: 10px 16px; cursor: pointer; background: var(--white); color: var(--slate-gray); border: 1px solid var(--border); transition: all .15s; }
+  .hito-btn:hover { background: var(--off-white); color: var(--black); }
+  .hito-btn.primario { background: var(--black); color: var(--white); border-color: var(--black); }
+  .hito-btn.primario:hover { background: #333; }
+  .hito-btn.peligro { color: #c0392b; margin-right: auto; }
+  .hito-btn.peligro.confirmar { background: #c0392b; color: var(--white); border-color: #c0392b; }
+  .hito-btn:disabled { opacity: .55; cursor: default; }
+  .hito-detalle { display: flex; flex-direction: column; gap: 10px; font-family: 'Roboto', sans-serif; font-size: 13px; color: var(--text); }
+  .hito-detalle .hito-notas { white-space: pre-wrap; line-height: 1.6; }
+
   @media (max-width: 768px) {
     main { padding-left: 16px; padding-right: 16px; }
     .fase-table-wrap table.data-table th:first-child, .fase-table-wrap table.data-table td:first-child { width: auto; }
+    /* Calendario en móvil: lista de días con hitos, sin cuadrícula */
+    .cal-grid { display: block; border: none; }
+    .cal-dow, .cal-day.otro-mes, .cal-day.sin-eventos { display: none; }
+    .cal-day { min-height: 0; border: 1px solid var(--border); margin-bottom: 8px; }
+    .cal-day.hoy { border-color: var(--black); }
+    .cal-day-num { display: none; }
+    .cal-day-fecha-larga { display: block; }
+    .hito-fila3 { grid-template-columns: 1fr; }
+    .hito-pop { padding: 18px 16px; }
   }
 </style>
 </head>
@@ -165,21 +246,30 @@
     <div class="sec-desc">Fechas clave de cada promoción, fase y vivienda: licencia, inicio, bloqueos de extras y entregas.</div>
 
     <div class="topbar">
-      <div class="promo-tabs">
-        <button class="promo-tab" id="tab-1sb" onclick="switchPromo('1SB')">1SB</button>
-        <button class="promo-tab" id="tab-2sb" onclick="switchPromo('2SB')">2SB</button>
-        <button class="promo-tab" id="tab-3sb" onclick="switchPromo('3SB')">3SB</button>
+      <div class="topbar-left">
+        <div class="promo-tabs">
+          <button class="promo-tab active" id="vista-tabla" onclick="setVista('tabla')">Tabla</button>
+          <button class="promo-tab" id="vista-calendario" onclick="setVista('calendario')">Calendario</button>
+        </div>
+        <div class="promo-tabs" id="promo-tabs">
+          <button class="promo-tab" id="tab-1sb" onclick="switchPromo('1SB')">1SB</button>
+          <button class="promo-tab" id="tab-2sb" onclick="switchPromo('2SB')">2SB</button>
+          <button class="promo-tab" id="tab-3sb" onclick="switchPromo('3SB')">3SB</button>
+        </div>
       </div>
       <div class="acciones-topbar">
-        <button class="refresh-btn" onclick="if (CURRENT_PROMO) cargarDatos()">↻ Actualizar</button>
+        <button class="refresh-btn" onclick="actualizarVista()">↻ Actualizar</button>
         <button class="refresh-btn" onclick="cerrarSesion()">Cerrar sesión</button>
       </div>
     </div>
 
-    <div id="load-indicator"></div>
-    <div id="empty-state">Elige Serena Breeze 2 o Serena Breeze 3 arriba para ver sus fechas.</div>
+    <div id="panel-tabla">
+      <div id="load-indicator"></div>
+      <div id="empty-state">Elige Serena Breeze 2 o Serena Breeze 3 arriba para ver sus fechas.</div>
+      <div id="content" style="display:none"></div>
+    </div>
 
-    <div id="content" style="display:none"></div>
+    <div id="panel-calendario" style="display:none"></div>
 
     <div class="help-section">
       <div class="help-title">Cómo funciona</div>
@@ -199,6 +289,15 @@
         <li>Los fondos de color son un semáforo de plazo: <span class="help-dot due-green"></span> verde a más de un mes, <span class="help-dot due-orange"></span> naranja dentro del último mes, <span class="help-dot due-red"></span> rojo si ya venció.</li>
         <li>Si un campo aparece como texto en vez de como casilla editable, tu usuario no tiene permiso para tocarlo en ese nivel — puedes consultarlo, pero no cambiarlo.</li>
         <li>Cada fecha se guarda sola al salir del campo (o al elegir trimestre/año), sin botón de guardar.</li>
+        <li><strong>Vista Calendario</strong> (conmutador arriba a la izquierda): resumen mensual de solo consulta con las 3 promociones a la vez.
+          <ul class="help-sublist">
+            <li>Color por nivel: negro = Promoción, ocre = Fase, azul = Vivienda, morado = <strong>otros hitos</strong>. En <em>cursiva</em>, los campos calculados.</li>
+            <li><strong>Otros hitos</strong>: lo que no tiene un campo fijo (visitas, inspecciones, reuniones…). Quien tenga permiso de Promoción puede crearlos con <em>+ Nuevo hito</em> o pinchando en un día, y editarlos o borrarlos pinchando en ellos. Pueden ser de una promoción (y, si se quiere, de una fase o vivienda concreta) o <em>General</em>. El resto de usuarios solo los consulta.</li>
+            <li>Las viviendas con el mismo hito el mismo día se agrupan en una sola línea (p. ej. <em>CFO · Apt. B1 · 16 viv.</em>); pasa el ratón por encima para ver los códigos.</li>
+            <li>Las fechas sin día concreto (de tipo mes y los trimestres de entrega de contrato) aparecen en la franja <em>En este mes</em>, encima de la cuadrícula. Los trimestres se colocan en el último mes del periodo.</li>
+            <li>Pinchar un hito de Promoción, Fase o Vivienda te lleva a su campo en la vista Tabla, donde se edita como siempre.</li>
+          </ul>
+        </li>
       </ul>
     </div>
   </main>
@@ -351,8 +450,13 @@ const FASES_POR_PROMO = {
   '3SB': ['Villas', 'Apartamentos Bloque 1', 'Apartamentos Bloque 2', 'Apartamentos Bloque 3']
 };
 const FASES_DEFECTO = ['Villas', 'Apartamentos'];
+// fasesDe_(promo) para cualquier promoción (lo usa el calendario, que pinta
+// las 3 a la vez); fasesDePromo() sigue siendo la de la promoción actual.
+function fasesDe_(promo) {
+  return FASES_POR_PROMO[promo] || FASES_DEFECTO;
+}
 function fasesDePromo() {
-  return FASES_POR_PROMO[CURRENT_PROMO] || FASES_DEFECTO;
+  return fasesDe_(CURRENT_PROMO);
 }
 function esFaseApartamento(fase) {
   return String(fase || '').indexOf('Apartamentos') === 0;
@@ -364,13 +468,15 @@ let DATA_FASES = [];
 let DATA_VIVIENDAS = [];
 let CURRENT_PROMO = null;
 
+// Devuelve la promesa de carga — el calendario la espera antes de saltar
+// al campo de un hito en la vista Tabla.
 function switchPromo(promo) {
-  if (promo === CURRENT_PROMO) return;
+  if (promo === CURRENT_PROMO) return Promise.resolve();
   CURRENT_PROMO = promo;
   document.getElementById('tab-1sb').classList.toggle('active', promo === '1SB');
   document.getElementById('tab-2sb').classList.toggle('active', promo === '2SB');
   document.getElementById('tab-3sb').classList.toggle('active', promo === '3SB');
-  cargarDatos();
+  return cargarDatos();
 }
 
 function cargarDatos() {
@@ -382,7 +488,7 @@ function cargarDatos() {
   ind.className = ''; ind.style.display = 'block';
   ind.textContent = 'Cargando ' + CURRENT_PROMO + '…';
 
-  fetch(FECHAS_URL, { method: 'POST', body: JSON.stringify({ accion: 'consultar', promocion: CURRENT_PROMO }) })
+  return fetch(FECHAS_URL, { method: 'POST', body: JSON.stringify({ accion: 'consultar', promocion: CURRENT_PROMO }) })
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => {
       if (!data.ok) throw new Error(data.error || 'respuesta sin ok:true');
@@ -652,19 +758,26 @@ function claseSemaforo(iso, campoKey) {
   if (diffDias <= 30) return 'due-orange';
   return 'due-green';
 }
+// data-campo/data-fase/data-vivienda — los llevan TODAS las celdas (también
+// las de solo lectura) para que el calendario pueda localizar el campo de
+// un hito. Los listeners de guardado solo escuchan <input> y .trimestre-input,
+// así que el <div> de solo lectura con estos atributos no dispara nada.
+function attrsCtx_(campoKey, ctx) {
+  return 'data-campo="' + campoKey + '"' +
+    (ctx.fase ? ' data-fase="' + escapeAttr(ctx.fase) + '"' : '') +
+    (ctx.vivienda ? ' data-vivienda="' + escapeAttr(ctx.vivienda) + '"' : '');
+}
 function renderCampoCelda(field, valor, puedeEditar, campoKey, ctx) {
   const clase = (field.type === 'date' || field.type === 'month' || field.type === 'trimestre') ? claseSemaforo(valor, campoKey) : '';
   const editable = puedeEditar && !field.computed;
+  const ctxAttrs = attrsCtx_(campoKey, ctx);
   if (!editable) {
     const vacio = (valor === undefined || valor === null || valor === '');
     const texto = vacio ? (field.computed ? 'Sin viviendas con fecha' : 'Sin definir') : escapeHtml(formatearValorMostrado(field, valor));
-    return '<div class="field-value' + (vacio ? ' empty' : '') + (clase ? ' ' + clase : '') + '">' + texto + '</div>';
+    return '<div class="field-value' + (vacio ? ' empty' : '') + (clase ? ' ' + clase : '') + '" ' + ctxAttrs + '>' + texto + '</div>';
   }
   if (field.type === 'trimestre') return renderTrimestreInput_(valor, clase, campoKey, ctx);
   const valorAttr = (valor === undefined || valor === null) ? '' : escapeAttr(valor);
-  const ctxAttrs = 'data-campo="' + campoKey + '"' +
-    (ctx.fase ? ' data-fase="' + escapeAttr(ctx.fase) + '"' : '') +
-    (ctx.vivienda ? ' data-vivienda="' + escapeAttr(ctx.vivienda) + '"' : '');
   return '<input class="field-input' + (clase ? ' ' + clase : '') + '" type="' + field.type + '" value="' + valorAttr + '" ' + ctxAttrs + '>';
 }
 
@@ -688,9 +801,7 @@ function renderTrimestreInput_(valor, clase, campoKey, ctx) {
   const partes = String(valor || '').split('_');
   const ini = parseTrimestreCodigo_(partes[0]) || {};
   const fin = partes.length > 1 ? (parseTrimestreCodigo_(partes[1]) || {}) : {};
-  const ctxAttrs = 'data-campo="' + campoKey + '"' +
-    (ctx.fase ? ' data-fase="' + escapeAttr(ctx.fase) + '"' : '') +
-    (ctx.vivienda ? ' data-vivienda="' + escapeAttr(ctx.vivienda) + '"' : '');
+  const ctxAttrs = attrsCtx_(campoKey, ctx);
   return '<div class="field-input trimestre-input' + (clase ? ' ' + clase : '') + '" ' + ctxAttrs + '>' +
     '<select class="tri-sel" data-parte="ini-q">' + opcionesTrimestre_(ini.trimestre) + '</select>' +
     '<select class="tri-sel" data-parte="ini-a">' + opcionesAnio_(ini.anio) + '</select>' +
@@ -790,13 +901,574 @@ function llamarGuardar(payload) {
   return fetch(FECHAS_URL, { method: 'POST', body: JSON.stringify(payload) })
     .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(data => {
-      if (!data || data.ok !== true) throw new Error((data && data.motivo) || 'respuesta sin ok:true');
+      if (!data || data.ok !== true) throw new Error((data && (data.motivo || data.error)) || 'respuesta sin ok:true');
+      CAL_SUCIO = true; // el calendario tiene datos de antes de este guardado: se recarga al volver a él
       return data;
     });
 }
 
 function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function escapeAttr(s) { return escapeHtml(s); }
+
+// ═══════════════════════════════════════════════════════════════
+// VISTA CALENDARIO — resumen mensual de SOLO CONSULTA, 3 promociones a la vez
+// ═══════════════════════════════════════════════════════════════
+// Carga propia (consultar SIN promocion → el backend devuelve todo), aparte
+// de DATA_* de la vista Tabla. Los campos calculados se calculan con las
+// MISMAS funciones que la tabla (maxFechaViviendaCompleta_), para que las
+// dos vistas nunca den fechas distintas.
+//   - Campos 'date'      → en su día de la cuadrícula.
+//   - Campos 'month'     → franja "En este mes" (no tienen día).
+//   - Campos 'trimestre' → franja del ÚLTIMO mes del periodo (mismo criterio
+//                          que el semáforo: trimestreValorAFecha_).
+//   - Viviendas con el mismo hito, misma fase y mismo valor → un solo evento.
+let VISTA = 'tabla';
+let CAL_DATOS = null;
+let CAL_SUCIO = true;   // true = hay que volver a pedir datos (nunca cargado, o hubo un guardado)
+let CAL_EVENTOS = [];
+let CAL_MES = null;     // { anio, mes } — mes 0-11
+
+const DIAS_SEMANA_CAL = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+const DIAS_LARGOS_CAL = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+// Etiqueta corta en el calendario (la completa va en el tooltip). Clave
+// nivel.campo porque el mismo campo significa cosas distintas por nivel.
+const ETIQUETA_CAL = {
+  'promocion.fecha_licencia': 'Licencia',
+  'promocion.fecha_inicio': 'Inicio de obra',
+  'promocion.fecha_fin_estimada': 'Fin estimado',
+  'promocion.fecha_fin_real': 'Fin real',
+  'fase.fecha_inicio': 'Inicio',
+  'fase.fecha_instalaciones_materiales': 'Instalaciones y Materiales',
+  'fase.fecha_mobiliario': 'Mobiliario y Cocina',
+  'vivienda.fecha_fin_estimada': 'Fin de obra estimado',
+  'vivienda.fecha_entrega_estimada_cliente': 'Entrega estimada cliente',
+  'vivienda.fecha_entrega': 'Entrega contrato',
+  'vivienda.fecha_escritura': 'Escritura'
+};
+
+function setVista(vista) {
+  if (vista === VISTA) return;
+  VISTA = vista;
+  const esCal = vista === 'calendario';
+  document.getElementById('vista-tabla').classList.toggle('active', !esCal);
+  document.getElementById('vista-calendario').classList.toggle('active', esCal);
+  document.getElementById('promo-tabs').style.display = esCal ? 'none' : '';
+  document.getElementById('panel-tabla').style.display = esCal ? 'none' : '';
+  document.getElementById('panel-calendario').style.display = esCal ? 'block' : 'none';
+  if (esCal) cargarCalendario(false);
+}
+
+function actualizarVista() {
+  if (VISTA === 'calendario') cargarCalendario(true);
+  else if (CURRENT_PROMO) cargarDatos();
+}
+
+function cargarCalendario(forzar) {
+  if (!CAL_MES) { const h = new Date(); CAL_MES = { anio: h.getFullYear(), mes: h.getMonth() }; }
+  if (CAL_DATOS && !CAL_SUCIO && !forzar) { renderCalendario(); return Promise.resolve(); }
+
+  const panel = document.getElementById('panel-calendario');
+  panel.innerHTML = '<div class="cal-estado">Cargando todas las promociones…</div>';
+  CAL_SUCIO = false; // se marca ANTES del fetch: si alguien guarda mientras carga, vuelve a true y se recargará
+  return fetch(FECHAS_URL, { method: 'POST', body: JSON.stringify({ accion: 'consultar', incluir_hitos: true }) })
+    .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+    .then(data => {
+      if (!data.ok) throw new Error(data.error || 'respuesta sin ok:true');
+      CAL_DATOS = { promociones: data.promociones || [], fases: data.fases || [], viviendas: data.viviendas || [], hitos: data.hitos || [] };
+      CAL_EVENTOS = construirEventosCalendario_(CAL_DATOS);
+      renderCalendario();
+    })
+    .catch(e => {
+      CAL_SUCIO = true;
+      panel.innerHTML = '<div class="cal-estado err">Error al cargar el calendario: ' + escapeHtml(e.message) + '</div>';
+    });
+}
+
+// ── Construcción de eventos ──────────────────────────────────────
+function pad2_(n) { return (n < 10 ? '0' : '') + n; }
+function claveDia_(d) { return d.getFullYear() + '-' + pad2_(d.getMonth() + 1) + '-' + pad2_(d.getDate()); }
+
+// { dia:'AAAA-MM-DD'|null, mes:'AAAA-MM' } o null si el valor no es una fecha válida.
+function posicionCal_(tipo, valor) {
+  if (!valor) return null;
+  const s = String(valor);
+  if (tipo === 'date') return /^\d{4}-\d{2}-\d{2}$/.test(s) ? { dia: s, mes: s.slice(0, 7) } : null;
+  if (tipo === 'month') { const m = /^(\d{4})-(\d{2})/.exec(s); return m ? { dia: null, mes: m[1] + '-' + m[2] } : null; }
+  if (tipo === 'trimestre') { const d = trimestreValorAFecha_(s); return d ? { dia: null, mes: d.getFullYear() + '-' + pad2_(d.getMonth() + 1) } : null; }
+  return null;
+}
+
+function agregarEventoCal_(lista, field, valor, ctx) {
+  const pos = posicionCal_(field.type, valor);
+  if (!pos) return;
+  lista.push(Object.assign({}, ctx, pos, {
+    campo: field.key,
+    tipo: field.type,
+    valor: valor,
+    calc: !!field.computed,
+    etiqueta: ETIQUETA_CAL[ctx.nivel + '.' + field.key] || field.label,
+    etiquetaLarga: field.label + (field.sublabel ? ' ' + field.sublabel : '')
+  }));
+}
+
+function construirEventosCalendario_(datos) {
+  const eventos = [];
+  Object.keys(PROMOCIONES_FIJAS).forEach(promo => {
+    const vivsPromo = datos.viviendas.filter(r => r.promocion === promo);
+    const fases = fasesDe_(promo);
+
+    // Promoción (fin estimado y fin real calculados igual que en la tabla)
+    const regPromo = datos.promociones.find(r => r.promocion === promo) || {};
+    const valoresPromo = Object.assign({}, regPromo, {
+      fecha_fin_estimada: maxFechaViviendaCompleta_(vivsPromo, 'fecha_fin_estimada'),
+      fecha_fin_real: maxFechaViviendaCompleta_(vivsPromo, 'fecha_cfo')
+    });
+    FIELDS_PROMOCION.forEach((f, i) => agregarEventoCal_(eventos, f, valoresPromo[f.key], {
+      promo: promo, nivel: 'promocion', fase: '', faseIdx: 0, viviendas: [], orden: i
+    }));
+
+    // Fases (entrega de fase calculada igual que en la tabla)
+    fases.forEach((fase, faseIdx) => {
+      const base = datos.fases.find(r => r.promocion === promo && r.fase === fase) || {};
+      const vivsFase = vivsPromo.filter(v => v.fase === fase);
+      const valores = Object.assign({}, base, { fecha_entrega: maxFechaViviendaCompleta_(vivsFase, 'fecha_entrega_estimada_cliente') });
+      FIELDS_FASE.forEach((f, i) => agregarEventoCal_(eventos, f, valores[f.key], {
+        promo: promo, nivel: 'fase', fase: fase, faseIdx: faseIdx, viviendas: [], orden: 100 + i
+      }));
+    });
+
+    // Viviendas — agrupadas por campo + fase + valor exacto
+    FIELDS_VIVIENDA.forEach((f, i) => {
+      const grupos = {};
+      vivsPromo.forEach(v => {
+        const valor = v[f.key];
+        if (!valor) return;
+        const k = v.fase + '|' + valor;
+        if (!grupos[k]) grupos[k] = { fase: v.fase, valor: valor, viviendas: [] };
+        grupos[k].viviendas.push(String(v.vivienda));
+      });
+      Object.keys(grupos).forEach(k => {
+        const g = grupos[k];
+        g.viviendas.sort((a, b) => a.localeCompare(b, 'es', { numeric: true }));
+        agregarEventoCal_(eventos, f, g.valor, {
+          promo: promo, nivel: 'vivienda', fase: g.fase, faseIdx: fases.indexOf(g.fase), viviendas: g.viviendas, orden: 200 + i
+        });
+      });
+    });
+  });
+
+  // Hitos manuales (pestaña "Hitos") — siempre con día; van detrás de los
+  // hitos fijos de su misma promoción.
+  (datos.hitos || []).forEach(h => {
+    const pos = posicionCal_('date', h.fecha);
+    if (!pos) return;
+    const promo = h.promocion || PROMOCION_GENERAL;
+    eventos.push(Object.assign({}, pos, {
+      promo: promo, nivel: 'manual', campo: '', tipo: 'date', valor: h.fecha, calc: false,
+      fase: h.fase || '', faseIdx: h.fase ? fasesDe_(promo).indexOf(h.fase) : -1,
+      viviendas: h.vivienda ? [String(h.vivienda)] : [], orden: 300,
+      etiqueta: String(h.titulo || ''), etiquetaLarga: 'Hito', hitoId: h.id
+    }));
+  });
+
+  eventos.sort((a, b) =>
+    a.promo.localeCompare(b.promo, 'es', { numeric: true }) ||
+    a.orden - b.orden ||
+    a.faseIdx - b.faseIdx ||
+    String(a.viviendas[0] || '').localeCompare(String(b.viviendas[0] || ''), 'es', { numeric: true }));
+  eventos.forEach((ev, i) => { ev.idx = i; });
+  return eventos;
+}
+
+// ── Textos de los eventos ────────────────────────────────────────
+function faseCorta_(fase) {
+  const m = /^Apartamentos Bloque (\d+)$/.exec(fase || '');
+  if (m) return 'Apt. B' + m[1];
+  if (fase === 'Apartamentos') return 'Apt.';
+  return fase;
+}
+function textoViviendasCal_(codigos) {
+  return codigos.length <= 3 ? codigos.join(', ') : codigos.length + ' viv.';
+}
+function trimestreCorto_(valor) {
+  const partes = String(valor || '').split('_');
+  const fmt = c => { const t = parseTrimestreCodigo_(c); return t ? 'T' + t.trimestre + ' ' + t.anio : ''; };
+  const ini = fmt(partes[0]);
+  if (partes.length < 2 || partes[1] === partes[0]) return ini;
+  return ini + '–' + fmt(partes[1]);
+}
+function htmlEventoCal_(ev) {
+  let t = ev.etiqueta;
+  if (ev.fase) t += ' · ' + faseCorta_(ev.fase);
+  if (ev.viviendas.length) t += ' · ' + textoViviendasCal_(ev.viviendas);
+  if (ev.tipo === 'trimestre') t += ' (' + trimestreCorto_(ev.valor) + ')';
+  return '<b>' + escapeHtml(ev.promo) + '</b>' + escapeHtml(t);
+}
+function tituloEventoCal_(ev) {
+  if (ev.nivel === 'manual') {
+    const h = hitoPorId_(ev.hitoId) || {};
+    let t = [PROMOCIONES_FIJAS[ev.promo] || ev.promo, h.titulo].concat(h.fase ? [h.fase] : [], h.vivienda ? [h.vivienda] : []).join(' · ') +
+      ' — ' + formatearFechaES(h.fecha);
+    if (h.notas) t += '\n' + h.notas;
+    if (h.creado_por) t += '\nCreado por ' + h.creado_por;
+    return t + '\nClic: ' + (puedeEditarHitos_() ? 'editar' : 'ver detalle');
+  }
+  const partes = [PROMOCIONES_FIJAS[ev.promo] || ev.promo, ev.etiquetaLarga];
+  if (ev.fase) partes.push(ev.fase);
+  let t = partes.join(' · ') + ' — ' + formatearValorMostrado({ type: ev.tipo }, ev.valor);
+  if (ev.calc) t += ' (calculado)';
+  if (ev.viviendas.length) t += '\nViviendas: ' + ev.viviendas.join(', ');
+  return t + '\nClic: ir al campo en la vista Tabla';
+}
+function chipEventoCal_(ev) {
+  return '<button type="button" class="cal-ev nivel-' + ev.nivel + (ev.calc ? ' calc' : '') + '" data-ev="' + ev.idx + '" title="' + escapeAttr(tituloEventoCal_(ev)) + '">' + htmlEventoCal_(ev) + '</button>';
+}
+
+// ── Render ───────────────────────────────────────────────────────
+function renderCalendario() {
+  const panel = document.getElementById('panel-calendario');
+  const anio = CAL_MES.anio, mes = CAL_MES.mes;
+  const claveMes = anio + '-' + pad2_(mes + 1);
+  const hoyClave = claveDia_(new Date());
+  const puedeCrear = puedeEditarHitos_();
+
+  const eventosMes = CAL_EVENTOS.filter(ev => !ev.dia && ev.mes === claveMes);
+  const porDia = {};
+  CAL_EVENTOS.forEach(ev => { if (ev.dia) (porDia[ev.dia] = porDia[ev.dia] || []).push(ev); });
+
+  const primero = new Date(anio, mes, 1);
+  const offset = (primero.getDay() + 6) % 7; // semana empieza en lunes
+  const diasMes = new Date(anio, mes + 1, 0).getDate();
+  const nCeldas = Math.ceil((offset + diasMes) / 7) * 7;
+
+  let celdas = '';
+  let hayDiaConHitos = false;
+  for (let c = 0; c < nCeldas; c++) {
+    const fecha = new Date(anio, mes, 1 - offset + c);
+    const clave = claveDia_(fecha);
+    const evs = porDia[clave] || [];
+    const otroMes = fecha.getMonth() !== mes;
+    if (evs.length && !otroMes) hayDiaConHitos = true;
+    const clases = ['cal-day'];
+    if (otroMes) clases.push('otro-mes');
+    if (!evs.length) clases.push('sin-eventos');
+    if (clave === hoyClave) clases.push('hoy');
+    if (puedeCrear) clases.push('crear');
+    celdas += '<div class="' + clases.join(' ') + '" data-dia="' + clave + '"' + (puedeCrear ? ' title="Pincha para crear un hito este día"' : '') + '>' +
+      '<span class="cal-day-num">' + fecha.getDate() + '</span>' +
+      '<span class="cal-day-fecha-larga">' + DIAS_LARGOS_CAL[fecha.getDay()] + ' ' + fecha.getDate() + ' de ' + MESES_LABELS[fecha.getMonth() + 1] + '</span>' +
+      evs.map(chipEventoCal_).join('') +
+    '</div>';
+  }
+
+  let html =
+    '<div class="cal-head">' +
+      '<div class="cal-mes-titulo">' + MESES_LABELS[mes + 1] + ' ' + anio + '</div>' +
+      '<div class="cal-acciones">' +
+        (puedeCrear ? '<button type="button" class="cal-nuevo" data-cal-nuevo="1">+ Nuevo hito</button>' : '') +
+        '<div class="cal-nav">' +
+          '<button type="button" data-cal-nav="-1">‹ Anterior</button>' +
+          '<button type="button" data-cal-nav="0">Hoy</button>' +
+          '<button type="button" data-cal-nav="1">Siguiente ›</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div class="cal-leyenda">' +
+      '<span><i class="nivel-promocion"></i>Promoción</span>' +
+      '<span><i class="nivel-fase"></i>Fase</span>' +
+      '<span><i class="nivel-vivienda"></i>Vivienda</span>' +
+      '<span><i class="nivel-manual"></i>Otros hitos</span>' +
+      '<span><em>Cursiva = calculado</em></span>' +
+    '</div>';
+
+  if (eventosMes.length) {
+    html += '<div class="cal-mes-banda"><div class="cal-mes-banda-title">En este mes · sin día concreto</div>' +
+      '<div class="cal-mes-banda-body">' + eventosMes.map(chipEventoCal_).join('') + '</div></div>';
+  }
+  if (!eventosMes.length && !hayDiaConHitos) {
+    html += '<div class="cal-sin-hitos">Sin hitos en ' + MESES_LABELS[mes + 1] + ' ' + anio + '.</div>';
+  }
+
+  html += '<div class="cal-grid">' + DIAS_SEMANA_CAL.map(d => '<div class="cal-dow">' + d + '</div>').join('') + celdas + '</div>';
+  panel.innerHTML = html;
+}
+
+function moverMesCal_(delta) {
+  if (delta === 0) {
+    const h = new Date();
+    CAL_MES = { anio: h.getFullYear(), mes: h.getMonth() };
+  } else {
+    const d = new Date(CAL_MES.anio, CAL_MES.mes + delta, 1);
+    CAL_MES = { anio: d.getFullYear(), mes: d.getMonth() };
+  }
+  renderCalendario();
+}
+
+// ── Clic en un hito → vista Tabla, promoción del hito, campo resaltado ──
+function irACampoDesdeCalendario_(ev) {
+  if (!ev) return;
+  setVista('tabla');
+  switchPromo(ev.promo).then(() => {
+    if (CURRENT_PROMO !== ev.promo) return;
+    const cont = document.getElementById('content');
+    const destinos = Array.from(cont.querySelectorAll('[data-campo]')).filter(el =>
+      el.dataset.campo === ev.campo &&
+      (el.dataset.fase || '') === (ev.fase || '') &&
+      (ev.viviendas.length ? ev.viviendas.indexOf(el.dataset.vivienda) !== -1 : !el.dataset.vivienda));
+    if (!destinos.length) return;
+    destinos.forEach(el => el.classList.add('cal-destino'));
+    destinos[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => destinos.forEach(el => el.classList.remove('cal-destino')), 3000);
+  });
+}
+
+// Un solo listener (delegación) para todo el calendario:
+//   navegación · "+ Nuevo hito" · clic en hito fijo (→ Tabla) · clic en
+//   hito manual (→ editar/ver) · clic en un día (→ nuevo hito ese día).
+document.getElementById('panel-calendario').addEventListener('click', e => {
+  const nav = e.target.closest('[data-cal-nav]');
+  if (nav) { moverMesCal_(Number(nav.dataset.calNav)); return; }
+  if (e.target.closest('[data-cal-nuevo]')) { abrirHito_(null, fechaPorDefectoHito_(), e.pageY); return; }
+  const chip = e.target.closest('[data-ev]');
+  if (chip) {
+    const ev = CAL_EVENTOS[Number(chip.dataset.ev)];
+    if (ev && ev.nivel === 'manual') { const h = hitoPorId_(ev.hitoId); if (h) abrirHito_(h, null, e.pageY); }
+    else irACampoDesdeCalendario_(ev);
+    return;
+  }
+  const dia = e.target.closest('.cal-day.crear');
+  if (dia) abrirHito_(null, dia.dataset.dia, e.pageY);
+});
+
+// ═══════════════════════════════════════════════════════════════
+// HITOS MANUALES — crear / editar / borrar (pestaña "Hitos" de la Sheet)
+// ═══════════════════════════════════════════════════════════════
+// Permiso: el de Promoción (fechas_edita_promocion), comprobado otra vez en
+// el servidor. Sin permiso, pinchar un hito manual solo muestra su detalle.
+// Tras guardar/borrar se actualiza el calendario en local, sin recargar.
+const PROMOCION_GENERAL = 'General';
+const MOTIVOS_HITO = {
+  sin_permiso: 'Tu usuario no tiene permiso para crear, editar ni borrar hitos.',
+  fecha_invalida: 'La fecha no es válida.',
+  titulo_vacio: 'El título es obligatorio.',
+  titulo_largo: 'El título es demasiado largo (máximo 120 caracteres).',
+  notas_largas: 'Las notas son demasiado largas (máximo 1000 caracteres).',
+  promocion_invalida: 'La promoción no es válida.',
+  fase_invalida: 'La fase no pertenece a esa promoción.',
+  vivienda_invalida: 'La vivienda no pertenece a esa fase.',
+  no_encontrado: 'Este hito ya no existe (puede que otra persona lo haya borrado). Pulsa Actualizar.',
+  accion_desconocida: 'El servidor todavía no tiene la versión con hitos: falta desplegar GeneradorFechas.gs.'
+};
+
+function puedeEditarHitos_() { return puedeEditarNivel('promocion'); }
+function hitoPorId_(id) { return ((CAL_DATOS && CAL_DATOS.hitos) || []).find(h => h.id === id) || null; }
+
+function fechaPorDefectoHito_() {
+  const hoy = new Date();
+  if (hoy.getFullYear() === CAL_MES.anio && hoy.getMonth() === CAL_MES.mes) return claveDia_(hoy);
+  return CAL_MES.anio + '-' + pad2_(CAL_MES.mes + 1) + '-01';
+}
+function formatearFechaHoraES_(s) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})(?: (\d{2}:\d{2}))?/.exec(String(s || ''));
+  return m ? (m[3] + '/' + m[2] + '/' + m[1] + (m[4] ? ' ' + m[4] : '')) : String(s || '');
+}
+function viviendasDeFase_(promo, fase) {
+  return ((CAL_DATOS && CAL_DATOS.viviendas) || [])
+    .filter(v => v.promocion === promo && v.fase === fase)
+    .map(v => String(v.vivienda))
+    .sort((a, b) => a.localeCompare(b, 'es', { numeric: true }));
+}
+function opcionesHtml_(lista, seleccion, textoVacio) {
+  return '<option value="">' + escapeHtml(textoVacio) + '</option>' +
+    lista.map(v => '<option value="' + escapeAttr(v) + '"' + (v === seleccion ? ' selected' : '') + '>' + escapeHtml(v) + '</option>').join('');
+}
+
+function htmlMetaHito_(h) {
+  if (!h.id) return '';
+  let t = 'Creado por ' + escapeHtml(h.creado_por || '—') + (h.creado_en ? ' el ' + escapeHtml(formatearFechaHoraES_(h.creado_en)) : '');
+  if (h.actualizado_en && h.actualizado_en !== h.creado_en) {
+    t += '<br>Última modificación: ' + escapeHtml(h.actualizado_por || '—') + ' el ' + escapeHtml(formatearFechaHoraES_(h.actualizado_en));
+  }
+  return '<div class="hito-meta">' + t + '</div>';
+}
+
+function htmlFormHito_(h) {
+  const esNuevo = !h.id;
+  const promos = [PROMOCION_GENERAL].concat(Object.keys(PROMOCIONES_FIJAS));
+  const promoSel = h.promocion || PROMOCION_GENERAL;
+  return '<div class="hito-pop-title">' + (esNuevo ? 'Nuevo hito' : 'Editar hito') + '</div>' +
+    '<div class="hito-form">' +
+      '<div class="hito-campo"><label class="field-label" for="hito-titulo">Título</label>' +
+        '<input class="field-input" id="hito-titulo" type="text" maxlength="120" placeholder="p. ej. Visita OCT" value="' + escapeAttr(h.titulo || '') + '"></div>' +
+      '<div class="hito-campo"><label class="field-label" for="hito-fecha">Fecha</label>' +
+        '<input class="field-input" id="hito-fecha" type="date" value="' + escapeAttr(h.fecha || '') + '"></div>' +
+      '<div class="hito-fila3">' +
+        '<div class="hito-campo"><label class="field-label" for="hito-promocion">Promoción</label>' +
+          '<select class="field-input" id="hito-promocion">' +
+            promos.map(p => '<option value="' + p + '"' + (p === promoSel ? ' selected' : '') + '>' + p + '</option>').join('') +
+          '</select></div>' +
+        '<div class="hito-campo"><label class="field-label" for="hito-fase">Fase</label><select class="field-input" id="hito-fase"></select></div>' +
+        '<div class="hito-campo"><label class="field-label" for="hito-vivienda">Vivienda</label><select class="field-input" id="hito-vivienda"></select></div>' +
+      '</div>' +
+      '<div class="hito-campo"><label class="field-label" for="hito-notas">Notas · opcional</label>' +
+        '<textarea class="field-input" id="hito-notas" rows="3" maxlength="1000">' + escapeHtml(h.notas || '') + '</textarea></div>' +
+      htmlMetaHito_(h) +
+      '<div class="hito-error" id="hito-error"></div>' +
+      '<div class="hito-acciones">' +
+        (esNuevo ? '' : '<button type="button" class="hito-btn peligro" id="hito-borrar">Borrar</button>') +
+        '<button type="button" class="hito-btn" data-hito-cerrar="1">Cancelar</button>' +
+        '<button type="button" class="hito-btn primario" id="hito-guardar">Guardar</button>' +
+      '</div>' +
+    '</div>';
+}
+
+function htmlDetalleHito_(h) {
+  const ambito = [PROMOCIONES_FIJAS[h.promocion] || h.promocion || PROMOCION_GENERAL]
+    .concat(h.fase ? [h.fase] : [], h.vivienda ? [h.vivienda] : []).join(' · ');
+  return '<div class="hito-pop-title">' + escapeHtml(h.titulo) + '</div>' +
+    '<div class="hito-detalle">' +
+      '<div><span class="field-label">Fecha</span><br>' + escapeHtml(formatearFechaES(h.fecha)) + '</div>' +
+      '<div><span class="field-label">Ámbito</span><br>' + escapeHtml(ambito) + '</div>' +
+      (h.notas ? '<div><span class="field-label">Notas</span><div class="hito-notas">' + escapeHtml(h.notas) + '</div></div>' : '') +
+      htmlMetaHito_(h) +
+      '<div class="hito-acciones"><button type="button" class="hito-btn" data-hito-cerrar="1">Cerrar</button></div>' +
+    '</div>';
+}
+
+// Fase solo si hay promoción concreta; vivienda solo si hay fase.
+function rellenarSelectsHito_(faseSel, viviendaSel) {
+  const promo = document.getElementById('hito-promocion').value;
+  const selFase = document.getElementById('hito-fase');
+  const selViv = document.getElementById('hito-vivienda');
+  const esGeneral = promo === PROMOCION_GENERAL;
+  selFase.innerHTML = esGeneral ? '<option value="">—</option>' : opcionesHtml_(fasesDe_(promo), faseSel, 'Toda la promoción');
+  selFase.disabled = esGeneral;
+  const fase = selFase.value;
+  selViv.innerHTML = fase ? opcionesHtml_(viviendasDeFase_(promo, fase), viviendaSel, 'Toda la fase') : '<option value="">—</option>';
+  selViv.disabled = !fase;
+}
+
+function abrirHito_(hito, fechaInicial, y) {
+  cerrarHito_();
+  const editable = puedeEditarHitos_();
+  if (!hito && !editable) return;
+  const h = hito || { id: '', fecha: fechaInicial || '', titulo: '', promocion: PROMOCION_GENERAL, fase: '', vivienda: '', notas: '' };
+  const altoDoc = document.documentElement.scrollHeight;
+
+  const capa = document.createElement('div');
+  capa.className = 'hito-capa'; capa.id = 'hito-capa';
+  const pop = document.createElement('div');
+  pop.className = 'hito-pop'; pop.id = 'hito-pop'; pop.setAttribute('role', 'dialog');
+  pop.innerHTML = editable ? htmlFormHito_(h) : htmlDetalleHito_(h);
+  document.body.appendChild(capa);
+  document.body.appendChild(pop);
+
+  // Se coloca a la altura del clic y no centrado: dentro del iframe (cuya
+  // altura es la del contenido entero) un modal centrado podría quedar fuera
+  // de la parte de la página que el usuario está viendo.
+  let top = Math.max(16, (y || 0) - 80);
+  top = Math.min(top, Math.max(16, altoDoc - pop.offsetHeight - 16));
+  pop.style.top = top + 'px';
+
+  capa.addEventListener('click', cerrarHito_);
+  pop.querySelectorAll('[data-hito-cerrar]').forEach(b => b.addEventListener('click', cerrarHito_));
+  if (editable) {
+    rellenarSelectsHito_(h.fase || '', h.vivienda || '');
+    document.getElementById('hito-promocion').addEventListener('change', () => rellenarSelectsHito_('', ''));
+    document.getElementById('hito-fase').addEventListener('change', e => rellenarSelectsHito_(e.target.value, ''));
+    document.getElementById('hito-guardar').addEventListener('click', () => guardarHitoForm_(h));
+    document.getElementById('hito-titulo').addEventListener('keydown', e => { if (e.key === 'Enter') guardarHitoForm_(h); });
+    const btnBorrar = document.getElementById('hito-borrar');
+    if (btnBorrar) btnBorrar.addEventListener('click', () => borrarHitoForm_(h, btnBorrar));
+    document.getElementById('hito-titulo').focus({ preventScroll: true });
+  }
+  if (window.sendHeight) window.sendHeight();
+}
+
+function cerrarHito_() {
+  ['hito-capa', 'hito-pop'].forEach(id => { const el = document.getElementById(id); if (el) el.remove(); });
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarHito_(); });
+
+function mostrarErrorHito_(msg) {
+  const el = document.getElementById('hito-error');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = msg ? 'block' : 'none';
+}
+function textoErrorHito_(e, prefijo) {
+  const motivo = (e && e.message) || '';
+  return MOTIVOS_HITO[motivo] || (prefijo + ': ' + motivo);
+}
+
+// Guardar un hito no cambia nada de la vista Tabla: el calendario se
+// actualiza en local y CAL_SUCIO vuelve a como estaba antes del guardado
+// (llamarGuardar lo pone a true para los guardados de la Tabla).
+function refrescarCalendarioLocal_(estabaSucio) {
+  CAL_SUCIO = estabaSucio;
+  CAL_EVENTOS = construirEventosCalendario_(CAL_DATOS);
+  renderCalendario();
+}
+
+function guardarHitoForm_(original) {
+  const val = id => document.getElementById(id).value;
+  const hito = {
+    id: original.id || '',
+    fecha: val('hito-fecha'),
+    titulo: val('hito-titulo').trim(),
+    promocion: val('hito-promocion'),
+    fase: val('hito-fase'),
+    vivienda: val('hito-vivienda'),
+    notas: val('hito-notas').trim()
+  };
+  if (!hito.titulo) { mostrarErrorHito_(MOTIVOS_HITO.titulo_vacio); return; }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(hito.fecha)) { mostrarErrorHito_(MOTIVOS_HITO.fecha_invalida); return; }
+  mostrarErrorHito_('');
+
+  const btn = document.getElementById('hito-guardar');
+  if (btn.disabled) return;
+  btn.disabled = true; btn.textContent = 'Guardando…';
+  const estabaSucio = CAL_SUCIO;
+  llamarGuardar({ accion: 'guardar_hito', usuario: USER_LOGIN, hito: hito })
+    .then(data => {
+      const guardado = data.hito || hito;
+      const i = CAL_DATOS.hitos.findIndex(x => x.id === guardado.id);
+      if (i === -1) CAL_DATOS.hitos.push(guardado); else CAL_DATOS.hitos[i] = guardado;
+      const partes = String(guardado.fecha).split('-').map(Number);
+      CAL_MES = { anio: partes[0], mes: partes[1] - 1 }; // si se guardó en otro mes, el calendario salta a él
+      refrescarCalendarioLocal_(estabaSucio);
+      cerrarHito_();
+    })
+    .catch(e => {
+      mostrarErrorHito_(textoErrorHito_(e, 'No se pudo guardar'));
+      btn.disabled = false; btn.textContent = 'Guardar';
+    });
+}
+
+// Borrado en dos pulsaciones (sin confirm() del navegador, que puede estar
+// bloqueado dentro del iframe de Webflow).
+function borrarHitoForm_(h, btn) {
+  if (btn.disabled) return;
+  if (!btn.classList.contains('confirmar')) {
+    btn.classList.add('confirmar'); btn.textContent = '¿Seguro? Pulsa otra vez';
+    setTimeout(() => {
+      if (document.body.contains(btn) && !btn.disabled) { btn.classList.remove('confirmar'); btn.textContent = 'Borrar'; }
+    }, 4000);
+    return;
+  }
+  btn.disabled = true; btn.textContent = 'Borrando…';
+  const estabaSucio = CAL_SUCIO;
+  llamarGuardar({ accion: 'borrar_hito', usuario: USER_LOGIN, id: h.id })
+    .then(() => {
+      CAL_DATOS.hitos = CAL_DATOS.hitos.filter(x => x.id !== h.id);
+      refrescarCalendarioLocal_(estabaSucio);
+      cerrarHito_();
+    })
+    .catch(e => {
+      mostrarErrorHito_(textoErrorHito_(e, 'No se pudo borrar'));
+      btn.disabled = false; btn.classList.remove('confirmar'); btn.textContent = 'Borrar';
+    });
+}
 
 // ─── ENLACE A DETALLE DE VIVIENDA (placeholder — pendiente de crear SB-vivienda-detalle.html) ───
 const URL_DETALLE_VIVIENDA = 'SB-vivienda-detalle.html'; // TODO: sustituir por URL real (Webflow o GitHub Pages) cuando exista la página
