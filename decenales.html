@@ -289,15 +289,15 @@
     <div class="fila-ancha">
       <div class="field">
         <div class="flabel">% incremento villas</div>
-        <input type="text" inputmode="decimal" class="fval manual" id="mult-villa" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_DECENAL" data-fila="0" data-col="3">
+        <input type="text" inputmode="decimal" class="fval manual" id="mult-villa" data-decimales="todos" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_DECENAL" data-fila="0" data-col="3">
       </div>
       <div class="field">
         <div class="flabel">% incremento bloque</div>
-        <input type="text" inputmode="decimal" class="fval manual" id="mult-bloque" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_DECENAL" data-fila="0" data-col="4">
+        <input type="text" inputmode="decimal" class="fval manual" id="mult-bloque" data-decimales="todos" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_DECENAL" data-fila="0" data-col="4">
       </div>
       <div class="field">
         <div class="flabel">% incremento piscina</div>
-        <input type="text" inputmode="decimal" class="fval manual" id="mult-piscina" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_DECENAL" data-fila="0" data-col="5">
+        <input type="text" inputmode="decimal" class="fval manual" id="mult-piscina" data-decimales="todos" oninput="recalc()" onblur="formatField(this)" data-seccion="PARAMETROS_DECENAL" data-fila="0" data-col="5">
       </div>
     </div>
 
@@ -611,6 +611,23 @@ function fmtNum(n) {
   return n.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2, useGrouping: 'always' });
 }
 function eur(n) { return fmtNum(n) + ' €'; }
+// Para porcentajes que vienen del Sheet con más de 2 decimales (p. ej. los %
+// de incremento de la suma asegurada definitiva): muestra y conserva TODOS
+// los decimales, no solo 2. Se limita a 15 cifras significativas — la misma
+// precisión con la que Excel/Sheets guarda un número — para quitar el ruido
+// de coma flotante (112.34559999999999 → 112,3456). Mínimo 2 decimales.
+function fmtNumTodos(n) {
+  n = Number(n);
+  if (!isFinite(n)) n = 0;
+  let s = String(Number(n.toPrecision(15)));
+  if (/e/i.test(s)) s = Number(n.toPrecision(15)).toFixed(20).replace(/0+$/, '');
+  const neg = s.startsWith('-');
+  if (neg) s = s.slice(1);
+  let [ent, dec = ''] = s.split('.');
+  dec = dec.padEnd(2, '0');
+  ent = Number(ent).toLocaleString('es-ES', { maximumFractionDigits: 0, useGrouping: 'always' });
+  return (neg ? '-' : '') + ent + ',' + dec;
+}
 function parseNum(str) {
   if (str === null || str === undefined || str === '') return 0;
   str = String(str).trim();
@@ -645,8 +662,8 @@ function anchoTabla(widths, n) {
   return widths.slice(0, n).reduce((a, b) => a + b, 0);
 }
 function set(id, txt) { const el = document.getElementById(id); if (el) el.textContent = txt; }
-function formatField(el) { el.value = fmtNum(parseNum(el.value)); }
-function seedField(id, value) { const el = document.getElementById(id); if (el) el.value = fmtNum(value || 0); }
+function formatField(el) { el.value = el.dataset.decimales === 'todos' ? fmtNumTodos(parseNum(el.value)) : fmtNum(parseNum(el.value)); }
+function seedField(id, value) { const el = document.getElementById(id); if (el) el.value = el.dataset.decimales === 'todos' ? fmtNumTodos(value || 0) : fmtNum(value || 0); }
 
 // ═══════════════ LLAMADA AL BACKEND CON REINTENTOS ═══════════════
 // Con el Worker de Cloudflare la respuesta es JSON directo, sin el redirect
