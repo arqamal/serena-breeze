@@ -78,6 +78,8 @@
 
   /* Menú de secciones */
   .app.ancha { max-width: 1400px; }
+  /* Avisar: la cabecera y el menú ocupan todo el ancho; el formulario sigue en una columna */
+  #sec-avisar { max-width: 600px; }
   .menu { margin: 0 20px 16px; display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--border); }
   .menu button { min-height: 44px; padding: 0 14px; border: none; border-bottom: 2px solid transparent; background: none; color: var(--slate); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-bottom: -1px; }
   .menu button[aria-current="page"] { color: var(--black); border-bottom-color: var(--black); }
@@ -642,7 +644,7 @@ function mostrarSeccion(id, modo) {
   const marcada = id === 'ficha' ? ORIGEN : id;
   $('menu').querySelectorAll('button').forEach(b => { if (b.dataset.sec === marcada) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
   if (id !== 'ficha') $('titulo').textContent = TITULOS[id];
-  $('app').classList.toggle('ancha', id !== 'avisar');
+  $('app').classList.add('ancha');
   if (id === 'contactos') verListaContactos();
   if (id === 'semanas') pintarSemanas();
   if (id === 'pendientes') pintarPendientes();
