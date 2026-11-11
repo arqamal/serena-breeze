@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#111111">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Obra SB">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Serena Breeze — Obra</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --white: #FFFFFF; --off-white: #F7F6F4; --border: #E0DDD8; --slate: #6B7280;
+    --text: #2A2520; --black: #111111;
+    --rojo: #B00020; --rojo-fondo: #FFF5F5; --rojo-texto: #7A0016;
+    --verde-fondo: #E6F2E6; --verde-texto: #1F5E1F; --verde-borde: #B8DDB8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 15px; -webkit-text-size-adjust: 100%; }
+  button, input, select, textarea { font-family: inherit; }
+  .oculto { display: none !important; }
+  .app { max-width: 520px; margin: 0 auto; padding: 0 0 48px; }
+
+  /* Cabecera */
+  .cab { padding: 20px 20px 12px; display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+  .eyebrow { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--slate); }
+  h1 { font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 28px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); margin-top: 4px; }
+  .quien { font-size: 12px; color: var(--slate); text-align: right; line-height: 1.5; }
+  .quien button { background: none; border: none; color: var(--slate); text-decoration: underline; font-size: 12px; cursor: pointer; min-height: 32px; }
+
+  /* Pestañas */
+  .tabs { margin: 0 20px; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 1px solid var(--black); }
+  .tabs button { min-height: 48px; border: none; background: var(--white); color: var(--black); cursor: pointer; font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; }
+  .tabs button[aria-pressed="true"] { background: var(--black); color: var(--white); }
+
+  /* Formularios */
+  form { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+  .ayuda { font-size: 13px; color: var(--slate); line-height: 1.5; }
+  .campo { display: flex; flex-direction: column; gap: 8px; }
+  .etq { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate); }
+  .ctrl { min-height: 48px; padding: 0 12px; border: 1px solid var(--border); background: var(--white); font-size: 16px; color: var(--black); border-radius: 0; width: 100%; }
+  select.ctrl { -webkit-appearance: none; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236B7280' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  textarea.ctrl { padding: 12px; min-height: 96px; resize: vertical; line-height: 1.5; }
+  .ctrl:focus { outline: 2px solid var(--black); outline-offset: -1px; }
+  fieldset { border: none; display: flex; flex-direction: column; gap: 8px; }
+  legend { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate); margin-bottom: 8px; padding: 0; }
+  .chips { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 8px; }
+  .chip { min-height: 48px; border: 1px solid var(--border); background: var(--white); color: var(--text); font-size: 14px; cursor: pointer; padding: 0 6px; }
+  .chip.grande { font-family: 'Oswald', sans-serif; font-size: 15px; letter-spacing: 2px; }
+  .chip[aria-pressed="true"] { border-color: var(--black); background: var(--black); color: var(--white); }
+
+  .aviso { padding: 12px 14px; font-size: 13px; line-height: 1.5; border: 1px solid var(--border); background: var(--off-white); }
+  .aviso.tardio { border-color: var(--rojo); background: var(--rojo-fondo); color: var(--rojo-texto); }
+  .aviso.bien { border-color: var(--verde-borde); background: var(--verde-fondo); color: var(--verde-texto); }
+  .aviso strong { font-weight: 500; }
+
+  .btn-foto { min-height: 48px; display: flex; align-items: center; justify-content: center; gap: 10px; border: 1px dashed var(--slate); background: var(--white); color: var(--text); font-size: 14px; cursor: pointer; width: 100%; }
+  .fotos { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .foto { position: relative; aspect-ratio: 1; background: var(--off-white); border: 1px solid var(--border); overflow: hidden; }
+  .foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .foto button { position: absolute; top: 0; right: 0; width: 28px; height: 28px; border: none; background: rgba(17,17,17,.75); color: #fff; font-size: 16px; cursor: pointer; }
+
+  .enviar { min-height: 56px; border: none; background: var(--black); color: var(--white); font-family: 'Oswald', sans-serif; font-size: 15px; letter-spacing: 3px; text-transform: uppercase; cursor: pointer; width: 100%; }
+  .enviar:disabled { opacity: .55; cursor: default; }
+  .error { font-size: 13px; color: var(--rojo); line-height: 1.5; }
+
+  /* Confirmación */
+  .hecho { margin: 20px; padding: 20px; border: 1px solid var(--verde-borde); background: var(--verde-fondo); color: var(--verde-texto); display: flex; flex-direction: column; gap: 10px; }
+  .hecho .titulo { font-family: 'Oswald', sans-serif; font-size: 20px; letter-spacing: 1px; text-transform: uppercase; }
+  .hecho p { font-size: 14px; line-height: 1.5; }
+  .hecho .tardio { color: var(--rojo-texto); }
+  .btn-sec { min-height: 48px; border: 1px solid var(--black); background: var(--white); color: var(--black); font-family: 'Oswald', sans-serif; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; }
+
+  .vacio { margin: 20px; padding: 20px; border: 1px dashed var(--slate); font-size: 14px; line-height: 1.6; }
+  .cargando { margin: 20px; font-size: 13px; color: var(--slate); }
+
+  /* Login */
+  #login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+  .login-box { width: 100%; max-width: 380px; padding: 40px 32px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 16px; }
+  .login-logo { font-family: 'Oswald', sans-serif; font-size: 18px; letter-spacing: 3px; text-transform: uppercase; color: var(--black); }
+  .login-sub { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate); margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div id="login" class="oculto">
+  <form class="login-box" id="form-login" novalidate>
+    <div>
+      <div class="login-logo">Serena Breeze</div>
+      <div class="login-sub">Coordinación de obra · Uso interno</div>
+    </div>
+    <div class="campo">
+      <label class="etq" for="l-usuario">Usuario</label>
+      <input class="ctrl" id="l-usuario" autocomplete="username" autocapitalize="none" required>
+    </div>
+    <div class="campo">
+      <label class="etq" for="l-pass">Contraseña</label>
+      <input class="ctrl" id="l-pass" type="password" autocomplete="current-password" required>
+    </div>
+    <button class="enviar" id="l-btn" type="submit">Acceder →</button>
+    <div class="error" id="l-error" role="alert"></div>
+  </form>
+</div>
+
+<div id="app" class="app oculto">
+  <header class="cab">
+    <div>
+      <div class="eyebrow">Serena Breeze · Obra</div>
+      <h1>Avisar</h1>
+    </div>
+    <div class="quien"><span id="quien"></span><br><button type="button" id="salir">Cerrar sesión</button></div>
+  </header>
+
+  <div class="tabs" role="group" aria-label="Qué quieres avisar" id="tabs"></div>
+  <div class="cargando" id="cargando">Cargando…</div>
+  <div class="vacio oculto" id="sin-permisos">Tu usuario puede consultar la obra, pero no avisar desde esta pantalla.</div>
+
+  <!-- TRABAJO -->
+  <form id="f-trabajo" class="oculto" novalidate>
+    <p class="ayuda">Avisa con un mes de antelación de los trabajos que vais a empezar. Oficina técnica preparará los planos.</p>
+    <fieldset><legend>Promoción</legend><div class="chips" data-promos="trabajo"></div></fieldset>
+    <div class="campo"><label class="etq" for="t-zona">Zona</label><select class="ctrl" id="t-zona"></select></div>
+    <div class="campo"><label class="etq" for="t-detalle">Detalle (opcional)</label><input class="ctrl" id="t-detalle" placeholder="Planta, cubierta, fachada norte…"></div>
+    <div class="campo"><label class="etq" for="t-oficio">Oficio</label><select class="ctrl" id="t-oficio"></select></div>
+    <div class="campo"><label class="etq" for="t-proveedor">Proveedor (opcional)</label><select class="ctrl" id="t-proveedor"></select></div>
+    <div class="campo"><label class="etq" for="t-fecha">Fecha prevista de inicio</label><input class="ctrl" id="t-fecha" type="date"></div>
+    <div class="aviso oculto" id="t-antelacion" role="status"></div>
+    <div class="campo"><label class="etq" for="t-desc">Qué se va a hacer</label><textarea class="ctrl" id="t-desc" rows="3"></textarea></div>
+    <div class="campo">
+      <button type="button" class="btn-foto" data-foto="trabajo"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Hacer o adjuntar foto (opcional)</button>
+      <div class="fotos" id="fotos-trabajo"></div>
+    </div>
+    <div class="error" id="t-error" role="alert"></div>
+    <button class="enviar" type="submit">Avisar a oficina técnica</button>
+  </form>
+
+  <!-- DUDA -->
+  <form id="f-duda" class="oculto" novalidate>
+    <p class="ayuda">La duda llega a quien elijas y aparece en la próxima reunión si sigue abierta.</p>
+    <fieldset><legend>Promoción</legend><div class="chips" data-promos="duda"></div></fieldset>
+    <div class="campo"><label class="etq" for="d-trabajo">Trabajo relacionado (opcional)</label><select class="ctrl" id="d-trabajo"></select></div>
+    <div class="campo"><label class="etq" for="d-pregunta">Pregunta</label><textarea class="ctrl" id="d-pregunta" rows="4" placeholder="Escribe la duda tal como la explicarías en obra"></textarea></div>
+    <fieldset><legend>¿A quién va?</legend><div class="chips" id="d-para"></div></fieldset>
+    <div class="campo oculto" id="d-proveedor-campo"><label class="etq" for="d-proveedor">Proveedor</label><select class="ctrl" id="d-proveedor"></select></div>
+    <div class="campo"><label class="etq" for="d-fecha">Necesito respuesta antes del</label><input class="ctrl" id="d-fecha" type="date"></div>
+    <div class="campo">
+      <button type="button" class="btn-foto" data-foto="duda"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Hacer o adjuntar foto (opcional)</button>
+      <div class="fotos" id="fotos-duda"></div>
+    </div>
+    <div class="error" id="d-error" role="alert"></div>
+    <button class="enviar" type="submit">Enviar duda</button>
+  </form>
+
+  <!-- HITO -->
+  <form id="f-hito" class="oculto" novalidate>
+    <p class="ayuda">Registra un avance de obra con fecha y foto.</p>
+    <fieldset><legend>Promoción</legend><div class="chips" data-promos="hito"></div></fieldset>
+    <div class="campo"><label class="etq" for="h-zona">Zona</label><select class="ctrl" id="h-zona"></select></div>
+    <div class="campo"><label class="etq" for="h-hito">Hito</label><input class="ctrl" id="h-hito" placeholder="Ej.: estructura terminada"></div>
+    <div class="campo"><label class="etq" for="h-detalle">Detalle (opcional)</label><input class="ctrl" id="h-detalle"></div>
+    <div class="campo"><label class="etq" for="h-fecha">Fecha</label><input class="ctrl" id="h-fecha" type="date"></div>
+    <div class="campo">
+      <button type="button" class="btn-foto" data-foto="hito"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Hacer o adjuntar foto</button>
+      <div class="fotos" id="fotos-hito"></div>
+    </div>
+    <div class="error" id="h-error" role="alert"></div>
+    <button class="enviar" type="submit">Registrar hito</button>
+  </form>
+
+  <!-- CONFIRMACIÓN -->
+  <div class="hecho oculto" id="hecho" role="status">
+    <div class="titulo" id="hecho-titulo"></div>
+    <p id="hecho-texto"></p>
+    <button type="button" class="btn-sec" id="hecho-otro">Avisar de otra cosa</button>
+  </div>
+
+  <input type="file" id="input-foto" accept="image/*" multiple class="oculto">
+</div>
+
+<script>
+// ─── CONFIGURACIÓN ──────────────────────────────────────────────────
+const API_URL = 'https://obra-worker.arquitectura-90b.workers.dev';
+const CLAVE_TOKEN = 'amal_token_obra';
+// Login común: si ya hay sesión en estas herramientas (mismo TOKEN_SECRET), se
+// aprovecha. El Worker comprueba igualmente acceso_obra y rol_obra.
+const CLAVES_TOKEN_COMUNES = ['amal_token_materiales', 'amal_token_reuniones'];
+const MAX_FOTOS = 5;
+const LADO_MAX_FOTO = 1600;
+
+const MENSAJES = {
+  credenciales: 'Usuario o contraseña incorrectos.',
+  sin_acceso: 'Tu usuario no tiene acceso a Coordinación de obra.',
+  sin_rol: 'Tu usuario no tiene rol en Coordinación de obra. Pídelo a oficina técnica.',
+  sin_permiso: 'Tu usuario no tiene permiso para esto.',
+  promocion_invalida: 'Elige la promoción.',
+  zona_invalida: 'Elige una zona de esa promoción.',
+  oficio_invalido: 'Elige el oficio.',
+  fecha_invalida: 'Revisa la fecha.',
+  fecha_pasada: 'La fecha de inicio no puede ser anterior a hoy.',
+  falta_descripcion: 'Explica qué se va a hacer.',
+  falta_pregunta: 'Escribe la pregunta.',
+  destinatario_invalido: 'Elige a quién va la duda.',
+  falta_hito: 'Escribe el hito.',
+  trabajo_no_encontrado: 'Ese trabajo ya no existe. Recarga la página.',
+  fotos_invalidas: 'Alguna foto no se ha subido bien. Vuelve a intentarlo.',
+  archivo_grande: 'Una foto es demasiado grande.',
+  formato_invalido: 'Ese formato de foto no se admite.',
+  falta_carpeta: 'Falta configurar la carpeta de fotos en la Sheet (_config).'
+};
+
+// ─── ESTADO ─────────────────────────────────────────────────────────
+let S = null;          // sesión: usuario, nombre, rol, permisos, listas, umbrales, token
+let D = null;          // datos: hoy, trabajos, contactos…
+let TAB = null;
+const PROMO = { trabajo: '', duda: '', hito: '' };
+let PARA = '';
+const FOTOS = { trabajo: [], duda: [], hito: [] };  // { file, url }
+let fotoDestino = null;
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const verdadero = (v) => v === true || ['true', '1', 'sí', 'si', 'x'].indexOf(String(v ?? '').trim().toLowerCase()) !== -1;
+const mensaje = (r) => MENSAJES[r.motivo] || ('No se ha podido guardar (' + (r.motivo || 'error') + (r.detalle ? ': ' + r.detalle : '') + ').');
+const puede = (p) => !!(S && S.permisos.indexOf(p) !== -1);
+
+// ─── API ────────────────────────────────────────────────────────────
+// Sin cabecera Content-Type: el navegador lo manda como texto y no hace preflight.
+async function api(accion, extra) {
+  const cuerpo = Object.assign({ accion }, extra || {});
+  if (accion !== 'login') cuerpo.token = S && S.token;
+  let r;
+  try {
+    const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify(cuerpo) });
+    r = await res.json();
+  } catch (e) {
+    return { ok: false, motivo: 'red', detalle: 'Sin conexión con el servidor. Comprueba la cobertura y vuelve a intentarlo.' };
+  }
+  if (!r.ok && accion !== 'login' && (r.motivo === 'token_invalido' || r.motivo === 'sin_acceso' || r.motivo === 'sin_rol')) {
+    localStorage.removeItem(CLAVE_TOKEN);
+    alert(r.motivo === 'token_invalido' ? 'La sesión ha caducado. Vuelve a entrar.' : (MENSAJES[r.motivo] || 'Sin acceso.'));
+    location.reload();
+  }
+  return r;
+}
+
+// ─── LOGIN ──────────────────────────────────────────────────────────
+async function arrancar() {
+  for (const clave of [CLAVE_TOKEN].concat(CLAVES_TOKEN_COMUNES)) {
+    const t = localStorage.getItem(clave);
+    if (!t) continue;
+    const r = await api('login', { herramienta: 'obra', token: t });
+    if (r.ok) { entrar(r); return; }
+    if (clave === CLAVE_TOKEN) localStorage.removeItem(CLAVE_TOKEN);
+  }
+  $('login').classList.remove('oculto');
+  $('l-usuario').focus();
+  enviarAltura();
+}
+
+$('form-login').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = $('l-btn'), err = $('l-error');
+  err.textContent = '';
+  const usuario = $('l-usuario').value.trim(), pass = $('l-pass').value;
+  if (!usuario || !pass) { err.textContent = 'Escribe usuario y contraseña.'; return; }
+  btn.disabled = true; btn.textContent = 'Comprobando…';
+  const r = await api('login', { herramienta: 'obra', usuario, pass });
+  btn.disabled = false; btn.textContent = 'Acceder →';
+  if (!r.ok) { err.textContent = r.motivo === 'red' ? r.detalle : (MENSAJES[r.motivo] || 'No se ha podido entrar.'); return; }
+  entrar(r);
+});
+
+$('salir').addEventListener('click', () => {
+  if (!confirm('¿Cerrar sesión?')) return;
+  localStorage.removeItem(CLAVE_TOKEN);
+  location.reload();
+});
+
+async function entrar(r) {
+  S = r;
+  localStorage.setItem(CLAVE_TOKEN, r.token);
+  $('login').classList.add('oculto');
+  $('app').classList.remove('oculto');
+  $('quien').textContent = r.nombre;
+
+  const pestañas = [
+    { id: 'trabajo', texto: 'Trabajo', permiso: 'crear_trabajo' },
+    { id: 'duda', texto: 'Duda', permiso: 'crear_duda' },
+    { id: 'hito', texto: 'Hito', permiso: 'crear_hito' }
+  ].filter(p => puede(p.permiso));
+
+  if (!pestañas.length) { $('cargando').classList.add('oculto'); $('sin-permisos').classList.remove('oculto'); enviarAltura(); return; }
+
+  $('tabs').innerHTML = pestañas.map(p => `<button type="button" data-tab="${p.id}" aria-pressed="false">${p.texto}</button>`).join('');
+  $('tabs').querySelectorAll('button').forEach(b => b.addEventListener('click', () => mostrarTab(b.dataset.tab)));
+
+  await cargarDatos();
+  prepararFormularios();
+  $('cargando').classList.add('oculto');
+  mostrarTab(pestañas[0].id);
+}
+
+async function cargarDatos() {
+  const r = await api('datos');
+  if (!r.ok) { $('cargando').textContent = mensaje(r); throw new Error(r.motivo); }
+  D = r;
+}
+
+// ─── PESTAÑAS ───────────────────────────────────────────────────────
+function mostrarTab(id) {
+  TAB = id;
+  $('tabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tab === id)));
+  ['trabajo', 'duda', 'hito'].forEach(t => $('f-' + t).classList.toggle('oculto', t !== id));
+  $('hecho').classList.add('oculto');
+  enviarAltura();
+}
+
+// ─── FORMULARIOS ────────────────────────────────────────────────────
+function prepararFormularios() {
+  const promos = S.listas.promociones || [];
+  document.querySelectorAll('[data-promos]').forEach(cont => {
+    const form = cont.dataset.promos;
+    cont.innerHTML = promos.map(p => `<button type="button" class="chip grande" data-promo="${esc(p)}" aria-pressed="false">${esc(p)}</button>`).join('');
+    cont.querySelectorAll('button').forEach(b => b.addEventListener('click', () => elegirPromo(form, b.dataset.promo)));
+  });
+
+  $('t-oficio').innerHTML = '<option value="">Elige el oficio…</option>' + (S.listas.oficios || []).map(o => `<option>${esc(o)}</option>`).join('');
+  $('t-oficio').addEventListener('change', rellenarProveedores);
+  $('t-fecha').min = D.hoy;
+  $('t-fecha').addEventListener('input', mostrarAntelacion);
+
+  $('d-para').innerHTML = (S.listas.para_duda || []).map(p => `<button type="button" class="chip" data-para="${esc(p)}" aria-pressed="false">${esc(p)}</button>`).join('');
+  $('d-para').querySelectorAll('button').forEach(b => b.addEventListener('click', () => elegirPara(b.dataset.para)));
+  $('d-fecha').min = D.hoy;
+  $('d-fecha').value = sumarDias(D.hoy, 3);
+
+  $('h-fecha').max = D.hoy;
+  $('h-fecha').value = D.hoy;
+
+  // Si solo hay una promoción, se elige sola
+  if (promos.length === 1) ['trabajo', 'duda', 'hito'].forEach(f => elegirPromo(f, promos[0]));
+  else { rellenarZonas('t-zona', ''); rellenarZonas('h-zona', ''); rellenarTrabajos(); }
+  rellenarProveedores();
+  rellenarProveedoresDuda();
+}
+
+function elegirPromo(form, promo) {
+  PROMO[form] = promo;
+  document.querySelectorAll(`[data-promos="${form}"] button`).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.promo === promo)));
+  if (form === 'trabajo') rellenarZonas('t-zona', promo);
+  if (form === 'hito') rellenarZonas('h-zona', promo);
+  if (form === 'duda') rellenarTrabajos();
+}
+
+// Zonas agrupadas: villas, cada bloque con sus apartamentos, y el resto
+function rellenarZonas(idSelect, promo) {
+  const sel = $(idSelect);
+  if (!promo) { sel.innerHTML = '<option value="">Elige antes la promoción…</option>'; sel.disabled = true; return; }
+  sel.disabled = false;
+  const zonas = (S.listas['zonas_' + promo] || []);
+  const villa = new RegExp('^' + promo + '\\d$');
+  const bloque = new RegExp('^' + promo + '(\\d)00$');
+  const apto = new RegExp('^' + promo + '(\\d)\\d\\d$');
+  const villas = [], bloques = {}, otras = [];
+  zonas.forEach(z => {
+    let m;
+    if (villa.test(z)) villas.push(z);
+    else if ((m = bloque.exec(z))) (bloques[m[1]] = bloques[m[1]] || { codigo: z, aptos: [] }).codigo = z;
+    else if ((m = apto.exec(z))) (bloques[m[1]] = bloques[m[1]] || { codigo: '', aptos: [] }).aptos.push(z);
+    else otras.push(z);
+  });
+  let html = '<option value="">Elige la zona…</option>';
+  if (villas.length) html += '<optgroup label="Villas">' + villas.map(z => `<option>${esc(z)}</option>`).join('') + '</optgroup>';
+  Object.keys(bloques).sort().forEach(n => {
+    const b = bloques[n];
+    html += `<optgroup label="Bloque ${esc(b.codigo || n)}">` +
+      (b.codigo ? `<option value="${esc(b.codigo)}">${esc(b.codigo)} · todo el bloque</option>` : '') +
+      b.aptos.map(z => `<option>${esc(z)}</option>`).join('') + '</optgroup>';
+  });
+  if (otras.length) html += '<optgroup label="Otras zonas">' + otras.map(z => `<option>${esc(z)}</option>`).join('') + '</optgroup>';
+  sel.innerHTML = html;
+}
+
+function proveedores() {
+  return (D.contactos || []).filter(c => c.tipo === 'Proveedor' && verdadero(c.activo));
+}
+function opcionesProveedor(oficio, primera) {
+  const todos = proveedores();
+  const delOficio = oficio ? todos.filter(c => c.oficio === oficio) : [];
+  const resto = todos.filter(c => delOficio.indexOf(c) === -1);
+  const op = c => `<option value="${esc(c.id)}">${esc(c.empresa)}${c.persona ? ' · ' + esc(c.persona) : ''}</option>`;
+  let html = `<option value="">${primera}</option>`;
+  if (delOficio.length) html += '<optgroup label="De este oficio">' + delOficio.map(op).join('') + '</optgroup>';
+  if (resto.length) html += `<optgroup label="${delOficio.length ? 'Otros proveedores' : 'Proveedores'}">` + resto.map(op).join('') + '</optgroup>';
+  return html;
+}
+function rellenarProveedores() { $('t-proveedor').innerHTML = opcionesProveedor($('t-oficio').value, 'Sin decidir'); }
+function rellenarProveedoresDuda() {
+  const t = (D.trabajos || []).find(x => x.id === $('d-trabajo').value);
+  $('d-proveedor').innerHTML = opcionesProveedor(t ? t.oficio : '', 'Elige el proveedor…');
+  if (t && t.id_proveedor) $('d-proveedor').value = t.id_proveedor;
+}
+
+function rellenarTrabajos() {
+  const promo = PROMO.duda;
+  const lista = (D.trabajos || [])
+    .filter(t => (!promo || t.promocion === promo) && t.estado !== 'Terminado')
+    .sort((a, b) => (a.fecha_inicio < b.fecha_inicio ? -1 : 1));
+  $('d-trabajo').innerHTML = '<option value="">Ninguno</option>' +
+    lista.map(t => `<option value="${esc(t.id)}">${esc(t.id)} · ${esc(t.descripcion)} · ${esc(t.zona)}</option>`).join('');
+  $('d-trabajo').onchange = () => {
+    const t = (D.trabajos || []).find(x => x.id === $('d-trabajo').value);
+    if (t && PROMO.duda !== t.promocion) elegirPromo('duda', t.promocion);
+    if (t) $('d-trabajo').value = t.id;
+    rellenarProveedoresDuda();
+  };
+}
+
+function elegirPara(p) {
+  PARA = p;
+  $('d-para').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.para === p)));
+  $('d-proveedor-campo').classList.toggle('oculto', p !== 'Proveedor');
+  if (p === 'Proveedor') rellenarProveedoresDuda();
+  enviarAltura();
+}
+
+function mostrarAntelacion() {
+  const caja = $('t-antelacion');
+  const f = $('t-fecha').value;
+  if (!f) { caja.classList.add('oculto'); return; }
+  const dias = diasEntre(D.hoy, f);
+  const minimo = S.umbrales.antelacion;
+  caja.classList.remove('oculto', 'tardio', 'bien');
+  if (dias < 0) {
+    caja.classList.add('tardio');
+    caja.innerHTML = '<strong>Esa fecha ya ha pasado.</strong> Elige una fecha de hoy en adelante.';
+  } else if (dias < minimo) {
+    caja.classList.add('tardio');
+    caja.innerHTML = `<strong>${dias === 0 ? 'Empieza hoy.' : dias === 1 ? 'Falta 1 día para el inicio.' : 'Faltan ' + dias + ' días para el inicio.'}</strong> Lo ideal es avisar con ${minimo}. Se enviará igualmente y quedará marcado como aviso tardío.`;
+  } else {
+    caja.classList.add('bien');
+    caja.innerHTML = `Avisas con <strong>${dias} días</strong> de antelación.`;
+  }
+  enviarAltura();
+}
+
+// ─── ENVÍOS ─────────────────────────────────────────────────────────
+$('f-trabajo').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = $('t-error'); err.textContent = '';
+  const datos = {
+    promocion: PROMO.trabajo, zona: $('t-zona').value, detalle: $('t-detalle').value.trim(),
+    oficio: $('t-oficio').value, id_proveedor: $('t-proveedor').value,
+    fecha_inicio: $('t-fecha').value, descripcion: $('t-desc').value.trim()
+  };
+  const falta = !datos.promocion ? 'Elige la promoción.' : !datos.zona ? 'Elige la zona.' : !datos.oficio ? 'Elige el oficio.'
+    : !datos.fecha_inicio ? 'Pon la fecha prevista de inicio.' : diasEntre(D.hoy, datos.fecha_inicio) < 0 ? MENSAJES.fecha_pasada
+    : !datos.descripcion ? MENSAJES.falta_descripcion : '';
+  if (falta) { err.textContent = falta; return; }
+
+  const btn = e.submitter || e.target.querySelector('.enviar');
+  const r = await enviando(btn, 'Enviando…', async () => {
+    const fotos = await subirFotos('trabajo', datos.promocion, btn);
+    if (!fotos.ok) return fotos;
+    return api('crear_trabajo', Object.assign(datos, { fotos: fotos.urls }));
+  });
+  if (!r.ok) { err.textContent = r.motivo === 'red' ? r.detalle : mensaje(r); return; }
+  e.target.reset(); limpiarFotos('trabajo');
+  $('t-antelacion').classList.add('oculto');
+  rellenarProveedores();
+  hecho('Aviso enviado', `${r.id} · ${datos.descripcion} · ${datos.zona}. Oficina técnica ya lo tiene.` +
+    (r.tardio ? `<br><span class="tardio">Avisado con ${r.antelacion_dias} días: queda marcado como aviso tardío.</span>` : ''));
+  recargarEnSegundoPlano();
+});
+
+$('f-duda').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = $('d-error'); err.textContent = '';
+  const datos = {
+    promocion: PROMO.duda, id_trabajo: $('d-trabajo').value, pregunta: $('d-pregunta').value.trim(),
+    para: PARA, id_contacto: PARA === 'Proveedor' ? $('d-proveedor').value : '', fecha_necesaria: $('d-fecha').value
+  };
+  const falta = !datos.promocion && !datos.id_trabajo ? 'Elige la promoción.' : !datos.pregunta ? MENSAJES.falta_pregunta
+    : !datos.para ? MENSAJES.destinatario_invalido : (datos.para === 'Proveedor' && !datos.id_contacto) ? 'Elige el proveedor.'
+    : !datos.fecha_necesaria ? 'Pon para cuándo necesitas la respuesta.' : '';
+  if (falta) { err.textContent = falta; return; }
+
+  const btn = e.submitter || e.target.querySelector('.enviar');
+  const r = await enviando(btn, 'Enviando…', async () => {
+    const fotos = await subirFotos('duda', datos.promocion || ((D.trabajos || []).find(t => t.id === datos.id_trabajo) || {}).promocion, btn);
+    if (!fotos.ok) return fotos;
+    return api('crear_duda', Object.assign(datos, { fotos: fotos.urls }));
+  });
+  if (!r.ok) { err.textContent = r.motivo === 'red' ? r.detalle : mensaje(r); return; }
+  e.target.reset(); limpiarFotos('duda'); elegirPara(''); $('d-fecha').value = sumarDias(D.hoy, 3);
+  hecho('Duda enviada', `${r.id} · para ${esc(datos.para)}. Si sigue abierta, saldrá en la próxima reunión.`);
+  recargarEnSegundoPlano();
+});
+
+$('f-hito').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const err = $('h-error'); err.textContent = '';
+  const datos = { promocion: PROMO.hito, zona: $('h-zona').value, hito: $('h-hito').value.trim(), detalle: $('h-detalle').value.trim(), fecha: $('h-fecha').value };
+  const falta = !datos.promocion ? 'Elige la promoción.' : !datos.zona ? 'Elige la zona.' : !datos.hito ? MENSAJES.falta_hito : !datos.fecha ? 'Pon la fecha.' : '';
+  if (falta) { err.textContent = falta; return; }
+
+  const btn = e.submitter || e.target.querySelector('.enviar');
+  const r = await enviando(btn, 'Enviando…', async () => {
+    const fotos = await subirFotos('hito', datos.promocion, btn);
+    if (!fotos.ok) return fotos;
+    return api('crear_hito', Object.assign(datos, { fotos: fotos.urls }));
+  });
+  if (!r.ok) { err.textContent = r.motivo === 'red' ? r.detalle : mensaje(r); return; }
+  e.target.reset(); limpiarFotos('hito'); $('h-fecha').value = D.hoy;
+  hecho('Hito registrado', `${r.id} · ${esc(datos.hito)} · ${esc(datos.zona)}.`);
+});
+
+async function enviando(btn, texto, fn) {
+  const original = btn.textContent;
+  btn.disabled = true; btn.textContent = texto;
+  try { return await fn(); }
+  catch (e) { return { ok: false, motivo: 'error', detalle: e.message }; }
+  finally { btn.disabled = false; btn.textContent = original; }
+}
+
+function hecho(titulo, html) {
+  ['trabajo', 'duda', 'hito'].forEach(t => $('f-' + t).classList.add('oculto'));
+  $('hecho-titulo').textContent = titulo;
+  $('hecho-texto').innerHTML = html;
+  $('hecho').classList.remove('oculto');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.parent.postMessage({ scrollTop: true }, '*');
+  enviarAltura();
+}
+$('hecho-otro').addEventListener('click', () => mostrarTab(TAB));
+
+async function recargarEnSegundoPlano() {
+  try { await cargarDatos(); rellenarTrabajos(); } catch (e) { /* sin importancia */ }
+}
+
+// ─── FOTOS ──────────────────────────────────────────────────────────
+document.querySelectorAll('[data-foto]').forEach(b => b.addEventListener('click', () => {
+  fotoDestino = b.dataset.foto;
+  if (FOTOS[fotoDestino].length >= MAX_FOTOS) { alert('Como mucho ' + MAX_FOTOS + ' fotos.'); return; }
+  $('input-foto').click();
+}));
+
+$('input-foto').addEventListener('change', (e) => {
+  const lista = FOTOS[fotoDestino];
+  Array.from(e.target.files || []).forEach(file => {
+    if (lista.length >= MAX_FOTOS || !/^image\//.test(file.type || 'image/')) return;
+    lista.push({ file, url: URL.createObjectURL(file) });
+  });
+  e.target.value = '';
+  pintarFotos(fotoDestino);
+});
+
+function pintarFotos(dest) {
+  const cont = $('fotos-' + dest);
+  cont.innerHTML = FOTOS[dest].map((f, i) => `<div class="foto"><img src="${f.url}" alt="Foto ${i + 1}"><button type="button" aria-label="Quitar foto ${i + 1}" data-quitar="${i}">×</button></div>`).join('');
+  cont.querySelectorAll('[data-quitar]').forEach(b => b.addEventListener('click', () => {
+    const i = Number(b.dataset.quitar);
+    URL.revokeObjectURL(FOTOS[dest][i].url);
+    FOTOS[dest].splice(i, 1);
+    pintarFotos(dest);
+  }));
+  enviarAltura();
+}
+
+function limpiarFotos(dest) {
+  FOTOS[dest].forEach(f => URL.revokeObjectURL(f.url));
+  FOTOS[dest] = [];
+  pintarFotos(dest);
+}
+
+// Sube las fotos una a una (reducidas) y devuelve sus enlaces
+async function subirFotos(dest, promocion, btn) {
+  const urls = [];
+  const lista = FOTOS[dest];
+  for (let i = 0; i < lista.length; i++) {
+    btn.textContent = `Subiendo foto ${i + 1} de ${lista.length}…`;
+    let base64;
+    try { base64 = await reducirFoto(lista[i].file); }
+    catch (e) { return { ok: false, motivo: 'formato_invalido' }; }
+    const r = await api('subir_foto', { promocion, nombre: lista[i].file.name || 'foto', mime: 'image/jpeg', base64 });
+    if (!r.ok) return r;
+    urls.push(r.url);
+  }
+  btn.textContent = 'Enviando…';
+  return { ok: true, urls };
+}
+
+async function reducirFoto(file) {
+  let img, ancho, alto;
+  try {
+    img = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    ancho = img.width; alto = img.height;
+  } catch (e) {
+    img = await new Promise((ok, mal) => { const i = new Image(); i.onload = () => ok(i); i.onerror = mal; i.src = URL.createObjectURL(file); });
+    ancho = img.naturalWidth; alto = img.naturalHeight;
+  }
+  const escala = Math.min(1, LADO_MAX_FOTO / Math.max(ancho, alto));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(ancho * escala);
+  canvas.height = Math.round(alto * escala);
+  canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+  const blob = await new Promise(ok => canvas.toBlob(ok, 'image/jpeg', 0.8));
+  if (!blob) throw new Error('No se pudo leer la foto');
+  return await new Promise((ok, mal) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result).split(',')[1]); fr.onerror = mal; fr.readAsDataURL(blob); });
+}
+
+// ─── FECHAS ─────────────────────────────────────────────────────────
+function diasEntre(desde, hasta) {
+  const a = desde.split('-').map(Number), b = hasta.split('-').map(Number);
+  return Math.round((Date.UTC(b[0], b[1] - 1, b[2]) - Date.UTC(a[0], a[1] - 1, a[2])) / 86400000);
+}
+function sumarDias(iso, n) {
+  const a = iso.split('-').map(Number);
+  return new Date(Date.UTC(a[0], a[1] - 1, a[2] + n)).toISOString().slice(0, 10);
+}
+
+// ─── IFRAME (si se incrusta en Webflow) ─────────────────────────────
+function enviarAltura() {
+  if (window.parent !== window) window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, '*');
+}
+window.addEventListener('resize', enviarAltura);
+
+arrancar();
+</script>
+</body>
+</html>
