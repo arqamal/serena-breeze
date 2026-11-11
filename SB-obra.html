@@ -17,6 +17,8 @@
     --verde-fondo: #E6F2E6; --verde-texto: #1F5E1F; --verde-borde: #B8DDB8;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
+  /* Reserva siempre el hueco de la barra de desplazamiento: así el contenido no se mueve entre pantallas cortas y largas */
+  html { scrollbar-gutter: stable; }
   body { font-family: 'Roboto', sans-serif; background: var(--white); color: var(--text); font-size: 15px; -webkit-text-size-adjust: 100%; }
   button, input, select, textarea { font-family: inherit; }
   .oculto { display: none !important; }
