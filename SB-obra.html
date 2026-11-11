@@ -76,6 +76,42 @@
   .vacio { margin: 20px; padding: 20px; border: 1px dashed var(--slate); font-size: 14px; line-height: 1.6; }
   .cargando { margin: 20px; font-size: 13px; color: var(--slate); }
 
+  /* Menú de secciones */
+  .app.ancha { max-width: 1240px; }
+  .menu { margin: 0 20px 16px; display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--border); }
+  .menu button { min-height: 44px; padding: 0 14px; border: none; border-bottom: 2px solid transparent; background: none; color: var(--slate); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; margin-bottom: -1px; }
+  .menu button[aria-current="page"] { color: var(--black); border-bottom-color: var(--black); }
+
+  /* Contactos */
+  .barra { margin: 0 20px 12px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .barra .ctrl { width: auto; flex: 1 1 200px; }
+  .chk { display: flex; align-items: center; gap: 8px; font-size: 13px; min-height: 44px; cursor: pointer; }
+  .chk input { width: 18px; height: 18px; accent-color: var(--black); }
+  .btn-negro { min-height: 48px; padding: 0 20px; border: none; background: var(--black); color: var(--white); font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; }
+  .resumen-doc { margin: 0 20px 12px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; }
+  .caja-tabla { margin: 0 20px; overflow-x: auto; border: 1px solid var(--border); }
+  table.contactos { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 900px; }
+  table.contactos th { text-align: left; padding: 10px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate); font-weight: 400; border-bottom: 1px solid var(--border); }
+  table.contactos td { padding: 10px; border-bottom: 1px solid var(--border); vertical-align: top; line-height: 1.4; }
+  table.contactos tr:last-child td { border-bottom: none; }
+  table.contactos tr.inactivo td { background: var(--off-white); color: var(--slate); }
+  table.contactos a { color: var(--black); }
+  .enlace-fila { background: none; border: none; padding: 0; font: inherit; font-weight: 500; color: var(--black); text-align: left; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; min-height: 24px; }
+  .sub { font-size: 12px; color: var(--slate); margin-top: 2px; }
+  .etiqueta { display: inline-block; font-size: 11px; padding: 2px 6px; border: 1px solid var(--border); background: var(--off-white); margin: 0 4px 4px 0; white-space: nowrap; }
+  .etiqueta.vencido { background: var(--rojo); border-color: var(--rojo); color: var(--white); }
+  .etiqueta.pronto { background: #FDE7D3; border-color: #F2B98A; color: #7C2D00; }
+  .etiqueta.ok { background: var(--verde-fondo); border-color: var(--verde-borde); color: var(--verde-texto); }
+  .ficha-c { padding: 0 20px; display: flex; flex-direction: column; gap: 20px; }
+  .ficha-c h2 { font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 22px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); }
+  .ficha-c fieldset { border: 1px solid var(--border); padding: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+  .ficha-c legend { padding: 0 6px; margin: 0; }
+  .ficha-c .ancho { grid-column: 1 / -1; }
+  .volver { align-self: flex-start; background: none; border: none; color: var(--slate); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; min-height: 44px; padding: 0; }
+  .acciones { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+  .acciones .btn-sec, .acciones .btn-negro { min-width: 160px; }
+  .oculto-visual { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
   /* Login */
   #login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
   .login-box { width: 100%; max-width: 380px; padding: 40px 32px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 16px; }
@@ -108,14 +144,17 @@
   <header class="cab">
     <div>
       <div class="eyebrow">Serena Breeze · Obra</div>
-      <h1>Avisar</h1>
+      <h1 id="titulo">Avisar</h1>
     </div>
     <div class="quien"><span id="quien"></span><br><button type="button" id="salir">Cerrar sesión</button></div>
   </header>
 
-  <div class="tabs" role="group" aria-label="Qué quieres avisar" id="tabs"></div>
+  <nav class="menu oculto" id="menu" aria-label="Secciones"></nav>
   <div class="cargando" id="cargando">Cargando…</div>
   <div class="vacio oculto" id="sin-permisos">Tu usuario puede consultar la obra, pero no avisar desde esta pantalla.</div>
+
+  <section id="sec-avisar" class="oculto">
+  <div class="tabs" role="group" aria-label="Qué quieres avisar" id="tabs"></div>
 
   <!-- TRABAJO -->
   <form id="f-trabajo" class="oculto" novalidate>
@@ -178,6 +217,41 @@
     <p id="hecho-texto"></p>
     <button type="button" class="btn-sec" id="hecho-otro">Avisar de otra cosa</button>
   </div>
+  </section>
+
+  <!-- CONTACTOS (oficina técnica) -->
+  <section id="sec-contactos" class="oculto">
+    <div id="c-lista">
+      <div class="barra">
+        <label class="oculto-visual" for="c-buscar">Buscar</label>
+        <input class="ctrl" id="c-buscar" type="search" placeholder="Buscar empresa, persona, CIF u oficio…">
+        <label class="oculto-visual" for="c-tipo">Tipo</label>
+        <select class="ctrl" id="c-tipo" style="flex: 0 1 200px"></select>
+        <label class="chk"><input type="checkbox" id="c-inactivos"> Ver inactivos</label>
+        <button type="button" class="btn-negro" id="c-nuevo">+ Nuevo contacto</button>
+      </div>
+      <div class="resumen-doc" id="c-resumen"></div>
+      <div class="aviso bien oculto" id="c-ok" role="status" style="margin: 0 20px 12px"></div>
+      <div class="caja-tabla">
+        <table class="contactos">
+          <thead><tr><th scope="col">Empresa</th><th scope="col">Tipo</th><th scope="col">Oficio</th><th scope="col">Contacto</th><th scope="col">Email</th><th scope="col">Documentación</th></tr></thead>
+          <tbody id="c-filas"></tbody>
+        </table>
+      </div>
+      <div class="vacio oculto" id="c-vacio">No hay contactos con ese filtro.</div>
+    </div>
+
+    <form id="c-ficha" class="ficha-c oculto" novalidate>
+      <button type="button" class="volver" id="c-volver">← Volver a la lista</button>
+      <h2 id="c-ficha-titulo">Nuevo contacto</h2>
+      <div id="c-campos" style="display: flex; flex-direction: column; gap: 20px"></div>
+      <div class="error" id="c-error" role="alert"></div>
+      <div class="acciones">
+        <button type="button" class="btn-sec" id="c-cancelar">Cancelar</button>
+        <button type="submit" class="btn-negro" id="c-guardar">Guardar</button>
+      </div>
+    </form>
+  </section>
 
   <!-- Cámara: capture abre la cámara directamente. Galería: varias a la vez.
        Van separadas porque Android, con "multiple", solo ofrece la galería. -->
@@ -213,7 +287,15 @@ const MENSAJES = {
   fotos_invalidas: 'Alguna foto no se ha subido bien. Vuelve a intentarlo.',
   archivo_grande: 'Una foto es demasiado grande.',
   formato_invalido: 'Ese formato de foto no se admite.',
-  falta_carpeta: 'Falta configurar la carpeta de fotos en la Sheet (_config).'
+  falta_carpeta: 'Falta configurar la carpeta de fotos en la Sheet (_config).',
+  tipo_invalido: 'Elige el tipo de contacto.',
+  falta_empresa: 'Escribe el nombre de la empresa.',
+  email_invalido: 'Revisa el email.',
+  web_invalida: 'Revisa la web.',
+  codigo_postal_invalido: 'Revisa el código postal.',
+  cif_invalido: 'Revisa el CIF / NIF: solo letras y números, entre 8 y 12.',
+  iban_invalido: 'El IBAN no es correcto: revisa los números (los dígitos de control no cuadran).',
+  cif_duplicado: 'Ya hay un contacto con ese CIF'
 };
 
 // ─── ESTADO ─────────────────────────────────────────────────────────
@@ -228,7 +310,8 @@ let fotoDestino = null;
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const verdadero = (v) => v === true || ['true', '1', 'sí', 'si', 'x'].indexOf(String(v ?? '').trim().toLowerCase()) !== -1;
-const mensaje = (r) => MENSAJES[r.motivo] || ('No se ha podido guardar (' + (r.motivo || 'error') + (r.detalle ? ': ' + r.detalle : '') + ').');
+const mensaje = (r) => MENSAJES[r.motivo] ? MENSAJES[r.motivo] + (r.motivo === 'cif_duplicado' && r.detalle ? ': ' + r.detalle + '.' : '')
+  : ('No se ha podido guardar (' + (r.motivo || 'error') + (r.detalle ? ': ' + r.detalle : '') + ').');
 const puede = (p) => !!(S && S.permisos.indexOf(p) !== -1);
 
 // ─── API ────────────────────────────────────────────────────────────
@@ -297,15 +380,38 @@ async function entrar(r) {
     { id: 'hito', texto: 'Hito', permiso: 'crear_hito' }
   ].filter(p => puede(p.permiso));
 
-  if (!pestañas.length) { $('cargando').classList.add('oculto'); $('sin-permisos').classList.remove('oculto'); enviarAltura(); return; }
+  const secciones = [];
+  if (pestañas.length) secciones.push({ id: 'avisar', texto: 'Avisar' });
+  if (puede('guardar_contacto')) secciones.push({ id: 'contactos', texto: 'Contactos' });
 
-  $('tabs').innerHTML = pestañas.map(p => `<button type="button" data-tab="${p.id}" aria-pressed="false">${p.texto}</button>`).join('');
-  $('tabs').querySelectorAll('button').forEach(b => b.addEventListener('click', () => mostrarTab(b.dataset.tab)));
+  if (!secciones.length) { $('cargando').classList.add('oculto'); $('sin-permisos').classList.remove('oculto'); enviarAltura(); return; }
+
+  if (secciones.length > 1) {
+    $('menu').innerHTML = secciones.map(x => `<button type="button" data-sec="${x.id}">${x.texto}</button>`).join('');
+    $('menu').querySelectorAll('button').forEach(b => b.addEventListener('click', () => mostrarSeccion(b.dataset.sec)));
+    $('menu').classList.remove('oculto');
+  }
+  if (pestañas.length) {
+    $('tabs').innerHTML = pestañas.map(p => `<button type="button" data-tab="${p.id}" aria-pressed="false">${p.texto}</button>`).join('');
+    $('tabs').querySelectorAll('button').forEach(b => b.addEventListener('click', () => mostrarTab(b.dataset.tab)));
+  }
 
   await cargarDatos();
-  prepararFormularios();
+  if (pestañas.length) prepararFormularios();
+  if (puede('guardar_contacto')) prepararContactos();
   $('cargando').classList.add('oculto');
-  mostrarTab(pestañas[0].id);
+  if (pestañas.length) mostrarTab(pestañas[0].id);
+  mostrarSeccion(secciones[0].id);
+}
+
+const TITULOS = { avisar: 'Avisar', contactos: 'Contactos' };
+function mostrarSeccion(id) {
+  ['avisar', 'contactos'].forEach(x => $('sec-' + x).classList.toggle('oculto', x !== id));
+  $('menu').querySelectorAll('button').forEach(b => { if (b.dataset.sec === id) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  $('titulo').textContent = TITULOS[id];
+  $('app').classList.toggle('ancha', id !== 'avisar');
+  if (id === 'contactos') verListaContactos();
+  enviarAltura();
 }
 
 async function cargarDatos() {
@@ -390,7 +496,7 @@ function rellenarZonas(idSelect, promo) {
 }
 
 function proveedores() {
-  return (D.contactos || []).filter(c => c.tipo === 'Proveedor' && verdadero(c.activo));
+  return (D.contactos || []).filter(c => c.tipo !== 'Estudio' && verdadero(c.activo));
 }
 function opcionesProveedor(oficio, primera) {
   const todos = proveedores();
@@ -619,7 +725,170 @@ async function reducirFoto(file) {
   return await new Promise((ok, mal) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result).split(',')[1]); fr.onerror = mal; fr.readAsDataURL(blob); });
 }
 
+// ─── CONTACTOS ──────────────────────────────────────────────────────
+const SECCIONES_CONTACTO = [
+  { titulo: 'Datos generales', campos: [
+    { k: 'tipo', etq: 'Tipo', control: 'tipo' },
+    { k: 'empresa', etq: 'Nombre comercial' },
+    { k: 'razon_social', etq: 'Razón social' },
+    { k: 'cif', etq: 'CIF / NIF' },
+    { k: 'oficio', etq: 'Oficio', control: 'oficio' },
+    { k: 'activo', etq: 'Activo (aparece en los desplegables)', control: 'activo' }
+  ] },
+  { titulo: 'Persona de contacto', campos: [
+    { k: 'persona', etq: 'Nombre' },
+    { k: 'cargo', etq: 'Cargo' },
+    { k: 'telefono', etq: 'Teléfono', tipo: 'tel' },
+    { k: 'movil', etq: 'Móvil', tipo: 'tel' },
+    { k: 'email', etq: 'Email (recibe las actas)', tipo: 'email' },
+    { k: 'email_administracion', etq: 'Email de administración', tipo: 'email' },
+    { k: 'web', etq: 'Web' }
+  ] },
+  { titulo: 'Dirección', campos: [
+    { k: 'direccion', etq: 'Dirección', ancho: true },
+    { k: 'codigo_postal', etq: 'Código postal' },
+    { k: 'poblacion', etq: 'Población' },
+    { k: 'provincia', etq: 'Provincia' }
+  ] },
+  { titulo: 'Pago', campos: [
+    { k: 'iban', etq: 'IBAN' },
+    { k: 'condiciones_pago', etq: 'Condiciones de pago' }
+  ] },
+  { titulo: 'Documentación de subcontrata', campos: [
+    { k: 'numero_rea', etq: 'Nº de inscripción en el REA' },
+    { k: 'vto_seguro_rc', etq: 'Vence el seguro de RC', tipo: 'date' },
+    { k: 'vto_hacienda', etq: 'Vence el certificado de Hacienda', tipo: 'date' },
+    { k: 'vto_seguridad_social', etq: 'Vence el certificado de la Seg. Social', tipo: 'date' }
+  ] },
+  { titulo: 'Observaciones', campos: [
+    { k: 'observaciones', etq: 'Observaciones', control: 'textarea', ancho: true }
+  ] }
+];
+const DOCS = [['vto_seguro_rc', 'RC'], ['vto_hacienda', 'Hacienda'], ['vto_seguridad_social', 'Seg. Social']];
+let CONTACTO_EDITANDO = null;
+
+function prepararContactos() {
+  $('c-campos').innerHTML = SECCIONES_CONTACTO.map(sec => `<fieldset><legend>${esc(sec.titulo)}</legend>${sec.campos.map(campoContacto).join('')}</fieldset>`).join('');
+  $('c-tipo').innerHTML = '<option value="">Todos los tipos</option>' + (S.listas.tipos_contacto || []).map(t => `<option>${esc(t)}</option>`).join('');
+  $('c-buscar').addEventListener('input', pintarContactos);
+  $('c-tipo').addEventListener('change', pintarContactos);
+  $('c-inactivos').addEventListener('change', pintarContactos);
+  $('c-nuevo').addEventListener('click', () => abrirContacto(null));
+  $('c-volver').addEventListener('click', verListaContactos);
+  $('c-cancelar').addEventListener('click', verListaContactos);
+  $('c-ficha').addEventListener('submit', guardarContacto);
+}
+
+function campoContacto(c) {
+  const id = 'cf-' + c.k;
+  const clase = c.ancho ? 'campo ancho' : 'campo';
+  if (c.control === 'activo') return `<label class="chk ${c.ancho ? 'ancho' : ''}" style="align-self: end"><input type="checkbox" id="${id}"> ${esc(c.etq)}</label>`;
+  let ctrl;
+  if (c.control === 'tipo') ctrl = `<select class="ctrl" id="${id}">${(S.listas.tipos_contacto || []).map(t => `<option>${esc(t)}</option>`).join('')}</select>`;
+  else if (c.control === 'oficio') ctrl = `<select class="ctrl" id="${id}"><option value="">—</option>${(S.listas.oficios || []).map(o => `<option>${esc(o)}</option>`).join('')}</select>`;
+  else if (c.control === 'textarea') ctrl = `<textarea class="ctrl" id="${id}" rows="3"></textarea>`;
+  else ctrl = `<input class="ctrl" id="${id}" type="${c.tipo || 'text'}"${c.k === 'cif' || c.k === 'iban' ? ' autocapitalize="characters"' : ''}>`;
+  return `<div class="${clase}"><label class="etq" for="${id}">${esc(c.etq)}</label>${ctrl}</div>`;
+}
+
+function estadoDocs(c) {
+  const salida = [];
+  DOCS.forEach(([k, nombre]) => {
+    const f = c[k];
+    if (!f) return;
+    const dias = diasEntre(D.hoy, f);
+    if (dias < 0) salida.push({ clase: 'vencido', texto: nombre + ' vencido' });
+    else if (dias <= S.umbrales.documentacion) salida.push({ clase: 'pronto', texto: nombre + ' vence ' + fechaCorta(f) });
+    else salida.push({ clase: 'ok', texto: nombre + ' hasta ' + fechaCorta(f) });
+  });
+  return salida;
+}
+
+function verListaContactos() {
+  CONTACTO_EDITANDO = null;
+  $('c-ficha').classList.add('oculto');
+  $('c-lista').classList.remove('oculto');
+  pintarContactos();
+}
+
+function pintarContactos() {
+  const q = $('c-buscar').value.trim().toLowerCase();
+  const tipo = $('c-tipo').value;
+  const inactivos = $('c-inactivos').checked;
+  const todos = D.contactos || [];
+  const lista = todos
+    .filter(c => inactivos || verdadero(c.activo))
+    .filter(c => !tipo || c.tipo === tipo)
+    .filter(c => !q || [c.empresa, c.razon_social, c.persona, c.cif, c.oficio, c.email].some(v => String(v || '').toLowerCase().indexOf(q) !== -1))
+    .sort((a, b) => String(a.empresa).localeCompare(String(b.empresa), 'es'));
+
+  const activos = todos.filter(c => verdadero(c.activo));
+  const vencidos = activos.filter(c => estadoDocs(c).some(x => x.clase === 'vencido')).length;
+  const pronto = activos.filter(c => estadoDocs(c).some(x => x.clase === 'pronto')).length;
+  $('c-resumen').innerHTML = `<span>${activos.length} activos</span>` +
+    (vencidos ? ` <span class="etiqueta vencido">${vencidos} con documentación vencida</span>` : '') +
+    (pronto ? ` <span class="etiqueta pronto">${pronto} con documentación que vence en ${S.umbrales.documentacion} días</span>` : '');
+
+  $('c-filas').innerHTML = lista.map(c => {
+    const inactivo = !verdadero(c.activo);
+    const docs = estadoDocs(c).map(x => `<span class="etiqueta ${x.clase}">${esc(x.texto)}</span>`).join('') || '—';
+    return `<tr class="${inactivo ? 'inactivo' : ''}">
+      <td><button type="button" class="enlace-fila" data-editar="${esc(c.id)}">${esc(c.empresa)}</button>
+        ${c.razon_social && c.razon_social !== c.empresa ? `<div class="sub">${esc(c.razon_social)}</div>` : ''}
+        ${c.cif ? `<div class="sub">${esc(c.cif)}</div>` : ''}</td>
+      <td>${esc(c.tipo)}${inactivo ? '<div class="sub">Inactivo</div>' : ''}</td>
+      <td>${esc(c.oficio || '—')}</td>
+      <td>${esc(c.persona || '—')}${c.cargo ? `<div class="sub">${esc(c.cargo)}</div>` : ''}${c.telefono || c.movil ? `<div class="sub">${esc([c.telefono, c.movil].filter(Boolean).join(' · '))}</div>` : ''}</td>
+      <td>${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : '—'}</td>
+      <td>${docs}</td>
+    </tr>`;
+  }).join('');
+  $('c-filas').querySelectorAll('[data-editar]').forEach(b => b.addEventListener('click', () => abrirContacto(b.dataset.editar)));
+  $('c-vacio').classList.toggle('oculto', lista.length > 0);
+  enviarAltura();
+}
+
+function abrirContacto(id) {
+  const c = id ? (D.contactos || []).find(x => x.id === id) : null;
+  CONTACTO_EDITANDO = c ? c.id : null;
+  $('c-ok').classList.add('oculto');
+  $('c-error').textContent = '';
+  $('c-ficha-titulo').textContent = c ? 'Editar · ' + c.empresa : 'Nuevo contacto';
+  SECCIONES_CONTACTO.forEach(sec => sec.campos.forEach(f => {
+    const el = $('cf-' + f.k);
+    if (f.control === 'activo') el.checked = c ? verdadero(c.activo) : true;
+    else if (f.control === 'tipo') el.value = c ? c.tipo : 'Proveedor';
+    else el.value = c ? (c[f.k] ?? '') : '';
+  }));
+  $('c-lista').classList.add('oculto');
+  $('c-ficha').classList.remove('oculto');
+  window.scrollTo({ top: 0 });
+  $('cf-empresa').focus();
+  enviarAltura();
+}
+
+async function guardarContacto(e) {
+  e.preventDefault();
+  const err = $('c-error');
+  err.textContent = '';
+  const datos = {};
+  SECCIONES_CONTACTO.forEach(sec => sec.campos.forEach(f => {
+    const el = $('cf-' + f.k);
+    datos[f.k] = f.control === 'activo' ? el.checked : el.value.trim();
+  }));
+  if (!datos.empresa) { err.textContent = MENSAJES.falta_empresa; $('cf-empresa').focus(); return; }
+  if (CONTACTO_EDITANDO) datos.id = CONTACTO_EDITANDO;
+
+  const r = await enviando($('c-guardar'), 'Guardando…', () => api('guardar_contacto', datos));
+  if (!r.ok) { err.textContent = r.motivo === 'red' ? r.detalle : mensaje(r); return; }
+  await cargarDatos();
+  verListaContactos();
+  $('c-ok').textContent = `Guardado: ${r.id} · ${datos.empresa}${datos.activo ? '' : ' (inactivo)'}.`;
+  $('c-ok').classList.remove('oculto');
+}
+
 // ─── FECHAS ─────────────────────────────────────────────────────────
+function fechaCorta(iso) { const a = String(iso).split('-'); return a.length === 3 ? a[2] + '/' + a[1] + '/' + a[0].slice(2) : iso; }
 function diasEntre(desde, hasta) {
   const a = desde.split('-').map(Number), b = hasta.split('-').map(Number);
   return Math.round((Date.UTC(b[0], b[1] - 1, b[2]) - Date.UTC(a[0], a[1] - 1, a[2])) / 86400000);
