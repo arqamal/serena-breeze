@@ -111,6 +111,16 @@
   .ficha-c fieldset { border: 1px solid var(--border); padding: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
   .ficha-c legend { padding: 0 6px; margin: 0; }
   .ficha-c .ancho { grid-column: 1 / -1; }
+  .lista-oficios { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 0 12px; }
+  .lista-oficios .chk { min-height: 36px; font-size: 13px; }
+  .conds { grid-column: 1 / -1; display: flex; flex-direction: column; gap: 12px; }
+  .cond { border: 1px solid var(--border); background: var(--off-white); padding: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  .cond .ancho, .cond-cab { grid-column: 1 / -1; }
+  .cond-cab { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+  .cond-cab .campo { flex: 0 1 200px; }
+  .cond .btn-texto { align-self: center; }
+  .pago-obra { white-space: nowrap; }
+  .pago-obra b { font-weight: 500; }
   .volver { align-self: flex-start; background: none; border: none; color: var(--slate); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; min-height: 44px; padding: 0; }
   .acciones { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
   .acciones .btn-sec, .acciones .btn-negro { min-width: 160px; }
@@ -384,9 +394,11 @@
     <div id="c-lista">
       <div class="barra">
         <label class="oculto-visual" for="c-buscar">Buscar</label>
-        <input class="ctrl" id="c-buscar" type="search" placeholder="Buscar empresa, persona, CIF u oficio…">
+        <input class="ctrl" id="c-buscar" type="search" placeholder="Buscar empresa, persona, CIF, oficio u obra…">
         <label class="oculto-visual" for="c-tipo">Tipo</label>
         <select class="ctrl" id="c-tipo" style="flex: 0 1 200px"></select>
+        <label class="oculto-visual" for="c-obra">Obra</label>
+        <select class="ctrl oculto" id="c-obra" style="flex: 0 1 180px"></select>
         <label class="chk"><input type="checkbox" id="c-inactivos"> Ver inactivos</label>
         <button type="button" class="btn-negro" id="c-nuevo">+ Nuevo contacto</button>
       </div>
@@ -394,7 +406,7 @@
       <div class="aviso bien oculto" id="c-ok" role="status" style="margin: 0 20px 12px"></div>
       <div class="caja-tabla">
         <table class="contactos">
-          <thead><tr><th scope="col">Empresa</th><th scope="col">Tipo</th><th scope="col">Oficio</th><th scope="col">Contacto</th><th scope="col">Email</th><th scope="col">Documentación</th></tr></thead>
+          <thead><tr><th scope="col">Empresa</th><th scope="col">Tipo</th><th scope="col">Oficio</th><th scope="col">Obras y pago</th><th scope="col">Contacto</th><th scope="col">Email</th><th scope="col">Documentación</th></tr></thead>
           <tbody id="c-filas"></tbody>
         </table>
       </div>
@@ -511,7 +523,13 @@ const MENSAJES = {
   falta_nombre: 'Escribe el nombre del plano.',
   falta_respuesta: 'Escribe la respuesta.',
   estado_invalido: 'Ese estado no es válido.',
-  no_encontrado: 'Ya no existe. Pulsa «Actualizar».'
+  no_encontrado: 'Ya no existe. Pulsa «Actualizar».',
+  obra_invalida: 'Elige la obra de la lista.',
+  obra_repetida: 'Hay una obra puesta dos veces.',
+  forma_pago_invalida: 'Elige la forma de pago de la lista.',
+  condiciones_invalidas: 'Revisa las obras y condiciones de pago.',
+  condicion_no_encontrada: 'Alguien ha cambiado las obras de este contacto mientras lo editabas. Pulsa «Actualizar» y vuelve a abrirlo.',
+  falta_estructura: 'Falta la pestaña Condiciones en la Sheet: hay que ejecutar importarProveedores() en Apps Script.'
 };
 const MAX_FOTOS_FICHA = 10;
 
@@ -781,12 +799,14 @@ function rellenarZonas(idSelect, promo) {
   sel.innerHTML = html;
 }
 
+// Un contacto puede tener varios oficios: se guardan "A, B"
+function oficiosDe(c) { return String((c && c.oficio) || '').split(',').map(s => s.trim()).filter(Boolean); }
 function proveedores() {
   return (D.contactos || []).filter(c => c.tipo !== 'Estudio' && verdadero(c.activo));
 }
 function opcionesProveedor(oficio, primera) {
   const todos = proveedores();
-  const delOficio = oficio ? todos.filter(c => c.oficio === oficio) : [];
+  const delOficio = oficio ? todos.filter(c => oficiosDe(c).indexOf(oficio) !== -1) : [];
   const resto = todos.filter(c => delOficio.indexOf(c) === -1);
   const op = c => `<option value="${esc(c.id)}">${esc(c.empresa)}${c.persona ? ' · ' + esc(c.persona) : ''}</option>`;
   let html = `<option value="">${primera}</option>`;
@@ -1025,8 +1045,8 @@ const SECCIONES_CONTACTO = [
     { k: 'empresa', etq: 'Nombre comercial' },
     { k: 'razon_social', etq: 'Razón social' },
     { k: 'cif', etq: 'CIF / NIF' },
-    { k: 'oficio', etq: 'Oficio', control: 'oficio' },
-    { k: 'activo', etq: 'Activo (aparece en los desplegables)', control: 'activo' }
+    { k: 'activo', etq: 'Activo (aparece en los desplegables)', control: 'activo' },
+    { k: 'oficio', etq: 'Oficios (uno o varios)', control: 'oficio', ancho: true }
   ] },
   { titulo: 'Persona de contacto', campos: [
     { k: 'persona', etq: 'Nombre' },
@@ -1045,8 +1065,9 @@ const SECCIONES_CONTACTO = [
   ] },
   { titulo: 'Pago', campos: [
     { k: 'iban', etq: 'IBAN' },
-    { k: 'condiciones_pago', etq: 'Condiciones de pago' }
+    { k: 'condiciones_pago', etq: 'Condiciones de pago generales' }
   ] },
+  { titulo: 'Obras y condiciones de pago', condiciones: true, campos: [] },
   { titulo: 'Documentación de subcontrata', campos: [
     { k: 'numero_rea', etq: 'Nº de inscripción en el REA' },
     { k: 'vto_seguro_rc', etq: 'Vence el seguro de RC', tipo: 'date' },
@@ -1058,11 +1079,44 @@ const SECCIONES_CONTACTO = [
   ] }
 ];
 const DOCS = [['vto_seguro_rc', 'RC'], ['vto_hacienda', 'Hacienda'], ['vto_seguridad_social', 'Seg. Social']];
+// Condiciones de un proveedor en una obra (pestaña Condiciones)
+const CAMPOS_COND = [
+  { k: 'forma_pago_1', etq: 'Forma de pago', control: 'forma' },
+  { k: 'forma_pago_2', etq: 'Forma de pago 2', control: 'forma' },
+  { k: 'trabajos', etq: 'Trabajos', ancho: true },
+  { k: 'pedido_contrato', etq: 'Nº pedido / contrato' },
+  { k: 'presupuesto', etq: 'Presupuesto' },
+  { k: 'inicio_obra', etq: 'Inicio de obra', tipo: 'date' },
+  { k: 'notas', etq: 'Notas', control: 'textarea', ancho: true }
+];
 let CONTACTO_EDITANDO = null;
+let N_COND = 0;
+
+// Sin la lista de obras en _listas (Sheet sin actualizar) no se enseña ni se envía nada de condiciones
+const hayCondiciones = () => ((S && S.listas.obras) || []).length > 0;
+const obrasDeContacto = (c) => String((c && c.obras) || '').split(',').map(s => s.trim()).filter(Boolean);
+const posObra = (o) => { const i = (S.listas.obras || []).indexOf(o); return i === -1 ? 99 : i; };
+const condicionesDe = (id) => ((D && D.condiciones) || []).filter(x => x.id_contacto === id).sort((a, b) => posObra(a.obra) - posObra(b.obra));
+const formasDe = (x) => [x.forma_pago_1, x.forma_pago_2].filter(Boolean).join(' / ');
 
 function prepararContactos() {
-  $('c-campos').innerHTML = SECCIONES_CONTACTO.map(sec => `<fieldset><legend>${esc(sec.titulo)}</legend>${sec.campos.map(campoContacto).join('')}</fieldset>`).join('');
+  $('c-campos').innerHTML = SECCIONES_CONTACTO.map(sec => sec.condiciones
+    ? (hayCondiciones() ? bloqueCondiciones(sec.titulo) : '')
+    : `<fieldset><legend>${esc(sec.titulo)}</legend>${sec.campos.map(campoContacto).join('')}</fieldset>`).join('');
   $('c-tipo').innerHTML = '<option value="">Todos los tipos</option>' + (S.listas.tipos_contacto || []).map(t => `<option>${esc(t)}</option>`).join('');
+  if (hayCondiciones()) {
+    $('c-obra').innerHTML = '<option value="">Todas las obras</option>' + S.listas.obras.map(o => `<option>${esc(o)}</option>`).join('');
+    $('c-obra').classList.remove('oculto');
+    $('c-obra').addEventListener('change', pintarContactos);
+    $('cf-anadir-obra').addEventListener('click', anadirObraFicha);
+    $('cf-condiciones').addEventListener('click', (e) => {
+      const b = e.target.closest('[data-quitar-obra]');
+      if (!b) return;
+      b.closest('.cond').remove();
+      $('cf-anadir-obra').focus();
+      enviarAltura();
+    });
+  }
   $('c-buscar').addEventListener('input', pintarContactos);
   $('c-tipo').addEventListener('change', pintarContactos);
   $('c-inactivos').addEventListener('change', pintarContactos);
@@ -1078,10 +1132,50 @@ function campoContacto(c) {
   if (c.control === 'activo') return `<label class="chk ${c.ancho ? 'ancho' : ''}" style="align-self: end"><input type="checkbox" id="${id}"> ${esc(c.etq)}</label>`;
   let ctrl;
   if (c.control === 'tipo') ctrl = `<select class="ctrl" id="${id}">${(S.listas.tipos_contacto || []).map(t => `<option>${esc(t)}</option>`).join('')}</select>`;
-  else if (c.control === 'oficio') ctrl = `<select class="ctrl" id="${id}"><option value="">—</option>${(S.listas.oficios || []).map(o => `<option>${esc(o)}</option>`).join('')}</select>`;
+  else if (c.control === 'oficio') return `<div class="${clase}" role="group" aria-labelledby="${id}-etq"><span class="etq" id="${id}-etq">${esc(c.etq)}</span><div class="lista-oficios" id="${id}">${(S.listas.oficios || []).map(o => `<label class="chk"><input type="checkbox" value="${esc(o)}"> ${esc(o)}</label>`).join('')}</div></div>`;
   else if (c.control === 'textarea') ctrl = `<textarea class="ctrl" id="${id}" rows="3"></textarea>`;
   else ctrl = `<input class="ctrl" id="${id}" type="${c.tipo || 'text'}"${c.k === 'cif' || c.k === 'iban' ? ' autocapitalize="characters"' : ''}>`;
   return `<div class="${clase}"><label class="etq" for="${id}">${esc(c.etq)}</label>${ctrl}</div>`;
+}
+
+function bloqueCondiciones(titulo) {
+  return `<fieldset id="cf-obras"><legend>${esc(titulo)}</legend>
+    <p class="sub ancho" style="margin: 0">Una ficha por obra en la que trabaja. Se guarda con el botón «Guardar» del contacto.</p>
+    <div class="conds" id="cf-condiciones"></div>
+    <div class="ancho"><button type="button" class="btn-peq" id="cf-anadir-obra">+ Añadir obra</button></div>
+  </fieldset>`;
+}
+
+function filaCondicion(cd) {
+  const n = ++N_COND;
+  const id = (k) => `cfo-${n}-${k}`;
+  const opciones = (lista, valor, vacio) => (vacio !== undefined ? `<option value="">${esc(vacio)}</option>` : '') +
+    lista.map(o => `<option${o === valor ? ' selected' : ''}>${esc(o)}</option>`).join('') +
+    (valor && lista.indexOf(valor) === -1 ? `<option selected>${esc(valor)}</option>` : '');
+  const campo = (f) => {
+    const v = cd[f.k] || '';
+    let ctrl;
+    if (f.control === 'forma') ctrl = `<select class="ctrl" id="${id(f.k)}" data-k="${f.k}">${opciones(S.listas.formas_pago || [], v, '—')}</select>`;
+    else if (f.control === 'textarea') ctrl = `<textarea class="ctrl" id="${id(f.k)}" data-k="${f.k}" rows="2">${esc(v)}</textarea>`;
+    else ctrl = `<input class="ctrl" id="${id(f.k)}" data-k="${f.k}" type="${f.tipo || 'text'}" value="${esc(v)}">`;
+    return `<div class="campo${f.ancho ? ' ancho' : ''}"><label class="etq" for="${id(f.k)}">${esc(f.etq)}</label>${ctrl}</div>`;
+  };
+  return `<div class="cond" data-id="${esc(cd.id || '')}">
+    <div class="cond-cab">
+      <div class="campo"><label class="etq" for="${id('obra')}">Obra</label><select class="ctrl" id="${id('obra')}" data-k="obra">${opciones(S.listas.obras || [], cd.obra || '')}</select></div>
+      <button type="button" class="btn-texto" data-quitar-obra>Quitar de esta obra</button>
+    </div>
+    ${CAMPOS_COND.map(campo).join('')}
+  </div>`;
+}
+
+function anadirObraFicha() {
+  const usadas = Array.from(document.querySelectorAll('#cf-condiciones [data-k="obra"]')).map(x => x.value);
+  const libre = (S.listas.obras || []).find(o => usadas.indexOf(o) === -1);
+  if (!libre) { $('c-error').textContent = 'Ya están puestas todas las obras.'; return; }
+  $('cf-condiciones').insertAdjacentHTML('beforeend', filaCondicion({ obra: libre }));
+  $('cf-condiciones').lastElementChild.querySelector('[data-k="obra"]').focus();
+  enviarAltura();
 }
 
 function estadoDocs(c) {
@@ -1107,12 +1201,14 @@ function verListaContactos() {
 function pintarContactos() {
   const q = $('c-buscar').value.trim().toLowerCase();
   const tipo = $('c-tipo').value;
+  const obra = $('c-obra').value;
   const inactivos = $('c-inactivos').checked;
   const todos = D.contactos || [];
   const lista = todos
     .filter(c => inactivos || verdadero(c.activo))
     .filter(c => !tipo || c.tipo === tipo)
-    .filter(c => !q || [c.empresa, c.razon_social, c.persona, c.cif, c.oficio, c.email].some(v => String(v || '').toLowerCase().indexOf(q) !== -1))
+    .filter(c => !obra || obrasDeContacto(c).indexOf(obra) !== -1)
+    .filter(c => !q || [c.empresa, c.razon_social, c.persona, c.cif, c.oficio, c.email, c.obras].some(v => String(v || '').toLowerCase().indexOf(q) !== -1))
     .sort((a, b) => String(a.empresa).localeCompare(String(b.empresa), 'es'));
 
   const activos = todos.filter(c => verdadero(c.activo));
@@ -1125,12 +1221,18 @@ function pintarContactos() {
   $('c-filas').innerHTML = lista.map(c => {
     const inactivo = !verdadero(c.activo);
     const docs = estadoDocs(c).map(x => `<span class="etiqueta ${x.clase}">${esc(x.texto)}</span>`).join('') || '—';
+    // Con una obra elegida en el filtro, solo su forma de pago
+    const conds = condicionesDe(c.id).filter(x => !obra || x.obra === obra);
+    const pagos = conds.length
+      ? conds.map(x => `<div class="pago-obra"><b>${esc(x.obra)}</b>${formasDe(x) ? ' · ' + esc(formasDe(x)) : ''}</div>`).join('')
+      : (obrasDeContacto(c).map(esc).join(', ') || '—');
     return `<tr class="${inactivo ? 'inactivo' : ''}">
       <td><button type="button" class="enlace-fila" data-editar="${esc(c.id)}">${esc(c.empresa)}</button>
         ${c.razon_social && c.razon_social !== c.empresa ? `<div class="sub">${esc(c.razon_social)}</div>` : ''}
         ${c.cif ? `<div class="sub">${esc(c.cif)}</div>` : ''}</td>
       <td>${esc(c.tipo)}${inactivo ? '<div class="sub">Inactivo</div>' : ''}</td>
-      <td>${esc(c.oficio || '—')}</td>
+      <td>${oficiosDe(c).map(esc).join('<br>') || '—'}</td>
+      <td>${pagos}</td>
       <td>${esc(c.persona || '—')}${c.cargo ? `<div class="sub">${esc(c.cargo)}</div>` : ''}${c.telefono || c.movil ? `<div class="sub">${esc([c.telefono, c.movil].filter(Boolean).join(' · '))}</div>` : ''}</td>
       <td>${c.email ? `<a href="mailto:${esc(c.email)}">${esc(c.email)}</a>` : '—'}</td>
       <td>${docs}</td>
@@ -1150,9 +1252,11 @@ function abrirContacto(id) {
   SECCIONES_CONTACTO.forEach(sec => sec.campos.forEach(f => {
     const el = $('cf-' + f.k);
     if (f.control === 'activo') el.checked = c ? verdadero(c.activo) : true;
+    else if (f.control === 'oficio') { const marcados = oficiosDe(c); el.querySelectorAll('input').forEach(i => { i.checked = marcados.indexOf(i.value) !== -1; }); }
     else if (f.control === 'tipo') el.value = c ? c.tipo : 'Proveedor';
     else el.value = c ? (c[f.k] ?? '') : '';
   }));
+  if (hayCondiciones()) $('cf-condiciones').innerHTML = c ? condicionesDe(c.id).map(filaCondicion).join('') : '';
   $('c-lista').classList.add('oculto');
   $('c-ficha').classList.remove('oculto');
   window.scrollTo({ top: 0 });
@@ -1167,10 +1271,24 @@ async function guardarContacto(e) {
   const datos = {};
   SECCIONES_CONTACTO.forEach(sec => sec.campos.forEach(f => {
     const el = $('cf-' + f.k);
-    datos[f.k] = f.control === 'activo' ? el.checked : el.value.trim();
+    datos[f.k] = f.control === 'activo' ? el.checked
+      : f.control === 'oficio' ? Array.from(el.querySelectorAll('input:checked')).map(i => i.value).join(', ')
+      : el.value.trim();
   }));
   if (!datos.empresa) { err.textContent = MENSAJES.falta_empresa; $('cf-empresa').focus(); return; }
   if (CONTACTO_EDITANDO) datos.id = CONTACTO_EDITANDO;
+  if (hayCondiciones()) {
+    // Lista completa de obras: las que se han quitado de la ficha se quitan en la Sheet
+    datos.condiciones = Array.from(document.querySelectorAll('#cf-condiciones .cond')).map(el => {
+      const o = {};
+      if (el.dataset.id) o.id = el.dataset.id;
+      el.querySelectorAll('[data-k]').forEach(i => { o[i.dataset.k] = i.value.trim(); });
+      return o;
+    });
+    const obras = datos.condiciones.map(x => x.obra);
+    const repetida = obras.find((o, i) => obras.indexOf(o) !== i);
+    if (repetida) { err.textContent = `La obra ${repetida} está puesta dos veces.`; return; }
+  }
 
   const r = await enviando($('c-guardar'), 'Guardando…', () => api('guardar_contacto', datos));
   if (!r.ok) { err.textContent = r.motivo === 'red' ? r.detalle : mensaje(r); return; }
