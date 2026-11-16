@@ -256,11 +256,11 @@
   .pend { border: 1px solid var(--border); padding: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
   .pend .btn-peq { align-self: flex-start; }
 
-  /* Hitos */
-  .hitos { margin: 0 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
-  .hito { border: 1px solid var(--border); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
-  .hito .fecha { font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: 1px; color: var(--black); }
-  .hito .tit { font-size: 15px; font-weight: 500; color: var(--black); line-height: 1.4; white-space: pre-wrap; }
+  /* Avances de obra */
+  .avances { margin: 0 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .avance { border: 1px solid var(--border); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .avance .fecha { font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: 1px; color: var(--black); }
+  .avance .tit { font-size: 15px; font-weight: 500; color: var(--black); line-height: 1.4; white-space: pre-wrap; }
 
   @media (max-width: 1000px) { .columnas { grid-template-columns: minmax(0, 1fr); } }
   @media (max-width: 899px) {
@@ -364,21 +364,21 @@
     <button class="enviar" type="submit">Enviar duda</button>
   </form>
 
-  <!-- HITO -->
-  <form id="f-hito" class="oculto" novalidate>
+  <!-- AVANCE -->
+  <form id="f-avance" class="oculto" novalidate>
     <p class="ayuda">Registra un avance de obra con fecha y foto.</p>
-    <fieldset><legend>Promoción</legend><div class="chips" data-promos="hito"></div></fieldset>
-    <div class="campo"><label class="etq" for="h-zona">Zona</label><select class="ctrl" id="h-zona"></select></div>
-    <div class="campo"><label class="etq" for="h-hito">Hito</label><input class="ctrl" id="h-hito" placeholder="Ej.: estructura terminada"></div>
-    <div class="campo"><label class="etq" for="h-detalle">Detalle (opcional)</label><input class="ctrl" id="h-detalle"></div>
-    <div class="campo"><label class="etq" for="h-fecha">Fecha</label><input class="ctrl" id="h-fecha" type="date"></div>
+    <fieldset><legend>Promoción</legend><div class="chips" data-promos="avance"></div></fieldset>
+    <div class="campo"><label class="etq" for="a-zona">Zona</label><select class="ctrl" id="a-zona"></select></div>
+    <div class="campo"><label class="etq" for="a-avance">Avance</label><input class="ctrl" id="a-avance" placeholder="Ej.: estructura terminada"></div>
+    <div class="campo"><label class="etq" for="a-detalle">Detalle (opcional)</label><input class="ctrl" id="a-detalle"></div>
+    <div class="campo"><label class="etq" for="a-fecha">Fecha</label><input class="ctrl" id="a-fecha" type="date"></div>
     <div class="campo">
       <span class="etq">Fotos</span>
-      <div class="botones-foto"><button type="button" class="btn-foto" data-foto="hito" data-origen="camara"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Hacer foto</button><button type="button" class="btn-foto" data-foto="hito" data-origen="galeria"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16"/><circle cx="9" cy="10" r="2"/><path d="M21 17l-5-5-9 8"/></svg>Galería</button></div>
-      <div class="fotos" id="fotos-hito"></div>
+      <div class="botones-foto"><button type="button" class="btn-foto" data-foto="avance" data-origen="camara"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Hacer foto</button><button type="button" class="btn-foto" data-foto="avance" data-origen="galeria"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16"/><circle cx="9" cy="10" r="2"/><path d="M21 17l-5-5-9 8"/></svg>Galería</button></div>
+      <div class="fotos" id="fotos-avance"></div>
     </div>
-    <div class="error" id="h-error" role="alert"></div>
-    <button class="enviar" type="submit">Registrar hito</button>
+    <div class="error" id="a-error" role="alert"></div>
+    <button class="enviar" type="submit">Registrar avance</button>
   </form>
 
   <!-- CONFIRMACIÓN -->
@@ -459,19 +459,19 @@
     <div id="p-cont"></div>
   </section>
 
-  <!-- HITOS -->
-  <section id="sec-hitos" class="oculto">
+  <!-- AVANCES DE OBRA -->
+  <section id="sec-avances" class="oculto">
     <div class="filtros">
-      <div class="seg" role="group" aria-label="Promoción" id="hi-promos"></div>
-      <label class="oculto-visual" for="hi-zona">Zona</label>
-      <select class="ctrl" id="hi-zona"></select>
-      <label class="oculto-visual" for="hi-buscar">Buscar</label>
-      <input class="ctrl" id="hi-buscar" type="search" placeholder="Buscar hito…">
+      <div class="seg" role="group" aria-label="Promoción" id="av-promos"></div>
+      <label class="oculto-visual" for="av-zona">Zona</label>
+      <select class="ctrl" id="av-zona"></select>
+      <label class="oculto-visual" for="av-buscar">Buscar</label>
+      <input class="ctrl" id="av-buscar" type="search" placeholder="Buscar avance…">
       <div class="hueco"></div>
-      <button type="button" class="btn-negro oculto" id="hi-nuevo">+ Nuevo hito</button>
+      <button type="button" class="btn-negro oculto" id="av-nuevo">+ Nuevo avance</button>
     </div>
-    <div class="hitos" id="hi-lista"></div>
-    <div class="vacio oculto" id="hi-vacio">No hay hitos con ese filtro.</div>
+    <div class="avances" id="av-lista"></div>
+    <div class="vacio oculto" id="av-vacio">No hay avances con ese filtro.</div>
   </section>
 
   <!-- Cámara: capture abre la cámara directamente. Galería: varias a la vez.
@@ -503,7 +503,7 @@ const MENSAJES = {
   falta_descripcion: 'Explica qué se va a hacer.',
   falta_pregunta: 'Escribe la pregunta.',
   destinatario_invalido: 'Elige a quién va la duda.',
-  falta_hito: 'Escribe el hito.',
+  falta_avance: 'Escribe el avance.',
   trabajo_no_encontrado: 'Ese trabajo ya no existe. Recarga la página.',
   fotos_invalidas: 'Alguna foto no se ha subido bien. Vuelve a intentarlo.',
   archivo_grande: 'Una foto es demasiado grande.',
@@ -537,9 +537,9 @@ const MAX_FOTOS_FICHA = 10;
 let S = null;          // sesión: usuario, nombre, rol, permisos, listas, umbrales, token
 let D = null;          // datos: hoy, trabajos, contactos…
 let TAB = null;
-const PROMO = { trabajo: '', duda: '', hito: '' };
+const PROMO = { trabajo: '', duda: '', avance: '' };
 let PARA = '';
-const FOTOS = { trabajo: [], duda: [], hito: [] };  // { file, url }
+const FOTOS = { trabajo: [], duda: [], avance: [] };  // { file, url }
 let fotoDestino = null;
 
 const $ = (id) => document.getElementById(id);
@@ -612,14 +612,14 @@ async function entrar(r) {
   const pestañas = [
     { id: 'trabajo', texto: 'Trabajo', permiso: 'crear_trabajo' },
     { id: 'duda', texto: 'Duda', permiso: 'crear_duda' },
-    { id: 'hito', texto: 'Hito', permiso: 'crear_hito' }
+    { id: 'avance', texto: 'Avance', permiso: 'crear_avance' }
   ].filter(p => puede(p.permiso));
 
   const secciones = [];
   if (pestañas.length) secciones.push({ id: 'avisar', texto: 'Avisar' });
   if (puede('ver')) secciones.push({ id: 'semanas', texto: 'Próximas 6 semanas' });
   if (puede('responder_duda') || puede('responder_duda_estudio')) secciones.push({ id: 'pendientes', texto: 'Pendientes' });
-  if (puede('ver')) secciones.push({ id: 'hitos', texto: 'Hitos' });
+  if (puede('ver')) secciones.push({ id: 'avances', texto: 'Avances' });
   if (puede('guardar_contacto')) secciones.push({ id: 'contactos', texto: 'Contactos' });
   SECCIONES = secciones.map(x => x.id);
 
@@ -649,8 +649,8 @@ async function entrar(r) {
 }
 
 // ─── SECCIONES Y NAVEGACIÓN ─────────────────────────────────────────
-const TITULOS = { avisar: 'Avisar', semanas: 'Próximas 6 semanas', pendientes: 'Pendientes', hitos: 'Hitos', contactos: 'Contactos' };
-const TODAS = ['avisar', 'semanas', 'pendientes', 'hitos', 'contactos', 'ficha'];
+const TITULOS = { avisar: 'Avisar', semanas: 'Próximas 6 semanas', pendientes: 'Pendientes', avances: 'Avances', contactos: 'Contactos' };
+const TODAS = ['avisar', 'semanas', 'pendientes', 'avances', 'contactos', 'ficha'];
 let SECCIONES = [];   // las que ve este usuario
 let SECCION = null;   // la sección de menú actual
 let ORIGEN = null;    // desde dónde se abrió la ficha
@@ -668,7 +668,7 @@ function mostrarSeccion(id, modo) {
   if (id === 'contactos') verListaContactos();
   if (id === 'semanas') pintarSemanas();
   if (id === 'pendientes') pintarPendientes();
-  if (id === 'hitos') pintarHitos();
+  if (id === 'avances') pintarAvances();
   if (id !== 'ficha') ruta('#' + id, modo || 'push');
   enviarAltura();
 }
@@ -719,7 +719,7 @@ function refrescarVista() {
   if (FICHA) { if (trabajoPorId(FICHA)) { pintarFicha(); cargarHistorial(FICHA); } else mostrarSeccion(ORIGEN || SECCIONES[0], 'replace'); return; }
   if (SECCION === 'semanas') pintarSemanas();
   else if (SECCION === 'pendientes') pintarPendientes();
-  else if (SECCION === 'hitos') pintarHitos();
+  else if (SECCION === 'avances') pintarAvances();
   else if (SECCION === 'contactos') pintarContactos();
   else if (SECCION === 'avisar') rellenarTrabajos();
 }
@@ -728,7 +728,7 @@ function refrescarVista() {
 function mostrarTab(id) {
   TAB = id;
   $('tabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.tab === id)));
-  ['trabajo', 'duda', 'hito'].forEach(t => $('f-' + t).classList.toggle('oculto', t !== id));
+  ['trabajo', 'duda', 'avance'].forEach(t => $('f-' + t).classList.toggle('oculto', t !== id));
   $('hecho').classList.add('oculto');
   enviarAltura();
 }
@@ -752,12 +752,12 @@ function prepararFormularios() {
   $('d-fecha').min = D.hoy;
   $('d-fecha').value = sumarDias(D.hoy, 3);
 
-  $('h-fecha').max = D.hoy;
-  $('h-fecha').value = D.hoy;
+  $('a-fecha').max = D.hoy;
+  $('a-fecha').value = D.hoy;
 
   // Si solo hay una promoción, se elige sola
-  if (promos.length === 1) ['trabajo', 'duda', 'hito'].forEach(f => elegirPromo(f, promos[0]));
-  else { rellenarZonas('t-zona', ''); rellenarZonas('h-zona', ''); rellenarTrabajos(); }
+  if (promos.length === 1) ['trabajo', 'duda', 'avance'].forEach(f => elegirPromo(f, promos[0]));
+  else { rellenarZonas('t-zona', ''); rellenarZonas('a-zona', ''); rellenarTrabajos(); }
   rellenarProveedores();
   rellenarProveedoresDuda();
 }
@@ -766,7 +766,7 @@ function elegirPromo(form, promo) {
   PROMO[form] = promo;
   document.querySelectorAll(`[data-promos="${form}"] button`).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.promo === promo)));
   if (form === 'trabajo') rellenarZonas('t-zona', promo);
-  if (form === 'hito') rellenarZonas('h-zona', promo);
+  if (form === 'avance') rellenarZonas('a-zona', promo);
   if (form === 'duda') rellenarTrabajos();
 }
 
@@ -917,22 +917,22 @@ $('f-duda').addEventListener('submit', async (e) => {
   recargarEnSegundoPlano();
 });
 
-$('f-hito').addEventListener('submit', async (e) => {
+$('f-avance').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const err = $('h-error'); err.textContent = '';
-  const datos = { promocion: PROMO.hito, zona: $('h-zona').value, hito: $('h-hito').value.trim(), detalle: $('h-detalle').value.trim(), fecha: $('h-fecha').value };
-  const falta = !datos.promocion ? 'Elige la promoción.' : !datos.zona ? 'Elige la zona.' : !datos.hito ? MENSAJES.falta_hito : !datos.fecha ? 'Pon la fecha.' : '';
+  const err = $('a-error'); err.textContent = '';
+  const datos = { promocion: PROMO.avance, zona: $('a-zona').value, avance: $('a-avance').value.trim(), detalle: $('a-detalle').value.trim(), fecha: $('a-fecha').value };
+  const falta = !datos.promocion ? 'Elige la promoción.' : !datos.zona ? 'Elige la zona.' : !datos.avance ? MENSAJES.falta_avance : !datos.fecha ? 'Pon la fecha.' : '';
   if (falta) { err.textContent = falta; return; }
 
   const btn = e.submitter || e.target.querySelector('.enviar');
   const r = await enviando(btn, 'Enviando…', async () => {
-    const fotos = await subirFotos('hito', datos.promocion, btn);
+    const fotos = await subirFotos('avance', datos.promocion, btn);
     if (!fotos.ok) return fotos;
-    return api('crear_hito', Object.assign(datos, { fotos: fotos.urls }));
+    return api('crear_avance', Object.assign(datos, { fotos: fotos.urls }));
   });
   if (!r.ok) { err.textContent = r.motivo === 'red' ? r.detalle : mensaje(r); return; }
-  e.target.reset(); limpiarFotos('hito'); $('h-fecha').value = D.hoy;
-  hecho('Hito registrado', `${r.id} · ${esc(datos.hito)} · ${esc(datos.zona)}.`);
+  e.target.reset(); limpiarFotos('avance'); $('a-fecha').value = D.hoy;
+  hecho('Avance registrado', `${r.id} · ${esc(datos.avance)} · ${esc(datos.zona)}.`);
   recargarEnSegundoPlano();
 });
 
@@ -945,7 +945,7 @@ async function enviando(btn, texto, fn) {
 }
 
 function hecho(titulo, html) {
-  ['trabajo', 'duda', 'hito'].forEach(t => $('f-' + t).classList.add('oculto'));
+  ['trabajo', 'duda', 'avance'].forEach(t => $('f-' + t).classList.add('oculto'));
   $('hecho-titulo').textContent = titulo;
   $('hecho-texto').innerHTML = html;
   $('hecho').classList.remove('oculto');
@@ -1368,7 +1368,7 @@ function miniaturas(v, quitar) {
 
 // ─── VISTAS: PREPARAR FILTROS ───────────────────────────────────────
 const FILTRO_S = { promo: '', oficio: '', estado: '' };
-const FILTRO_H = { promo: '', zona: '', q: '' };
+const FILTRO_A = { promo: '', zona: '', q: '' };
 
 function prepararVistas() {
   const promos = S.listas.promociones || [];
@@ -1377,19 +1377,19 @@ function prepararVistas() {
     cont.querySelectorAll('button').forEach(b => b.addEventListener('click', () => { filtro.promo = b.dataset.promoFiltro; pintar(); }));
   };
   segmentos($('s-promos'), FILTRO_S, pintarSemanas);
-  segmentos($('hi-promos'), FILTRO_H, () => { FILTRO_H.zona = ''; pintarHitos(); });
+  segmentos($('av-promos'), FILTRO_A, () => { FILTRO_A.zona = ''; pintarAvances(); });
   $('s-oficio').innerHTML = '<option value="">Todos los oficios</option>' + (S.listas.oficios || []).map(o => `<option>${esc(o)}</option>`).join('');
   $('s-oficio').addEventListener('change', () => { FILTRO_S.oficio = $('s-oficio').value; pintarSemanas(); });
   $('s-estado').addEventListener('change', () => { FILTRO_S.estado = $('s-estado').value; pintarSemanas(); });
-  $('hi-zona').addEventListener('change', () => { FILTRO_H.zona = $('hi-zona').value; pintarHitos(); });
-  $('hi-buscar').addEventListener('input', () => { FILTRO_H.q = $('hi-buscar').value.trim().toLowerCase(); pintarHitos(); });
+  $('av-zona').addEventListener('change', () => { FILTRO_A.zona = $('av-zona').value; pintarAvances(); });
+  $('av-buscar').addEventListener('input', () => { FILTRO_A.q = $('av-buscar').value.trim().toLowerCase(); pintarAvances(); });
   if (hayAvisar() && puede('crear_trabajo')) {
     $('s-nuevo').classList.remove('oculto');
     $('s-nuevo').addEventListener('click', () => { mostrarSeccion('avisar'); mostrarTab('trabajo'); });
   }
-  if (hayAvisar() && puede('crear_hito')) {
-    $('hi-nuevo').classList.remove('oculto');
-    $('hi-nuevo').addEventListener('click', () => { mostrarSeccion('avisar'); mostrarTab('hito'); });
+  if (hayAvisar() && puede('crear_avance')) {
+    $('av-nuevo').classList.remove('oculto');
+    $('av-nuevo').addEventListener('click', () => { mostrarSeccion('avisar'); mostrarTab('avance'); });
   }
   anchoEstrecho = estrecho();
 }
@@ -1849,28 +1849,28 @@ function pendReunion(r) {
   </article>`;
 }
 
-// ─── HITOS ──────────────────────────────────────────────────────────
-function pintarHitos() {
+// ─── AVANCES DE OBRA ────────────────────────────────────────────────
+function pintarAvances() {
   if (!D) return;
-  $('hi-promos').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.promoFiltro === FILTRO_H.promo)));
-  const todos = (D.hitos || []).filter(h => !FILTRO_H.promo || h.promocion === FILTRO_H.promo);
+  $('av-promos').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.promoFiltro === FILTRO_A.promo)));
+  const todos = (D.avances || []).filter(h => !FILTRO_A.promo || h.promocion === FILTRO_A.promo);
   const zonas = Array.from(new Set(todos.map(h => h.zona))).sort((a, b) => String(a).localeCompare(String(b), 'es', { numeric: true }));
-  if (FILTRO_H.zona && zonas.indexOf(FILTRO_H.zona) === -1) FILTRO_H.zona = '';
-  $('hi-zona').innerHTML = '<option value="">Todas las zonas</option>' + zonas.map(z => `<option${z === FILTRO_H.zona ? ' selected' : ''}>${esc(z)}</option>`).join('');
-  const q = FILTRO_H.q;
-  const lista = todos.filter(h => !FILTRO_H.zona || h.zona === FILTRO_H.zona)
-    .filter(h => !q || [h.hito, h.detalle, h.zona, h.id].some(v => String(v || '').toLowerCase().indexOf(q) !== -1))
+  if (FILTRO_A.zona && zonas.indexOf(FILTRO_A.zona) === -1) FILTRO_A.zona = '';
+  $('av-zona').innerHTML = '<option value="">Todas las zonas</option>' + zonas.map(z => `<option${z === FILTRO_A.zona ? ' selected' : ''}>${esc(z)}</option>`).join('');
+  const q = FILTRO_A.q;
+  const lista = todos.filter(h => !FILTRO_A.zona || h.zona === FILTRO_A.zona)
+    .filter(h => !q || [h.avance, h.detalle, h.zona, h.id].some(v => String(v || '').toLowerCase().indexOf(q) !== -1))
     .sort((a, b) => (String(a.fecha) + String(a.creado) < String(b.fecha) + String(b.creado) ? 1 : -1));
-  $('hi-lista').innerHTML = lista.map(h => `<article class="hito">
+  $('av-lista').innerHTML = lista.map(h => `<article class="avance">
       <div class="fecha">${esc(fechaLarga(h.fecha))}</div>
       <div class="meta">${esc(h.promocion)} · ${esc(h.zona)}${h.detalle ? ' · ' + esc(h.detalle) : ''}</div>
-      <div class="tit">${esc(h.hito)}</div>
+      <div class="tit">${esc(h.avance)}</div>
       ${miniaturas(h.fotos)}
       <div class="meta">${esc(h.id)} · ${esc(h.creado_por)}</div>
-      ${puede('borrar') ? `<button type="button" class="btn-texto" data-accion="borrar" data-tipo="hito" data-id="${esc(h.id)}">Borrar hito</button>` : ''}
+      ${puede('borrar') ? `<button type="button" class="btn-texto" data-accion="borrar" data-tipo="avance" data-id="${esc(h.id)}">Borrar avance</button>` : ''}
     </article>`).join('');
-  $('hi-vacio').textContent = (D.hitos || []).length ? 'No hay hitos con ese filtro.' : 'Todavía no hay hitos.';
-  $('hi-vacio').classList.toggle('oculto', lista.length > 0);
+  $('av-vacio').textContent = (D.avances || []).length ? 'No hay avances con ese filtro.' : 'Todavía no hay avances.';
+  $('av-vacio').classList.toggle('oculto', lista.length > 0);
   enviarAltura();
 }
 
@@ -1973,7 +1973,7 @@ async function guardarPlano(form) {
 
 async function borrar(el) {
   const tipo = el.dataset.tipo, id = el.dataset.id;
-  const que = { trabajo: 'el trabajo', plano: 'el plano', duda: 'la duda', hito: 'el hito' }[tipo] || tipo;
+  const que = { trabajo: 'el trabajo', plano: 'el plano', duda: 'la duda', avance: 'el avance' }[tipo] || tipo;
   if (!confirm(`¿Borrar ${que} ${id}? Dejará de verse aquí, aunque queda registrado en la Sheet y en el historial.`)) return;
   el.disabled = true;
   const r = await api('borrar', { tipo, id });
