@@ -256,11 +256,52 @@
   .pend { border: 1px solid var(--border); padding: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; }
   .pend .btn-peq { align-self: flex-start; }
 
-  /* Avances de obra */
-  .avances { margin: 0 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
-  .avance { border: 1px solid var(--border); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
-  .avance .fecha { font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: 1px; color: var(--black); }
-  .avance .tit { font-size: 15px; font-weight: 500; color: var(--black); line-height: 1.4; white-space: pre-wrap; }
+  /* Avances de obra: calendario */
+  .cal-barra { margin: 0 20px 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .cal-barra h2 { font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 20px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); min-width: 190px; text-align: center; }
+  .cal-barra .btn-peq { min-width: 44px; }
+  .cal { margin: 0 20px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-top: 1px solid var(--border); border-left: 1px solid var(--border); }
+  .cal-cab-dia { padding: 8px 10px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .cal-dia { min-height: 112px; padding: 6px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; min-width: 0; background: var(--white); }
+  .cal-dia.fuera { background: var(--off-white); }
+  .cal-dia.fuera .cal-num { color: #B8B4AE; }
+  .cal-dia.hoy { box-shadow: inset 0 0 0 2px var(--black); }
+  .cal-num { font-size: 12px; color: var(--slate); padding: 2px 4px; }
+  .cal-hoy { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); font-weight: 500; }
+  .cal-item { display: flex; flex-direction: column; gap: 2px; width: 100%; text-align: left; padding: 6px 8px; border: 1px solid var(--border); border-left: 3px solid var(--black); background: var(--white); color: var(--text); font: inherit; font-size: 12px; line-height: 1.3; cursor: pointer; min-height: 44px; }
+  .cal-item:hover, .cal-item:focus-visible { border-color: var(--black); outline: none; }
+  .cal-zona { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate); }
+  .cal-txt { color: var(--black); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .cal-fotos { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--slate); }
+  /* Móvil: días con puntos y lista debajo */
+  .cal.cal-movil { margin: 0 12px; }
+  .cal-movil .cal-cab-dia { padding: 6px 0; text-align: center; letter-spacing: 1px; }
+  .cal-movil .cal-dia { min-height: 52px; padding: 4px 0; align-items: center; justify-content: flex-start; gap: 4px; border-top: none; border-left: none; font: inherit; cursor: pointer; }
+  .cal-movil div.cal-dia { cursor: default; }
+  .cal-movil .cal-dia.elegido { background: var(--black); }
+  .cal-movil .cal-dia.elegido .cal-num { color: var(--white); }
+  .cal-movil .cal-dia.elegido .cal-puntos i { background: var(--white); }
+  .cal-movil .cal-dia.elegido .cal-puntos { color: var(--white); }
+  .cal-movil .cal-num { font-size: 14px; color: var(--text); padding: 0; }
+  .cal-puntos { display: flex; gap: 3px; align-items: center; min-height: 6px; font-size: 10px; color: var(--black); line-height: 6px; }
+  .cal-puntos i { width: 6px; height: 6px; border-radius: 50%; background: var(--black); display: block; }
+  .cal-lista { margin: 12px 12px 0; display: flex; flex-direction: column; gap: 8px; }
+  .cal-dia-tit { margin-top: 8px; font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 15px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); }
+  .cal-lista .cal-item { font-size: 14px; padding: 10px 12px; }
+  /* Ventana de detalle */
+  .modal { position: fixed; inset: 0; z-index: 50; background: rgba(17, 17, 17, .55); display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; }
+  .modal.en-iframe { position: absolute; min-height: 100%; }
+  .modal-caja { width: 100%; max-width: 720px; background: var(--white); padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+  .avd-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .avd-cab h2 { font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 24px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); line-height: 1.2; margin-top: 6px; }
+  .avd-cab .btn-peq { white-space: nowrap; flex-shrink: 0; }
+  .avd-fotos .miniaturas { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  @media (max-width: 600px) {
+    .modal { padding: 0; }
+    .modal-caja { min-height: 100%; padding: 20px; }
+    .avd-cab h2 { font-size: 20px; }
+    .avd-fotos .miniaturas { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
 
   @media (max-width: 1000px) { .columnas { grid-template-columns: minmax(0, 1fr); } }
   @media (max-width: 899px) {
@@ -470,9 +511,22 @@
       <div class="hueco"></div>
       <button type="button" class="btn-negro oculto" id="av-nuevo">+ Nuevo avance</button>
     </div>
-    <div class="avances" id="av-lista"></div>
-    <div class="vacio oculto" id="av-vacio">No hay avances con ese filtro.</div>
+    <div class="cal-barra">
+      <button type="button" class="btn-peq" id="av-ant" aria-label="Mes anterior">‹</button>
+      <h2 id="av-mes" aria-live="polite"></h2>
+      <button type="button" class="btn-peq" id="av-sig" aria-label="Mes siguiente">›</button>
+      <button type="button" class="btn-peq" id="av-hoy">Este mes</button>
+      <span class="meta" id="av-cuenta"></span>
+    </div>
+    <div id="av-cal"></div>
+    <div class="vacio oculto" id="av-vacio"></div>
+    <div id="av-dia" class="cal-lista oculto"></div>
   </section>
+
+  <!-- Detalle de un avance -->
+  <div id="av-detalle" class="modal oculto" role="dialog" aria-modal="true" aria-labelledby="avd-titulo">
+    <div class="modal-caja" id="avd"></div>
+  </div>
 
   <!-- Cámara: capture abre la cámara directamente. Galería: varias a la vez.
        Van separadas porque Android, con "multiple", solo ofrece la galería. -->
@@ -659,6 +713,8 @@ const estrecho = () => (window.innerWidth || 1024) < 900;
 
 // modo: 'push' (nueva entrada en el historial del navegador), 'replace' o 'none'
 function mostrarSeccion(id, modo) {
+  ocultarAvance();
+  if (id !== 'avances') FOCO_PENDIENTE = null;
   if (id !== 'ficha') { SECCION = id; FICHA = null; }
   TODAS.forEach(x => $('sec-' + x).classList.toggle('oculto', x !== id));
   const marcada = id === 'ficha' ? ORIGEN : id;
@@ -681,6 +737,14 @@ function ruta(hash, modo) {
 function aplicarRuta(hash, modo) {
   const h = decodeURIComponent(String(hash || '').replace(/^#/, ''));
   if (/^T-\d+$/.test(h) && trabajoPorId(h)) { abrirFicha(h, modo); return true; }
+  if (/^AV-\d+$/.test(h) && avancePorId(h) && SECCIONES.indexOf('avances') !== -1) {
+    // Enlace a un avance: el calendario en su mes y el detalle encima
+    CAL.mes = String(avancePorId(h).fecha).slice(0, 7); CAL.dia = '';
+    if (SECCION !== 'avances' || FICHA) mostrarSeccion('avances', modo === 'none' ? 'none' : 'replace'); else if (AVANCE) ocultarAvance();
+    pintarAvances();
+    abrirAvance(h, modo);
+    return true;
+  }
   if (SECCIONES.indexOf(h) !== -1) { mostrarSeccion(h, modo); return true; }
   return false;
 }
@@ -697,6 +761,7 @@ window.addEventListener('resize', () => {
   if (e === anchoEstrecho) return;
   anchoEstrecho = e;
   if (D && SECCION === 'semanas' && !FICHA) pintarSemanas();
+  if (D && SECCION === 'avances' && !FICHA) pintarAvances();
 });
 
 async function cargarDatos() {
@@ -719,7 +784,10 @@ function refrescarVista() {
   if (FICHA) { if (trabajoPorId(FICHA)) { pintarFicha(); cargarHistorial(FICHA); } else mostrarSeccion(ORIGEN || SECCIONES[0], 'replace'); return; }
   if (SECCION === 'semanas') pintarSemanas();
   else if (SECCION === 'pendientes') pintarPendientes();
-  else if (SECCION === 'avances') pintarAvances();
+  else if (SECCION === 'avances') {
+    pintarAvances();
+    if (AVANCE) { if (avancePorId(AVANCE)) pintarDetalleAvance(); else { ocultarAvance(); ruta('#avances', 'replace'); } }
+  }
   else if (SECCION === 'contactos') pintarContactos();
   else if (SECCION === 'avisar') rellenarTrabajos();
 }
@@ -1387,6 +1455,7 @@ function prepararVistas() {
     $('s-nuevo').classList.remove('oculto');
     $('s-nuevo').addEventListener('click', () => { mostrarSeccion('avisar'); mostrarTab('trabajo'); });
   }
+  prepararAvances();
   if (hayAvisar() && puede('crear_avance')) {
     $('av-nuevo').classList.remove('oculto');
     $('av-nuevo').addEventListener('click', () => { mostrarSeccion('avisar'); mostrarTab('avance'); });
@@ -1850,28 +1919,187 @@ function pendReunion(r) {
 }
 
 // ─── AVANCES DE OBRA ────────────────────────────────────────────────
+// Calendario del mes. En el ordenador cada día lleva sus avances; en el móvil,
+// puntos por día y, debajo, la lista del día elegido (o de todo el mes).
+// El detalle (fotos, quién, borrar) solo se ve al pinchar un avance.
+const MESES_LARGOS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+const CAL = { mes: '', dia: '' };          // mes 'aaaa-mm' a la vista; día elegido en el móvil
+let AVANCE = null;                          // código del avance abierto
+let AVANCE_CON_HISTORIAL = false;           // se abrió con una entrada nueva en el historial del navegador
+let AVANCE_FOCO = null;                     // dónde devolver el foco al cerrar
+let FOCO_PENDIENTE = null;                  // avance al que devolver el foco si el calendario se repinta
+
+const avancePorId = (id) => ((D && D.avances) || []).find(a => a.id === id);
+const nombreMes = (mes) => { const [y, m] = mes.split('-').map(Number); const t = MESES_LARGOS[m - 1]; return t.charAt(0).toUpperCase() + t.slice(1) + ' ' + y; };
+const sumarMeses = (mes, n) => { const [y, m] = mes.split('-').map(Number); const d = new Date(Date.UTC(y, m - 1 + n, 1)); return d.toISOString().slice(0, 7); };
+// "2SB102" ya lleva la promoción; "Urbanización y zonas comunes" no
+const zonaCorta = (a) => String(a.zona).indexOf(a.promocion) === 0 ? a.zona : a.promocion + ' · ' + a.zona;
+const ICONO_FOTO = '<svg aria-hidden="true" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+
+function avancesFiltrados() {
+  const q = FILTRO_A.q;
+  return (D.avances || [])
+    .filter(a => !FILTRO_A.promo || a.promocion === FILTRO_A.promo)
+    .filter(a => !FILTRO_A.zona || a.zona === FILTRO_A.zona)
+    .filter(a => !q || [a.avance, a.detalle, a.zona, a.id].some(v => String(v || '').toLowerCase().indexOf(q) !== -1))
+    .sort((a, b) => (String(a.fecha) + String(a.creado) < String(b.fecha) + String(b.creado) ? 1 : -1));
+}
+
 function pintarAvances() {
   if (!D) return;
+  if (!CAL.mes) CAL.mes = D.hoy.slice(0, 7);
   $('av-promos').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.promoFiltro === FILTRO_A.promo)));
-  const todos = (D.avances || []).filter(h => !FILTRO_A.promo || h.promocion === FILTRO_A.promo);
-  const zonas = Array.from(new Set(todos.map(h => h.zona))).sort((a, b) => String(a).localeCompare(String(b), 'es', { numeric: true }));
+  const dePromo = (D.avances || []).filter(a => !FILTRO_A.promo || a.promocion === FILTRO_A.promo);
+  const zonas = Array.from(new Set(dePromo.map(a => a.zona))).sort((a, b) => String(a).localeCompare(String(b), 'es', { numeric: true }));
   if (FILTRO_A.zona && zonas.indexOf(FILTRO_A.zona) === -1) FILTRO_A.zona = '';
   $('av-zona').innerHTML = '<option value="">Todas las zonas</option>' + zonas.map(z => `<option${z === FILTRO_A.zona ? ' selected' : ''}>${esc(z)}</option>`).join('');
-  const q = FILTRO_A.q;
-  const lista = todos.filter(h => !FILTRO_A.zona || h.zona === FILTRO_A.zona)
-    .filter(h => !q || [h.avance, h.detalle, h.zona, h.id].some(v => String(v || '').toLowerCase().indexOf(q) !== -1))
-    .sort((a, b) => (String(a.fecha) + String(a.creado) < String(b.fecha) + String(b.creado) ? 1 : -1));
-  $('av-lista').innerHTML = lista.map(h => `<article class="avance">
-      <div class="fecha">${esc(fechaLarga(h.fecha))}</div>
-      <div class="meta">${esc(h.promocion)} · ${esc(h.zona)}${h.detalle ? ' · ' + esc(h.detalle) : ''}</div>
-      <div class="tit">${esc(h.avance)}</div>
-      ${miniaturas(h.fotos)}
-      <div class="meta">${esc(h.id)} · ${esc(h.creado_por)}</div>
-      ${puede('borrar') ? `<button type="button" class="btn-texto" data-accion="borrar" data-tipo="avance" data-id="${esc(h.id)}">Borrar avance</button>` : ''}
-    </article>`).join('');
-  $('av-vacio').textContent = (D.avances || []).length ? 'No hay avances con ese filtro.' : 'Todavía no hay avances.';
-  $('av-vacio').classList.toggle('oculto', lista.length > 0);
+
+  const todos = avancesFiltrados();
+  const delMes = todos.filter(a => String(a.fecha).slice(0, 7) === CAL.mes);
+  if (CAL.dia && CAL.dia.slice(0, 7) !== CAL.mes) CAL.dia = '';
+  $('av-mes').textContent = nombreMes(CAL.mes);
+  $('av-cuenta').textContent = delMes.length ? plural(delMes.length, 'avance', 'avances') : '';
+  $('av-hoy').disabled = CAL.mes === D.hoy.slice(0, 7);
+
+  // Rejilla de lunes a domingo que cubre el mes
+  const primero = CAL.mes + '-01';
+  const ultimo = sumarDias(sumarMeses(CAL.mes, 1) + '-01', -1);
+  const dias = [];
+  for (let d = lunesDe(primero); d <= ultimo || diaSemana(d) !== 1; d = sumarDias(d, 1)) dias.push(d);
+  const porDia = {};
+  delMes.forEach(a => { (porDia[a.fecha] = porDia[a.fecha] || []).push(a); });
+  const cab = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(x => `<div class="cal-cab-dia" aria-hidden="true">${x}</div>`).join('');
+  const movil = estrecho();
+
+  $('av-cal').innerHTML = `<div class="cal${movil ? ' cal-movil' : ''}">${cab}${dias.map(d => {
+    const fuera = d.slice(0, 7) !== CAL.mes;
+    const lista = porDia[d] || [];
+    const clases = 'cal-dia' + (fuera ? ' fuera' : '') + (d === D.hoy ? ' hoy' : '') + (d === CAL.dia ? ' elegido' : '');
+    const num = Number(d.slice(8, 10));
+    if (movil) {
+      if (fuera) return `<div class="${clases}" aria-hidden="true"><span class="cal-num">${num}</span></div>`;
+      return `<button type="button" class="${clases}" data-dia="${d}" aria-pressed="${d === CAL.dia}" aria-label="${esc(fechaLarga(d))}: ${lista.length ? plural(lista.length, 'avance', 'avances') : 'sin avances'}">
+        <span class="cal-num">${num}</span><span class="cal-puntos">${lista.slice(0, 3).map(() => '<i></i>').join('')}${lista.length > 3 ? '+' : ''}</span></button>`;
+    }
+    return `<div class="${clases}"${fuera ? ' aria-hidden="true"' : ''}><div class="cal-num">${num}${d === D.hoy ? ' <span class="cal-hoy">hoy</span>' : ''}</div>${lista.map(itemAvance).join('')}</div>`;
+  }).join('')}</div>`;
+
+  // Móvil: debajo, el día elegido o el mes entero por días
+  if (movil) {
+    const elegidos = CAL.dia ? (porDia[CAL.dia] || []) : delMes;
+    const grupos = [];
+    elegidos.forEach(a => { const g = grupos.find(x => x.dia === a.fecha); if (g) g.lista.push(a); else grupos.push({ dia: a.fecha, lista: [a] }); });
+    $('av-dia').innerHTML = CAL.dia && !elegidos.length
+      ? `<h3 class="cal-dia-tit">${esc(fechaLarga(CAL.dia))}</h3><div class="nada">Ese día no hay avances.</div>`
+      : grupos.map(g => `<h3 class="cal-dia-tit">${esc(fechaLarga(g.dia))}</h3>${g.lista.map(itemAvance).join('')}`).join('');
+    $('av-dia').classList.remove('oculto');
+  } else {
+    $('av-dia').innerHTML = '';
+    $('av-dia').classList.add('oculto');
+  }
+
+  // Mes sin avances: ofrecer ir al último que haya (con el filtro puesto)
+  const vacio = $('av-vacio');
+  if (!delMes.length) {
+    const antes = todos.find(a => String(a.fecha).slice(0, 7) < CAL.mes);
+    const hayFiltro = !!(FILTRO_A.promo || FILTRO_A.zona || FILTRO_A.q);
+    vacio.innerHTML = (!(D.avances || []).length ? 'Todavía no hay avances.'
+      : `No hay avances en ${esc(nombreMes(CAL.mes).toLowerCase())}${hayFiltro ? ' con ese filtro' : ''}.`) +
+      (antes ? ` <button type="button" class="btn-texto" data-ir-mes="${esc(antes.fecha.slice(0, 7))}">Ir al último: ${esc(fechaDMA(antes.fecha))}</button>` : '');
+    vacio.classList.remove('oculto');
+  } else vacio.classList.add('oculto');
+  // Al cerrar el detalle con «atrás» el calendario se repinta: el foco vuelve a su avance
+  if (FOCO_PENDIENTE) { const el = document.querySelector(`#sec-avances [data-avance="${FOCO_PENDIENTE}"]`); if (el) el.focus(); FOCO_PENDIENTE = null; }
   enviarAltura();
+}
+
+function itemAvance(a) {
+  const n = listaFotos(a.fotos).length;
+  return `<button type="button" class="cal-item" data-avance="${esc(a.id)}">
+    <span class="cal-zona">${esc(zonaCorta(a))}</span>
+    <span class="cal-txt">${esc(a.avance)}</span>
+    ${n ? `<span class="cal-fotos">${ICONO_FOTO} ${n}</span>` : ''}
+  </button>`;
+}
+
+// Detalle de un avance (ventana encima del calendario)
+function abrirAvance(id, modo) {
+  const a = avancePorId(id);
+  if (!a) return;
+  if (!AVANCE) AVANCE_FOCO = document.activeElement;
+  AVANCE = id;
+  AVANCE_CON_HISTORIAL = (modo || 'push') === 'push' || (AVANCE_CON_HISTORIAL && modo === 'none');
+  pintarDetalleAvance();
+  const m = $('av-detalle');
+  m.classList.toggle('en-iframe', window.parent !== window);
+  m.classList.remove('oculto');
+  if (window.parent !== window) { window.scrollTo({ top: 0 }); window.parent.postMessage({ scrollTop: true }, '*'); }
+  $('avd-cerrar').focus();
+  ruta('#' + id, modo || 'push');
+  enviarAltura();
+}
+
+function pintarDetalleAvance() {
+  const a = avancePorId(AVANCE);
+  if (!a) return;
+  const tipo = tipoZona(a.zona, a.promocion);
+  const fotos = listaFotos(a.fotos);
+  $('avd').innerHTML = `<div class="avd-cab">
+      <div>
+        <div class="eyebrow">${esc(fechaLarga(a.fecha))}</div>
+        <h2 id="avd-titulo">${esc(a.avance)}</h2>
+      </div>
+      <button type="button" class="btn-peq" id="avd-cerrar" aria-label="Cerrar">Cerrar ✕</button>
+    </div>
+    <dl class="datos">
+      <dt>Promoción</dt><dd>${esc(nombrePromo(a.promocion))}</dd>
+      <dt>Zona</dt><dd>${esc(a.zona)}${tipo ? ' · ' + tipo : ''}</dd>
+      ${a.detalle ? `<dt>Detalle</dt><dd>${esc(a.detalle)}</dd>` : ''}
+      <dt>Registrado</dt><dd>${esc(a.creado_por)}${a.creado ? ' · ' + esc(fechaHoraCorta(a.creado)) : ''}</dd>
+      <dt>Código</dt><dd>${esc(a.id)}</dd>
+    </dl>
+    ${fotos.length ? `<div class="avd-fotos">${miniaturas(a.fotos)}</div>` : '<div class="nada">Sin fotos.</div>'}
+    ${puede('borrar') ? `<button type="button" class="btn-texto" data-accion="borrar" data-tipo="avance" data-id="${esc(a.id)}">Borrar avance</button>` : ''}`;
+}
+
+// Cierra la ventana. Si se abrió con una entrada en el historial, se vuelve atrás
+// (así el botón «atrás» del móvil y la X hacen lo mismo).
+function cerrarAvance() {
+  if (!AVANCE) return;
+  if (AVANCE_CON_HISTORIAL && location.hash === '#' + AVANCE) { history.back(); return; }
+  ocultarAvance();
+  ruta('#avances', 'replace');
+}
+
+function ocultarAvance() {
+  if (!AVANCE) return;
+  FOCO_PENDIENTE = AVANCE;
+  AVANCE = null;
+  AVANCE_CON_HISTORIAL = false;
+  $('av-detalle').classList.add('oculto');
+  $('avd').innerHTML = '';
+  if (AVANCE_FOCO && document.contains(AVANCE_FOCO)) AVANCE_FOCO.focus();
+  AVANCE_FOCO = null;
+  queueMicrotask(() => { FOCO_PENDIENTE = null; }); // solo vale para el repintado inmediato
+  enviarAltura();
+}
+
+function prepararAvances() {
+  $('av-ant').addEventListener('click', () => { CAL.mes = sumarMeses(CAL.mes, -1); CAL.dia = ''; pintarAvances(); });
+  $('av-sig').addEventListener('click', () => { CAL.mes = sumarMeses(CAL.mes, 1); CAL.dia = ''; pintarAvances(); });
+  $('av-hoy').addEventListener('click', () => { CAL.mes = D.hoy.slice(0, 7); CAL.dia = ''; pintarAvances(); });
+  $('sec-avances').addEventListener('click', (e) => {
+    const item = e.target.closest('[data-avance]');
+    if (item) { abrirAvance(item.dataset.avance); return; }
+    const dia = e.target.closest('[data-dia]');
+    if (dia) { CAL.dia = CAL.dia === dia.dataset.dia ? '' : dia.dataset.dia; pintarAvances(); return; }
+    const ir = e.target.closest('[data-ir-mes]');
+    if (ir) { CAL.mes = ir.dataset.irMes; CAL.dia = ''; pintarAvances(); }
+  });
+  $('av-detalle').addEventListener('click', (e) => {
+    if (e.target === $('av-detalle') || e.target.closest('#avd-cerrar')) cerrarAvance();
+  });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && AVANCE) cerrarAvance(); });
 }
 
 // ─── ACCIONES (clics y envíos en las vistas que se repintan) ───────
