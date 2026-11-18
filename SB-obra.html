@@ -195,7 +195,7 @@
   .ficha-estado { display: flex; flex-direction: column; gap: 10px; align-items: flex-end; max-width: 100%; }
   .ficha-estado .botones { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; align-items: center; }
   .ficha-estado select.ctrl { width: auto; min-height: 40px; font-size: 14px; }
-  .pasos { list-style: none; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); border: 1px solid var(--border); }
+  .pasos { list-style: none; display: grid; grid-template-columns: repeat(var(--n-pasos, 6), minmax(0, 1fr)); border: 1px solid var(--border); }
   .pasos li { padding: 10px; display: flex; flex-direction: column; gap: 2px; border-left: 1px solid var(--border); font-size: 13px; }
   .pasos li:first-child { border-left: none; }
   .pasos .n { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate); }
@@ -296,6 +296,104 @@
   .avd-cab h2 { font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 24px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); line-height: 1.2; margin-top: 6px; }
   .avd-cab .btn-peq { white-space: nowrap; flex-shrink: 0; }
   .avd-fotos .miniaturas { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+
+  /* Estados nuevos del semáforo (planificación) */
+  .nv-planificado { background: var(--white); border-color: var(--slate); color: var(--slate); }
+  .nv-sin_avisar { background: #FDE7D3; border-color: #E07B1F; color: #7C2D00; }
+  .nv-sin_confirmar { background: var(--off-white); border-color: var(--rojo); color: var(--rojo); }
+  .tarjeta-caja { display: flex; flex-direction: column; }
+  .tarjeta-caja .tarjeta { border-bottom: none; }
+  .tarjeta-acc { display: flex; border: 1px solid var(--border); border-top: 1px dashed var(--border); }
+  .tarjeta-acc button { flex: 1; min-height: 36px; border: none; background: var(--white); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; color: var(--black); }
+  .tarjeta-acc button + button { border-left: 1px solid var(--border); }
+  .tarjeta-acc button:hover, .tarjeta-acc button:focus-visible { background: var(--off-white); }
+
+  /* Planificación */
+  .pl-fase { margin: 0 20px 16px; padding: 14px 16px; border: 1px solid var(--border); background: var(--off-white); display: flex; flex-wrap: wrap; gap: 6px 28px; align-items: baseline; }
+  .pl-fase h2 { font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 22px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); }
+  .pl-fase .dato { font-size: 13px; color: var(--slate); }
+  .pl-fase .dato b { font-weight: 500; color: var(--text); }
+  .pl-avisos { margin: 0 20px 16px; display: flex; flex-direction: column; gap: 6px; }
+  .pl-avisos .aviso { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .aviso.naranja { border-color: #F2B98A; background: #FFF6EE; color: #7C2D00; }
+  .pl-sel { position: sticky; top: 0; z-index: 5; margin: 0 20px 12px; padding: 10px 14px; background: var(--black); color: var(--white); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+  .pl-sel .btn-peq { border-color: var(--white); }
+  .pl-sel .btn-peq.claro { background: transparent; color: var(--white); }
+  .pl { margin: 0 20px; border: 1px solid var(--border); }
+  .pl-fila { display: grid; grid-template-columns: 40px minmax(200px, 250px) 104px 104px 96px 168px minmax(340px, 1fr); border-bottom: 1px solid var(--border); background: var(--white); }
+  .pl-fila:last-child { border-bottom: none; }
+  .pl-fila > div { padding: 9px 10px; font-size: 13px; line-height: 1.35; min-width: 0; }
+  .pl-cab > div { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate); padding-top: 12px; padding-bottom: 8px; align-self: end; }
+  .pl-grupo { background: var(--off-white); cursor: pointer; }
+  .pl-grupo:hover { background: #F0EEEA; }
+  .pl-grupo .pl-nombre { font-weight: 500; color: var(--black); }
+  .pl-trab .pl-nombre { padding-left: 26px !important; }
+  .pl-nombre .sub { font-weight: 400; display: block; }
+  .pl-nombre a { color: var(--black); text-decoration: none; }
+  .pl-nombre a:hover { text-decoration: underline; }
+  .pl-flecha { display: inline-block; width: 14px; color: var(--slate); }
+  .pl-chk { display: flex; align-items: flex-start; justify-content: center; padding-top: 11px !important; }
+  .pl-chk input { width: 18px; height: 18px; accent-color: var(--black); cursor: pointer; }
+  .pl-f { white-space: nowrap; }
+  .pl-vacio { color: #B8B4AE; }
+  .pl-desv { display: flex; gap: 6px; align-items: center; white-space: nowrap; }
+  .pl-desv + .pl-desv { margin-top: 4px; }
+  .pl-desv .sub { margin: 0; }
+  .pl-acc { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
+  .pl-acc:empty { display: none; }
+  .pl-acc .btn-peq { min-height: 30px; padding: 0 8px; font-size: 10px; letter-spacing: 1px; }
+  .pl-tl { position: relative; border-left: 1px solid var(--border); padding: 0 !important; min-height: 42px; overflow: hidden; }
+  .tl-mes { position: absolute; top: 0; bottom: 0; border-left: 1px solid #EFEDE9; }
+  .tl-mes.anio { border-left-color: #D5D1CB; }
+  .tl-etq { position: absolute; bottom: 8px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate); padding-left: 4px; white-space: nowrap; }
+  .tl-anio { position: absolute; top: 6px; font-size: 10px; letter-spacing: 1px; color: var(--black); font-weight: 500; padding-left: 4px; }
+  .tl-hoy { position: absolute; top: 0; bottom: 0; border-left: 2px solid var(--rojo); }
+  .tl-hoy-etq { position: absolute; top: 6px; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--rojo); font-weight: 500; padding-left: 5px; }
+  .tl-prev { position: absolute; top: 11px; height: 9px; border: 1px solid var(--slate); background: var(--white); min-width: 3px; }
+  .tl-prev.sin-avisar { border-color: #E07B1F; background: #FDE7D3; }
+  .tl-prev.tarde { border-color: var(--rojo); }
+  .tl-real { position: absolute; top: 23px; height: 9px; background: var(--black); min-width: 3px; }
+  .tl-real.sigue { background: linear-gradient(90deg, var(--black) 75%, var(--slate)); }
+  .pl-grupo .tl-prev { top: 13px; height: 7px; }
+  .pl-grupo .tl-real { top: 23px; height: 7px; }
+  .pl-leyenda { margin: 16px 20px; display: flex; flex-wrap: wrap; gap: 10px 24px; font-size: 12px; color: var(--slate); align-items: center; }
+  .pl-leyenda span { display: inline-flex; align-items: center; gap: 8px; }
+  .lg { display: inline-block; }
+  .lg.prev { width: 28px; height: 9px; border: 1px solid var(--slate); }
+  .lg.prev.sin-avisar { border-color: #E07B1F; background: #FDE7D3; }
+  .lg.real { width: 28px; height: 9px; background: var(--black); }
+  .lg.hoy { width: 2px; height: 16px; background: var(--rojo); }
+  .pl-ejes { margin: 0 12px 6px; position: relative; height: 34px; }
+  .pl-tarjetas { margin: 0 12px; display: flex; flex-direction: column; gap: 10px; }
+  .pl-tj { border: 1px solid var(--border); background: var(--white); }
+  .pl-tj-cab { display: flex; gap: 10px; align-items: flex-start; padding: 12px; cursor: pointer; }
+  .pl-tj-cab .t { flex: 1; font-weight: 500; color: var(--black); font-size: 15px; line-height: 1.3; }
+  .pl-tj-cab .t .sub { display: block; font-weight: 400; margin-top: 2px; }
+  .pl-tj .pl-tl { border-left: none; border-top: 1px solid var(--border); }
+  .pl-tj-lista { border-top: 1px solid var(--border); background: var(--off-white); padding: 8px; display: flex; flex-direction: column; gap: 8px; }
+  .pl-tj-trab { background: var(--white); border: 1px solid var(--border); padding: 10px; display: flex; gap: 10px; }
+  .pl-tj-trab .cuerpo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+
+  /* Ventana de diálogo (importar Project, marcar hecho) */
+  .dlg-cab { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+  .dlg-cab h2 { font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 22px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); }
+  .dlg-cab .btn-peq { white-space: nowrap; flex-shrink: 0; }
+  .dlg-resumen { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+  .dlg-resumen .contador { padding: 10px; }
+  .dlg-resumen .contador .n { font-size: 24px; }
+  .dlg details { border: 1px solid var(--border); }
+  .dlg details > summary { padding: 10px 12px; cursor: pointer; font-weight: 500; font-size: 14px; }
+  .dlg details > div { padding: 0 12px 12px; max-height: 320px; overflow-y: auto; }
+  .dlg table.tabla td, .dlg table.tabla th { font-size: 12px; }
+  .dlg .botones { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+  .dlg .botones button { min-height: 44px; padding: 0 20px; }
+  .conflicto { padding: 10px 0; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+  .conflicto:first-child { border-top: none; }
+  .conflicto .opciones { display: flex; gap: 16px; flex-wrap: wrap; }
+  @media (max-width: 899px) {
+    .pl-fase, .pl-avisos, .pl-sel { margin-left: 12px; margin-right: 12px; }
+    .pl-fase h2 { font-size: 20px; }
+  }
   @media (max-width: 600px) {
     .modal { padding: 0; }
     .modal-caja { min-height: 100%; padding: 20px; }
@@ -377,6 +475,7 @@
     <div class="campo"><label class="etq" for="t-proveedor">Proveedor (opcional)</label><select class="ctrl" id="t-proveedor"></select></div>
     <div class="campo"><label class="etq" for="t-fecha">Fecha prevista de inicio</label><input class="ctrl" id="t-fecha" type="date"></div>
     <div class="aviso oculto" id="t-antelacion" role="status"></div>
+    <div class="campo"><label class="etq" for="t-fin">Fecha prevista de fin</label><input class="ctrl" id="t-fin" type="date"></div>
     <div class="campo"><label class="etq" for="t-desc">Qué se va a hacer</label><textarea class="ctrl" id="t-desc" rows="3"></textarea></div>
     <div class="campo">
       <span class="etq">Fotos (opcional)</span>
@@ -466,6 +565,27 @@
     </form>
   </section>
 
+  <!-- PLANIFICACIÓN -->
+  <section id="sec-plan" class="oculto">
+    <div class="filtros">
+      <div class="seg" role="group" aria-label="Promoción" id="pl-promos"></div>
+      <label class="oculto-visual" for="pl-zona">Zona</label>
+      <select class="ctrl" id="pl-zona"></select>
+      <div class="seg" role="group" aria-label="Agrupar por" id="pl-agrupar">
+        <button type="button" data-agrupar="capitulo" aria-pressed="true">Capítulos</button>
+        <button type="button" data-agrupar="partida" aria-pressed="false">Partidas</button>
+      </div>
+      <div class="hueco"></div>
+      <button type="button" class="btn-negro oculto" id="pl-importar">Importar Project</button>
+    </div>
+    <div class="pl-fase oculto" id="pl-fase"></div>
+    <div class="contadores" id="pl-contadores"></div>
+    <div class="pl-avisos" id="pl-avisos"></div>
+    <div class="pl-sel oculto" id="pl-sel" role="region" aria-label="Trabajos elegidos"></div>
+    <div id="pl-cuerpo"></div>
+    <div class="pl-leyenda" id="pl-leyenda"></div>
+  </section>
+
   <!-- PRÓXIMAS 6 SEMANAS -->
   <section id="sec-semanas" class="oculto">
     <div class="filtros">
@@ -475,7 +595,7 @@
       <label class="oculto-visual" for="s-estado">Qué mostrar</label>
       <select class="ctrl" id="s-estado">
         <option value="">Sin terminar</option>
-        <option value="alerta">Solo urgentes y atención</option>
+        <option value="alerta">Solo urgentes, atención y sin avisar</option>
         <option value="dudas">Con dudas abiertas</option>
         <option value="ejecucion">En ejecución</option>
         <option value="terminados">Terminados</option>
@@ -522,6 +642,12 @@
     <div class="vacio oculto" id="av-vacio"></div>
     <div id="av-dia" class="cal-lista oculto"></div>
   </section>
+
+  <!-- Ventana para importar Project y marcar hecho -->
+  <div id="dlg" class="modal oculto" role="dialog" aria-modal="true" aria-labelledby="dlg-titulo">
+    <div class="modal-caja dlg" id="dlg-caja"></div>
+  </div>
+  <input type="file" id="input-project" accept=".xml,text/xml,application/xml" class="oculto">
 
   <!-- Detalle de un avance -->
   <div id="av-detalle" class="modal oculto" role="dialog" aria-modal="true" aria-labelledby="avd-titulo">
@@ -583,7 +709,15 @@ const MENSAJES = {
   forma_pago_invalida: 'Elige la forma de pago de la lista.',
   condiciones_invalidas: 'Revisa las obras y condiciones de pago.',
   condicion_no_encontrada: 'Alguien ha cambiado las obras de este contacto mientras lo editabas. Pulsa «Actualizar» y vuelve a abrirlo.',
-  falta_estructura: 'Falta la pestaña Condiciones en la Sheet: hay que ejecutar importarProveedores() en Apps Script.'
+  falta_estructura: 'Falta la pestaña Condiciones en la Sheet: hay que ejecutar importarProveedores() en Apps Script.',
+  falta_fecha_fin: 'Pon la fecha prevista de fin.',
+  fin_antes_inicio: 'La fecha de fin no puede ser anterior a la de inicio.',
+  fin_real_antes_inicio: 'El día en que terminó no puede ser anterior al día en que empezó.',
+  fecha_futura: 'Esa fecha todavía no ha llegado.',
+  estado_no_permite: 'Esa fecha solo se puede poner cuando el trabajo ha empezado (o terminado).',
+  tareas_invalidas: 'El archivo de Project tiene tareas sin fechas o repetidas.',
+  faltan_resoluciones: 'Elige qué fecha vale en cada conflicto.',
+  ids_invalidos: 'No hay trabajos elegidos.'
 };
 const MAX_FOTOS_FICHA = 10;
 
@@ -593,13 +727,14 @@ let D = null;          // datos: hoy, trabajos, contactos…
 let TAB = null;
 const PROMO = { trabajo: '', duda: '', avance: '' };
 let PARA = '';
-const FOTOS = { trabajo: [], duda: [], avance: [] };  // { file, url }
+const FOTOS = { trabajo: [], duda: [], avance: [], hecho: [] };  // { file, url }
 let fotoDestino = null;
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const verdadero = (v) => v === true || ['true', '1', 'sí', 'si', 'x'].indexOf(String(v ?? '').trim().toLowerCase()) !== -1;
-const mensaje = (r) => MENSAJES[r.motivo] ? MENSAJES[r.motivo] + (r.motivo === 'cif_duplicado' && r.detalle ? ': ' + r.detalle + '.' : '')
+const mensaje = (r) => r.motivo === 'falta_estructura' && r.detalle === '_reglas_project' ? 'Falta preparar la Sheet para la planificación: hay que ejecutar actualizarPlanificacion() en Apps Script.'
+  : MENSAJES[r.motivo] ? MENSAJES[r.motivo] + (r.motivo === 'cif_duplicado' && r.detalle ? ': ' + r.detalle + '.' : '')
   : ('No se ha podido guardar (' + (r.motivo || 'error') + (r.detalle ? ': ' + r.detalle : '') + ').');
 const puede = (p) => !!(S && S.permisos.indexOf(p) !== -1);
 
@@ -669,11 +804,13 @@ async function entrar(r) {
     { id: 'avance', texto: 'Avance', permiso: 'crear_avance' }
   ].filter(p => puede(p.permiso));
 
+  // Orden del menú: Avisar · Planificación · Próximas 6 semanas · Avances · Pendientes · Contactos
   const secciones = [];
   if (pestañas.length) secciones.push({ id: 'avisar', texto: 'Avisar' });
+  if (puede('ver')) secciones.push({ id: 'plan', texto: 'Planificación' });
   if (puede('ver')) secciones.push({ id: 'semanas', texto: 'Próximas 6 semanas' });
-  if (puede('responder_duda') || puede('responder_duda_estudio')) secciones.push({ id: 'pendientes', texto: 'Pendientes' });
   if (puede('ver')) secciones.push({ id: 'avances', texto: 'Avances' });
+  if (puede('responder_duda') || puede('responder_duda_estudio')) secciones.push({ id: 'pendientes', texto: 'Pendientes' });
   if (puede('guardar_contacto')) secciones.push({ id: 'contactos', texto: 'Contactos' });
   SECCIONES = secciones.map(x => x.id);
 
@@ -693,6 +830,7 @@ async function entrar(r) {
   if (pestañas.length) prepararFormularios();
   if (puede('guardar_contacto')) prepararContactos();
   prepararVistas();
+  prepararPlan();
   $('cargando').classList.add('oculto');
   $('actualizar').classList.remove('oculto');
   if (pestañas.length) mostrarTab(pestañas[0].id);
@@ -703,8 +841,8 @@ async function entrar(r) {
 }
 
 // ─── SECCIONES Y NAVEGACIÓN ─────────────────────────────────────────
-const TITULOS = { avisar: 'Avisar', semanas: 'Próximas 6 semanas', pendientes: 'Pendientes', avances: 'Avances', contactos: 'Contactos' };
-const TODAS = ['avisar', 'semanas', 'pendientes', 'avances', 'contactos', 'ficha'];
+const TITULOS = { avisar: 'Avisar', plan: 'Planificación', semanas: 'Próximas 6 semanas', pendientes: 'Pendientes', avances: 'Avances', contactos: 'Contactos' };
+const TODAS = ['avisar', 'plan', 'semanas', 'pendientes', 'avances', 'contactos', 'ficha'];
 let SECCIONES = [];   // las que ve este usuario
 let SECCION = null;   // la sección de menú actual
 let ORIGEN = null;    // desde dónde se abrió la ficha
@@ -714,6 +852,7 @@ const estrecho = () => (window.innerWidth || 1024) < 900;
 // modo: 'push' (nueva entrada en el historial del navegador), 'replace' o 'none'
 function mostrarSeccion(id, modo) {
   ocultarAvance();
+  cerrarDlg();
   if (id !== 'avances') FOCO_PENDIENTE = null;
   if (id !== 'ficha') { SECCION = id; FICHA = null; }
   TODAS.forEach(x => $('sec-' + x).classList.toggle('oculto', x !== id));
@@ -722,6 +861,7 @@ function mostrarSeccion(id, modo) {
   if (id !== 'ficha') $('titulo').textContent = TITULOS[id];
   $('app').classList.add('ancha');
   if (id === 'contactos') verListaContactos();
+  if (id === 'plan') pintarPlan();
   if (id === 'semanas') pintarSemanas();
   if (id === 'pendientes') pintarPendientes();
   if (id === 'avances') pintarAvances();
@@ -762,6 +902,7 @@ window.addEventListener('resize', () => {
   anchoEstrecho = e;
   if (D && SECCION === 'semanas' && !FICHA) pintarSemanas();
   if (D && SECCION === 'avances' && !FICHA) pintarAvances();
+  if (D && SECCION === 'plan' && !FICHA) pintarPlan();
 });
 
 async function cargarDatos() {
@@ -783,6 +924,7 @@ $('actualizar').addEventListener('click', actualizar);
 function refrescarVista() {
   if (FICHA) { if (trabajoPorId(FICHA)) { pintarFicha(); cargarHistorial(FICHA); } else mostrarSeccion(ORIGEN || SECCIONES[0], 'replace'); return; }
   if (SECCION === 'semanas') pintarSemanas();
+  else if (SECCION === 'plan') pintarPlan();
   else if (SECCION === 'pendientes') pintarPendientes();
   else if (SECCION === 'avances') {
     pintarAvances();
@@ -813,7 +955,13 @@ function prepararFormularios() {
   $('t-oficio').innerHTML = '<option value="">Elige el oficio…</option>' + (S.listas.oficios || []).map(o => `<option>${esc(o)}</option>`).join('');
   $('t-oficio').addEventListener('change', rellenarProveedores);
   $('t-fecha').min = D.hoy;
-  $('t-fecha').addEventListener('input', mostrarAntelacion);
+  $('t-fin').min = D.hoy;
+  $('t-fecha').addEventListener('input', () => {
+    mostrarAntelacion();
+    const ini = $('t-fecha').value;
+    $('t-fin').min = ini || D.hoy;
+    if (ini && (!$('t-fin').value || $('t-fin').value < ini)) $('t-fin').value = ini;
+  });
 
   $('d-para').innerHTML = (S.listas.para_duda || []).map(p => `<button type="button" class="chip" data-para="${esc(p)}" aria-pressed="false">${esc(p)}</button>`).join('');
   $('d-para').querySelectorAll('button').forEach(b => b.addEventListener('click', () => elegirPara(b.dataset.para)));
@@ -939,10 +1087,11 @@ $('f-trabajo').addEventListener('submit', async (e) => {
   const datos = {
     promocion: PROMO.trabajo, zona: $('t-zona').value, detalle: $('t-detalle').value.trim(),
     oficio: $('t-oficio').value, id_proveedor: $('t-proveedor').value,
-    fecha_inicio: $('t-fecha').value, descripcion: $('t-desc').value.trim()
+    fecha_inicio: $('t-fecha').value, fecha_fin: $('t-fin').value, descripcion: $('t-desc').value.trim()
   };
   const falta = !datos.promocion ? 'Elige la promoción.' : !datos.zona ? 'Elige la zona.' : !datos.oficio ? 'Elige el oficio.'
     : !datos.fecha_inicio ? 'Pon la fecha prevista de inicio.' : diasEntre(D.hoy, datos.fecha_inicio) < 0 ? MENSAJES.fecha_pasada
+    : !datos.fecha_fin ? MENSAJES.falta_fecha_fin : datos.fecha_fin < datos.fecha_inicio ? MENSAJES.fin_antes_inicio
     : !datos.descripcion ? MENSAJES.falta_descripcion : '';
   if (falta) { err.textContent = falta; return; }
 
@@ -954,6 +1103,7 @@ $('f-trabajo').addEventListener('submit', async (e) => {
   });
   if (!r.ok) { err.textContent = r.motivo === 'red' ? r.detalle : mensaje(r); return; }
   e.target.reset(); limpiarFotos('trabajo');
+  $('t-fin').min = D.hoy;
   $('t-antelacion').classList.add('oculto');
   rellenarProveedores();
   hecho('Aviso enviado', `${r.id} · ${datos.descripcion} · ${datos.zona}. Oficina técnica ya lo tiene.` +
@@ -1367,7 +1517,8 @@ async function guardarContacto(e) {
 }
 
 // ─── DATOS: AYUDAS ──────────────────────────────────────────────────
-const NIVELES = { urgente: 'Urgente', atencion: 'Atención', plazo: 'En plazo', ejecucion: 'En ejecución', terminado: 'Terminado' };
+const NIVELES = { urgente: 'Urgente', atencion: 'Atención', plazo: 'En plazo', ejecucion: 'En ejecución', terminado: 'Terminado',
+  planificado: 'Planificado', sin_avisar: 'Sin avisar', sin_confirmar: 'Sin confirmar' };
 const PASOS = ['Anunciado', 'Planos en preparación', 'Planos listos', 'Reunión hecha', 'En ejecución', 'Terminado'];
 const ESTADOS_OBRA = ['En ejecución', 'Terminado'];
 const SIGUIENTE_OFICINA = { 'Anunciado': ['Planos en preparación', 'Empezar planos'], 'Planos en preparación': ['Planos listos', 'Marcar planos listos'] };
@@ -1481,11 +1632,12 @@ function pintarSemanas() {
   const contador = (n, texto, clase) => `<div class="contador"><div class="n ${clase || ''}">${n}</div><div class="t">${texto}</div></div>`;
   $('s-contadores').innerHTML = contador(cuenta('urgente'), 'Urgentes', 'rojo') + contador(cuenta('atencion'), 'Atención', 'naranja') +
     contador(cuenta('plazo'), 'En plazo', 'verde') + contador(cuenta('ejecucion'), 'En ejecución') +
+    contador(cuenta('sin_avisar'), 'Sin avisar', cuenta('sin_avisar') ? 'naranja' : '') +
     contador(vivos.filter(t => t.tardio === true).length, 'Avisos tardíos', 'rojo') +
     contador(dudas.length, 'Dudas abiertas' + (vencidas ? ' · ' + plural(vencidas, 'vencida', 'vencidas') : ''), vencidas ? 'rojo' : '');
 
   const filtroEstado = {
-    alerta: t => t.nivel === 'urgente' || t.nivel === 'atencion',
+    alerta: t => t.nivel === 'urgente' || t.nivel === 'atencion' || t.nivel === 'sin_avisar' || t.nivel === 'sin_confirmar',
     dudas: t => t.estado !== 'Terminado' && t.dudas_abiertas > 0,
     ejecucion: t => t.estado === 'En ejecución',
     terminados: t => t.estado === 'Terminado'
@@ -1507,7 +1659,10 @@ function pintarSemanas() {
 
   // Lo que debía haber empezado antes de esta semana va en la primera columna
   const enVentana = lista.filter(t => t.fecha_inicio && t.fecha_inicio <= fin);
-  const despues = lista.filter(t => !t.fecha_inicio || t.fecha_inicio > fin);
+  // Más allá de las seis semanas, lo planificado se ve en Planificación: aquí solo lo ya avisado
+  const masTarde = lista.filter(t => !t.fecha_inicio || t.fecha_inicio > fin);
+  const despues = masTarde.filter(t => t.estado !== 'Planificado');
+  const planificadosLuego = masTarde.length - despues.length;
   const columna = (t) => t.fecha_inicio < lunes ? 0 : Math.min(5, Math.floor(diasEntre(lunes, t.fecha_inicio) / 7));
 
   let html;
@@ -1537,15 +1692,18 @@ function pintarSemanas() {
     html = `<div class="radar"><div class="radar-in">${cabecera}${filas}</div></div>`;
   }
   $('s-radar').innerHTML = html;
-  $('s-mas').innerHTML = despues.length ? `<h3 class="titulo-bloque">Más adelante <span class="cuenta">${despues.length}</span></h3><div class="rejilla-tarjetas">${despues.map(t => tarjeta(t, true)).join('')}</div>` : '';
-  $('s-mas').classList.toggle('oculto', !despues.length);
+  $('s-mas').innerHTML = (despues.length ? `<h3 class="titulo-bloque">Más adelante <span class="cuenta">${despues.length}</span></h3><div class="rejilla-tarjetas">${despues.map(t => tarjeta(t, true)).join('')}</div>` : '') +
+    (planificadosLuego ? `<p class="meta" style="margin-top: 12px">Y ${plural(planificadosLuego, 'trabajo planificado', 'trabajos planificados')} más adelante, sin avisar todavía: ${SECCIONES.indexOf('plan') !== -1 ? '<a href="#plan" data-accion="ir" data-sec="plan">verlos en Planificación</a>' : 'se ven en Planificación'}.</p>` : '');
+  $('s-mas').classList.toggle('oculto', !despues.length && !planificadosLuego);
   enviarAltura();
 }
 
 function tarjeta(t, conZona) {
   const empezado = t.estado === 'En ejecución' || t.estado === 'Terminado';
-  const inicio = (empezado && t.fecha_inicio <= D.hoy ? 'Desde ' : 'Inicio ') + fechaDM(t.fecha_inicio);
-  const segunda = t.nivel === 'plazo' ? t.estado : (t.nivel === 'urgente' || t.nivel === 'atencion') ? String(t.motivo).replace(/^Empieza en /, 'en ').replace(/^Empieza /, '') : '';
+  const inicio = (empezado && t.fecha_inicio <= D.hoy ? 'Desde ' : 'Inicio ') + fechaDM(t.fecha_inicio) + (t.fecha_fin ? ' · fin ' + fechaDM(t.fecha_fin) : '');
+  const segunda = t.nivel === 'plazo' ? t.estado : (t.nivel === 'urgente' || t.nivel === 'atencion' || t.nivel === 'sin_avisar') ? String(t.motivo).replace(/^Empieza en /, 'en ').replace(/^Empieza /, '')
+    : t.nivel === 'sin_confirmar' ? 'debía terminar el ' + fechaDM(t.fecha_fin) : '';
+  const acciones = accionesTarjeta(t);
   const dudas = t.dudas_vencidas ? `<span class="marca roja">${plural(t.dudas_vencidas, 'duda vencida', 'dudas vencidas')}</span>`
     : t.dudas_abiertas ? `<span class="marca">${plural(t.dudas_abiertas, 'duda abierta', 'dudas abiertas')}</span>` : '';
   return `<a class="tarjeta" href="#${esc(t.id)}" data-abrir="${esc(t.id)}">
@@ -1554,8 +1712,14 @@ function tarjeta(t, conZona) {
     <div class="of">${esc(t.oficio)}</div>
     <div class="de">${esc(t.descripcion)}${t.detalle ? ` <span class="sub">· ${esc(t.detalle)}</span>` : ''}</div>
     <div class="cu">${inicio}${segunda ? ' · ' + esc(segunda) : ''}</div>
-    <div class="marcas">${t.estado !== 'Terminado' ? `<span class="marca">${esc(resumenPlanos(t))}</span><span class="marca">${esc(resumenReunion(t))}</span>` : ''}${dudas}${t.tardio === true ? '<span class="marca borde-rojo">Aviso tardío</span>' : ''}</div>
-  </a>`;
+    <div class="marcas">${t.estado !== 'Terminado' && t.estado !== 'Planificado' ? `<span class="marca">${esc(resumenPlanos(t))}</span><span class="marca">${esc(resumenReunion(t))}</span>` : ''}${dudas}${t.tardio === true ? '<span class="marca borde-rojo">Aviso tardío</span>' : ''}${atrasado(t) && t.estado !== 'Planificado' ? '<span class="marca roja">Debía haber terminado</span>' : ''}</div>
+  </a>`.replace(/^<a /, acciones ? '<div class="tarjeta-caja"><a ' : '<a ') + (acciones ? acciones + '</div>' : '');
+}
+// Botones bajo la tarjeta (fuera del enlace): avisar a oficina técnica y marcar hecho
+function accionesTarjeta(t) {
+  const b = (puedeAvisar(t) ? `<button type="button" data-accion="avisar" data-id="${esc(t.id)}">Avisar</button>` : '') +
+    (hechoAMano(t) ? `<button type="button" data-accion="hecho" data-id="${esc(t.id)}">Hecho</button>` : '');
+  return b ? `<div class="tarjeta-acc">${b}</div>` : '';
 }
 
 function pintarLeyenda() {
@@ -1564,6 +1728,7 @@ function pintarLeyenda() {
     ['nv nv-urgente', 'Urgente', `Empieza en menos de ${u.urgente} días sin planos listos, o tiene una duda vencida.`],
     ['nv nv-atencion', 'Atención', `Empieza en menos de ${u.atencion} días y aún no se ha celebrado la reunión.`],
     ['nv nv-plazo', 'En plazo', 'Va en tiempo según las reglas anteriores.'],
+    ['nv nv-sin_avisar', 'Sin avisar', `Viene de la planificación, empieza en menos de ${u.antelacion} días y aún no se ha avisado a oficina técnica.`],
     ['marca borde-rojo', 'Aviso tardío', `Obra avisó con menos de ${u.antelacion} días de antelación.`]
   ].map(([c, e, t]) => `<div><span class="${c}">${e}</span><span>${t}</span></div>`).join('');
 }
@@ -1585,26 +1750,29 @@ function pintarFicha() {
   if (!t) return;
   const aviso = OK; OK = '';
   $('titulo').textContent = 'Trabajo ' + t.id;
-  const k = PASOS.indexOf(t.estado);
-  const pasos = PASOS.map((p, i) => `<li class="${i < k ? 'paso-hecho' : ''}"${i === k ? ' aria-current="step"' : ''}><span class="n">Paso ${i + 1}${i < k ? ' · hecho' : i === k ? ' · ahora' : ''}</span><span class="e">${esc(p)}</span>${i === k && t.fecha_estado ? `<span class="f">desde ${fechaDM(t.fecha_estado)}</span>` : ''}</li>`).join('');
+  const pasosT = (t.estado === 'Planificado' || t.origen === 'Project') ? ['Planificado'].concat(PASOS) : PASOS;
+  const k = pasosT.indexOf(t.estado);
+  const pasos = pasosT.map((p, i) => `<li class="${i < k ? 'paso-hecho' : ''}"${i === k ? ' aria-current="step"' : ''}><span class="n">Paso ${i + 1}${i < k ? ' · hecho' : i === k ? ' · ahora' : ''}</span><span class="e">${esc(p)}</span>${i === k && t.fecha_estado ? `<span class="f">desde ${fechaDM(t.fecha_estado)}</span>` : ''}</li>`).join('');
 
   // Botones de estado: oficina técnica, todos; obra, solo "en ejecución" y "terminado"
   const boton = (estado, texto, negro) => `<button type="button" class="btn-peq${negro ? ' negro' : ''}" data-accion="estado" data-id="${esc(t.id)}" data-estado="${esc(estado)}">${texto}</button>`;
-  let acciones = '';
+  let acciones = puedeAvisar(t) ? `<button type="button" class="btn-peq negro" data-accion="avisar" data-id="${esc(t.id)}">Avisar a oficina técnica</button>` : '';
   if (puede('cambiar_estado_oficina')) {
     const sig = SIGUIENTE_OFICINA[t.estado];
     if (sig) acciones += boton(sig[0], sig[1], true);
-    acciones += `<label class="oculto-visual" for="fi-estado-sel">Estado</label><select class="ctrl" id="fi-estado-sel">${PASOS.map(p => `<option${p === t.estado ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>` +
+    const opciones = (t.estado === 'Planificado' ? ['Planificado'] : []).concat(PASOS);
+    acciones += `<label class="oculto-visual" for="fi-estado-sel">Estado</label><select class="ctrl" id="fi-estado-sel">${opciones.map(p => `<option${p === t.estado ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>` +
       '<button type="button" class="btn-peq" data-accion="estado-sel">Cambiar estado</button>';
   } else if (puede('cambiar_estado_obra')) {
-    if (ESTADOS_OBRA.indexOf(t.estado) === -1) acciones += boton('En ejecución', 'Marcar en ejecución', true);
-    if (t.estado === 'En ejecución') acciones += boton('Terminado', 'Marcar terminado', true);
+    if (ESTADOS_OBRA.indexOf(t.estado) === -1) acciones += boton('En ejecución', 'Marcar en ejecución', !puedeAvisar(t));
+    if (hechoAMano(t)) acciones += `<button type="button" class="btn-peq${t.estado === 'En ejecución' ? ' negro' : ''}" data-accion="hecho" data-id="${esc(t.id)}">Marcar hecho</button>`;
     if (t.estado === 'Terminado') acciones += boton('En ejecución', 'Volver a en ejecución', false);
   }
-  const detalleNivel = (t.nivel === 'urgente' || t.nivel === 'atencion') ? t.motivo
+  const detalleNivel = (t.nivel === 'urgente' || t.nivel === 'atencion' || t.nivel === 'sin_avisar' || t.nivel === 'sin_confirmar') ? t.motivo
+    : t.nivel === 'planificado' ? textoDias(t.dias_para_inicio) + ' · sin avisar a oficina técnica'
     : t.nivel === 'plazo' ? textoDias(t.dias_para_inicio)
-    : t.nivel === 'ejecucion' ? 'En obra desde el ' + fechaDM(t.fecha_estado)
-    : 'Terminado el ' + fechaDM(t.fecha_estado);
+    : t.nivel === 'ejecucion' ? 'En obra desde el ' + fechaDM(t.inicio_real || t.fecha_estado)
+    : 'Terminado el ' + fechaDM(t.fin_real || t.fecha_estado);
 
   $('fi').innerHTML = `<button type="button" class="volver" data-accion="volver">← ${esc(TITULOS[ORIGEN] || 'Volver')}</button>
     ${aviso ? `<div class="ok-linea" role="status">${esc(aviso)}</div>` : ''}
@@ -1619,7 +1787,7 @@ function pintarFicha() {
         ${acciones ? `<div class="botones">${acciones}</div>` : ''}
       </div>
     </div>
-    <ol class="pasos" aria-label="Estado del trabajo">${pasos}</ol>
+    <ol class="pasos" aria-label="Estado del trabajo" style="--n-pasos: ${pasosT.length}">${pasos}</ol>
     <div class="ficha-cuerpo">
       <div class="ficha-col">${bloquePlanos(t)}${bloqueDudas(t)}${bloqueFotos(t)}${bloqueReuniones(t)}</div>
       <aside class="ficha-col">${bloqueDatos(t)}${bloqueHistorial()}</aside>
@@ -1794,8 +1962,14 @@ function bloqueDatos(t) {
       ${fila('Oficio', esc(t.oficio))}
       ${fila('Proveedor', prov ? esc(nombreContacto(prov)) + (vias ? '<br>' + vias : '') : esc(t.id_proveedor || 'Sin decidir'))}
       ${fila('Inicio previsto', esc(fechaLarga(t.fecha_inicio)) + (!empezado && t.dias_para_inicio !== null ? `<br><span class="meta">${esc(textoDias(t.dias_para_inicio))}</span>` : ''))}
-      ${fila('Avisado', esc(fechaDMA(t.creado)) + ' · ' + esc(t.creado_por))}
-      ${fila('Antelación', ant === null || !isFinite(ant) ? '—' : esc(plural(ant, 'día', 'días')) + ` <span class="meta">(mínimo ${S.umbrales.antelacion})</span>`)}
+      ${fila('Fin previsto', t.fecha_fin ? esc(fechaLarga(t.fecha_fin)) : '—')}
+      ${esIso(soloFecha(t.inicio_real)) ? fila('Empezó', esc(fechaLarga(t.inicio_real))) : ''}
+      ${esIso(soloFecha(t.fin_real)) ? fila('Terminó', esc(fechaLarga(t.fin_real))) : ''}
+      ${desviacion(t).ini !== null || desviacion(t).fin !== null ? fila('Desviación', desvHtml(t)) : ''}
+      ${t.origen === 'Project' ? fila('Planificación', 'Project' + (t.capitulo ? ' · ' + esc(t.capitulo) : '') + `<br><span class="meta">Importado ${esc(fechaDMA(t.creado))} · ${esc(t.creado_por)}</span>`) : ''}
+      ${fila('Avisado', t.origen !== 'Project' ? esc(fechaDMA(t.creado)) + ' · ' + esc(t.creado_por)
+        : ant !== null && isFinite(ant) ? 'Sí, con ' + esc(plural(ant, 'día', 'días')) + ' de antelación' : t.estado === 'Planificado' ? 'Todavía no' : 'No')}
+      ${t.origen === 'Project' ? '' : fila('Antelación', ant === null || !isFinite(ant) ? '—' : esc(plural(ant, 'día', 'días')) + ` <span class="meta">(mínimo ${S.umbrales.antelacion})</span>`)}
       ${fila('Qué se hará', esc(t.descripcion))}
       ${esEnlace(t.carpeta_synology) ? fila('Synology', enlace(t.carpeta_synology, 'Abrir carpeta ↗')) : ''}
       ${fila('Modificado', esc(fechaDMA(t.actualizado)) + (t.actualizado_por ? ' · ' + esc(t.actualizado_por) : ''))}
@@ -1816,8 +1990,11 @@ function formEditar(t) {
       ${campo('detalle', 'Detalle', `<input class="ctrl" id="fe-detalle" value="${esc(t.detalle)}">`)}
       ${campo('oficio', 'Oficio', `<select class="ctrl" id="fe-oficio">${(S.listas.oficios || []).map(o => `<option>${esc(o)}</option>`).join('')}</select>`)}
       ${campo('descripcion', 'Qué se va a hacer', `<textarea class="ctrl" id="fe-descripcion" rows="3">${esc(t.descripcion)}</textarea>`)}
-      ${campo('fecha_inicio', 'Fecha prevista de inicio', `<input class="ctrl" type="date" id="fe-fecha_inicio" value="${esc(t.fecha_inicio)}"${esOT ? '' : ` min="${esc(t.fecha_inicio)}"`}>`)}
-      ${!esOT && c.indexOf('fecha_inicio') !== -1 ? '<p class="ayuda">La fecha solo se puede retrasar. Si hay que adelantarla, avisa a oficina técnica.</p>' : ''}
+      ${campo('fecha_inicio', 'Fecha prevista de inicio', `<input class="ctrl" type="date" id="fe-fecha_inicio" value="${esc(t.fecha_inicio)}"${esOT || t.estado === 'Planificado' ? '' : ` min="${esc(t.fecha_inicio)}"`}>`)}
+      ${!esOT && t.estado !== 'Planificado' && c.indexOf('fecha_inicio') !== -1 ? '<p class="ayuda">Ya está avisado: la fecha de inicio solo se puede retrasar. Si hay que adelantarla, avisa a oficina técnica.</p>' : ''}
+      ${campo('fecha_fin', 'Fecha prevista de fin', `<input class="ctrl" type="date" id="fe-fecha_fin" value="${esc(soloFecha(t.fecha_fin))}">`)}
+      ${ESTADOS_OBRA.indexOf(t.estado) !== -1 ? campo('inicio_real', 'Empezó el', `<input class="ctrl" type="date" id="fe-inicio_real" value="${esc(soloFecha(t.inicio_real))}" max="${esc(D.hoy)}">`) : ''}
+      ${t.estado === 'Terminado' ? campo('fin_real', 'Terminó el', `<input class="ctrl" type="date" id="fe-fin_real" value="${esc(soloFecha(t.fin_real))}" max="${esc(D.hoy)}">`) : ''}
       ${campo('id_proveedor', 'Proveedor', `<select class="ctrl" id="fe-id_proveedor">${opcionesProveedor(t.oficio, 'Sin decidir')}</select>`)}
       ${campo('carpeta_synology', 'Carpeta en Synology (enlace)', `<input class="ctrl" type="url" id="fe-carpeta_synology" value="${esc(t.carpeta_synology)}" placeholder="https://…">`)}
       <div class="error" id="fe-error" role="alert"></div>
@@ -1834,6 +2011,7 @@ function bloqueHistorial() {
 
 const TEXTO_HISTORIAL = {
   'trabajo:crear': 'Aviso de obra', 'trabajo:estado': 'Estado', 'trabajo:editar': 'Cambio', 'trabajo:borrar': 'Borrado',
+  'trabajo:importar': 'Planificación (Project)',
   'duda:crear': 'Nueva duda', 'duda:responder': 'Duda respondida', 'duda:borrar': 'Duda borrada',
   'plano:crear': 'Plano añadido', 'plano:editar': 'Plano modificado', 'plano:borrar': 'Plano borrado',
   'reunion:convocar': 'Reunión convocada', 'reunion:cerrar': 'Reunión celebrada'
@@ -1875,7 +2053,7 @@ function pintarPendientes() {
   }
 
   $('p-ayuda').textContent = 'Lo que empieza antes, arriba.';
-  const vivos = (D.trabajos || []).filter(t => t.estado !== 'Terminado').sort(porInicio);
+  const vivos = (D.trabajos || []).filter(t => t.estado !== 'Terminado' && t.estado !== 'Planificado').sort(porInicio);
   const planos = vivos.filter(t => t.estado === 'Anunciado' || t.estado === 'Planos en preparación');
   const sinReunion = vivos.filter(t => ['Anunciado', 'Planos en preparación', 'Planos listos'].indexOf(t.estado) !== -1
     && !reunionesDe(t.id).some(r => r.estado === 'Convocada' || r.numero_acta));
@@ -2055,6 +2233,7 @@ function pintarDetalleAvance() {
       <dt>Promoción</dt><dd>${esc(nombrePromo(a.promocion))}</dd>
       <dt>Zona</dt><dd>${esc(a.zona)}${tipo ? ' · ' + tipo : ''}</dd>
       ${a.detalle ? `<dt>Detalle</dt><dd>${esc(a.detalle)}</dd>` : ''}
+      ${a.id_trabajo && trabajoPorId(a.id_trabajo) ? `<dt>Trabajo</dt><dd><a href="#${esc(a.id_trabajo)}" data-abrir="${esc(a.id_trabajo)}">${esc(a.id_trabajo)} · ${esc(trabajoPorId(a.id_trabajo).descripcion)}</a>${a.origen === 'hecho' ? '<br><span class="meta">Creado al marcarlo hecho</span>' : ''}</dd>` : ''}
       <dt>Registrado</dt><dd>${esc(a.creado_por)}${a.creado ? ' · ' + esc(fechaHoraCorta(a.creado)) : ''}</dd>
       <dt>Código</dt><dd>${esc(a.id)}</dd>
     </dl>
@@ -2102,6 +2281,561 @@ function prepararAvances() {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && AVANCE) cerrarAvance(); });
 }
 
+// ─── PLANIFICACIÓN ──────────────────────────────────────────────────
+// Los trabajos de una zona en el tiempo: lo previsto (de Project o del aviso)
+// frente a lo real (en ejecución / hecho). Desde aquí se avisan a oficina
+// técnica y se marcan hechos, uno a uno o varios a la vez.
+const FILTRO_P = { promo: '', zona: '', agrupar: 'capitulo' };
+const PL_SEL = new Set();        // trabajos elegidos
+const PL_ABIERTOS = new Set();   // grupos desplegados
+let PL_GRUPOS = [];              // grupos pintados (para las casillas de grupo)
+let PL_T0 = '', PL_T1 = '';      // primer día del primer mes y del mes siguiente al último
+const puedeAvisar = (t) => !!t && t.estado === 'Planificado' && puede('avisar_trabajo');
+const puedeHecho = (t) => !!t && t.estado !== 'Terminado' && puede('cambiar_estado_obra');
+const elegible = (t) => puedeAvisar(t) || puedeHecho(t);
+const atrasado = (t) => t.estado !== 'Terminado' && t.fin_vencido === true;
+
+function prepararPlan() {
+  $('pl-promos').innerHTML = (S.listas.promociones || []).map(p => `<button type="button" data-pl-promo="${esc(p)}" aria-pressed="false">${esc(p)}</button>`).join('');
+  $('pl-promos').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-pl-promo]');
+    if (!b) return;
+    FILTRO_P.promo = b.dataset.plPromo; FILTRO_P.zona = '';
+    PL_SEL.clear(); PL_ABIERTOS.clear(); pintarPlan();
+  });
+  $('pl-zona').addEventListener('change', () => { FILTRO_P.zona = $('pl-zona').value; PL_SEL.clear(); PL_ABIERTOS.clear(); pintarPlan(); });
+  $('pl-agrupar').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-agrupar]');
+    if (!b) return;
+    FILTRO_P.agrupar = b.dataset.agrupar; PL_ABIERTOS.clear(); pintarPlan();
+  });
+  if (puede('importar_project')) {
+    $('pl-importar').classList.remove('oculto');
+    $('pl-importar').addEventListener('click', () => $('input-project').click());
+  }
+  $('input-project').addEventListener('change', leerArchivoProject);
+  $('sec-plan').addEventListener('change', (e) => {
+    const c = e.target;
+    if (c.dataset.plSel) { if (c.checked) PL_SEL.add(c.dataset.plSel); else PL_SEL.delete(c.dataset.plSel); }
+    else if (c.dataset.plGrupo !== undefined) {
+      const g = PL_GRUPOS[Number(c.dataset.plGrupo)];
+      if (g) g.lista.filter(elegible).forEach(t => { if (c.checked) PL_SEL.add(t.id); else PL_SEL.delete(t.id); });
+    } else return;
+    pintarSeleccion();
+  });
+}
+
+function zonasConTrabajos(promo) {
+  const zs = Array.from(new Set((D.trabajos || []).filter(t => t.promocion === promo).map(t => t.zona)));
+  return zs.sort((a, b) => ordenZona(promo, a) - ordenZona(promo, b) || String(a).localeCompare(String(b), 'es', { numeric: true }));
+}
+// Por defecto, la promoción y la zona con más trabajos sin terminar
+function porDefectoPlan() {
+  const cuenta = {};
+  (D.trabajos || []).filter(t => t.estado !== 'Terminado').forEach(t => { const k = t.promocion + '|' + t.zona; cuenta[k] = (cuenta[k] || 0) + 1; });
+  const mejor = Object.keys(cuenta).sort((a, b) => cuenta[b] - cuenta[a])[0];
+  return mejor ? mejor.split('|') : [(S.listas.promociones || [])[0] || '', ''];
+}
+
+function claveGrupo(t) {
+  if (FILTRO_P.agrupar === 'partida') return (S.partidas || {})[t.oficio] || 'Sin partida';
+  return t.capitulo || t.oficio || 'Sin capítulo';
+}
+
+function pintarPlan() {
+  if (!D) return;
+  const aviso = OK; OK = '';
+  if (!FILTRO_P.promo) { const [p, z] = porDefectoPlan(); FILTRO_P.promo = p; FILTRO_P.zona = z; }
+  $('pl-promos').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.plPromo === FILTRO_P.promo)));
+  $('pl-agrupar').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.agrupar === FILTRO_P.agrupar)));
+  const zonas = zonasConTrabajos(FILTRO_P.promo);
+  if (zonas.indexOf(FILTRO_P.zona) === -1) FILTRO_P.zona = zonas[0] || '';
+  $('pl-zona').innerHTML = zonas.length ? zonas.map(z => `<option${z === FILTRO_P.zona ? ' selected' : ''}>${esc(z)}</option>`).join('') : '<option value="">Sin trabajos</option>';
+  $('pl-zona').disabled = !zonas.length;
+
+  const ts = (D.trabajos || []).filter(t => t.promocion === FILTRO_P.promo && t.zona === FILTRO_P.zona).sort(porInicio);
+  Array.from(PL_SEL).forEach(id => { if (!elegible(ts.find(t => t.id === id))) PL_SEL.delete(id); });
+  const ok = aviso ? `<div class="ok-linea" role="status">${esc(aviso)}</div>` : '';
+  if (!ts.length) {
+    ['pl-fase', 'pl-sel'].forEach(id => $(id).classList.add('oculto'));
+    $('pl-contadores').innerHTML = ''; $('pl-leyenda').innerHTML = '';
+    $('pl-avisos').innerHTML = ok;
+    $('pl-cuerpo').innerHTML = `<div class="vacio">No hay trabajos en ${esc(FILTRO_P.promo)}.${puede('importar_project') ? ' Carga la planificación con «Importar Project».' : ''}</div>`;
+    enviarAltura();
+    return;
+  }
+
+  // Cabecera de la zona
+  const previstas = ts.flatMap(t => [t.fecha_inicio, t.fecha_fin]).filter(esIso).sort();
+  const tipo = tipoZona(FILTRO_P.zona, FILTRO_P.promo);
+  const hechos = ts.filter(t => t.estado === 'Terminado').length;
+  $('pl-fase').innerHTML = `<h2>${esc(FILTRO_P.zona)}</h2>${tipo ? `<span class="dato">${tipo}</span>` : ''}
+    <span class="dato"><b>${ts.length}</b> trabajos · <b>${hechos}</b> hechos</span>
+    ${previstas.length ? `<span class="dato">Previsto del <b>${fechaDMA(previstas[0])}</b> al <b>${fechaDMA(previstas[previstas.length - 1])}</b></span>` : ''}`;
+  $('pl-fase').classList.remove('oculto');
+
+  // Contadores
+  const sinAvisar = ts.filter(t => t.nivel === 'sin_avisar');
+  const atrasados = ts.filter(atrasado);
+  const retrasos = ts.map(t => desviacion(t).fin).filter(n => n !== null && n > 0);
+  const contador = (n, texto, clase) => `<div class="contador"><div class="n ${clase || ''}">${n}</div><div class="t">${texto}</div></div>`;
+  $('pl-contadores').innerHTML = contador(sinAvisar.length, 'Sin avisar · menos de ' + S.umbrales.antelacion + ' días', sinAvisar.length ? 'naranja' : '') +
+    contador(atrasados.length, 'Debían haber terminado', atrasados.length ? 'rojo' : '') +
+    contador(ts.filter(t => t.estado === 'En ejecución').length, 'En ejecución') +
+    contador(hechos + '<span class="meta" style="font-size: 16px"> / ' + ts.length + '</span>', 'Hechos', 'verde') +
+    contador(retrasos.length ? '+' + Math.max(...retrasos) + '<span class="meta" style="font-size: 16px"> d</span>' : '0', 'Mayor retraso', retrasos.length ? 'rojo' : '');
+
+  // Avisos con atajo para elegir esos trabajos
+  const atajo = (tipo, n) => n ? `<button type="button" class="btn-peq" data-accion="pl-elegir" data-tipo="${tipo}">Elegirlos</button>` : '';
+  let avisos = ok;
+  if (sinAvisar.length) avisos += `<div class="aviso naranja"><span><strong>${plural(sinAvisar.length, 'trabajo empieza', 'trabajos empiezan')} en menos de ${S.umbrales.antelacion} días</strong> y aún no se ${sinAvisar.length === 1 ? 'ha' : 'han'} avisado a oficina técnica.</span>${puede('avisar_trabajo') ? atajo('sin_avisar', sinAvisar.length) : ''}</div>`;
+  if (atrasados.length) avisos += `<div class="aviso tardio"><span><strong>${plural(atrasados.length, 'trabajo debía', 'trabajos debían')} haber terminado</strong> según lo previsto y no ${atrasados.length === 1 ? 'está marcado' : 'están marcados'} como ${atrasados.length === 1 ? 'hecho' : 'hechos'}.</span>${puede('cambiar_estado_obra') ? atajo('atrasados', atrasados.length) : ''}</div>`;
+  $('pl-avisos').innerHTML = avisos;
+
+  // Grupos y línea de tiempo
+  const mapa = new Map();
+  ts.forEach(t => { const k = claveGrupo(t); if (!mapa.has(k)) mapa.set(k, []); mapa.get(k).push(t); });
+  PL_GRUPOS = Array.from(mapa, ([k, lista]) => ({ k, lista })).sort((a, b) => porInicio(a.lista[0], b.lista[0]));
+  const fechas = ts.flatMap(t => [t.fecha_inicio, t.fecha_fin, t.inicio_real, t.fin_real]).map(soloFecha).filter(esIso).concat([D.hoy]).sort();
+  PL_T0 = fechas[0].slice(0, 7) + '-01';
+  PL_T1 = sumarMeses(fechas[fechas.length - 1].slice(0, 7), 1) + '-01';
+
+  $('pl-cuerpo').innerHTML = estrecho() ? planMovil() : planEscritorio();
+  $('pl-leyenda').innerHTML = '<span><i class="lg prev"></i>Previsto</span><span><i class="lg prev sin-avisar"></i>Sin avisar a oficina técnica</span>' +
+    '<span><i class="lg real"></i>Real (en ejecución / hecho)</span><span><i class="lg hoy"></i>Hoy</span>' +
+    `<span>Desviación: días de más (+) o de menos (−) frente a lo previsto.</span>`;
+  pintarSeleccion();
+  enviarAltura();
+}
+
+// Desviación en días: inicio real frente al previsto y fin real (o hoy, si va tarde) frente al previsto
+function desviacion(t) {
+  const ini = esIso(soloFecha(t.inicio_real)) && esIso(soloFecha(t.fecha_inicio)) ? diasEntre(soloFecha(t.fecha_inicio), soloFecha(t.inicio_real)) : null;
+  if (esIso(soloFecha(t.fin_real)) && esIso(soloFecha(t.fecha_fin))) return { ini, fin: diasEntre(soloFecha(t.fecha_fin), soloFecha(t.fin_real)), sigue: false };
+  if (atrasado(t) && esIso(soloFecha(t.fecha_fin))) return { ini, fin: diasEntre(soloFecha(t.fecha_fin), D.hoy), sigue: true };
+  return { ini, fin: null, sigue: false };
+}
+const signo = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n) + ' d';
+function desvHtml(t) {
+  const d = desviacion(t);
+  const cls = (n) => n > 7 ? 'roja' : n > 0 ? 'borde-rojo' : 'verde';
+  const linea = (n, txt) => `<div class="pl-desv"><span class="marca ${cls(n)}">${signo(n)}</span><span class="sub">${txt}</span></div>`;
+  const h = (d.ini !== null ? linea(d.ini, 'inicio') : '') + (d.fin !== null ? linea(d.fin, d.sigue ? 'y sigue' : 'fin') : '');
+  return h || '<span class="pl-vacio">—</span>';
+}
+
+const plPos = (iso) => (diasEntre(PL_T0, iso) / diasEntre(PL_T0, PL_T1) * 100).toFixed(3) + '%';
+const plAncho = (a, b) => (Math.max(1, diasEntre(a, b) + 1) / diasEntre(PL_T0, PL_T1) * 100).toFixed(3) + '%';
+function plMeses(etiquetas, cada) {
+  let h = '';
+  for (let i = 0, m = PL_T0.slice(0, 7); m + '-01' < PL_T1; i++, m = sumarMeses(m, 1)) {
+    const ini = m + '-01', enero = m.slice(5) === '01';
+    if (i > 0) h += `<span class="tl-mes${enero ? ' anio' : ''}" style="left:${plPos(ini)}"></span>`;
+    if (etiquetas && i % (cada || 1) === 0) h += `<span class="tl-etq" style="left:${plPos(ini)}">${MESES[Number(m.slice(5)) - 1]}</span>`;
+    if (etiquetas && (i === 0 || enero)) h += `<span class="tl-anio" style="left:${plPos(ini)}">${m.slice(0, 4)}</span>`;
+  }
+  return h;
+}
+function plBarras(lista) {
+  let h = plMeses(false) + `<span class="tl-hoy" style="left:${plPos(D.hoy)}"></span>`;
+  lista.forEach(t => {
+    const ini = soloFecha(t.fecha_inicio), fin = soloFecha(t.fecha_fin) || ini;
+    if (esIso(ini)) h += `<span class="tl-prev${t.nivel === 'sin_avisar' ? ' sin-avisar' : atrasado(t) ? ' tarde' : ''}" style="left:${plPos(ini)};width:${plAncho(ini, fin)}" title="${esc(t.descripcion)}: previsto ${fechaDM(ini)}–${fechaDM(fin)}"></span>`;
+    const ri = soloFecha(t.inicio_real), rf = soloFecha(t.fin_real);
+    const desde = esIso(ri) ? ri : esIso(rf) ? rf : '';
+    const hasta = esIso(rf) ? rf : t.estado === 'En ejecución' ? D.hoy : '';
+    if (desde && hasta) h += `<span class="tl-real${esIso(rf) ? '' : ' sigue'}" style="left:${plPos(desde)};width:${plAncho(desde, hasta)}" title="${esc(t.descripcion)}: real"></span>`;
+  });
+  return h;
+}
+
+function rangoPrevisto(lista) {
+  const ini = lista.map(t => soloFecha(t.fecha_inicio)).filter(esIso).sort()[0];
+  const fin = lista.map(t => soloFecha(t.fecha_fin) || soloFecha(t.fecha_inicio)).filter(esIso).sort().slice(-1)[0];
+  return ini ? `<div class="pl-f">${fechaDMA(ini)}</div><div class="pl-f sub">→ ${fechaDMA(fin)}</div>` : '<span class="pl-vacio">—</span>';
+}
+function rangoRealGrupo(lista) {
+  const reales = lista.flatMap(t => [t.inicio_real, t.fin_real]).map(soloFecha).filter(esIso).sort();
+  if (!reales.length) return '<span class="pl-vacio">—</span>';
+  const todos = lista.every(t => t.estado === 'Terminado');
+  return `<div class="pl-f">${fechaDMA(reales[0])}</div><div class="pl-f sub">→ ${todos ? fechaDMA(reales[reales.length - 1]) : 'en curso'}</div>`;
+}
+function rangoReal(t) {
+  if (!esIso(soloFecha(t.inicio_real)) && !esIso(soloFecha(t.fin_real))) return '<span class="pl-vacio">—</span>';
+  return `<div class="pl-f">${esIso(soloFecha(t.inicio_real)) ? fechaDMA(t.inicio_real) : '¿?'}</div><div class="pl-f sub">→ ${esIso(soloFecha(t.fin_real)) ? fechaDMA(t.fin_real) : 'en curso'}</div>`;
+}
+function estadoGrupo(lista) {
+  const n = (f) => lista.filter(f).length;
+  const hechos = n(t => t.estado === 'Terminado');
+  if (hechos === lista.length) return '<span class="nv nv-terminado">Hecho</span>';
+  const partes = [];
+  if (n(t => t.nivel === 'sin_avisar')) partes.push(`<span class="nv nv-sin_avisar">${n(t => t.nivel === 'sin_avisar')} sin avisar</span>`);
+  if (n(atrasado)) partes.push(`<span class="nv nv-sin_confirmar">${n(atrasado)} ${n(atrasado) === 1 ? 'atrasado' : 'atrasados'}</span>`);
+  if (!partes.length && n(t => t.estado === 'En ejecución')) partes.push('<span class="nv nv-ejecucion">En ejecución</span>');
+  return (partes.join(' ') || `<span class="nv nv-planificado">${n(t => t.estado === 'Planificado') === lista.length ? 'Planificado' : 'En marcha'}</span>`) +
+    `<div class="sub" style="margin-top: 4px">${hechos}/${lista.length} hechos</div>`;
+}
+function maxDesvGrupo(lista) {
+  const v = lista.map(t => desviacion(t).fin).filter(n => n !== null);
+  if (!v.length) return '<span class="pl-vacio">—</span>';
+  const m = Math.max(...v);
+  return `<div class="pl-desv" title="El trabajo que más se desvía en su fin"><span class="marca ${m > 7 ? 'roja' : m > 0 ? 'borde-rojo' : 'verde'}">${signo(m)}</span><span class="sub">fin</span></div>`;
+}
+const hechoAMano = (t) => puedeHecho(t) && (t.estado !== 'Planificado' || soloFecha(t.fecha_inicio) <= D.hoy);
+function accionesTrabajo(t) {
+  return (puedeAvisar(t) ? `<button type="button" class="btn-peq" data-accion="avisar" data-id="${esc(t.id)}">Avisar</button>` : '') +
+    (hechoAMano(t) ? `<button type="button" class="btn-peq" data-accion="hecho" data-id="${esc(t.id)}">Hecho</button>` : '');
+}
+const chkTrabajo = (t) => elegible(t) ? `<input type="checkbox" data-pl-sel="${esc(t.id)}" aria-label="Elegir ${esc(t.id)} · ${esc(t.descripcion)}"${PL_SEL.has(t.id) ? ' checked' : ''}>` : '';
+const chkGrupo = (g, i) => g.lista.some(elegible) ? `<input type="checkbox" data-pl-grupo="${i}" aria-label="Elegir todo ${esc(g.k)}">` : '';
+
+function planEscritorio() {
+  let h = `<div class="pl"><div class="pl-fila pl-cab"><div></div><div>${FILTRO_P.agrupar === 'partida' ? 'Partida · trabajo' : 'Capítulo · trabajo'}</div><div>Previsto</div><div>Real</div><div>Desviación</div><div>Estado</div>` +
+    `<div class="pl-tl">${plMeses(true, 1)}<span class="tl-hoy" style="left:${plPos(D.hoy)}"></span><span class="tl-hoy-etq" style="left:${plPos(D.hoy)}">Hoy</span></div></div>`;
+  PL_GRUPOS.forEach((g, i) => {
+    const abierto = PL_ABIERTOS.has(g.k);
+    h += `<div class="pl-fila pl-grupo" data-accion="pl-grupo" data-grupo="${i}" aria-expanded="${abierto}">
+      <div class="pl-chk">${chkGrupo(g, i)}</div>
+      <div class="pl-nombre"><span class="pl-flecha" aria-hidden="true">${abierto ? '▾' : '▸'}</span>${esc(g.k)}<span class="sub">${plural(g.lista.length, 'trabajo', 'trabajos')}</span></div>
+      <div>${rangoPrevisto(g.lista)}</div><div>${rangoRealGrupo(g.lista)}</div>
+      <div>${maxDesvGrupo(g.lista)}</div><div>${estadoGrupo(g.lista)}</div>
+      <div class="pl-tl">${plBarras(g.lista)}</div></div>`;
+    if (!abierto) return;
+    g.lista.forEach(t => {
+      h += `<div class="pl-fila pl-trab">
+        <div class="pl-chk">${chkTrabajo(t)}</div>
+        <div class="pl-nombre"><a href="#${esc(t.id)}" data-abrir="${esc(t.id)}">${esc(t.id)} · ${esc(t.descripcion)}</a><span class="sub">${esc(t.oficio)}${t.detalle ? ' · ' + esc(t.detalle) : ''}</span></div>
+        <div>${rangoPrevisto([t])}</div><div>${rangoReal(t)}</div><div>${desvHtml(t)}</div>
+        <div><span class="nv nv-${esc(t.nivel)}">${esc(NIVELES[t.nivel] || t.estado)}</span><div class="pl-acc">${accionesTrabajo(t)}</div></div>
+        <div class="pl-tl">${plBarras([t])}</div></div>`;
+    });
+  });
+  return h + '</div>';
+}
+
+function planMovil() {
+  let h = `<div class="pl-ejes">${plMeses(true, 3).replace(/<span class="tl-mes[^"]*" style="[^"]*"><\/span>/g, '')}</div><div class="pl-tarjetas">`;
+  PL_GRUPOS.forEach((g, i) => {
+    const abierto = PL_ABIERTOS.has(g.k);
+    h += `<div class="pl-tj">
+      <div class="pl-tj-cab" data-accion="pl-grupo" data-grupo="${i}" aria-expanded="${abierto}">
+        ${chkGrupo(g, i)}<span class="t">${esc(g.k)}<span class="sub">${plural(g.lista.length, 'trabajo', 'trabajos')} · ${abierto ? 'ocultar' : 'ver'}</span></span>
+        <div style="text-align: right">${estadoGrupo(g.lista)}</div>
+      </div>
+      <div class="pl-tl">${plBarras(g.lista)}</div>
+      ${abierto ? `<div class="pl-tj-lista">${g.lista.map(t => `<div class="pl-tj-trab">
+          ${chkTrabajo(t)}
+          <div class="cuerpo">
+            <a href="#${esc(t.id)}" data-abrir="${esc(t.id)}" style="color: var(--black); font-weight: 500">${esc(t.id)} · ${esc(t.descripcion)}</a>
+            <span class="sub">${esc(t.oficio)}${t.detalle ? ' · ' + esc(t.detalle) : ''}</span>
+            <span>Previsto ${fechaDM(t.fecha_inicio)} → ${fechaDM(t.fecha_fin || t.fecha_inicio)}${esIso(soloFecha(t.inicio_real)) || esIso(soloFecha(t.fin_real)) ? ` · Real ${esIso(soloFecha(t.inicio_real)) ? fechaDM(t.inicio_real) : '¿?'} → ${esIso(soloFecha(t.fin_real)) ? fechaDM(t.fin_real) : 'en curso'}` : ''}</span>
+            <div class="marcas"><span class="nv nv-${esc(t.nivel)}">${esc(NIVELES[t.nivel] || t.estado)}</span>${desviacion(t).fin !== null || desviacion(t).ini !== null ? desvHtml(t) : ''}</div>
+            <div class="pl-acc">${accionesTrabajo(t)}</div>
+          </div></div>`).join('')}</div>` : ''}
+    </div>`;
+  });
+  return h + '</div>';
+}
+
+function pintarSeleccion() {
+  const sel = Array.from(PL_SEL).map(trabajoPorId).filter(Boolean);
+  const av = sel.filter(puedeAvisar), he = sel.filter(puedeHecho);
+  $('pl-sel').classList.toggle('oculto', !sel.length);
+  $('pl-sel').innerHTML = sel.length ? `<span>${plural(sel.length, 'trabajo elegido', 'trabajos elegidos')}</span>` +
+    (av.length ? `<button type="button" class="btn-peq" data-accion="pl-avisar-sel">Avisar a oficina técnica · ${av.length}</button>` : '') +
+    (he.length ? `<button type="button" class="btn-peq" data-accion="pl-hecho-sel">Marcar hecho · ${he.length}</button>` : '') +
+    '<button type="button" class="btn-peq claro" data-accion="pl-quitar-sel">Quitar selección</button>' : '';
+  document.querySelectorAll('#sec-plan [data-pl-sel]').forEach(c => { c.checked = PL_SEL.has(c.dataset.plSel); });
+  document.querySelectorAll('#sec-plan [data-pl-grupo]').forEach(c => {
+    const g = PL_GRUPOS[Number(c.dataset.plGrupo)];
+    const ids = g ? g.lista.filter(elegible).map(t => t.id) : [];
+    const n = ids.filter(id => PL_SEL.has(id)).length;
+    c.checked = !!ids.length && n === ids.length;
+    c.indeterminate = n > 0 && n < ids.length;
+  });
+}
+
+function elegirPlan(tipo) {
+  const ts = (D.trabajos || []).filter(t => t.promocion === FILTRO_P.promo && t.zona === FILTRO_P.zona);
+  const lista = tipo === 'sin_avisar' ? ts.filter(t => t.nivel === 'sin_avisar' && puedeAvisar(t)) : ts.filter(t => atrasado(t) && puedeHecho(t));
+  PL_SEL.clear();
+  lista.forEach(t => { PL_SEL.add(t.id); PL_ABIERTOS.add(claveGrupo(t)); });
+  pintarPlan();
+}
+
+async function avisarTrabajos(ids, btn) {
+  const ts = ids.map(trabajoPorId).filter(puedeAvisar);
+  if (!ts.length) return;
+  if (!confirm(ts.length === 1 ? `¿Avisar ${ts[0].id} · ${ts[0].descripcion} a oficina técnica? Aparecerá en sus pendientes para preparar planos.`
+    : `¿Avisar ${ts.length} trabajos a oficina técnica? Aparecerán en sus pendientes para preparar planos.`)) return;
+  const r = await enviando(btn, 'Avisando…', () => api('avisar_trabajos', { ids: ts.map(t => t.id) }));
+  if (!r.ok) { alert(textoError(r)); return; }
+  r.avisados.forEach(id => PL_SEL.delete(id));
+  await recargar(plural(r.avisados.length, 'trabajo avisado', 'trabajos avisados') + ' a oficina técnica' +
+    (r.tardios.length ? ` (${r.tardios.length === 1 ? 'uno' : r.tardios.length} con menos de ${S.umbrales.antelacion} días: ${r.tardios.length === 1 ? 'queda marcado' : 'quedan marcados'} como aviso tardío).` : '.'));
+}
+
+// ─── VENTANA (importar Project, marcar hecho) ───────────────────────
+let DLG_FOCO = null;
+function abrirDlg(html) {
+  if ($('dlg').classList.contains('oculto')) DLG_FOCO = document.activeElement;
+  $('dlg-caja').innerHTML = html;
+  $('dlg').classList.toggle('en-iframe', window.parent !== window);
+  const nueva = $('dlg').classList.contains('oculto');
+  $('dlg').classList.remove('oculto');
+  if (nueva && window.parent !== window) { window.scrollTo({ top: 0 }); window.parent.postMessage({ scrollTop: true }, '*'); }
+  const f = $('dlg-caja').querySelector('input:not([type="hidden"]), select, textarea');
+  (f || $('dlg-caja').querySelector('button')).focus();
+  enviarAltura();
+}
+function cerrarDlg() {
+  if ($('dlg').classList.contains('oculto')) return;
+  $('dlg').classList.add('oculto');
+  $('dlg-caja').innerHTML = '';
+  IMPORT = null; HECHO = null;
+  if (FOTOS.hecho.length) limpiarFotosSin('hecho');
+  if (DLG_FOCO && document.contains(DLG_FOCO)) DLG_FOCO.focus();
+  DLG_FOCO = null;
+  enviarAltura();
+}
+function limpiarFotosSin(dest) { FOTOS[dest].forEach(f => URL.revokeObjectURL(f.url)); FOTOS[dest] = []; }
+const cabDlg = (eyebrow, titulo) => `<div class="dlg-cab"><div><div class="eyebrow">${eyebrow}</div><h2 id="dlg-titulo">${titulo}</h2></div>
+  <button type="button" class="btn-peq" data-accion="dlg-cerrar" aria-label="Cerrar">Cerrar ✕</button></div>`;
+
+// ─── MARCAR HECHO ───────────────────────────────────────────────────
+let HECHO = null;   // { ids }
+function abrirHecho(ids) {
+  const ts = ids.map(trabajoPorId).filter(puedeHecho);
+  if (!ts.length) return;
+  const uno = ts.length === 1 ? ts[0] : null;
+  const pasados = ts.filter(atrasado).length;
+  HECHO = { ids: ts.map(t => t.id) };
+  limpiarFotosSin('hecho');
+  const fecha = `<div class="campo"><label class="etq" for="h-fin">Terminó el</label><input class="ctrl" type="date" id="h-fin" max="${D.hoy}" value="${uno && atrasado(uno) && esIso(soloFecha(uno.fecha_fin)) ? soloFecha(uno.fecha_fin) : D.hoy}"></div>`;
+  abrirDlg(cabDlg(uno ? esc(uno.id) + ' · ' + esc(uno.zona) + (uno.detalle ? ' · ' + esc(uno.detalle) : '') : plural(ts.length, 'trabajo', 'trabajos'), 'Marcar como hecho') +
+    (uno ? `<p>${esc(uno.descripcion)}<br><span class="meta">Previsto del ${fechaDMA(uno.fecha_inicio)} al ${fechaDMA(uno.fecha_fin || uno.fecha_inicio)}</span></p>`
+      : `<ul class="meta" style="padding-left: 18px">${ts.slice(0, 8).map(t => `<li>${esc(t.id)} · ${esc(t.descripcion)} <span>(previsto hasta el ${fechaDM(t.fecha_fin || t.fecha_inicio)})</span></li>`).join('')}${ts.length > 8 ? `<li>y ${ts.length - 8} más</li>` : ''}</ul>`) +
+    `<form id="f-hecho" class="form-linea" novalidate>
+      ${uno ? fecha + (esIso(soloFecha(uno.inicio_real)) ? `<p class="meta">Empezó el ${fechaDMA(uno.inicio_real)}.</p>`
+        : `<div class="campo"><label class="etq" for="h-ini">Empezó el (opcional)</label><input class="ctrl" type="date" id="h-ini" max="${D.hoy}"></div>`) +
+        `<div class="campo"><label class="etq" for="h-nota">Nota para el avance (opcional)</label><input class="ctrl" id="h-nota" placeholder="Ej.: terminado con dos días de lluvia"></div>
+        <div class="campo"><span class="etq">Fotos (opcional)</span>
+          <div class="botones-foto"><button type="button" class="btn-foto" data-accion="foto-hecho" data-origen="camara">${ICONO_CAMARA}Hacer foto</button><button type="button" class="btn-foto" data-accion="foto-hecho" data-origen="galeria">${ICONO_GALERIA}Galería</button></div>
+          <div class="fotos" id="fotos-hecho"></div></div>`
+      : `<fieldset><legend class="etq">¿Cuándo terminaron?</legend>
+          <label class="chk"><input type="radio" name="h-modo" value="previsto"${pasados === ts.length ? ' checked' : ''}> Cada uno en sus fechas previstas (las que ya han pasado; si no, hoy)</label>
+          <label class="chk"><input type="radio" name="h-modo" value="fecha"${pasados === ts.length ? '' : ' checked'}> Todos el mismo día</label>
+        </fieldset><div id="h-fecha-caja"${pasados === ts.length ? ' class="oculto"' : ''}>${fecha}</div>`}
+      <p class="ayuda">Se ${ts.length === 1 ? 'crea un avance' : 'crea un avance por trabajo'} con esa fecha, que aparece en Avances.</p>
+      <div class="error" id="h-error" role="alert"></div>
+      <div class="botones"><button type="button" class="btn-sec" data-accion="dlg-cerrar">Cancelar</button><button type="submit" class="btn-negro" id="h-guardar">Marcar hecho</button></div>
+    </form>`);
+}
+
+async function guardarHecho() {
+  if (!HECHO) return;
+  const err = $('h-error');
+  err.textContent = '';
+  const modo = (document.querySelector('[name="h-modo"]:checked') || {}).value || 'fecha';
+  const datos = { ids: HECHO.ids };
+  if (modo === 'previsto') datos.segun_previsto = true;
+  else {
+    datos.fecha = $('h-fin').value;
+    if (!datos.fecha) { err.textContent = 'Pon el día en que terminó.'; return; }
+    if (datos.fecha > D.hoy) { err.textContent = MENSAJES.fecha_futura; return; }
+  }
+  if ($('h-ini') && $('h-ini').value) {
+    datos.inicio = $('h-ini').value;
+    if (datos.fecha && datos.inicio > datos.fecha) { err.textContent = MENSAJES.fin_real_antes_inicio; return; }
+  }
+  if ($('h-nota')) datos.nota = $('h-nota').value.trim();
+  const btn = $('h-guardar');
+  const t0 = trabajoPorId(HECHO.ids[0]);
+  const r = await enviando(btn, 'Guardando…', async () => {
+    if (FOTOS.hecho.length) {
+      const f = await subirFotos('hecho', t0.promocion, btn);
+      if (!f.ok) return f;
+      datos.fotos = f.urls;
+    }
+    return api('marcar_hecho', datos);
+  });
+  if (!r.ok) { err.textContent = textoError(r); return; }
+  r.hechos.forEach(id => PL_SEL.delete(id));
+  cerrarDlg();
+  await recargar(r.hechos.length === 1 ? `${r.hechos[0]} hecho. Avance ${r.avances[0]} creado.`
+    : `${r.hechos.length} trabajos hechos y ${r.avances.length} avances creados.`);
+}
+
+// ─── IMPORTAR PROJECT ───────────────────────────────────────────────
+// El navegador lee el XML (Archivo › Guardar como › XML en Project) y manda
+// las tareas al Worker, que las clasifica y compara. Nada se escribe hasta
+// pulsar «Aplicar».
+let IMPORT = null;   // { archivo, tareas, promocion, zona, incluir, resolver, previa, error, cargando }
+
+function leerProject(texto) {
+  const doc = new DOMParser().parseFromString(texto, 'application/xml');
+  if (doc.getElementsByTagName('parsererror').length || !doc.documentElement || doc.documentElement.localName !== 'Project') throw new Error('no_project');
+  const hijo = (el, tag) => { for (const c of el.children) if (c.localName === tag) return (c.textContent || '').trim(); return ''; };
+  const contenedor = Array.from(doc.documentElement.children).find(c => c.localName === 'Tasks');
+  if (!contenedor) throw new Error('sin_tareas');
+  const pila = [];
+  const tareas = [];
+  let nivel1 = '';
+  for (const k of contenedor.children) {
+    if (k.localName !== 'Task' || hijo(k, 'IsNull') === '1') continue;
+    const nivel = Number(hijo(k, 'OutlineLevel') || 0);
+    const nombre = hijo(k, 'Name');
+    pila[nivel] = { nombre, activa: hijo(k, 'Active') !== '0' };
+    pila.length = nivel + 1;
+    if (nivel === 1 && !nivel1) nivel1 = nombre;
+    if (hijo(k, 'Summary') === '1' || nivel < 2 || !nombre) continue;
+    const inicio = hijo(k, 'Start').slice(0, 10), fin = hijo(k, 'Finish').slice(0, 10);
+    if (!esIso(inicio) || !esIso(fin)) continue;
+    tareas.push({ uid: hijo(k, 'UID'), capitulo: nivel >= 3 ? ((pila[nivel - 1] || {}).nombre || '') : '', nombre, inicio, fin: fin < inicio ? inicio : fin,
+      activa: pila.slice(1, nivel + 1).every(p => !p || p.activa) });
+  }
+  if (!tareas.length) throw new Error('sin_tareas');
+  return { nivel1, tareas };
+}
+
+// VILLAS_2SB1.xml → 2SB1 · BLOQUE_2SB100_261026.xml → 2SB100 · URBANIZACION_2SB.xml → Urbanización
+function zonaDeArchivo(nombre, nivel1) {
+  const n = String(nombre || '').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const valida = (promo, zona) => (S.listas['zonas_' + promo] || []).indexOf(zona) !== -1 ? { promocion: promo, zona } : { promocion: promo, zona: '' };
+  let m = /(?:VILLAS?|BLOQUE)[ _-]*(\d+SB)(\d+)/.exec(n);
+  if (m) return valida(m[1], m[1] + m[2]);
+  m = /URBANIZACION[ _-]*(\d+SB)/.exec(n);
+  if (m) return valida(m[1], 'Urbanización y zonas comunes');
+  m = /(\d+SB)(\d+)/.exec(String(nivel1 || '').toUpperCase());
+  if (m) return valida(m[1], m[1] + m[2]);
+  return { promocion: '', zona: '' };
+}
+
+// FileReader en vez de file.text(): funciona también en navegadores antiguos
+function leerTexto(f) {
+  return new Promise((ok, mal) => { const fr = new FileReader(); fr.onload = () => ok(String(fr.result || '')); fr.onerror = () => mal(fr.error); fr.readAsText(f); });
+}
+
+async function leerArchivoProject(e) {
+  const f = (e.target.files || [])[0];
+  e.target.value = '';
+  if (!f) return;
+  let leido;
+  try { leido = leerProject(await leerTexto(f)); }
+  catch (err) {
+    abrirDlg(cabDlg(esc(f.name), 'Importar Project') + `<div class="aviso tardio">${err.message === 'sin_tareas' ? 'El archivo no tiene tareas con fechas.'
+      : 'No es un XML de Project. En Project: Archivo › Guardar como › XML, y elige ese archivo.'}</div>
+      <div class="botones"><button type="button" class="btn-negro" data-accion="imp-otro">Elegir otro archivo</button></div>`);
+    return;
+  }
+  const z = zonaDeArchivo(f.name, leido.nivel1);
+  IMPORT = { archivo: f.name, tareas: leido.tareas, promocion: z.promocion || FILTRO_P.promo, zona: z.zona, incluir: true, resolver: {}, previa: null };
+  await calcularPrevia();
+}
+
+async function calcularPrevia() {
+  const I = IMPORT;
+  if (!I) return;
+  I.previa = null; I.error = '';
+  I.cargando = !!(I.promocion && I.zona);
+  pintarImport();
+  if (!I.cargando) return;
+  const r = await api('importar_project', { modo: 'previa', archivo: I.archivo, promocion: I.promocion, zona: I.zona, tareas: I.tareas, incluir_pasadas: I.incluir });
+  if (IMPORT !== I) return;
+  I.cargando = false;
+  if (!r.ok) I.error = textoError(r); else I.previa = r.previa;
+  pintarImport();
+}
+
+function pintarImport() {
+  const I = IMPORT;
+  if (!I) return;
+  const enfocado = document.activeElement && document.activeElement.id;
+  const promos = S.listas.promociones || [];
+  const zonas = I.promocion ? (S.listas['zonas_' + I.promocion] || []) : [];
+  const p = I.previa, r = p && p.resumen;
+  const cont = (n, t, c) => `<div class="contador"><div class="n ${c || ''}">${n}</div><div class="t">${t}</div></div>`;
+  const fila = (celdas) => '<tr>' + celdas.map(c => `<td>${c}</td>`).join('') + '</tr>';
+  const tabla = (cab, filas) => `<div class="caja-scroll"><table class="tabla"><thead><tr>${cab.map(c => `<th scope="col">${c}</th>`).join('')}</tr></thead><tbody>${filas.join('')}</tbody></table></div>`;
+  const seccion = (titulo, n, cuerpo, abierta) => n ? `<details${abierta ? ' open' : ''}><summary>${titulo} · ${n}</summary><div>${cuerpo}</div></details>` : '';
+  const fechas = (x) => `${fechaDM(x.fecha_inicio)} → ${fechaDM(x.fecha_fin)}`;
+
+  let h = cabDlg(esc(I.archivo) + ' · ' + plural(I.tareas.length, 'tarea', 'tareas'), 'Importar Project') +
+    `<div class="filtros" style="margin: 0">
+      <label class="oculto-visual" for="imp-promo">Promoción</label>
+      <select class="ctrl" id="imp-promo"><option value="">Promoción…</option>${promos.map(x => `<option${x === I.promocion ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select>
+      <label class="oculto-visual" for="imp-zona">Zona</label>
+      <select class="ctrl" id="imp-zona"><option value="">Zona…</option>${zonas.map(x => `<option${x === I.zona ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select>
+      <label class="chk"><input type="checkbox" id="imp-pasadas"${I.incluir ? ' checked' : ''}> Incluir tareas que ya han terminado según Project</label>
+    </div>`;
+  if (!I.zona) h += '<div class="aviso">Elige la zona a la que corresponde este archivo.</div>';
+  if (I.cargando) h += '<div class="meta" role="status">Comparando con lo que hay en la herramienta…</div>';
+  if (I.error) h += `<div class="aviso tardio" role="alert">${esc(I.error)}</div>`;
+  if (p) {
+    const hacer = r.nuevos + r.cambios + r.borrados + r.conflictos;
+    const fuera = [r.inactivas ? plural(r.inactivas, 'tarea desactivada', 'tareas desactivadas') + ' en Project' : '',
+      r.holguras ? plural(r.holguras, 'holgura', 'holguras') + ' (vacaciones, retrasos)' : '',
+      r.pasadas_excluidas ? plural(r.pasadas_excluidas, 'tarea ya terminada', 'tareas ya terminadas') : ''].filter(Boolean);
+    h += `<div class="dlg-resumen">${cont(r.nuevos, 'Nuevos')}${cont(r.cambios, 'Cambian de fecha')}${cont(r.conflictos, 'Conflictos', r.conflictos ? 'rojo' : '')}` +
+      `${cont(r.borrados, 'Se quitan')}${cont(r.sin_clasificar, 'Sin clasificar', r.sin_clasificar ? 'naranja' : '')}${cont(r.sin_cambios, 'Sin cambios')}</div>` +
+      `<p class="meta">${fuera.length ? 'No se importan ' + fuera.join(', ').replace(/, ([^,]*)$/, ' ni $1') + '.' : ''}` +
+      `${r.pasadas_incluidas ? ` ${plural(r.pasadas_incluidas, 'tarea nueva ya ha', 'tareas nuevas ya han')} terminado según Project: ${r.pasadas_incluidas === 1 ? 'entra' : 'entran'} como «sin confirmar» para marcarlas hechas.` : ''}` +
+      ' Lo que entra nuevo queda Planificado: oficina técnica no lo ve hasta que lo aviséis.</p>';
+    if (p.conflictos.length) h += `<details open><summary>Conflictos · ${p.conflictos.length} · elige qué fecha vale</summary><div>${p.conflictos.map(c => `<div class="conflicto">
+        <div><a href="#${esc(c.id)}" data-abrir="${esc(c.id)}">${esc(c.id)} · ${esc(c.nombre)}</a> <span class="meta">· cambiado aquí y en Project desde la última importación</span></div>
+        <div class="opciones">
+          <label class="chk"><input type="radio" name="res-${esc(c.id)}" value="herramienta"${(I.resolver[c.id] || 'herramienta') === 'herramienta' ? ' checked' : ''}> Dejar la de aquí: ${fechas(c.herramienta)}</label>
+          <label class="chk"><input type="radio" name="res-${esc(c.id)}" value="project"${I.resolver[c.id] === 'project' ? ' checked' : ''}> Poner la de Project: ${fechas(c.project)}</label>
+        </div></div>`).join('')}</div></details>`;
+    h += seccion('Nuevos', p.nuevos.length, tabla(['Tarea', 'Capítulo', 'Oficio', 'Inicio', 'Fin'],
+      p.nuevos.map(n => fila([esc(n.descripcion) + (n.detalle ? ` <span class="meta">· ${esc(n.detalle)}</span>` : '') + (n.pasada ? ' <span class="marca">ya terminada</span>' : ''),
+        esc(n.capitulo), esc(n.oficio), fechaDM(n.inicio), fechaDM(n.fin)]))), p.nuevos.length <= 15);
+    h += seccion('Cambian de fecha', p.cambios.length, tabla(['Trabajo', 'Antes', 'Ahora', ''],
+      p.cambios.map(c => fila([`${esc(c.id)} · ${esc(c.nombre)}`, fechas(c.antes), fechas(c.despues), c.avisado ? '<span class="marca borde-rojo">ya avisado: revisa planos</span>' : '']))), true);
+    h += seccion('Se quitan (ya no están en Project)', p.desaparecidas.length, tabla(['Trabajo', 'Estado', ''],
+      p.desaparecidas.map(d => fila([`${esc(d.id)} · ${esc(d.nombre)}`, esc(d.estado), d.accion === 'borrar' ? 'Se borra' : '<span class="marca">Se queda: ya empezó</span>']))), true);
+    h += seccion('Desactivadas en Project', p.desactivadas.length, '<p class="meta">Siguen aquí sin cambios. Si están terminadas, márcalas hechas.</p>' +
+      tabla(['Trabajo', 'Estado'], p.desactivadas.map(d => fila([`${esc(d.id)} · ${esc(d.nombre)}`, esc(d.estado)]))), false);
+    h += seccion('Ya empezados con otras fechas en Project', p.ya_empezados.length, '<p class="meta">No se tocan: lo previsto se queda como estaba para comparar con lo real.</p>' +
+      tabla(['Trabajo', 'Aquí', 'En Project'], p.ya_empezados.map(c => fila([`${esc(c.id)} · ${esc(c.nombre)}`, fechas(c.herramienta), fechas(c.project)]))), false);
+    h += seccion('Sin clasificar', p.sin_clasificar.length, '<p class="meta">No se importan. Para que entren, añade su capítulo (y palabra si hace falta) en la pestaña _reglas_project de la Sheet.</p>' +
+      tabla(['Tarea', 'Capítulo'], p.sin_clasificar.map(x => fila([esc(x.nombre), esc(x.capitulo || '—') + (x.oficio ? ` <span class="meta">(oficio ${esc(x.oficio)} no está en la lista)</span>` : '')]))), true);
+    h += `<div class="error" id="imp-error" role="alert"></div>
+      <div class="botones"><button type="button" class="btn-sec" data-accion="dlg-cerrar">Cancelar</button>
+      <button type="button" class="btn-negro" id="imp-aplicar" data-accion="imp-aplicar"${hacer ? '' : ' disabled'}>${hacer ? 'Aplicar importación' : 'Nada que cambiar'}</button></div>`;
+  }
+  const abierto = !$('dlg').classList.contains('oculto');
+  if (abierto) { $('dlg-caja').innerHTML = h; if (enfocado && $(enfocado)) $(enfocado).focus(); enviarAltura(); }
+  else abrirDlg(h);
+}
+
+async function aplicarImport(btn) {
+  const I = IMPORT;
+  if (!I || !I.previa) return;
+  const resolver = {};
+  I.previa.conflictos.forEach(c => { resolver[c.id] = I.resolver[c.id] || 'herramienta'; });
+  const r = await enviando(btn, 'Importando…', () => api('importar_project', { modo: 'aplicar', archivo: I.archivo, promocion: I.promocion, zona: I.zona, tareas: I.tareas, incluir_pasadas: I.incluir, resolver }));
+  if (!r.ok) { $('imp-error').textContent = textoError(r); return; }
+  const a = r.aplicado;
+  FILTRO_P.promo = I.promocion; FILTRO_P.zona = I.zona; PL_SEL.clear(); PL_ABIERTOS.clear();
+  cerrarDlg();
+  if (SECCION !== 'plan' || FICHA) mostrarSeccion('plan');
+  await recargar(`Importado ${I.archivo}: ${plural(a.nuevos, 'trabajo nuevo', 'trabajos nuevos')}, ${plural(a.cambios, 'cambio de fecha', 'cambios de fecha')}, ${plural(a.borrados, 'quitado', 'quitados')}.`);
+}
+
+$('dlg').addEventListener('change', (e) => {
+  if (e.target.name === 'h-modo') { $('h-fecha-caja').classList.toggle('oculto', e.target.value !== 'fecha'); enviarAltura(); return; }
+  const I = IMPORT;
+  if (!I) return;
+  const c = e.target;
+  if (c.id === 'imp-promo') { I.promocion = c.value; I.zona = ''; I.resolver = {}; calcularPrevia(); }
+  else if (c.id === 'imp-zona') { I.zona = c.value; I.resolver = {}; calcularPrevia(); }
+  else if (c.id === 'imp-pasadas') { I.incluir = c.checked; calcularPrevia(); }
+  else if (/^res-/.test(c.name || '')) I.resolver[c.name.slice(4)] = c.value;
+});
+$('dlg').addEventListener('click', (e) => { if (e.target === $('dlg')) cerrarDlg(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('dlg').classList.contains('oculto')) cerrarDlg(); });
+
 // ─── ACCIONES (clics y envíos en las vistas que se repintan) ───────
 const ACCIONES = {
   volver: () => mostrarSeccion(ORIGEN || SECCIONES[0]),
@@ -2111,10 +2845,23 @@ const ACCIONES = {
   'editar-plano': (el) => abrirPlano(el.dataset.id),
   'nueva-duda': () => nuevaDudaDe(FICHA),
   'foto-ficha': (el) => { fotoDestino = 'ficha'; $(el.dataset.origen === 'camara' ? 'input-camara' : 'input-galeria').click(); },
-  'quitar-foto': quitarFotoFicha
+  'quitar-foto': quitarFotoFicha,
+  avisar: (el) => avisarTrabajos([el.dataset.id], el),
+  hecho: (el) => abrirHecho([el.dataset.id]),
+  'pl-grupo': (el) => { const g = PL_GRUPOS[Number(el.dataset.grupo)]; if (!g) return; if (PL_ABIERTOS.has(g.k)) PL_ABIERTOS.delete(g.k); else PL_ABIERTOS.add(g.k); pintarPlan(); },
+  'pl-elegir': (el) => elegirPlan(el.dataset.tipo),
+  'pl-avisar-sel': (el) => avisarTrabajos(Array.from(PL_SEL), el),
+  'pl-hecho-sel': () => abrirHecho(Array.from(PL_SEL)),
+  'pl-quitar-sel': () => { PL_SEL.clear(); pintarSeleccion(); },
+  'dlg-cerrar': cerrarDlg,
+  ir: (el) => mostrarSeccion(el.dataset.sec),
+  'imp-aplicar': (el) => aplicarImport(el),
+  'imp-otro': () => { cerrarDlg(); $('input-project').click(); },
+  'foto-hecho': (el) => { fotoDestino = 'hecho'; $(el.dataset.origen === 'camara' ? 'input-camara' : 'input-galeria').click(); }
 };
 
 document.addEventListener('click', (e) => {
+  if (e.target.matches && e.target.matches('input')) return;   // casillas dentro de filas que se despliegan
   const el = e.target.closest && e.target.closest('[data-abrir], [data-accion]');
   if (!el || !S || !D) return;
   if (el.dataset.abrir) {
@@ -2132,12 +2879,13 @@ document.addEventListener('submit', (e) => {
   if (f.dataset.form === 'responder') { e.preventDefault(); responder(f); }
   else if (f.id === 'fe') { e.preventDefault(); guardarEdicion(); }
   else if (f.id === 'fp') { e.preventDefault(); guardarPlano(f); }
+  else if (f.id === 'f-hecho') { e.preventDefault(); guardarHecho(); }
 });
 
 // Vuelve a leer los datos y repinta, con un mensaje de confirmación
 async function recargar(msg) {
   try { await cargarDatos(); } catch (e) { return; }
-  OK = (FICHA || SECCION === 'pendientes') ? (msg || '') : '';
+  OK = (FICHA || SECCION === 'pendientes' || SECCION === 'plan') ? (msg || '') : '';
   refrescarVista();
 }
 
@@ -2146,7 +2894,7 @@ const textoError = (r) => r.motivo === 'red' ? r.detalle : mensaje(r);
 async function cambiarEstado(id, estado, btn) {
   const t = trabajoPorId(id);
   if (!t || !estado || estado === t.estado) return;
-  if (estado === 'Terminado' && !confirm(`¿Marcar ${id} como terminado?`)) return;
+  if (estado === 'Terminado') { abrirHecho([id]); return; }   // pide la fecha y crea el avance
   const r = await enviando(btn, 'Guardando…', () => api('cambiar_estado', { id, estado }));
   if (!r.ok) { alert(textoError(r)); return; }
   await recargar(`${id} · ${estado}.`);
@@ -2172,13 +2920,19 @@ async function guardarEdicion() {
     const el = $('fe-' + k);
     if (!el || k === 'fotos') return;
     const v = el.value.trim();
-    if (v !== String(t[k] ?? '').trim()) cambios[k] = v;
+    const antes = ['fecha_inicio', 'fecha_fin', 'inicio_real', 'fin_real'].indexOf(k) !== -1 ? soloFecha(t[k]) : String(t[k] ?? '').trim();
+    if (v !== antes) cambios[k] = v;
   });
   if (!Object.keys(cambios).length) { err.textContent = 'No has cambiado nada.'; return; }
   if ('fecha_inicio' in cambios) {
     if (!cambios.fecha_inicio) { err.textContent = 'Pon la fecha prevista de inicio.'; return; }
-    if (S.rol !== 'oficina_tecnica' && t.fecha_inicio && cambios.fecha_inicio < t.fecha_inicio) { err.textContent = MENSAJES.fecha_hacia_atras; return; }
+    if (S.rol !== 'oficina_tecnica' && t.estado !== 'Planificado' && t.fecha_inicio && cambios.fecha_inicio < t.fecha_inicio) { err.textContent = MENSAJES.fecha_hacia_atras; return; }
   }
+  if ('fecha_fin' in cambios && !cambios.fecha_fin) { err.textContent = MENSAJES.falta_fecha_fin; return; }
+  const final = (k) => (k in cambios ? cambios[k] : soloFecha(t[k])) || '';
+  if (final('fecha_inicio') && final('fecha_fin') && final('fecha_fin') < final('fecha_inicio')) { err.textContent = MENSAJES.fin_antes_inicio; return; }
+  if (['inicio_real', 'fin_real'].some(k => cambios[k] && cambios[k] > D.hoy)) { err.textContent = MENSAJES.fecha_futura; return; }
+  if (final('inicio_real') && final('fin_real') && final('fin_real') < final('inicio_real')) { err.textContent = MENSAJES.fin_real_antes_inicio; return; }
   if ('descripcion' in cambios && !cambios.descripcion) { err.textContent = MENSAJES.falta_descripcion; return; }
   if ('zona' in cambios && !cambios.zona) { err.textContent = 'Elige la zona.'; return; }
   if (cambios.carpeta_synology && !esEnlace(cambios.carpeta_synology)) { err.textContent = MENSAJES.enlace_invalido; return; }
