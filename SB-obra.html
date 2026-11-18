@@ -363,6 +363,12 @@
   .lg.prev.sin-avisar { border-color: #E07B1F; background: #FDE7D3; }
   .lg.real { width: 28px; height: 9px; background: var(--black); }
   .lg.hoy { width: 2px; height: 16px; background: var(--rojo); }
+  /* Bloqueo de extras en Planificación: rombo ocre, como en el calendario de fechas */
+  .tl-bloqueo { position: absolute; top: 11px; width: 10px; height: 10px; margin-left: -5px; background: #A07A2E; transform: rotate(45deg); z-index: 2; }
+  .lg.bloqueo { width: 10px; height: 10px; background: #A07A2E; transform: rotate(45deg); }
+  .pl-bloq { color: #7A5A1E !important; }
+  .pl-bloq .btn-texto { min-height: 0; font-size: 12px; }
+  .pl-trab .marcas { margin-top: 4px; }
   .pl-ejes { margin: 0 12px 6px; position: relative; height: 34px; }
   .pl-tarjetas { margin: 0 12px; display: flex; flex-direction: column; gap: 10px; }
   .pl-tj { border: 1px solid var(--border); background: var(--white); }
@@ -420,6 +426,59 @@
     table.tabla.apilada td { display: inline-block; border: none; padding: 2px 10px 2px 0; }
     table.tabla.apilada td:first-child { display: block; font-weight: 500; color: var(--black); }
   }
+
+  /* Bloqueo de extras y Administración (antes Seguimiento de fechas) */
+  .fx-ayuda { margin: 0 20px 16px; max-width: 900px; }
+  .fx-estado { margin: 0 20px; }
+  .fx-estado:not(:empty) { margin-bottom: 12px; }
+  .fx-resumen { margin: 0 20px 24px; border: 1px solid var(--border); }
+  .fx-resumen-cab { padding: 14px 16px; background: var(--off-white); border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: 6px 24px; align-items: baseline; justify-content: space-between; }
+  .fx-resumen-cab h2 { font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 22px; letter-spacing: 1px; text-transform: uppercase; color: var(--black); }
+  .fx-resumen-cab .dato { font-size: 13px; color: var(--slate); }
+  .fx-resumen-cab .dato b { font-weight: 500; color: var(--text); }
+  .fx-campos { padding: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px 20px; }
+  .fx-campo { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .fx-titulo { margin: 0 20px 8px; font-family: 'Oswald', sans-serif; font-weight: 400; font-size: 16px; letter-spacing: 2px; text-transform: uppercase; color: var(--black); display: flex; gap: 10px; align-items: baseline; }
+  .fx-tabla-caja { margin: 0 20px 24px; overflow-x: auto; border: 1px solid var(--border); }
+  table.fx { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.fx th, table.fx td { padding: 6px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; text-align: left; }
+  table.fx tr:last-child > * { border-bottom: none; }
+  table.fx thead th { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--slate); font-weight: 400; background: var(--off-white); padding-top: 10px; padding-bottom: 10px; white-space: nowrap; }
+  table.fx thead th .sub { display: block; text-transform: none; letter-spacing: 0; font-size: 11px; }
+  table.fx tbody th { font-weight: 400; color: var(--text); background: var(--white); position: sticky; left: 0; z-index: 1; min-width: 150px; }
+  table.fx.fx-bloqueos tbody th { min-width: 230px; max-width: 320px; }
+  table.fx tbody th.fx-cod { font-family: 'Oswald', sans-serif; font-size: 14px; letter-spacing: .5px; color: var(--black); min-width: 0; }
+  table.fx tr.fx-limite > * { background: var(--off-white); }
+  .fx-calc { font-style: italic; color: var(--slate); text-transform: none; letter-spacing: 0; }
+  .fx-in { min-height: 38px; padding: 0 8px; border: 1px solid var(--border); background: var(--white); font-size: 14px; color: var(--black); border-radius: 0; width: 100%; min-width: 150px; }
+  .fx-in:focus-within { outline: 2px solid var(--black); outline-offset: -1px; }
+  input.fx-in:focus { outline: 2px solid var(--black); outline-offset: -1px; }
+  .fx-sel { display: inline-flex; gap: 4px; align-items: center; padding: 3px 4px; white-space: nowrap; width: auto; min-width: 0; }
+  .fx-sel select { min-height: 32px; border: 1px solid var(--border); background: var(--white); font-size: 13px; color: var(--black); padding: 0 2px; border-radius: 0; }
+  .fx-sep { font-size: 11px; color: var(--slate); padding: 0 2px; }
+  .fx-val { display: block; padding: 9px 8px; min-height: 38px; font-size: 14px; white-space: nowrap; color: var(--text); }
+  .fx-val.fx-nada { color: #A8A39C; font-style: italic; font-size: 13px; }
+  /* Bloqueos: la tabla ocupa lo que necesita, no todo el ancho */
+  .fx-tabla-caja.ajustada { width: fit-content; max-width: calc(100% - 40px); }
+  table.fx.fx-bloqueos td { min-width: 170px; }
+  @media (max-width: 700px) {
+    .fx-tabla-caja { margin-left: 12px; margin-right: 12px; }
+    .fx-tabla-caja.ajustada { max-width: calc(100% - 24px); }
+    table.fx th, table.fx td { padding: 4px 6px; }
+    table.fx.fx-bloqueos tbody th { min-width: 118px; max-width: 140px; font-size: 12px; line-height: 1.3; }
+    table.fx.fx-bloqueos td { min-width: 0; }
+    .fx-val { padding: 8px 6px; font-size: 13px; }
+    .fx-resumen { margin-left: 12px; margin-right: 12px; }
+    .fx-titulo { margin-left: 12px; margin-right: 12px; }
+  }
+  .sem-verde { background: #E6F2E6 !important; }
+  .sem-naranja { background: #FDE7D3 !important; }
+  .sem-rojo { background: #FBE3E1 !important; }
+  .fx-in.guardando { opacity: .55; }
+  .fx-in.guardado { border-color: var(--verde-texto); box-shadow: 0 0 0 1px var(--verde-texto); }
+  .fx-aviso { margin: 0 20px 16px; display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+  .fx-plan { display: block; font-size: 11px; color: #7C2D00; margin-top: 3px; white-space: nowrap; }
+  .muestra { display: inline-block; width: 22px; height: 14px; border: 1px solid var(--border); vertical-align: middle; }
 
   /* Login */
   #login { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
@@ -649,6 +708,23 @@
   </div>
   <input type="file" id="input-project" accept=".xml,text/xml,application/xml" class="oculto">
 
+  <!-- BLOQUEO DE EXTRAS (fechas; ventas y quien planifica) -->
+  <section id="sec-bloqueos" class="oculto">
+    <div class="filtros"><div class="seg" role="group" aria-label="Promoción" id="bx-promos"></div></div>
+    <p class="ayuda fx-ayuda">Fecha límite para que los clientes elijan los extras de cada partida, por fase. La entrega de fase es la entrega estimada al cliente más tardía de sus viviendas.</p>
+    <div class="fx-estado" id="bx-estado" role="status"></div>
+    <div id="bx-cuerpo"></div>
+    <div class="leyenda" id="bx-leyenda"></div>
+  </section>
+
+  <!-- ADMINISTRACIÓN (fechas de promoción y de cada vivienda) -->
+  <section id="sec-admin" class="oculto">
+    <div class="filtros"><div class="seg" role="group" aria-label="Promoción" id="ad-promos"></div></div>
+    <div class="fx-estado" id="ad-estado" role="status"></div>
+    <div id="ad-cuerpo"></div>
+    <div class="leyenda" id="ad-leyenda"></div>
+  </section>
+
   <!-- Detalle de un avance -->
   <div id="av-detalle" class="modal oculto" role="dialog" aria-modal="true" aria-labelledby="avd-titulo">
     <div class="modal-caja" id="avd"></div>
@@ -717,7 +793,12 @@ const MENSAJES = {
   estado_no_permite: 'Esa fecha solo se puede poner cuando el trabajo ha empezado (o terminado).',
   tareas_invalidas: 'El archivo de Project tiene tareas sin fechas o repetidas.',
   faltan_resoluciones: 'Elige qué fecha vale en cada conflicto.',
-  ids_invalidos: 'No hay trabajos elegidos.'
+  ids_invalidos: 'No hay trabajos elegidos.',
+  mes_invalido: 'Elige el mes y el año.',
+  periodo_invalido: 'Revisa el periodo: el trimestre final no puede ser anterior al inicial.',
+  nivel_invalido: 'No se ha podido guardar esa fecha.',
+  fase_invalida: 'Esa fase no es de esta promoción. Pulsa «Actualizar».',
+  cambios_invalidos: 'No hay bloqueos que guardar.'
 };
 const MAX_FOTOS_FICHA = 10;
 
@@ -734,6 +815,7 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const verdadero = (v) => v === true || ['true', '1', 'sí', 'si', 'x'].indexOf(String(v ?? '').trim().toLowerCase()) !== -1;
 const mensaje = (r) => r.motivo === 'falta_estructura' && r.detalle === '_reglas_project' ? 'Falta preparar la Sheet para la planificación: hay que ejecutar actualizarPlanificacion() en Apps Script.'
+  : r.motivo === 'falta_estructura' && r.detalle === 'Fechas' ? 'Faltan las fechas en la Sheet: hay que ejecutar importarFechas() en Apps Script.'
   : MENSAJES[r.motivo] ? MENSAJES[r.motivo] + (r.motivo === 'cif_duplicado' && r.detalle ? ': ' + r.detalle + '.' : '')
   : ('No se ha podido guardar (' + (r.motivo || 'error') + (r.detalle ? ': ' + r.detalle : '') + ').');
 const puede = (p) => !!(S && S.permisos.indexOf(p) !== -1);
@@ -805,6 +887,7 @@ async function entrar(r) {
   ].filter(p => puede(p.permiso));
 
   // Orden del menú: Avisar · Planificación · Próximas 6 semanas · Avances · Pendientes · Contactos
+  // · Bloqueo de extras · Administración (estas dos, con acceso a fechas; ventas solo ve estas)
   const secciones = [];
   if (pestañas.length) secciones.push({ id: 'avisar', texto: 'Avisar' });
   if (puede('ver')) secciones.push({ id: 'plan', texto: 'Planificación' });
@@ -812,6 +895,7 @@ async function entrar(r) {
   if (puede('ver')) secciones.push({ id: 'avances', texto: 'Avances' });
   if (puede('responder_duda') || puede('responder_duda_estudio')) secciones.push({ id: 'pendientes', texto: 'Pendientes' });
   if (puede('guardar_contacto')) secciones.push({ id: 'contactos', texto: 'Contactos' });
+  if (puede('ver_fechas')) secciones.push({ id: 'bloqueos', texto: 'Bloqueo de extras' }, { id: 'admin', texto: 'Administración' });
   SECCIONES = secciones.map(x => x.id);
 
   if (!secciones.length) { $('cargando').classList.add('oculto'); $('sin-permisos').classList.remove('oculto'); enviarAltura(); return; }
@@ -826,11 +910,15 @@ async function entrar(r) {
     $('tabs').querySelectorAll('button').forEach(b => b.addEventListener('click', () => mostrarTab(b.dataset.tab)));
   }
 
-  await cargarDatos();
-  if (pestañas.length) prepararFormularios();
-  if (puede('guardar_contacto')) prepararContactos();
-  prepararVistas();
-  prepararPlan();
+  // Sin acceso a obra (ventas) no se piden los datos de obra: solo las fechas
+  if (puede('ver')) {
+    await cargarDatos();
+    if (pestañas.length) prepararFormularios();
+    if (puede('guardar_contacto')) prepararContactos();
+    prepararVistas();
+    prepararPlan();
+  }
+  if (puede('ver_fechas')) prepararFechas();
   $('cargando').classList.add('oculto');
   $('actualizar').classList.remove('oculto');
   if (pestañas.length) mostrarTab(pestañas[0].id);
@@ -841,8 +929,9 @@ async function entrar(r) {
 }
 
 // ─── SECCIONES Y NAVEGACIÓN ─────────────────────────────────────────
-const TITULOS = { avisar: 'Avisar', plan: 'Planificación', semanas: 'Próximas 6 semanas', pendientes: 'Pendientes', avances: 'Avances', contactos: 'Contactos' };
-const TODAS = ['avisar', 'plan', 'semanas', 'pendientes', 'avances', 'contactos', 'ficha'];
+const TITULOS = { avisar: 'Avisar', plan: 'Planificación', semanas: 'Próximas 6 semanas', pendientes: 'Pendientes', avances: 'Avances', contactos: 'Contactos',
+  bloqueos: 'Bloqueo de extras', admin: 'Administración' };
+const TODAS = ['avisar', 'plan', 'semanas', 'pendientes', 'avances', 'contactos', 'bloqueos', 'admin', 'ficha'];
 let SECCIONES = [];   // las que ve este usuario
 let SECCION = null;   // la sección de menú actual
 let ORIGEN = null;    // desde dónde se abrió la ficha
@@ -865,6 +954,7 @@ function mostrarSeccion(id, modo) {
   if (id === 'semanas') pintarSemanas();
   if (id === 'pendientes') pintarPendientes();
   if (id === 'avances') pintarAvances();
+  if (id === 'bloqueos' || id === 'admin') mostrarFechas(id);
   if (id !== 'ficha') ruta('#' + id, modo || 'push');
   enviarAltura();
 }
@@ -891,7 +981,7 @@ function aplicarRuta(hash, modo) {
 
 // Botón «atrás» del navegador o del móvil
 window.addEventListener('popstate', () => {
-  if (!S || !D || !SECCIONES.length) return;
+  if (!S || !SECCIONES.length || (!D && puede('ver'))) return;
   if (!aplicarRuta(location.hash, 'none')) mostrarSeccion(SECCIONES[0], 'none');
 });
 
@@ -915,7 +1005,12 @@ async function cargarDatos() {
 async function actualizar() {
   const b = $('actualizar');
   b.disabled = true; b.textContent = 'Actualizando…';
-  try { await cargarDatos(); refrescarVista(); }
+  try {
+    if (puede('ver')) await cargarDatos();
+    if (SECCION === 'bloqueos' || SECCION === 'admin') { F = null; await cargarFechas(); }
+    else F = null; // se vuelven a pedir al entrar en Bloqueo de extras o Administración
+    refrescarVista();
+  }
   catch (e) { alert('No se ha podido actualizar. Comprueba la conexión.'); }
   finally { b.disabled = false; b.textContent = 'Actualizar'; }
 }
@@ -932,6 +1027,7 @@ function refrescarVista() {
   }
   else if (SECCION === 'contactos') pintarContactos();
   else if (SECCION === 'avisar') rellenarTrabajos();
+  else if (SECCION === 'bloqueos' || SECCION === 'admin') pintarFechas();
 }
 
 // ─── PESTAÑAS ───────────────────────────────────────────────────────
@@ -2388,21 +2484,31 @@ function pintarPlan() {
   // Avisos con atajo para elegir esos trabajos
   const atajo = (tipo, n) => n ? `<button type="button" class="btn-peq" data-accion="pl-elegir" data-tipo="${tipo}">Elegirlos</button>` : '';
   let avisos = ok;
+  // Bloqueos que da la planificación y no coinciden con los guardados: se pregunta, no se cambian solos
+  const difB = puede('fechas_edita_fase') ? diferenciasBloqueo(FILTRO_P.promo, D.bloqueos, D.bloqueos_calculados) : [];
+  if (difB.length) avisos += `<div class="aviso naranja"><span><strong>La planificación da ${plural(difB.length, 'bloqueo de extras distinto', 'bloqueos de extras distintos')} de los guardados</strong> en ${esc(FILTRO_P.promo)}. No se cambian solos: revísalos y guarda los que quieras.</span><button type="button" class="btn-peq" data-accion="revisar-bloqueos" data-origen="plan">Revisar</button></div>`;
   if (sinAvisar.length) avisos += `<div class="aviso naranja"><span><strong>${plural(sinAvisar.length, 'trabajo empieza', 'trabajos empiezan')} en menos de ${S.umbrales.antelacion} días</strong> y aún no se ${sinAvisar.length === 1 ? 'ha' : 'han'} avisado a oficina técnica.</span>${puede('avisar_trabajo') ? atajo('sin_avisar', sinAvisar.length) : ''}</div>`;
   if (atrasados.length) avisos += `<div class="aviso tardio"><span><strong>${plural(atrasados.length, 'trabajo debía', 'trabajos debían')} haber terminado</strong> según lo previsto y no ${atrasados.length === 1 ? 'está marcado' : 'están marcados'} como ${atrasados.length === 1 ? 'hecho' : 'hechos'}.</span>${puede('cambiar_estado_obra') ? atajo('atrasados', atrasados.length) : ''}</div>`;
+  // Trabajos que empiezan antes del bloqueo de extras de su partida, o muy pegados
+  const partidasDe = (lista) => Array.from(new Set(lista.map(t => (S.partidas || {})[t.oficio]))).join(', ');
+  const verB = (tipo) => `<button type="button" class="btn-peq" data-accion="pl-ver-bloqueo" data-tipo="${tipo}">Verlos</button>`;
+  const antesB = ts.filter(t => t.bloqueo_aviso === 'antes'), margenB = ts.filter(t => t.bloqueo_aviso === 'margen');
+  if (antesB.length) avisos += `<div class="aviso tardio"><span><strong>${plural(antesB.length, 'trabajo empieza', 'trabajos empiezan')} antes del bloqueo de extras</strong> de su partida (${esc(partidasDe(antesB))}): los clientes aún pueden cambiar sus extras.</span>${verB('antes')}</div>`;
+  if (margenB.length) avisos += `<div class="aviso naranja"><span><strong>${plural(margenB.length, 'trabajo empieza', 'trabajos empiezan')} menos de ${S.umbrales.margen_bloqueo || 30} días después del bloqueo</strong> de su partida (${esc(partidasDe(margenB))}).</span>${verB('margen')}</div>`;
   $('pl-avisos').innerHTML = avisos;
 
   // Grupos y línea de tiempo
   const mapa = new Map();
   ts.forEach(t => { const k = claveGrupo(t); if (!mapa.has(k)) mapa.set(k, []); mapa.get(k).push(t); });
   PL_GRUPOS = Array.from(mapa, ([k, lista]) => ({ k, lista })).sort((a, b) => porInicio(a.lista[0], b.lista[0]));
-  const fechas = ts.flatMap(t => [t.fecha_inicio, t.fecha_fin, t.inicio_real, t.fin_real]).map(soloFecha).filter(esIso).concat([D.hoy]).sort();
+  const fechas = ts.flatMap(t => [t.fecha_inicio, t.fecha_fin, t.inicio_real, t.fin_real, t.bloqueo])
+    .concat(PL_GRUPOS.map(g => (bloqueoGrupo(g) || {}).fecha)).map(soloFecha).filter(esIso).concat([D.hoy]).sort();
   PL_T0 = fechas[0].slice(0, 7) + '-01';
   PL_T1 = sumarMeses(fechas[fechas.length - 1].slice(0, 7), 1) + '-01';
 
   $('pl-cuerpo').innerHTML = estrecho() ? planMovil() : planEscritorio();
   $('pl-leyenda').innerHTML = '<span><i class="lg prev"></i>Previsto</span><span><i class="lg prev sin-avisar"></i>Sin avisar a oficina técnica</span>' +
-    '<span><i class="lg real"></i>Real (en ejecución / hecho)</span><span><i class="lg hoy"></i>Hoy</span>' +
+    '<span><i class="lg real"></i>Real (en ejecución / hecho)</span><span><i class="lg hoy"></i>Hoy</span><span><i class="lg bloqueo"></i>Bloqueo de extras de la partida</span>' +
     `<span>Desviación: días de más (+) o de menos (−) frente a lo previsto.</span>`;
   pintarSeleccion();
   enviarAltura();
@@ -2436,8 +2542,9 @@ function plMeses(etiquetas, cada) {
   }
   return h;
 }
-function plBarras(lista) {
+function plBarras(lista, bloqueo) {
   let h = plMeses(false) + `<span class="tl-hoy" style="left:${plPos(D.hoy)}"></span>`;
+  if (esIso(soloFecha(bloqueo))) h += `<span class="tl-bloqueo" style="left:${plPos(soloFecha(bloqueo))}" title="Bloqueo de extras ${fechaDMA(bloqueo)}"></span>`;
   lista.forEach(t => {
     const ini = soloFecha(t.fecha_inicio), fin = soloFecha(t.fecha_fin) || ini;
     if (esIso(ini)) h += `<span class="tl-prev${t.nivel === 'sin_avisar' ? ' sin-avisar' : atrasado(t) ? ' tarde' : ''}" style="left:${plPos(ini)};width:${plAncho(ini, fin)}" title="${esc(t.descripcion)}: previsto ${fechaDM(ini)}–${fechaDM(fin)}"></span>`;
@@ -2486,6 +2593,28 @@ function accionesTrabajo(t) {
   return (puedeAvisar(t) ? `<button type="button" class="btn-peq" data-accion="avisar" data-id="${esc(t.id)}">Avisar</button>` : '') +
     (hechoAMano(t) ? `<button type="button" class="btn-peq" data-accion="hecho" data-id="${esc(t.id)}">Hecho</button>` : '');
 }
+// Bloqueo de extras de un grupo (solo al agrupar por partidas): la fecha de la fase de la zona
+function bloqueoGrupo(g) {
+  if (FILTRO_P.agrupar !== 'partida' || !D) return null;
+  const campo = (S.campos_partida || {})[g.k];
+  const fase = (D.fase_de_zona || {})[FILTRO_P.zona];
+  if (!campo || !fase) return null;
+  return { campo, fase, fecha: ((D.bloqueos || {})[FILTRO_P.promo + '|' + fase] || {})[campo] || '' };
+}
+function textoBloqueoGrupo(g, i) {
+  const b = bloqueoGrupo(g);
+  if (!b) return '';
+  const edita = puede('fechas_edita_fase');
+  const editar = edita ? ` · <button type="button" class="btn-texto" data-accion="pl-bloqueo" data-grupo="${i}">${b.fecha ? 'Cambiar' : 'Poner fecha'}</button>` : '';
+  const calc = edita ? bloqueoCalculado(FILTRO_P.promo, b.fase, b.campo) : null;
+  const plan = calc && calc.fecha !== b.fecha ? ` · según la planificación ${fechaDMA(calc.fecha)}` : '';
+  return `<span class="sub pl-bloq">${b.fecha ? 'Bloqueo de extras ' + fechaDMA(b.fecha) : 'Sin fecha de bloqueo'}${plan}${editar}</span>`;
+}
+function marcaBloqueo(t) {
+  if (t.bloqueo_aviso === 'antes') return `<span class="marca roja" title="Bloqueo de extras de su partida: ${fechaDMA(t.bloqueo)}">Antes del bloqueo (${fechaDM(t.bloqueo)})</span>`;
+  if (t.bloqueo_aviso === 'margen') return `<span class="marca borde-rojo" title="Bloqueo de extras de su partida: ${fechaDMA(t.bloqueo)}">${plural(diasEntre(soloFecha(t.bloqueo), soloFecha(t.fecha_inicio)), 'día', 'días')} tras el bloqueo</span>`;
+  return '';
+}
 const chkTrabajo = (t) => elegible(t) ? `<input type="checkbox" data-pl-sel="${esc(t.id)}" aria-label="Elegir ${esc(t.id)} · ${esc(t.descripcion)}"${PL_SEL.has(t.id) ? ' checked' : ''}>` : '';
 const chkGrupo = (g, i) => g.lista.some(elegible) ? `<input type="checkbox" data-pl-grupo="${i}" aria-label="Elegir todo ${esc(g.k)}">` : '';
 
@@ -2496,18 +2625,18 @@ function planEscritorio() {
     const abierto = PL_ABIERTOS.has(g.k);
     h += `<div class="pl-fila pl-grupo" data-accion="pl-grupo" data-grupo="${i}" aria-expanded="${abierto}">
       <div class="pl-chk">${chkGrupo(g, i)}</div>
-      <div class="pl-nombre"><span class="pl-flecha" aria-hidden="true">${abierto ? '▾' : '▸'}</span>${esc(g.k)}<span class="sub">${plural(g.lista.length, 'trabajo', 'trabajos')}</span></div>
+      <div class="pl-nombre"><span class="pl-flecha" aria-hidden="true">${abierto ? '▾' : '▸'}</span>${esc(g.k)}<span class="sub">${plural(g.lista.length, 'trabajo', 'trabajos')}</span>${textoBloqueoGrupo(g, i)}</div>
       <div>${rangoPrevisto(g.lista)}</div><div>${rangoRealGrupo(g.lista)}</div>
       <div>${maxDesvGrupo(g.lista)}</div><div>${estadoGrupo(g.lista)}</div>
-      <div class="pl-tl">${plBarras(g.lista)}</div></div>`;
+      <div class="pl-tl">${plBarras(g.lista, (bloqueoGrupo(g) || {}).fecha)}</div></div>`;
     if (!abierto) return;
     g.lista.forEach(t => {
       h += `<div class="pl-fila pl-trab">
         <div class="pl-chk">${chkTrabajo(t)}</div>
-        <div class="pl-nombre"><a href="#${esc(t.id)}" data-abrir="${esc(t.id)}">${esc(t.id)} · ${esc(t.descripcion)}</a><span class="sub">${esc(t.oficio)}${t.detalle ? ' · ' + esc(t.detalle) : ''}</span></div>
+        <div class="pl-nombre"><a href="#${esc(t.id)}" data-abrir="${esc(t.id)}">${esc(t.id)} · ${esc(t.descripcion)}</a><span class="sub">${esc(t.oficio)}${t.detalle ? ' · ' + esc(t.detalle) : ''}</span>${marcaBloqueo(t) ? `<div class="marcas">${marcaBloqueo(t)}</div>` : ''}</div>
         <div>${rangoPrevisto([t])}</div><div>${rangoReal(t)}</div><div>${desvHtml(t)}</div>
         <div><span class="nv nv-${esc(t.nivel)}">${esc(NIVELES[t.nivel] || t.estado)}</span><div class="pl-acc">${accionesTrabajo(t)}</div></div>
-        <div class="pl-tl">${plBarras([t])}</div></div>`;
+        <div class="pl-tl">${plBarras([t], t.bloqueo)}</div></div>`;
     });
   });
   return h + '</div>';
@@ -2519,17 +2648,17 @@ function planMovil() {
     const abierto = PL_ABIERTOS.has(g.k);
     h += `<div class="pl-tj">
       <div class="pl-tj-cab" data-accion="pl-grupo" data-grupo="${i}" aria-expanded="${abierto}">
-        ${chkGrupo(g, i)}<span class="t">${esc(g.k)}<span class="sub">${plural(g.lista.length, 'trabajo', 'trabajos')} · ${abierto ? 'ocultar' : 'ver'}</span></span>
+        ${chkGrupo(g, i)}<span class="t">${esc(g.k)}<span class="sub">${plural(g.lista.length, 'trabajo', 'trabajos')} · ${abierto ? 'ocultar' : 'ver'}</span>${textoBloqueoGrupo(g, i)}</span>
         <div style="text-align: right">${estadoGrupo(g.lista)}</div>
       </div>
-      <div class="pl-tl">${plBarras(g.lista)}</div>
+      <div class="pl-tl">${plBarras(g.lista, (bloqueoGrupo(g) || {}).fecha)}</div>
       ${abierto ? `<div class="pl-tj-lista">${g.lista.map(t => `<div class="pl-tj-trab">
           ${chkTrabajo(t)}
           <div class="cuerpo">
             <a href="#${esc(t.id)}" data-abrir="${esc(t.id)}" style="color: var(--black); font-weight: 500">${esc(t.id)} · ${esc(t.descripcion)}</a>
             <span class="sub">${esc(t.oficio)}${t.detalle ? ' · ' + esc(t.detalle) : ''}</span>
             <span>Previsto ${fechaDM(t.fecha_inicio)} → ${fechaDM(t.fecha_fin || t.fecha_inicio)}${esIso(soloFecha(t.inicio_real)) || esIso(soloFecha(t.fin_real)) ? ` · Real ${esIso(soloFecha(t.inicio_real)) ? fechaDM(t.inicio_real) : '¿?'} → ${esIso(soloFecha(t.fin_real)) ? fechaDM(t.fin_real) : 'en curso'}` : ''}</span>
-            <div class="marcas"><span class="nv nv-${esc(t.nivel)}">${esc(NIVELES[t.nivel] || t.estado)}</span>${desviacion(t).fin !== null || desviacion(t).ini !== null ? desvHtml(t) : ''}</div>
+            <div class="marcas"><span class="nv nv-${esc(t.nivel)}">${esc(NIVELES[t.nivel] || t.estado)}</span>${desviacion(t).fin !== null || desviacion(t).ini !== null ? desvHtml(t) : ''}${marcaBloqueo(t)}</div>
             <div class="pl-acc">${accionesTrabajo(t)}</div>
           </div></div>`).join('')}</div>` : ''}
     </div>`;
@@ -2592,7 +2721,7 @@ function cerrarDlg() {
   if ($('dlg').classList.contains('oculto')) return;
   $('dlg').classList.add('oculto');
   $('dlg-caja').innerHTML = '';
-  IMPORT = null; HECHO = null;
+  IMPORT = null; HECHO = null; BLOQ = null; REVISAR = null;
   if (FOTOS.hecho.length) limpiarFotosSin('hecho');
   if (DLG_FOCO && document.contains(DLG_FOCO)) DLG_FOCO.focus();
   DLG_FOCO = null;
@@ -2837,6 +2966,376 @@ $('dlg').addEventListener('change', (e) => {
 $('dlg').addEventListener('click', (e) => { if (e.target === $('dlg')) cerrarDlg(); });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('dlg').classList.contains('oculto')) cerrarDlg(); });
 
+// Planificación: abrir los grupos con avisos de bloqueo (agrupando por partida)
+function verBloqueos(tipo) {
+  FILTRO_P.agrupar = 'partida';
+  PL_ABIERTOS.clear();
+  (D.trabajos || []).filter(t => t.promocion === FILTRO_P.promo && t.zona === FILTRO_P.zona && t.bloqueo_aviso === tipo)
+    .forEach(t => PL_ABIERTOS.add(claveGrupo(t)));
+  pintarPlan();
+}
+
+// Planificación: cambiar la fecha de bloqueo de una partida (la misma de la pestaña Bloqueo de extras)
+let BLOQ = null;   // { promo, fase, campo, partida }
+function abrirBloqueo(i) {
+  const g = PL_GRUPOS[i], b = g && bloqueoGrupo(g);
+  if (!b || !puede('fechas_edita_fase')) return;
+  BLOQ = { promo: FILTRO_P.promo, fase: b.fase, campo: b.campo, partida: g.k };
+  const calc = bloqueoCalculado(FILTRO_P.promo, b.fase, b.campo);
+  abrirDlg(cabDlg(esc(FILTRO_P.promo + ' · ' + b.fase), 'Bloqueo de extras') + `<form id="f-bloqueo" class="form-linea" novalidate>
+    <p class="meta"><strong>${esc(g.k)}</strong>. Vale para toda la fase ${esc(b.fase)} de ${esc(FILTRO_P.promo)} y es la misma fecha que ve ventas en la pestaña Bloqueo de extras.</p>
+    ${calc ? `<p class="meta">Según la planificación: <strong>${fechaDMA(calc.fecha)}</strong>, ${S.umbrales.margen_bloqueo} días antes de ${esc(calc.id)}, que empieza el ${fechaDMA(calc.desde)}.
+      ${calc.fecha !== b.fecha ? `<button type="button" class="btn-texto" data-accion="b-usar-calc" data-fecha="${esc(calc.fecha)}">Usar esta fecha</button>` : ''}</p>` : ''}
+    <div class="campo"><label class="etq" for="b-fecha">Fecha de bloqueo</label><input class="ctrl" type="date" id="b-fecha" value="${esc(b.fecha)}"></div>
+    <div class="error" id="b-error" role="alert"></div>
+    <div class="botones"><button type="button" class="btn-sec" data-accion="dlg-cerrar">Cancelar</button><button type="submit" class="btn-negro" id="b-guardar">Guardar</button></div>
+  </form>`);
+}
+async function guardarBloqueo() {
+  const b = BLOQ;
+  if (!b) return;
+  const valor = $('b-fecha').value;
+  const r = await enviando($('b-guardar'), 'Guardando…', () => api('guardar_fecha', { nivel: 'fase', promocion: b.promo, fase: b.fase, campo: b.campo, valor }));
+  if (!r.ok) { $('b-error').textContent = textoError(r); return; }
+  F = null;   // la pestaña Bloqueo de extras vuelve a pedir las fechas
+  cerrarDlg();
+  await recargar(`Bloqueo de extras de ${b.partida} (${b.promo} · ${b.fase}): ${valor ? fechaDMA(valor) : 'sin fecha'}.`);
+}
+
+// ─── BLOQUEOS SEGÚN LA PLANIFICACIÓN ───────────────────────────────
+// El Worker calcula, para cada partida y fase, el primer inicio previsto de sus
+// trabajos menos dias_margen_bloqueo. No se guarda solo: si no coincide con el
+// guardado, se avisa (Planificación y Bloqueo de extras) y quien edita fases
+// elige en una ventana cuáles guardar.
+let REVISAR = null;   // { promo, lista, origen }
+const bloqueoCalculado = (promo, fase, campo) => (((D && D.bloqueos_calculados) || {})[promo + '|' + fase] || {})[campo] || null;
+function guardadosF() {
+  const o = {};
+  ((F && F.fases) || []).forEach(f => { const k = f.promocion + '|' + f.fase; if (!o[k]) o[k] = f; });
+  return o;
+}
+function diferenciasBloqueo(promo, guardados, calculados) {
+  const partida = {};
+  Object.keys(S.campos_partida || {}).forEach(p => { partida[S.campos_partida[p]] = p; });
+  const orden = (campo) => { const i = CAMPOS_FASE.findIndex(c => c.k === campo); return i === -1 ? 99 : i; };
+  const ordenFase = (f) => (f === 'Villas' ? '0' : '1') + f;
+  const lista = [];
+  Object.keys(calculados || {}).forEach(k => {
+    const i = k.indexOf('|');
+    if (k.slice(0, i) !== promo) return;
+    const fase = k.slice(i + 1);
+    Object.keys(calculados[k]).forEach(campo => {
+      const c = calculados[k][campo];
+      const antes = String(((guardados || {})[k] || {})[campo] || '');
+      if (c.fecha !== antes) lista.push({ fase, campo, antes, fecha: c.fecha, desde: c.desde, id: c.id, partida: partida[campo] || campo });
+    });
+  });
+  return lista.sort((a, b) => numerico(ordenFase(a.fase), ordenFase(b.fase)) || orden(a.campo) - orden(b.campo));
+}
+function revisarBloqueos(origen) {
+  if (origen === 'plan') abrirRevision(FILTRO_P.promo, diferenciasBloqueo(FILTRO_P.promo, D.bloqueos, D.bloqueos_calculados), origen);
+  else abrirRevision(F_PROMO, diferenciasBloqueo(F_PROMO, guardadosF(), F.bloqueos_calculados), origen);
+}
+function abrirRevision(promo, lista, origen) {
+  if (!lista.length || !puede('fechas_edita_fase')) return;
+  REVISAR = { promo, lista, origen };
+  abrirDlg(cabDlg(esc(nombrePromo(promo)), 'Bloqueos según la planificación') + `<form id="f-revisar" class="form-linea" novalidate>
+    <p class="meta">El bloqueo que da la planificación es el primer inicio previsto de los trabajos de esa partida en la fase, menos ${S.umbrales.margen_bloqueo} días. Se guardan los que marques; los demás se quedan como están.</p>
+    <div class="caja-scroll"><table class="tabla"><thead><tr><th scope="col"><span class="oculto-visual">Guardar</span></th><th scope="col">Fase · partida</th><th scope="col">Ahora</th><th scope="col">Según la planificación</th></tr></thead><tbody>
+    ${lista.map((x, i) => `<tr><td><input type="checkbox" id="rv-${i}" checked></td>
+      <td><label for="rv-${i}">${esc(x.fase)} · ${esc(x.partida)}</label></td>
+      <td>${x.antes ? fechaDMA(x.antes) : '<span class="pl-vacio">Sin fecha</span>'}</td>
+      <td><strong>${fechaDMA(x.fecha)}</strong><div class="sub">${esc(x.id)} empieza el ${fechaDMA(x.desde)}</div></td></tr>`).join('')}
+    </tbody></table></div>
+    <div class="error" id="rv-error" role="alert"></div>
+    <div class="botones"><button type="button" class="btn-sec" data-accion="dlg-cerrar">Ahora no</button><button type="submit" class="btn-negro" id="rv-aplicar">Guardar los marcados</button></div>
+  </form>`);
+}
+async function aplicarRevision() {
+  const R = REVISAR;
+  if (!R) return;
+  const marcados = R.lista.filter((x, i) => $('rv-' + i) && $('rv-' + i).checked);
+  if (!marcados.length) { $('rv-error').textContent = 'No has marcado ninguno.'; return; }
+  const r = await enviando($('rv-aplicar'), 'Guardando…', () => api('aplicar_bloqueos', { promocion: R.promo, cambios: marcados.map(x => ({ fase: x.fase, campo: x.campo, valor: x.fecha })) }));
+  if (!r.ok) { $('rv-error').textContent = textoError(r); return; }
+  cerrarDlg();
+  const msg = plural(r.aplicados, 'bloqueo guardado', 'bloqueos guardados') + ' según la planificación en ' + R.promo + '.';
+  F = null;
+  if (R.origen === 'plan') { await recargar(msg); return; }
+  try { await cargarFechas(); } catch (e) { /* se verá al repintar */ }
+  if (puede('ver')) cargarDatos().catch(() => {});
+  pintarFechas();
+  $('bx-estado').innerHTML = `<div class="ok-linea" role="status">${esc(msg)}</div>`;
+}
+
+// ─── FECHAS: BLOQUEO DE EXTRAS Y ADMINISTRACIÓN ─────────────────────
+// Lo que antes era Seguimiento de fechas (SB-fechas), con los datos en la
+// pestaña Fechas de la Sheet de obra. Se piden al entrar en una de estas dos
+// pestañas y con «Actualizar». Cada fecha se guarda sola al cambiarla; quien no
+// puede editarla la ve como texto. Los campos calculados salen de las viviendas
+// y solo aparecen cuando todas tienen el dato, igual que en SB-fechas.
+let F = null;            // { hoy, promociones, fases, viviendas }
+let F_CARGA = null;      // carga en curso
+let F_PROMO = '';        // promoción elegida (la misma en las dos pestañas)
+const F_DIAS_AVISO = 30; // semáforo: naranja si vence en menos de un mes
+// tipo: d fecha (por defecto) · m mes · q periodo de contrato por trimestres
+const CAMPOS_FASE = [
+  { k: 'fecha_inicio', etq: 'Inicio de fase', limite: true, sinSem: true },
+  { k: 'fecha_proyecto_ejecucion', etq: 'Proyecto de Ejecución' },
+  { k: 'fecha_estructura', etq: 'Estructura' },
+  { k: 'fecha_piscinas', etq: 'Piscinas' },
+  { k: 'fecha_carpinterias', etq: 'Carpinterías' },
+  { k: 'fecha_albanileria_tabiqueria', etq: 'Albañilería y Tabiquería' },
+  { k: 'fecha_instalaciones_materiales', etq: 'Instalaciones y Elección de Materiales' },
+  { k: 'fecha_mobiliario', etq: 'Mobiliario - Estores - Pinturas - Cocina - Electrodomésticos' },
+  { k: 'fecha_vidrios', etq: 'Vidrios' },
+  { k: 'fecha_jardineria', etq: 'Jardinería' },
+  { k: 'fecha_entrega', etq: 'Entrega de fase', tipo: 'm', calc: true, limite: true }
+];
+const CAMPOS_PROMO = [
+  { k: 'fecha_licencia', etq: 'Fecha licencia', sinSem: true },
+  { k: 'fecha_inicio', etq: 'Fecha inicio', sinSem: true },
+  { k: 'fecha_fin_estimada', etq: 'Fin estimado', tipo: 'm', calc: true },
+  { k: 'fecha_fin_real', etq: 'Fin real (última CFO)', calc: true }
+];
+// permiso: quién edita cada campo de vivienda (como en SB-fechas)
+const CAMPOS_VIV = [
+  { k: 'fecha_fin_estimada', etq: 'Final de obra estimado', tipo: 'm', permiso: 'fase' },
+  { k: 'fecha_entrega_estimada_cliente', etq: 'Entrega estimada cliente', tipo: 'm', permiso: 'fase' },
+  { k: 'fecha_entrega', etq: 'Entrega de contrato', tipo: 'q' },
+  { k: 'fecha_cfo', etq: 'CFO', sinSem: true },
+  { k: 'fecha_acta_recepcion', etq: 'Acta de recepción', sinSem: true },
+  { k: 'fecha_escritura', etq: 'Escritura' }
+];
+const TRIMESTRES_LARGOS = ['', 'primer', 'segundo', 'tercer', 'cuarto'];
+
+const hoyF = () => (F && F.hoy) || (D && D.hoy) || '';
+const puedeFechas = (nivel) => puede('fechas_edita_' + nivel);
+const numerico = (a, b) => String(a).localeCompare(String(b), 'es', { numeric: true });
+
+function prepararFechas() {
+  ['bx-promos', 'ad-promos'].forEach(id => $(id).addEventListener('click', (e) => {
+    const b = e.target.closest('[data-fx-promo]');
+    if (!b) return;
+    F_PROMO = b.dataset.fxPromo;
+    $('bx-estado').innerHTML = ''; $('ad-estado').innerHTML = '';
+    pintarFechas();
+  }));
+  ['sec-bloqueos', 'sec-admin'].forEach(id => $(id).addEventListener('change', (e) => {
+    const c = e.target.closest('[data-campo]');
+    if (c) guardarControl(c);
+  }));
+}
+
+function cargarFechas() {
+  if (!F_CARGA) F_CARGA = api('fechas').then(r => { F_CARGA = null; if (!r.ok) throw r; F = r; return r; });
+  return F_CARGA;
+}
+
+async function mostrarFechas(id) {
+  if (!F) {
+    const cuerpo = $(id === 'bloqueos' ? 'bx-cuerpo' : 'ad-cuerpo');
+    cuerpo.innerHTML = '<div class="cargando">Cargando fechas…</div>';
+    try { await cargarFechas(); }
+    catch (r) { cuerpo.innerHTML = `<div class="aviso tardio" style="margin: 0 20px">${esc(r && r.motivo ? textoError(r) : 'No se han podido cargar las fechas.')}</div>`; enviarAltura(); return; }
+    if (SECCION !== id || FICHA) return;
+  }
+  pintarFechas();
+}
+
+function pintarFechas() {
+  if (!F) return;
+  const promos = promosF();
+  if (promos.indexOf(F_PROMO) === -1) F_PROMO = (S.listas.promociones || []).find(p => promos.indexOf(p) !== -1) || promos[0] || '';
+  ['bx-promos', 'ad-promos'].forEach(id => {
+    $(id).innerHTML = promos.map(p => `<button type="button" data-fx-promo="${esc(p)}" aria-pressed="${p === F_PROMO}">${esc(p)}</button>`).join('');
+  });
+  if (SECCION === 'bloqueos') pintarBloqueos();
+  else if (SECCION === 'admin') pintarAdmin();
+  enviarAltura();
+}
+
+// Promociones, fases y viviendas salen de las propias filas de Fechas
+function promosF() { return Array.from(new Set(F.viviendas.concat(F.promociones).map(x => x.promocion).filter(Boolean))).sort(numerico); }
+function fasesF(promo) {
+  const orden = (f) => (f === 'Villas' ? 0 : 1);
+  return Array.from(new Set(F.viviendas.filter(v => v.promocion === promo).map(v => v.fase).filter(Boolean))).sort((a, b) => orden(a) - orden(b) || numerico(a, b));
+}
+const viviendasF = (promo, fase) => F.viviendas.filter(v => v.promocion === promo && (!fase || v.fase === fase)).sort((a, b) => numerico(a.vivienda, b.vivienda));
+const filaPromoF = (promo) => F.promociones.find(p => p.promocion === promo) || {};
+const filaFaseF = (promo, fase) => F.fases.find(f => f.promocion === promo && f.fase === fase) || {};
+// La más tardía, solo si todas las viviendas tienen el dato (si falta una, aún no hay fecha)
+function maxCompleta(lista, campo) {
+  if (!lista.length || lista.some(v => !v[campo])) return '';
+  return lista.map(v => String(v[campo])).sort().pop();
+}
+
+// Semáforo: verde a más de un mes, naranja en el último mes, rojo si ya pasó.
+// Día de referencia: la fecha; el día 1 del mes; el último día del trimestre final.
+function diaRefF(valor, tipo) {
+  const v = String(valor || '');
+  if (tipo === 'm') return /^\d{4}-\d{2}$/.test(v) ? v + '-01' : '';
+  if (tipo === 'q') {
+    const m = /(\d{4})Q([1-4])$/.exec(v);
+    return m ? sumarDias(sumarMeses(m[1] + '-' + String(m[2] * 3).padStart(2, '0'), 1) + '-01', -1) : '';
+  }
+  return esIso(v) ? v : '';
+}
+function claseSem(valor, c) {
+  const ref = c.sinSem ? '' : diaRefF(valor, c.tipo || 'd');
+  if (!ref || !hoyF()) return '';
+  const dias = diasEntre(hoyF(), ref);
+  return dias < 0 ? 'sem-rojo' : dias <= F_DIAS_AVISO ? 'sem-naranja' : 'sem-verde';
+}
+function textoF(valor, tipo) {
+  const v = String(valor || '');
+  if (!v) return '';
+  if (tipo === 'm') { const m = /^(\d{4})-(\d{2})$/.exec(v); return m ? MESES_LARGOS[Number(m[2]) - 1] + ' ' + m[1] : v; }
+  if (tipo === 'q') return v.split('_').map(x => { const m = /^(\d{4})Q([1-4])$/.exec(x); return m ? 'T' + m[2] + ' ' + m[1] : x; }).join(' – ');
+  return fechaDMA(v);
+}
+function textoLargoQ(v) {
+  return String(v || '').split('_').map(x => { const m = /^(\d{4})Q([1-4])$/.exec(x); return m ? TRIMESTRES_LARGOS[Number(m[2])] + ' trimestre ' + m[1] : x; }).join(' – ');
+}
+
+// Un campo: texto si no se puede editar; fecha, mes y año o periodo si se puede.
+// data-* identifica el registro para guardarlo y para encontrarlo al repintar.
+function controlF(c, valor, editable, ctx, etiqueta) {
+  const tipo = c.tipo || 'd';
+  const sem = claseSem(valor, c);
+  const datos = `data-campo="${c.k}" data-nivel="${ctx.nivel}" data-fase="${esc(ctx.fase || '')}" data-viv="${esc(ctx.viv || '')}"`;
+  if (!editable || c.calc) {
+    const t = textoF(valor, tipo);
+    return `<span class="fx-val ${sem}${t ? '' : ' fx-nada'}" ${datos}${tipo === 'q' && t ? ` title="${esc(textoLargoQ(valor))}"` : ''}>${t ? esc(t) : (c.calc ? 'Falta alguna vivienda' : 'Sin definir')}</span>`;
+  }
+  const lbl = esc(etiqueta);
+  if (tipo === 'd') return `<input class="fx-in ${sem}" type="date" value="${esc(valor || '')}" aria-label="${lbl}" ${datos}>`;
+  const base = Number(hoyF().slice(0, 4)) || new Date().getFullYear();
+  const opAnio = (sel) => {
+    const anios = Array.from({ length: 10 }, (_, i) => base - 3 + i);
+    if (sel && anios.indexOf(Number(sel)) === -1) anios.push(Number(sel));
+    return '<option value="">Año</option>' + anios.sort().map(a => `<option${String(a) === String(sel) ? ' selected' : ''}>${a}</option>`).join('');
+  };
+  if (tipo === 'm') {
+    const [a, m] = String(valor || '').split('-');
+    return `<span class="fx-in fx-sel ${sem}" role="group" aria-label="${lbl}" ${datos}>` +
+      `<select data-p="m" aria-label="${lbl}: mes"><option value="">Mes</option>${MESES.map((x, i) => { const v = String(i + 1).padStart(2, '0'); return `<option value="${v}"${m === v ? ' selected' : ''}>${x}</option>`; }).join('')}</select>` +
+      `<select data-p="a" aria-label="${lbl}: año">${opAnio(a)}</select></span>`;
+  }
+  const partes = String(valor || '').split('_').map(x => /^(\d{4})Q([1-4])$/.exec(x) || []);
+  const ini = partes[0], fin = partes[1] || [];
+  const opQ = (sel) => '<option value="">T</option>' + [1, 2, 3, 4].map(q => `<option value="${q}"${String(sel) === String(q) ? ' selected' : ''}>T${q}</option>`).join('');
+  return `<span class="fx-in fx-sel ${sem}" role="group" aria-label="${lbl}"${valor ? ` title="${esc(textoLargoQ(valor))}"` : ''} ${datos}>` +
+    `<select data-p="iq" aria-label="${lbl}: trimestre">${opQ(ini[2])}</select><select data-p="ia" aria-label="${lbl}: año">${opAnio(ini[1])}</select>` +
+    `<span class="fx-sep">a</span>` +
+    `<select data-p="fq" aria-label="${lbl}: hasta el trimestre (opcional)">${opQ(fin[2])}</select><select data-p="fa" aria-label="${lbl}: hasta el año (opcional)">${opAnio(fin[1])}</select></span>`;
+}
+
+// '' = vaciar; null = a medias (falta el mes o el año, o el trimestre): aún no se guarda
+function valorControl(el) {
+  if (el.tagName === 'INPUT') return el.value;
+  const p = (k) => (el.querySelector(`[data-p="${k}"]`) || {}).value || '';
+  if (el.querySelector('[data-p="m"]')) { const m = p('m'), a = p('a'); return !m && !a ? '' : m && a ? a + '-' + m : null; }
+  const iq = p('iq'), ia = p('ia'), fq = p('fq'), fa = p('fa');
+  if (!iq && !ia && !fq && !fa) return '';
+  if (!iq || !ia || !!fq !== !!fa) return null;
+  return ia + 'Q' + iq + (fq ? '_' + fa + 'Q' + fq : '');
+}
+const claveCtl = (el) => [el.dataset.nivel, el.dataset.fase, el.dataset.viv, el.dataset.campo].join('|');
+const buscarCtl = (clave) => Array.from(document.querySelectorAll('#sec-bloqueos [data-campo], #sec-admin [data-campo]')).find(x => claveCtl(x) === clave);
+
+async function guardarControl(el) {
+  const valor = valorControl(el);
+  if (valor === null) return;
+  const ctx = { nivel: el.dataset.nivel, fase: el.dataset.fase, viv: el.dataset.viv, campo: el.dataset.campo };
+  const promo = F_PROMO, clave = claveCtl(el);
+  const estado = $(SECCION === 'admin' ? 'ad-estado' : 'bx-estado');
+  el.classList.add('guardando');
+  const r = await api('guardar_fecha', { nivel: ctx.nivel, promocion: promo, fase: ctx.fase, vivienda: ctx.viv, campo: ctx.campo, valor });
+  if (!r.ok) {
+    estado.innerHTML = `<div class="aviso tardio">${esc(textoError(r))}</div>`;
+    repintarFechas();
+    return;
+  }
+  estado.innerHTML = '';
+  ponerValorF(promo, ctx, r.valor);
+  // Los bloqueos cambian los avisos de Planificación: se vuelven a pedir los datos de obra
+  if (ctx.nivel === 'fase' && puede('ver')) cargarDatos().catch(() => {});
+  repintarFechas();
+  const nuevo = buscarCtl(clave);
+  if (nuevo && nuevo.classList.contains('fx-in')) { nuevo.classList.add('guardado'); setTimeout(() => nuevo.classList.remove('guardado'), 1500); }
+}
+
+// Repinta sin perder el sitio: el foco vuelve al mismo campo (y al mismo desplegable)
+function repintarFechas() {
+  const a = document.activeElement;
+  const c = a && a.closest ? a.closest('#sec-bloqueos [data-campo], #sec-admin [data-campo]') : null;
+  const clave = c ? claveCtl(c) : '', parte = a && a.dataset ? a.dataset.p : '';
+  pintarFechas();
+  const n = clave && buscarCtl(clave);
+  if (n) { const f = parte ? n.querySelector(`[data-p="${parte}"]`) : n; if (f && f.focus) f.focus({ preventScroll: true }); }
+}
+
+function ponerValorF(promo, ctx, valor) {
+  let fila;
+  if (ctx.nivel === 'promocion') {
+    fila = F.promociones.find(p => p.promocion === promo);
+    if (!fila) F.promociones.push(fila = { nivel: 'Promoción', promocion: promo, fase: '', vivienda: '' });
+  } else if (ctx.nivel === 'fase') {
+    fila = F.fases.find(f => f.promocion === promo && f.fase === ctx.fase);
+    if (!fila) F.fases.push(fila = { nivel: 'Fase', promocion: promo, fase: ctx.fase, vivienda: '' });
+  } else fila = F.viviendas.find(v => v.promocion === promo && v.vivienda === ctx.viv);
+  if (fila) fila[ctx.campo] = valor;
+}
+
+function leyendaF(conCalculado) {
+  return [
+    ['<span class="muestra sem-verde"></span>', 'Más de un mes por delante.'],
+    ['<span class="muestra sem-naranja"></span>', 'Vence en menos de un mes.'],
+    ['<span class="muestra sem-rojo"></span>', 'Ya ha pasado.'],
+    conCalculado ? ['<span class="fx-calc">Calculado</span>', 'Sale de las viviendas: la fecha más tardía, y solo cuando todas la tienen.'] : null,
+    [`<span class="meta">${puedeFechas('fase') || puedeFechas('promocion') || puedeFechas('vivienda') ? 'Se guarda sola' : 'Solo consulta'}</span>`,
+      puedeFechas('fase') || puedeFechas('promocion') || puedeFechas('vivienda') ? 'Cada fecha se guarda al cambiarla. Lo que ves como texto no lo puede cambiar tu usuario.' : 'Tu usuario puede consultar estas fechas, pero no cambiarlas.']
+  ].filter(Boolean).map(([m, t]) => `<div>${m}<span>${t}</span></div>`).join('');
+}
+
+function pintarBloqueos() {
+  const promo = F_PROMO;
+  const fases = fasesF(promo);
+  if (!fases.length) { $('bx-cuerpo').innerHTML = `<div class="vacio">No hay viviendas de ${esc(promo)} en la pestaña Fechas.</div>`; $('bx-leyenda').innerHTML = ''; return; }
+  const edita = puedeFechas('fase');
+  const regs = fases.map(f => Object.assign({}, filaFaseF(promo, f), { fecha_entrega: maxCompleta(viviendasF(promo, f), 'fecha_entrega_estimada_cliente') }));
+  // Quien edita ve, en cada bloqueo, la fecha que da la planificación si no coincide
+  const calcs = edita ? (F.bloqueos_calculados || {}) : {};
+  const plan = (f, c, guardado) => { const x = (calcs[promo + '|' + f] || {})[c.k]; return x && x.fecha !== String(guardado || '') ? `<span class="fx-plan">Planificación: ${fechaDMA(x.fecha)}</span>` : ''; };
+  const dif = edita ? diferenciasBloqueo(promo, guardadosF(), calcs) : [];
+  const aviso = dif.length ? `<div class="aviso naranja fx-aviso"><span><strong>La planificación da ${plural(dif.length, 'bloqueo distinto', 'bloqueos distintos')} de los guardados</strong> en ${esc(promo)}. No se cambian solos: revísalos y guarda los que quieras.</span><button type="button" class="btn-peq" data-accion="revisar-bloqueos" data-origen="bloqueos">Revisar</button></div>` : '';
+  const cab = '<tr><th scope="col">Partida</th>' + fases.map(f => `<th scope="col">${esc(f)}<span class="sub">${plural(viviendasF(promo, f).length, 'vivienda', 'viviendas')}</span></th>`).join('') + '</tr>';
+  const filas = CAMPOS_FASE.map(c => `<tr${c.limite ? ' class="fx-limite"' : ''}><th scope="row">${esc(c.etq)}${c.calc ? ' <span class="fx-calc">· calculado</span>' : ''}</th>` +
+    fases.map((f, i) => `<td>${controlF(c, regs[i][c.k], edita, { nivel: 'fase', fase: f }, c.etq + ' · ' + f)}${plan(f, c, regs[i][c.k])}</td>`).join('') + '</tr>').join('');
+  $('bx-cuerpo').innerHTML = aviso + `<div class="fx-tabla-caja ajustada"><table class="fx fx-bloqueos"><caption class="oculto-visual">Bloqueo de extras de ${esc(promo)}</caption><thead>${cab}</thead><tbody>${filas}</tbody></table></div>`;
+  $('bx-leyenda').innerHTML = leyendaF(true);
+}
+
+function pintarAdmin() {
+  const promo = F_PROMO;
+  const vivs = viviendasF(promo);
+  const reg = Object.assign({}, filaPromoF(promo), { fecha_fin_estimada: maxCompleta(vivs, 'fecha_fin_estimada'), fecha_fin_real: maxCompleta(vivs, 'fecha_cfo') });
+  const nVillas = vivs.filter(v => v.fase === 'Villas').length;
+  let h = `<section class="fx-resumen" aria-label="Resumen de ${esc(promo)}"><div class="fx-resumen-cab"><h2>${esc(nombrePromo(promo))}</h2><span class="dato"><b>${nVillas}</b> villas · <b>${vivs.length - nVillas}</b> apartamentos</span></div>
+    <div class="fx-campos">${CAMPOS_PROMO.map(c => `<div class="fx-campo"><span class="etq">${esc(c.etq)}${c.calc ? ' <span class="fx-calc">· calculado</span>' : ''}</span>${controlF(c, reg[c.k], puedeFechas('promocion'), { nivel: 'promocion' }, c.etq)}</div>`).join('')}</div></section>`;
+  fasesF(promo).forEach(f => {
+    const lista = viviendasF(promo, f);
+    h += `<h3 class="fx-titulo">${esc(f)} <span class="cuenta">${plural(lista.length, 'vivienda', 'viviendas')}</span></h3>
+      <div class="fx-tabla-caja"><table class="fx"><caption class="oculto-visual">${esc(f)} de ${esc(promo)}</caption><thead><tr><th scope="col">Vivienda</th>${CAMPOS_VIV.map(c => `<th scope="col">${esc(c.etq)}</th>`).join('')}</tr></thead><tbody>` +
+      lista.map(v => `<tr><th scope="row" class="fx-cod">${esc(v.vivienda)}</th>${CAMPOS_VIV.map(c =>
+        `<td>${controlF(c, v[c.k], puedeFechas(c.permiso || 'vivienda'), { nivel: 'vivienda', fase: f, viv: v.vivienda }, c.etq + ' · ' + v.vivienda)}</td>`).join('')}</tr>`).join('') +
+      '</tbody></table></div>';
+  });
+  $('ad-cuerpo').innerHTML = h;
+  $('ad-leyenda').innerHTML = leyendaF(true);
+}
+
 // ─── ACCIONES (clics y envíos en las vistas que se repintan) ───────
 const ACCIONES = {
   volver: () => mostrarSeccion(ORIGEN || SECCIONES[0]),
@@ -2857,6 +3356,10 @@ const ACCIONES = {
   'dlg-cerrar': cerrarDlg,
   ir: (el) => mostrarSeccion(el.dataset.sec),
   'imp-aplicar': (el) => aplicarImport(el),
+  'pl-ver-bloqueo': (el) => verBloqueos(el.dataset.tipo),
+  'pl-bloqueo': (el) => abrirBloqueo(Number(el.dataset.grupo)),
+  'b-usar-calc': (el) => { $('b-fecha').value = el.dataset.fecha; $('b-fecha').focus(); },
+  'revisar-bloqueos': (el) => revisarBloqueos(el.dataset.origen),
   'imp-otro': () => { cerrarDlg(); $('input-project').click(); },
   'foto-hecho': (el) => { fotoDestino = 'hecho'; $(el.dataset.origen === 'camara' ? 'input-camara' : 'input-galeria').click(); }
 };
@@ -2864,7 +3367,7 @@ const ACCIONES = {
 document.addEventListener('click', (e) => {
   if (e.target.matches && e.target.matches('input')) return;   // casillas dentro de filas que se despliegan
   const el = e.target.closest && e.target.closest('[data-abrir], [data-accion]');
-  if (!el || !S || !D) return;
+  if (!el || !S) return;
   if (el.dataset.abrir) {
     if (e.ctrlKey || e.metaKey || e.shiftKey || e.button) return;   // abrir en otra pestaña
     e.preventDefault();
@@ -2881,6 +3384,8 @@ document.addEventListener('submit', (e) => {
   else if (f.id === 'fe') { e.preventDefault(); guardarEdicion(); }
   else if (f.id === 'fp') { e.preventDefault(); guardarPlano(f); }
   else if (f.id === 'f-hecho') { e.preventDefault(); guardarHecho(); }
+  else if (f.id === 'f-bloqueo') { e.preventDefault(); guardarBloqueo(); }
+  else if (f.id === 'f-revisar') { e.preventDefault(); aplicarRevision(); }
 });
 
 // Vuelve a leer los datos y repinta, con un mensaje de confirmación
