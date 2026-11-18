@@ -2787,6 +2787,10 @@ function pintarImport() {
           <label class="chk"><input type="radio" name="res-${esc(c.id)}" value="herramienta"${(I.resolver[c.id] || 'herramienta') === 'herramienta' ? ' checked' : ''}> Dejar la de aquí: ${fechas(c.herramienta)}</label>
           <label class="chk"><input type="radio" name="res-${esc(c.id)}" value="project"${I.resolver[c.id] === 'project' ? ' checked' : ''}> Poner la de Project: ${fechas(c.project)}</label>
         </div></div>`).join('')}</div></details>`;
+    // Los botones, antes de las listas: con muchas tareas no hay que bajar hasta el final
+    h += `<div class="error" id="imp-error" role="alert"></div>
+      <div class="botones"><button type="button" class="btn-sec" data-accion="dlg-cerrar">Cancelar</button>
+      <button type="button" class="btn-negro" id="imp-aplicar" data-accion="imp-aplicar"${hacer ? '' : ' disabled'}>${hacer ? 'Aplicar importación' : 'Nada que cambiar'}</button></div>`;
     h += seccion('Nuevos', p.nuevos.length, tabla(['Tarea', 'Capítulo', 'Oficio', 'Inicio', 'Fin'],
       p.nuevos.map(n => fila([esc(n.descripcion) + (n.detalle ? ` <span class="meta">· ${esc(n.detalle)}</span>` : '') + (n.pasada ? ' <span class="marca">ya terminada</span>' : ''),
         esc(n.capitulo), esc(n.oficio), fechaDM(n.inicio), fechaDM(n.fin)]))), p.nuevos.length <= 15);
@@ -2800,9 +2804,6 @@ function pintarImport() {
       tabla(['Trabajo', 'Aquí', 'En Project'], p.ya_empezados.map(c => fila([`${esc(c.id)} · ${esc(c.nombre)}`, fechas(c.herramienta), fechas(c.project)]))), false);
     h += seccion('Sin clasificar', p.sin_clasificar.length, '<p class="meta">No se importan. Para que entren, añade su capítulo (y palabra si hace falta) en la pestaña _reglas_project de la Sheet.</p>' +
       tabla(['Tarea', 'Capítulo'], p.sin_clasificar.map(x => fila([esc(x.nombre), esc(x.capitulo || '—') + (x.oficio ? ` <span class="meta">(oficio ${esc(x.oficio)} no está en la lista)</span>` : '')]))), true);
-    h += `<div class="error" id="imp-error" role="alert"></div>
-      <div class="botones"><button type="button" class="btn-sec" data-accion="dlg-cerrar">Cancelar</button>
-      <button type="button" class="btn-negro" id="imp-aplicar" data-accion="imp-aplicar"${hacer ? '' : ' disabled'}>${hacer ? 'Aplicar importación' : 'Nada que cambiar'}</button></div>`;
   }
   const abierto = !$('dlg').classList.contains('oculto');
   if (abierto) { $('dlg-caja').innerHTML = h; if (enfocado && $(enfocado)) $(enfocado).focus(); enviarAltura(); }
@@ -3056,10 +3057,23 @@ function sumarDias(iso, n) {
 }
 
 // ─── IFRAME (si se incrusta en Webflow) ─────────────────────────────
+// Las ventanas (importar Project, marcar hecho, detalle de un avance) van por
+// encima del resto y no cuentan en la altura del body: se mide hasta su último
+// elemento (no la caja, que en el móvil ocupa el alto del iframe y crecería sin fin).
 function enviarAltura() {
-  if (window.parent !== window) window.parent.postMessage({ iframeHeight: document.body.scrollHeight }, '*');
+  if (window.parent === window) return;
+  let alto = document.body.scrollHeight;
+  document.querySelectorAll('.modal:not(.oculto) > .modal-caja').forEach(caja => {
+    const ultimo = caja.lastElementChild;
+    if (!ultimo) return;
+    const relleno = parseFloat(getComputedStyle(caja).paddingBottom) + parseFloat(getComputedStyle(caja.parentElement).paddingBottom);
+    alto = Math.max(alto, Math.ceil(ultimo.getBoundingClientRect().bottom + window.scrollY + relleno));
+  });
+  window.parent.postMessage({ iframeHeight: alto }, '*');
 }
 window.addEventListener('resize', enviarAltura);
+// Desplegar listas dentro de una ventana cambia su altura sin pasar por ningún repintado
+if (window.parent !== window) document.addEventListener('toggle', enviarAltura, true);
 
 arrancar();
 </script>
