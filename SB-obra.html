@@ -3764,7 +3764,8 @@ function pintarImport() {
     const hacer = r.nuevos + r.cambios + r.borrados + r.conflictos;
     const fuera = [r.inactivas ? plural(r.inactivas, 'tarea desactivada', 'tareas desactivadas') + ' en Project' : '',
       r.holguras ? plural(r.holguras, 'holgura', 'holguras') + ' (vacaciones, retrasos)' : '',
-      r.pasadas_excluidas ? plural(r.pasadas_excluidas, 'tarea ya terminada', 'tareas ya terminadas') : ''].filter(Boolean);
+      r.pasadas_excluidas ? plural(r.pasadas_excluidas, 'tarea ya terminada', 'tareas ya terminadas') : '',
+      r.borradas_aqui ? plural(r.borradas_aqui, 'tarea borrada', 'tareas borradas') + ' en la herramienta' : ''].filter(Boolean);
     h += `<div class="dlg-resumen">${cont(r.nuevos, 'Nuevos')}${cont(r.cambios, 'Cambian de fecha')}${cont(r.conflictos, 'Conflictos', r.conflictos ? 'rojo' : '')}` +
       `${cont(r.borrados, 'Se quitan')}${cont(r.sin_clasificar, 'Sin clasificar', r.sin_clasificar ? 'naranja' : '')}${cont(r.sin_cambios, 'Sin cambios')}</div>` +
       `<p class="meta">${fuera.length ? 'No se importan ' + fuera.join(', ').replace(/, ([^,]*)$/, ' ni $1') + '.' : ''}` +
