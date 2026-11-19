@@ -117,6 +117,8 @@
   .especial-units { color: var(--slate-gray); font-size: 12px; }
 
   .status-chip { display: inline-block; font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 10px; border-radius: 2px; vertical-align: middle; white-space: nowrap; }
+  .desc-badge { display: inline-block; font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 10px; border-radius: 2px; vertical-align: middle; white-space: nowrap; background: var(--white); color: var(--black); border: 1px solid var(--black); margin-right: 6px; }
+  .extras-table tr.fila-descuento td.extra-name { color: var(--slate-gray); }
   .contract-badge { display: inline-block; font-family: 'Roboto', sans-serif; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 10px; border-radius: 2px; vertical-align: middle; white-space: nowrap; background: #fdf0ee; color: #c0392b; border: 1px solid #f0c4bc; margin-right: 6px; }
   .chip-enviado { background: #FEF3EA; color: #E87722; border: 1px solid #F5C89A; }
   .chip-firmado { background: #f0faf0; color: #2d7a2d; border: 1px solid #b8ddb8; }
@@ -349,6 +351,26 @@ let DATA_EXTRAS = [];
 let DATA_ESPECIALES = [];
 const COLLAPSED = {};
 
+// ─── DESCUENTOS (abonos) ───────────────────────────────────────────
+// Regla acordada 19/11/2026: una línea con total negativo es un abono
+// (p. ej. "Electrodomésticos JOHNSON" a -2.850 € porque ya van en el
+// FULL PACK). Es solo dinero: no se ejecuta en obra, no se pide y su
+// oficio no significa nada. Quien no ve precios (vista técnica / obra)
+// no la ve; quien sí los ve, la ve marcada como DESCUENTO, sin oficio
+// y sin casillas. Lo que obra tenga que quitar o no instalar va en su
+// propia línea (a 0 € o positiva, con oficio), nunca como abono.
+// Se mira solo el signo, así que da igual que el precio llegue como
+// "-2636.36" o como "-2.636,36".
+function numSigno(v) {
+  const n = parseFloat(String(v ?? '').trim().replace(',', '.'));
+  return isNaN(n) ? 0 : n;
+}
+function esDescuento(e) {
+  if (/^.+_sub\d+$/.test(String(e.id || ''))) return false; // sublíneas de pack: sin precio
+  return numSigno(e.qty) * numSigno(e.price) < 0;
+}
+function oficioDe(e) { return esDescuento(e) ? '' : (e.oficio || ''); }
+
 function mostrarEstadoSinPromo() {
   // Se llama justo tras entrar (login o token guardado): momento en que ya
   // se conocen los permisos → mostrar/ocultar el botón de vista.
@@ -406,7 +428,7 @@ function poblarSelectorOficios() {
   const sel = document.getElementById('oficio-select');
   const actual = sel.value; // conservar selección si el oficio sigue existiendo
   const oficios = new Set();
-  DATA_EXTRAS.forEach(e => { if (e.oficio) oficios.add(e.oficio); });
+  DATA_EXTRAS.forEach(e => { if (oficioDe(e)) oficios.add(oficioDe(e)); });
   DATA_ESPECIALES.forEach(e => { if (e.oficio) oficios.add(e.oficio); });
   const lista = Array.from(oficios).sort((a, b) => a.localeCompare(b));
   sel.innerHTML = '<option value="">Todos los oficios</option>' +
@@ -419,8 +441,10 @@ function agruparPorVivienda() {
   // se descartan aquí las filas fantasma sin vivienda, que pueden venir
   // del rango completo de la hoja aunque estén vacías)
   const grupos = {};
+  const ocultarDescuentos = veTecActual(); // obra / "Ver sin precios": los abonos no se ven
   DATA_EXTRAS.forEach(e => {
     if (!e.vivienda) return;
+    if (ocultarDescuentos && esDescuento(e)) return;
     if (!grupos[e.vivienda]) grupos[e.vivienda] = { extras: [], especiales: [] };
     grupos[e.vivienda].extras.push(e);
   });
@@ -451,7 +475,7 @@ function renderDashboard() {
     gruposMostrar = {};
     viviendas.forEach(v => {
       const g = grupos[v];
-      const extrasF = g.extras.filter(e => (e.oficio || '') === oficioSel);
+      const extrasF = g.extras.filter(e => oficioDe(e) === oficioSel);
       const especialesF = g.especiales.filter(e => (e.oficio || '') === oficioSel);
       if (extrasF.length || especialesF.length) gruposMostrar[v] = { extras: extrasF, especiales: especialesF };
     });
@@ -496,6 +520,7 @@ function renderDashboard() {
       const total = (Number(e.qty)||0) * (Number(e.price)||0);
       const isSub = /^.+_sub\d+$/.test(String(e.id || ''));
       const esPadreDePack = idsPadreDePack.has(String(e.id || ''));
+      const descuento = esDescuento(e);
       const nameClass = 'extra-name' + (isSub ? ' is-sub' : '');
       const tickChecked = (campo) => String(e[campo]).toUpperCase() === 'TRUE' ? 'checked' : '';
       const attrs = (accion) =>
@@ -503,7 +528,7 @@ function renderDashboard() {
         `data-post="${escapeAttr(e.post_entrega || 'FALSE')}" data-promo="${escapeAttr(CURRENT_PROMO)}" ` +
         `data-accion="${accion}"`;
       const celdaTick = (campo, accion) => {
-        if (esPadreDePack) return '';
+        if (esPadreDePack || descuento) return ''; // ni el padre del pack ni un abono se revisan ni se piden
         const permitido = puedeEditarTick(campo);
         const disabled = (firmado && permitido) ? '' : 'disabled';
         const title = !firmado
@@ -531,9 +556,11 @@ function renderDashboard() {
       const esContrato = String(e.incluido_contrato || '').toUpperCase() === 'TRUE';
       const badgeContrato = esContrato ? '<span class="contract-badge" title="Incluido en contrato">C</span>' : '';
 
+      const badgeDescuento = descuento ? '<span class="desc-badge" title="Abono: solo afecta al precio, no va a obra">Descuento</span>' : '';
+
       return `
-        <tr>
-          <td class="${nameClass}">${badgeContrato}${escapeHtml(e.extra || e.id || '')}${e.oficio ? '<span class="extra-oficio">'+escapeHtml(e.oficio)+'</span>' : ''}</td>
+        <tr${descuento ? ' class="fila-descuento"' : ''}>
+          <td class="${nameClass}">${badgeContrato}${badgeDescuento}${escapeHtml(e.extra || e.id || '')}${oficioDe(e) ? '<span class="extra-oficio">'+escapeHtml(oficioDe(e))+'</span>' : ''}</td>
           <td class="tc">${isSub ? '' : (e.qty ?? '')}</td>
           <td class="tr">${isSub ? '' : fmtEur(e.price)}</td>
           <td class="tr">${isSub ? '' : fmtEur(total)}</td>
@@ -625,7 +652,7 @@ function descargarPDFVivienda(ev, v) {
   const oficioSel = document.getElementById('oficio-select').value;
   if (oficioSel) {
     g = {
-      extras: g.extras.filter(e => (e.oficio || '') === oficioSel),
+      extras: g.extras.filter(e => oficioDe(e) === oficioSel),
       especiales: g.especiales.filter(e => (e.oficio || '') === oficioSel)
     };
   }
@@ -700,16 +727,18 @@ function descargarPDFVivienda(ev, v) {
       const filas = g.extras.map(e => {
         const isSub = /^.+_sub\d+$/.test(String(e.id || ''));
         const esPadreDePack = idsPadreDePack.has(String(e.id || ''));
-        const nombre = (isSub ? '   ↳ ' : '') + (e.extra || e.id || '');
+        const descuento = esDescuento(e);
+        const nombre = (isSub ? '   ↳ ' : '') + (descuento ? 'DESCUENTO · ' : '') + (e.extra || e.id || '');
         const total = (Number(e.qty)||0) * (Number(e.price)||0);
+        const sinTicks = esPadreDePack || descuento;
         return [
           nombre,
           isSub ? '' : (e.qty ?? ''),
           isSub ? '' : fmtEur(e.price),
           isSub ? '' : fmtEur(total),
           e.estado === 'Firmado' ? 'Firmado' : 'Enviado',
-          esPadreDePack ? '—' : (String(e.revisado_arquitectura).toUpperCase() === 'TRUE' ? 'Sí' : 'No'),
-          esPadreDePack ? '—' : (String(e.pedido_realizado).toUpperCase() === 'TRUE' ? 'Sí' : 'No')
+          sinTicks ? '—' : (String(e.revisado_arquitectura).toUpperCase() === 'TRUE' ? 'Sí' : 'No'),
+          sinTicks ? '—' : (String(e.pedido_realizado).toUpperCase() === 'TRUE' ? 'Sí' : 'No')
         ];
       });
       doc.autoTable({
