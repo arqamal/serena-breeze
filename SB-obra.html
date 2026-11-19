@@ -401,6 +401,14 @@
   .pl-nombre .pl-editar { min-height: 0; font-size: 12px; margin-left: 4px; display: inline; }
   .pl-nombre .pl-anadir { display: block; margin-top: 4px; min-height: 28px; }
   .pl-tj-anadir { padding: 6px 0 2px; }
+  /* Importar Project: reglas para lo sin clasificar */
+  .rg-cap { border-top: 1px solid var(--border); padding: 10px 0; display: flex; flex-direction: column; gap: 6px; }
+  .rg-cab, .rg-tarea { display: grid; grid-template-columns: 1fr minmax(0, 260px) minmax(0, 120px); gap: 8px; align-items: center; font-size: 14px; }
+  .rg-cab > span:first-child { grid-column: 1 / 2; }
+  .rg-cab .ctrl { grid-column: 2 / 4; }
+  .rg-tarea { padding-left: 14px; }
+  .rg-cab .ctrl, .rg-tarea .ctrl { min-height: 38px; font-size: 13px; }
+  @media (max-width: 600px) { .rg-cab, .rg-tarea { grid-template-columns: 1fr 1fr; } .rg-cab > span:first-child, .rg-tarea > span { grid-column: 1 / -1; } .rg-cab .ctrl { grid-column: 1 / -1; } }
   /* Reuniones */
   .tres-campos { display: grid; grid-template-columns: 1fr 120px 2fr; gap: 12px; }
   @media (max-width: 600px) { .tres-campos { grid-template-columns: 1fr 1fr; } .tres-campos .campo:last-child { grid-column: 1 / -1; } }
@@ -879,6 +887,8 @@ const MENSAJES = {
   falta_pdf: 'Esta reunión no tiene el PDF del acta: genéralo primero.',
   sin_destinatarios: 'Nadie tiene marcado «Acta» con email.',
   envio_fallido: 'No se ha podido enviar el acta desde arquitectura',
+  reglas_invalidas: 'Revisa las reglas: cada una necesita capítulo, y la palabra no puede quedar vacía.',
+  reglas_contradictorias: 'Hay dos tareas con la misma palabra y distinto oficio',
   proveedor_invalido: 'Elige un proveedor activo de la lista.'
 };
 const MAX_FOTOS_FICHA = 10;
@@ -897,6 +907,8 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<'
 const verdadero = (v) => v === true || ['true', '1', 'sí', 'si', 'x'].indexOf(String(v ?? '').trim().toLowerCase()) !== -1;
 const mensaje = (r) => r.motivo === 'falta_estructura' && r.detalle === '_reglas_project' ? 'Falta preparar la Sheet para la planificación: hay que ejecutar actualizarPlanificacion() en Apps Script.'
   : r.motivo === 'falta_estructura' && r.detalle === 'Fechas' ? 'Faltan las fechas en la Sheet: hay que ejecutar importarFechas() en Apps Script.'
+  : r.motivo === 'falta_estructura' && r.detalle === '_reglas_project' ? 'Falta la pestaña _reglas_project en la Sheet: ejecuta actualizarPlanificacion() en Apps Script.'
+  : r.motivo === 'reglas_contradictorias' && r.detalle ? MENSAJES.reglas_contradictorias + ': ' + r.detalle + '.'
   : MENSAJES[r.motivo] ? MENSAJES[r.motivo] + ((r.motivo === 'cif_duplicado' || r.motivo === 'solo_planificados' || r.motivo === 'envio_fallido') && r.detalle ? ': ' + r.detalle + '.' : (r.motivo === 'solo_planificados' || r.motivo === 'envio_fallido') ? '.' : '')
   : ('No se ha podido guardar (' + (r.motivo || 'error') + (r.detalle ? ': ' + r.detalle : '') + ').');
 const puede = (p) => !!(S && S.permisos.indexOf(p) !== -1);
@@ -3659,7 +3671,7 @@ async function guardarHecho() {
 // El navegador lee el XML (Archivo › Guardar como › XML en Project) y manda
 // las tareas al Worker, que las clasifica y compara. Nada se escribe hasta
 // pulsar «Aplicar».
-let IMPORT = null;   // { archivo, tareas, promocion, zona, incluir, resolver, previa, error, cargando }
+let IMPORT = null;   // { archivo, tareas, promocion, zona, incluir, resolver, previa, error, cargando, reglas, recargar }
 
 function leerProject(texto) {
   const doc = new DOMParser().parseFromString(texto, 'application/xml');
@@ -3718,7 +3730,7 @@ async function leerArchivoProject(e) {
     return;
   }
   const z = zonaDeArchivo(f.name, leido.nivel1);
-  IMPORT = { archivo: f.name, tareas: leido.tareas, promocion: z.promocion || FILTRO_P.promo, zona: z.zona, incluir: true, resolver: {}, previa: null };
+  IMPORT = { archivo: f.name, tareas: leido.tareas, promocion: z.promocion || FILTRO_P.promo, zona: z.zona, incluir: true, resolver: {}, previa: null, reglas: { cap: {}, t: {} } };
   await calcularPrevia();
 }
 
@@ -3729,7 +3741,8 @@ async function calcularPrevia() {
   I.cargando = !!(I.promocion && I.zona);
   pintarImport();
   if (!I.cargando) return;
-  const r = await api('importar_project', { modo: 'previa', archivo: I.archivo, promocion: I.promocion, zona: I.zona, tareas: I.tareas, incluir_pasadas: I.incluir });
+  const recargar = !!I.recargar; I.recargar = false;
+  const r = await api('importar_project', { modo: 'previa', archivo: I.archivo, promocion: I.promocion, zona: I.zona, tareas: I.tareas, incluir_pasadas: I.incluir, recargar_reglas: recargar });
   if (IMPORT !== I) return;
   I.cargando = false;
   if (!r.ok) I.error = textoError(r); else I.previa = r.previa;
@@ -3769,7 +3782,7 @@ function pintarImport() {
     h += `<div class="dlg-resumen">${cont(r.nuevos, 'Nuevos')}${cont(r.cambios, 'Cambian de fecha')}${cont(r.conflictos, 'Conflictos', r.conflictos ? 'rojo' : '')}` +
       `${cont(r.borrados, 'Se quitan')}${cont(r.sin_clasificar, 'Sin clasificar', r.sin_clasificar ? 'naranja' : '')}${cont(r.sin_cambios, 'Sin cambios')}</div>` +
       `<p class="meta">${fuera.length ? 'No se importan ' + fuera.join(', ').replace(/, ([^,]*)$/, ' ni $1') + '.' : ''}` +
-      `${r.pasadas_incluidas ? ` ${plural(r.pasadas_incluidas, 'tarea nueva ya ha', 'tareas nuevas ya han')} terminado según Project: ${r.pasadas_incluidas === 1 ? 'entra' : 'entran'} como «sin confirmar» para marcarlas hechas.` : ''}` +
+      `${r.pasadas_incluidas ? ` ${plural(r.pasadas_incluidas, 'tarea nueva ya ha', 'tareas nuevas ya han')} terminado según Project: ${r.pasadas_incluidas === 1 ? 'entra como «sin confirmar» para marcarla hecha' : 'entran como «sin confirmar» para marcarlas hechas'}.` : ''}` +
       ' Lo que entra nuevo queda Planificado: oficina técnica no lo ve hasta que lo aviséis.</p>';
     if (p.conflictos.length) h += `<details open><summary>Conflictos · ${p.conflictos.length} · elige qué fecha vale</summary><div>${p.conflictos.map(c => `<div class="conflicto">
         <div><a href="#${esc(c.id)}" data-abrir="${esc(c.id)}">${esc(c.id)} · ${esc(c.nombre)}</a> <span class="meta">· cambiado aquí y en Project desde la última importación</span></div>
@@ -3792,12 +3805,79 @@ function pintarImport() {
       tabla(['Trabajo', 'Estado'], p.desactivadas.map(d => fila([`${esc(d.id)} · ${esc(d.nombre)}`, esc(d.estado)]))), false);
     h += seccion('Ya empezados con otras fechas en Project', p.ya_empezados.length, '<p class="meta">No se tocan: lo previsto se queda como estaba para comparar con lo real.</p>' +
       tabla(['Trabajo', 'Aquí', 'En Project'], p.ya_empezados.map(c => fila([`${esc(c.id)} · ${esc(c.nombre)}`, fechas(c.herramienta), fechas(c.project)]))), false);
-    h += seccion('Sin clasificar', p.sin_clasificar.length, '<p class="meta">No se importan. Para que entren, añade su capítulo (y palabra si hace falta) en la pestaña _reglas_project de la Sheet.</p>' +
-      tabla(['Tarea', 'Capítulo'], p.sin_clasificar.map(x => fila([esc(x.nombre), esc(x.capitulo || '—') + (x.oficio ? ` <span class="meta">(oficio ${esc(x.oficio)} no está en la lista)</span>` : '')]))), true);
+    h += seccion('Sin clasificar', p.sin_clasificar.length, htmlSinClasificar(I), true);
   }
   const abierto = !$('dlg').classList.contains('oculto');
   if (abierto) { $('dlg-caja').innerHTML = h; if (enfocado && $(enfocado)) $(enfocado).focus(); enviarAltura(); }
   else abrirDlg(h);
+}
+
+// «Sin clasificar»: oficio por capítulo (o «No importar») y, si una tarea va con otro,
+// la palabra que la distingue. Se guarda en _reglas_project y vale para las próximas.
+const PALABRAS_VACIAS = ['DE', 'DEL', 'LA', 'EL', 'LOS', 'LAS', 'Y', 'E', 'CON', 'PARA', 'POR', 'EN', 'A'];
+function palabraDe(nombre) {
+  const ps = normCap(nombre).split(' ').filter(p => p.length >= 2 && PALABRAS_VACIAS.indexOf(p) === -1 && !/^\d+$/.test(p));
+  return ps[0] || '';
+}
+function htmlSinClasificar(I) {
+  const R = I.reglas;
+  const grupos = new Map();
+  I.previa.sin_clasificar.forEach(x => { const k = x.capitulo || ''; if (!grupos.has(k)) grupos.set(k, []); grupos.get(k).push(x); });
+  const op = (v, primera) => `<option value="">${primera}</option>` + (S.listas.oficios || []).map(o => `<option${o === v ? ' selected' : ''}>${esc(o)}</option>`).join('') +
+    `<option value="__no"${v === '__no' ? ' selected' : ''}>No importar</option>`;
+  let i = 0;
+  return '<p class="meta">Elige el oficio de cada capítulo, o «No importar» (vacaciones, holguras). Si una tarea va con otro oficio, cámbiala en su fila: se usa la palabra que la distingue. Se guarda en la pestaña _reglas_project y vale también para las próximas importaciones.</p>' +
+    Array.from(grupos, ([cap, ts]) => {
+      const n = i++;
+      return `<div class="rg-cap">
+        <div class="rg-cab"><span><b>${esc(cap || 'Sin capítulo')}</b> <span class="meta">· ${plural(ts.length, 'tarea', 'tareas')}</span></span>
+          ${cap ? `<label class="oculto-visual" for="rg-c-${n}">Oficio de todo el capítulo ${esc(cap)}</label><select class="ctrl" id="rg-c-${n}" data-rg-cap="${esc(cap)}">${op(R.cap[cap] || '', 'Oficio de todo el capítulo…')}</select>`
+            : '<span class="meta">Estas tareas no están dentro de ningún capítulo: mételas en uno en Project.</span>'}</div>
+        ${ts.map(x => { const t = R.t[x.uid] || {}; return `<div class="rg-tarea">
+          <span>${esc(x.nombre)}${x.oficio ? ` <span class="meta">(la regla dice ${esc(x.oficio)}, que no está en la lista de oficios)</span>` : ''}</span>
+          ${cap ? `<select class="ctrl" data-rg-tarea="${esc(x.uid)}" aria-label="Oficio de ${esc(x.nombre)}">${op(t.oficio || '', 'Como el capítulo')}</select>
+          <input class="ctrl${t.oficio ? '' : ' oculto'}" data-rg-palabra="${esc(x.uid)}" value="${esc(t.palabra !== undefined ? t.palabra : palabraDe(x.nombre))}" aria-label="Palabra que distingue ${esc(x.nombre)}" placeholder="Palabra" maxlength="40">` : ''}
+        </div>`; }).join('')}
+      </div>`;
+    }).join('') +
+    `<div class="error" id="rg-error" role="alert"></div><button type="button" class="btn-peq negro" data-accion="rg-guardar">Guardar reglas y volver a comparar</button>`;
+}
+function cambioReglas(el) {
+  const I = IMPORT, R = I && I.reglas;
+  if (!R) return false;
+  if (el.dataset.rgCap !== undefined) { R.cap[el.dataset.rgCap] = el.value; return true; }
+  if (el.dataset.rgTarea !== undefined) {
+    const t = R.t[el.dataset.rgTarea] = R.t[el.dataset.rgTarea] || {};
+    t.oficio = el.value;
+    const pal = el.parentElement.querySelector('[data-rg-palabra]');
+    if (pal) { pal.classList.toggle('oculto', !el.value); if (t.palabra === undefined) t.palabra = pal.value; }
+    enviarAltura();
+    return true;
+  }
+  if (el.dataset.rgPalabra !== undefined) { (R.t[el.dataset.rgPalabra] = R.t[el.dataset.rgPalabra] || {}).palabra = el.value; return true; }
+  return false;
+}
+async function guardarReglas(btn) {
+  const I = IMPORT;
+  if (!I || !I.previa) return;
+  const R = I.reglas, err = $('rg-error');
+  err.textContent = '';
+  const regla = (capitulo, palabra, v) => ({ capitulo, palabra, oficio: v === '__no' ? '' : v, importar: v !== '__no' });
+  const reglas = Object.keys(R.cap).filter(c => c && R.cap[c]).map(c => regla(c, '', R.cap[c]));
+  for (const x of I.previa.sin_clasificar) {
+    const t = R.t[x.uid];
+    if (!x.capitulo || !t || !t.oficio) continue;
+    const palabra = String(t.palabra || '').trim();
+    if (!normCap(palabra)) { err.textContent = `Pon la palabra que distingue «${x.nombre}».`; return; }
+    if (normCap(x.nombre).split(' ').every(w => w.indexOf(normCap(palabra)) !== 0)) { err.textContent = `«${palabra}» no está al principio de ninguna palabra de «${x.nombre}».`; return; }
+    reglas.push(regla(x.capitulo, palabra, t.oficio));
+  }
+  if (!reglas.length) { err.textContent = 'Elige el oficio de algún capítulo o tarea.'; return; }
+  const r = await enviando(btn, 'Guardando…', () => api('guardar_reglas_project', { reglas }));
+  if (!r.ok) { err.textContent = textoError(r); return; }
+  I.reglas = { cap: {}, t: {} };
+  I.recargar = true;
+  await calcularPrevia();
 }
 
 async function aplicarImport(btn) {
@@ -3814,13 +3894,14 @@ async function aplicarImport(btn) {
   await recargar(`Importado ${I.archivo}: ${plural(a.nuevos, 'trabajo nuevo', 'trabajos nuevos')}, ${plural(a.cambios, 'cambio de fecha', 'cambios de fecha')}, ${plural(a.borrados, 'quitado', 'quitados')}.`);
 }
 
-$('dlg').addEventListener('input', (e) => { if (CONV) cambioConv(e.target); });
+$('dlg').addEventListener('input', (e) => { if (CONV) cambioConv(e.target); else if (IMPORT && e.target.dataset && e.target.dataset.rgPalabra !== undefined) cambioReglas(e.target); });
 $('dlg').addEventListener('change', (e) => {
   if (CONV && cambioConv(e.target)) return;
   if (e.target.name === 'h-modo') { $('h-fecha-caja').classList.toggle('oculto', e.target.value !== 'fecha'); enviarAltura(); return; }
   const I = IMPORT;
   if (!I) return;
   const c = e.target;
+  if (cambioReglas(c)) return;
   if (c.id === 'imp-promo') { I.promocion = c.value; I.zona = ''; I.resolver = {}; calcularPrevia(); }
   else if (c.id === 'imp-zona') { I.zona = c.value; I.resolver = {}; calcularPrevia(); }
   else if (c.id === 'imp-pasadas') { I.incluir = c.checked; calcularPrevia(); }
@@ -4207,6 +4288,7 @@ const ACCIONES = {
   'pl-proveedor-sel': () => abrirProveedorPlan(Array.from(PL_SEL)),
   'pl-borrar-sel': (el) => borrarTrabajos(Array.from(PL_SEL), el),
   'pe-borrar': (el) => borrarTrabajos([el.dataset.id], el),
+  'rg-guardar': (el) => guardarReglas(el),
   't-plan-todos': () => { $('t-plan').dataset.todos = '1'; pintarPlanAviso(); },
   'revisar-bloqueos': (el) => revisarBloqueos(el.dataset.origen),
   'imp-otro': () => { cerrarDlg(); $('input-project').click(); },
