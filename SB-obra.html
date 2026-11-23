@@ -3844,8 +3844,11 @@ function pintarImport() {
       r.borradas_aqui ? plural(r.borradas_aqui, 'tarea borrada', 'tareas borradas') + ' en la herramienta' : ''].filter(Boolean);
     h += solo
       ? `<div class="dlg-resumen">${cont(r.cambios, 'Cambian de fecha')}${cont(vinc, 'Se mueven con su tarea')}${cont(r.conflictos, 'Conflictos', r.conflictos ? 'rojo' : '')}` +
-        `${cont(r.nuevos, 'Nuevos en Project · no se crean')}${cont(r.desaparecidas, 'Ya no están · no se quitan')}${cont(r.sin_cambios, 'Sin cambios')}</div>` +
-        '<p class="meta">Solo fechas: se mueven los trabajos que ya hay aquí. No se crea ni se quita ninguno; lo que sea nuevo en Project o ya no esté sale abajo para que lo revises.</p>'
+        `${cont(r.nuevos, 'Nuevos en Project · no se crean')}${cont(r.desaparecidas, 'Ya no están · no se quitan')}` +
+        `${r.sin_clasificar ? cont(r.sin_clasificar, 'Sin clasificar · no se crean', 'naranja') : ''}${cont(r.sin_cambios, 'Sin cambios')}</div>` +
+        '<p class="meta">Solo fechas: se mueven los trabajos que ya hay aquí. No se crea ni se quita ninguno; lo que sea nuevo en Project o ya no esté sale abajo para que lo revises.</p>' +
+        (r.sin_clasificar ? `<div class="aviso naranja"><span>${plural(r.sin_clasificar, 'tarea de Project está', 'tareas de Project están')} sin clasificar (su capítulo no tiene regla), así que no ${r.sin_clasificar === 1 ? 'entra' : 'entran'}. ` +
+          'Para elegir su oficio y crearlas, desmarca «Solo fechas»: saldrán en «Sin clasificar».</span></div>' : '')
       : `<div class="dlg-resumen">${cont(r.nuevos, 'Nuevos')}${cont(r.cambios, 'Cambian de fecha')}${vinc ? cont(vinc, 'Se mueven con su tarea') : ''}${cont(r.conflictos, 'Conflictos', r.conflictos ? 'rojo' : '')}` +
         `${cont(r.borrados, 'Se quitan')}${cont(r.sin_clasificar, 'Sin clasificar', r.sin_clasificar ? 'naranja' : '')}${cont(r.sin_cambios, 'Sin cambios')}</div>` +
         `<p class="meta">${fuera.length ? 'No se importan ' + fuera.join(', ').replace(/, ([^,]*)$/, ' ni $1') + '.' : ''}` +
