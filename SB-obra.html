@@ -616,10 +616,12 @@
   <form id="f-duda" class="oculto" novalidate>
     <p class="ayuda">La duda llega a quien elijas y aparece en la próxima reunión si sigue abierta.</p>
     <fieldset><legend>Promoción</legend><div class="chips" data-promos="duda"></div></fieldset>
+    <div class="campo"><label class="etq" for="d-zona">Zona</label><select class="ctrl" id="d-zona"></select></div>
     <div class="campo"><label class="etq" for="d-trabajo-buscar">Trabajo relacionado (opcional)</label>
       <div class="combo"><input class="ctrl" id="d-trabajo-buscar" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="d-trabajo-lista" autocomplete="off" placeholder="Escribe para buscar: número, qué se hace, zona…">
         <button type="button" class="combo-limpiar oculto" id="d-trabajo-limpiar" aria-label="Quitar el trabajo elegido">✕</button>
         <input type="hidden" id="d-trabajo"><ul class="combo-lista oculto" id="d-trabajo-lista" role="listbox" aria-label="Trabajos"></ul></div></div>
+    <p class="ayuda" style="margin-top: -8px">Salen los trabajos de la zona (y, en un apartamento, también los de su bloque). Si la duda no va con ninguno, déjalo vacío.</p>
     <div class="campo"><label class="etq" for="d-pregunta">Pregunta</label><textarea class="ctrl" id="d-pregunta" rows="4" placeholder="Escribe la duda tal como la explicarías en obra"></textarea></div>
     <fieldset><legend>¿A quién va?</legend><div class="chips" id="d-para"></div></fieldset>
     <div class="campo oculto" id="d-proveedor-campo"><label class="etq" for="d-proveedor">Proveedor</label><select class="ctrl" id="d-proveedor"></select></div>
@@ -1158,7 +1160,18 @@ function prepararFormularios() {
   $('t-plan').addEventListener('change', (e) => { if (e.target.name === 't-plan') elegirPlanAviso(e.target.value); });
   prepararCombo('d-trabajo', {
     promo: () => PROMO.duda,
-    alElegir: (t) => { if (t && PROMO.duda !== t.promocion) elegirPromo('duda', t.promocion); rellenarProveedoresDuda(); }
+    zona: () => $('d-zona').value,
+    alElegir: (t) => {
+      if (t && PROMO.duda !== t.promocion) elegirPromo('duda', t.promocion);
+      if (t && grupoZona($('d-zona').value) !== grupoZona(t.zona)) $('d-zona').value = t.zona;
+      textoBuscar('d');
+      rellenarProveedoresDuda();
+    }
+  });
+  $('d-zona').addEventListener('change', () => {
+    const t = trabajoPorId($('d-trabajo').value);
+    if (t && grupoZona(t.zona) !== grupoZona($('d-zona').value)) ponerCombo('d-trabajo', '');
+    textoBuscar('d');
   });
   prepararCombo('a-trabajo', {
     promo: () => PROMO.avance,
@@ -1168,14 +1181,14 @@ function prepararFormularios() {
       if (PROMO.avance !== t.promocion) elegirPromo('avance', t.promocion);
       // Si ya hay una zona de su mismo bloque (un apartamento), se respeta
       if (grupoZona($('a-zona').value) !== grupoZona(t.zona)) $('a-zona').value = t.zona;
-      textoBuscarAvance();
+      textoBuscar('a');
     }
   });
   // Otra zona: el trabajo elegido, si no es de ella ni de su bloque, se quita
   $('a-zona').addEventListener('change', () => {
     const t = trabajoPorId($('a-trabajo').value);
     if (t && grupoZona(t.zona) !== grupoZona($('a-zona').value)) ponerCombo('a-trabajo', '');
-    textoBuscarAvance();
+    textoBuscar('a');
   });
   $('t-fecha').min = D.hoy;
   $('t-fin').min = D.hoy;
@@ -1196,7 +1209,7 @@ function prepararFormularios() {
 
   // Si solo hay una promoción, se elige sola
   if (promos.length === 1) ['trabajo', 'duda', 'avance'].forEach(f => elegirPromo(f, promos[0]));
-  else { rellenarZonas('t-zona', ''); rellenarZonas('a-zona', ''); rellenarTrabajos(); }
+  else { rellenarZonas('t-zona', ''); rellenarZonas('a-zona', ''); rellenarZonas('d-zona', ''); rellenarTrabajos(); }
   rellenarProveedores();
   rellenarProveedoresDuda();
 }
@@ -1210,9 +1223,15 @@ function elegirPromo(form, promo) {
     const t = trabajoPorId($('a-trabajo').value);
     if (t && t.promocion !== promo) ponerCombo('a-trabajo', '');
     else if (t) $('a-zona').value = t.zona;
-    textoBuscarAvance();
+    textoBuscar('a');
   }
-  if (form === 'duda') rellenarTrabajos();
+  if (form === 'duda') {
+    rellenarZonas('d-zona', promo);
+    rellenarTrabajos();
+    const t = trabajoPorId($('d-trabajo').value);
+    if (t) $('d-zona').value = t.zona;
+    textoBuscar('d');
+  }
 }
 
 // Zonas agrupadas: villas, cada bloque con sus apartamentos, y el resto
@@ -1315,7 +1334,7 @@ function prepararCombo(pref, opciones) {
 }
 // Un apartamento va con su bloque (3SB201 → 3SB2); una villa u otra zona, sola
 const grupoZona = (z) => { const m = /^(\d+SB)(\d)\d\d$/.exec(String(z || '')); return m ? m[1] + m[2] : String(z || ''); };
-const textoBuscarAvance = () => { const z = $('a-zona').value; $('a-trabajo-buscar').placeholder = z ? `Escribe para buscar en ${z}: número, qué se hace…` : 'Escribe para buscar: número, qué se hace, zona…'; };
+const textoBuscar = (f) => { const z = $(f + '-zona').value; $(f + '-trabajo-buscar').placeholder = z ? `Escribe para buscar en ${z}: número, qué se hace…` : 'Escribe para buscar: número, qué se hace, zona…'; };
 function candidatosCombo(pref) {
   const C = COMBOS[pref];
   const promo = C.promo ? C.promo() : '';
@@ -1534,10 +1553,10 @@ $('f-duda').addEventListener('submit', async (e) => {
   e.preventDefault();
   const err = $('d-error'); err.textContent = '';
   const datos = {
-    promocion: PROMO.duda, id_trabajo: $('d-trabajo').value, pregunta: $('d-pregunta').value.trim(),
+    promocion: PROMO.duda, zona: $('d-zona').value, id_trabajo: $('d-trabajo').value, pregunta: $('d-pregunta').value.trim(),
     para: PARA, id_contacto: PARA === 'Proveedor' ? $('d-proveedor').value : '', fecha_necesaria: $('d-fecha').value
   };
-  const falta = !datos.promocion && !datos.id_trabajo ? 'Elige la promoción.' : !datos.pregunta ? MENSAJES.falta_pregunta
+  const falta = !datos.promocion && !datos.id_trabajo ? 'Elige la promoción.' : !datos.zona ? 'Elige la zona.' : !datos.pregunta ? MENSAJES.falta_pregunta
     : !datos.para ? MENSAJES.destinatario_invalido : (datos.para === 'Proveedor' && !datos.id_contacto) ? 'Elige el proveedor.'
     : !datos.fecha_necesaria ? 'Pon para cuándo necesitas la respuesta.' : '';
   if (falta) { err.textContent = falta; return; }
@@ -1549,7 +1568,8 @@ $('f-duda').addEventListener('submit', async (e) => {
     return api('crear_duda', Object.assign(datos, { fotos: fotos.urls }));
   });
   if (!r.ok) { err.textContent = r.motivo === 'red' ? r.detalle : mensaje(r); return; }
-  e.target.reset(); limpiarFotos('duda'); ponerCombo('d-trabajo', ''); elegirPara(''); $('d-fecha').value = sumarDias(D.hoy, 3);
+  const zonaDu = $('d-zona').value;
+  e.target.reset(); limpiarFotos('duda'); ponerCombo('d-trabajo', ''); elegirPara(''); $('d-fecha').value = sumarDias(D.hoy, 3); $('d-zona').value = zonaDu; textoBuscar('d');
   hecho('Duda enviada', `${r.id} · para ${esc(datos.para)}. Si sigue abierta, saldrá en la próxima reunión.`);
   recargarEnSegundoPlano();
 });
@@ -1569,7 +1589,7 @@ $('f-avance').addEventListener('submit', async (e) => {
   });
   if (!r.ok) { err.textContent = r.motivo === 'red' ? r.detalle : mensaje(r); return; }
   const zonaAv = $('a-zona').value;
-  e.target.reset(); limpiarFotos('avance'); ponerCombo('a-trabajo', ''); $('a-fecha').value = D.hoy; $('a-zona').value = zonaAv; textoBuscarAvance();
+  e.target.reset(); limpiarFotos('avance'); ponerCombo('a-trabajo', ''); $('a-fecha').value = D.hoy; $('a-zona').value = zonaAv; textoBuscar('a');
   hecho('Avance registrado', `${r.id} · ${esc(datos.avance)} · ${esc(datos.zona)}${datos.id_trabajo ? ' · ' + esc(datos.id_trabajo) : ''}.`);
   recargarEnSegundoPlano();
 });
@@ -2306,7 +2326,7 @@ function htmlDuda(d, conTrabajo, pref) {
     <div class="marcas"><span class="marca${abierta ? (vencida ? ' roja' : '') : ' verde'}">${abierta ? 'Abierta' : 'Respondida'}</span>
       <span class="meta">Para <strong>${esc(d.para)}</strong>${prov ? ' · ' + esc(prov.empresa) : ''}</span>${plazo ? `<span class="meta">· ${esc(plazo)}</span>` : ''}</div>
     ${t ? `<div><a class="enlace-fila" href="#${esc(t.id)}" data-abrir="${esc(t.id)}">${esc(t.id)} · ${esc(t.descripcion)}</a><div class="meta">${esc(t.promocion)} · ${esc(t.zona)}</div></div>`
-      : conTrabajo ? `<div class="meta">${esc(d.promocion)} · sin trabajo asociado</div>` : ''}
+      : conTrabajo ? `<div class="meta">${esc(d.promocion)}${d.zona ? ' · ' + esc(d.zona) : ''} · sin trabajo asociado</div>` : ''}
     <p>${esc(d.pregunta)}</p>
     ${miniaturas(d.fotos)}
     <div class="meta">${esc(d.id)} · ${esc(d.creado_por)} · ${fechaDM(d.creado)}</div>
