@@ -1355,6 +1355,18 @@ const zonaCoincide = (z, f) => {
   if (!m) return false;
   return m[3] === '00' ? grupoZona(z) === grupoZona(f) : z === m[1] + m[2] + '00';
 };
+// Filtros de zona: cada promoción con villas ofrece su villa 0 (aunque no tenga nada suyo),
+// que trae todas sus villas. Va justo antes de la primera villa.
+function conVilla0(zonas) {
+  const out = [];
+  zonas.forEach(z => {
+    const v0 = esVilla(z) ? promoDeZona(z) + '0' : '';
+    if (v0 && out.indexOf(v0) === -1) out.push(v0);
+    if (out.indexOf(z) === -1) out.push(z);
+  });
+  return out;
+}
+const opcionZonaFiltro = (z, sel) => `<option value="${esc(z)}"${z === sel ? ' selected' : ''}>${esc(esTodasVillas(z) ? z + ' · todas las villas' : z)}</option>`;
 const textoBuscar = (f) => { const z = $(f + '-zona').value; $(f + '-trabajo-buscar').placeholder = z ? `Escribe para buscar en ${z}: número, qué se hace…` : 'Escribe para buscar: número, qué se hace, zona…'; };
 function candidatosCombo(pref) {
   const C = COMBOS[pref];
@@ -2091,8 +2103,9 @@ function pintarSemanas() {
   const zonasS = [];
   dePromo.slice().sort((a, b) => String(a.promocion).localeCompare(String(b.promocion)) || ordenZona(a.promocion, a.zona) - ordenZona(b.promocion, b.zona))
     .forEach(t => { if (zonasS.indexOf(t.zona) === -1) zonasS.push(t.zona); });
-  if (FILTRO_S.zona && zonasS.indexOf(FILTRO_S.zona) === -1) FILTRO_S.zona = '';
-  $('s-zona').innerHTML = '<option value="">Todas las zonas</option>' + zonasS.map(z => `<option${z === FILTRO_S.zona ? ' selected' : ''}>${esc(z)}</option>`).join('');
+  const opsS = conVilla0(zonasS);
+  if (FILTRO_S.zona && opsS.indexOf(FILTRO_S.zona) === -1) FILTRO_S.zona = '';
+  $('s-zona').innerHTML = '<option value="">Todas las zonas</option>' + opsS.map(z => opcionZonaFiltro(z, FILTRO_S.zona)).join('');
   const base = dePromo.filter(t => zonaCoincide(t.zona, FILTRO_S.zona));
   const vivos = base.filter(t => t.estado !== 'Terminado');
 
@@ -2638,9 +2651,9 @@ function pintarAvances() {
   if (!CAL.mes) CAL.mes = D.hoy.slice(0, 7);
   $('av-promos').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.promoFiltro === FILTRO_A.promo)));
   const dePromo = (D.avances || []).filter(a => !FILTRO_A.promo || a.promocion === FILTRO_A.promo);
-  const zonas = Array.from(new Set(dePromo.map(a => a.zona))).sort((a, b) => String(a).localeCompare(String(b), 'es', { numeric: true }));
+  const zonas = conVilla0(Array.from(new Set(dePromo.map(a => a.zona))).sort((a, b) => String(a).localeCompare(String(b), 'es', { numeric: true })));
   if (FILTRO_A.zona && zonas.indexOf(FILTRO_A.zona) === -1) FILTRO_A.zona = '';
-  $('av-zona').innerHTML = '<option value="">Todas las zonas</option>' + zonas.map(z => `<option${z === FILTRO_A.zona ? ' selected' : ''}>${esc(z)}</option>`).join('');
+  $('av-zona').innerHTML = '<option value="">Todas las zonas</option>' + zonas.map(z => opcionZonaFiltro(z, FILTRO_A.zona)).join('');
 
   const todos = avancesFiltrados();
   const delMes = todos.filter(a => String(a.fecha).slice(0, 7) === CAL.mes);
