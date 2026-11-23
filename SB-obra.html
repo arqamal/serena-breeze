@@ -637,12 +637,12 @@
   <form id="f-avance" class="oculto" novalidate>
     <p class="ayuda">Registra un avance de obra con fecha y foto.</p>
     <fieldset><legend>Promoción</legend><div class="chips" data-promos="avance"></div></fieldset>
+    <div class="campo"><label class="etq" for="a-zona">Zona</label><select class="ctrl" id="a-zona"></select></div>
     <div class="campo"><label class="etq" for="a-trabajo-buscar">Trabajo al que corresponde</label>
       <div class="combo"><input class="ctrl" id="a-trabajo-buscar" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="a-trabajo-lista" autocomplete="off" placeholder="Escribe para buscar: número, qué se hace, zona…">
         <button type="button" class="combo-limpiar oculto" id="a-trabajo-limpiar" aria-label="Quitar el trabajo elegido">✕</button>
         <input type="hidden" id="a-trabajo"><ul class="combo-lista oculto" id="a-trabajo-lista" role="listbox" aria-label="Trabajos"></ul></div></div>
-    <p class="ayuda" style="margin-top: -8px">Lo normal es que corresponda a un trabajo. Si no corresponde a ninguno, déjalo vacío.</p>
-    <div class="campo"><label class="etq" for="a-zona">Zona</label><select class="ctrl" id="a-zona"></select></div>
+    <p class="ayuda" style="margin-top: -8px">Salen los trabajos de la zona (y, en un apartamento, también los de su bloque). Lo normal es que corresponda a uno; si no, déjalo vacío.</p>
     <div class="campo"><label class="etq" for="a-avance">Avance</label><input class="ctrl" id="a-avance" placeholder="Ej.: estructura terminada"></div>
     <div class="campo"><label class="etq" for="a-detalle">Detalle (opcional)</label><input class="ctrl" id="a-detalle"></div>
     <div class="campo"><label class="etq" for="a-fecha">Fecha</label><input class="ctrl" id="a-fecha" type="date"></div>
@@ -1162,11 +1162,20 @@ function prepararFormularios() {
   });
   prepararCombo('a-trabajo', {
     promo: () => PROMO.avance,
+    zona: () => $('a-zona').value,
     alElegir: (t) => {
       if (!t) return;
       if (PROMO.avance !== t.promocion) elegirPromo('avance', t.promocion);
-      $('a-zona').value = t.zona;
+      // Si ya hay una zona de su mismo bloque (un apartamento), se respeta
+      if (grupoZona($('a-zona').value) !== grupoZona(t.zona)) $('a-zona').value = t.zona;
+      textoBuscarAvance();
     }
+  });
+  // Otra zona: el trabajo elegido, si no es de ella ni de su bloque, se quita
+  $('a-zona').addEventListener('change', () => {
+    const t = trabajoPorId($('a-trabajo').value);
+    if (t && grupoZona(t.zona) !== grupoZona($('a-zona').value)) ponerCombo('a-trabajo', '');
+    textoBuscarAvance();
   });
   $('t-fecha').min = D.hoy;
   $('t-fin').min = D.hoy;
@@ -1201,6 +1210,7 @@ function elegirPromo(form, promo) {
     const t = trabajoPorId($('a-trabajo').value);
     if (t && t.promocion !== promo) ponerCombo('a-trabajo', '');
     else if (t) $('a-zona').value = t.zona;
+    textoBuscarAvance();
   }
   if (form === 'duda') rellenarTrabajos();
 }
@@ -1303,11 +1313,15 @@ function prepararCombo(pref, opciones) {
   });
   $(pref + '-limpiar').addEventListener('click', () => { ponerCombo(pref, ''); inp.focus(); });
 }
+// Un apartamento va con su bloque (3SB201 → 3SB2); una villa u otra zona, sola
+const grupoZona = (z) => { const m = /^(\d+SB)(\d)\d\d$/.exec(String(z || '')); return m ? m[1] + m[2] : String(z || ''); };
+const textoBuscarAvance = () => { const z = $('a-zona').value; $('a-trabajo-buscar').placeholder = z ? `Escribe para buscar en ${z}: número, qué se hace…` : 'Escribe para buscar: número, qué se hace, zona…'; };
 function candidatosCombo(pref) {
   const C = COMBOS[pref];
   const promo = C.promo ? C.promo() : '';
+  const zona = C.zona ? C.zona() : '';
   const palabras = normal($(pref + '-buscar').value).split(/\s+/).filter(Boolean);
-  let lista = (D.trabajos || []).filter(t => !promo || t.promocion === promo);
+  let lista = (D.trabajos || []).filter(t => (!promo || t.promocion === promo) && (!zona || grupoZona(t.zona) === grupoZona(zona)));
   if (palabras.length) lista = lista.filter(t => {
     const txt = normal([t.id, t.descripcion, t.zona, t.detalle, t.oficio, t.capitulo].join(' '));
     return palabras.every(k => txt.indexOf(k) !== -1);
@@ -1326,7 +1340,7 @@ function abrirCombo(pref) {
   lista.innerHTML = C.items.length ? C.items.map((t, i) => `<li role="option" id="${pref}-op-${i}" data-id="${esc(t.id)}" aria-selected="false">
       <b>${esc(t.id)}</b> · ${esc(t.descripcion)}
       <span class="sub">${esc(t.zona)}${t.detalle ? ' · ' + esc(t.detalle) : ''} · ${esc(t.oficio)} · ${esc(NIVELES[t.nivel] || t.estado)} · ${fechaDM(t.fecha_inicio)}${t.fecha_fin ? '–' + fechaDM(t.fecha_fin) : ''}</span></li>`).join('')
-    : `<li class="nada">${$(pref + '-buscar').value.trim() ? 'Ningún trabajo coincide.' : 'No hay trabajos en esta promoción.'}</li>`;
+    : `<li class="nada">${$(pref + '-buscar').value.trim() ? 'Ningún trabajo coincide.' : C.zona && C.zona() ? 'No hay trabajos en esta zona.' : 'No hay trabajos en esta promoción.'}</li>`;
   lista.classList.remove('oculto');
   $(pref + '-buscar').setAttribute('aria-expanded', 'true');
   marcarActivo(pref);
@@ -1554,7 +1568,8 @@ $('f-avance').addEventListener('submit', async (e) => {
     return api('crear_avance', Object.assign(datos, { fotos: fotos.urls }));
   });
   if (!r.ok) { err.textContent = r.motivo === 'red' ? r.detalle : mensaje(r); return; }
-  e.target.reset(); limpiarFotos('avance'); ponerCombo('a-trabajo', ''); $('a-fecha').value = D.hoy;
+  const zonaAv = $('a-zona').value;
+  e.target.reset(); limpiarFotos('avance'); ponerCombo('a-trabajo', ''); $('a-fecha').value = D.hoy; $('a-zona').value = zonaAv; textoBuscarAvance();
   hecho('Avance registrado', `${r.id} · ${esc(datos.avance)} · ${esc(datos.zona)}${datos.id_trabajo ? ' · ' + esc(datos.id_trabajo) : ''}.`);
   recargarEnSegundoPlano();
 });
