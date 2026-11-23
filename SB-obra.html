@@ -889,7 +889,8 @@ const MENSAJES = {
   envio_fallido: 'No se ha podido enviar el acta desde arquitectura',
   reglas_invalidas: 'Revisa las reglas: cada una necesita capítulo, y la palabra no puede quedar vacía.',
   reglas_contradictorias: 'Hay dos tareas con la misma palabra y distinto oficio',
-  proveedor_invalido: 'Elige un proveedor activo de la lista.'
+  proveedor_invalido: 'Elige un proveedor activo de la lista.',
+  vinculo_invalido: 'Esa tarea de Project no es de la zona del trabajo, o ya no existe. Los trabajos que vienen de Project ya se mueven solos.'
 };
 const MAX_FOTOS_FICHA = 10;
 
@@ -908,6 +909,7 @@ const verdadero = (v) => v === true || ['true', '1', 'sí', 'si', 'x'].indexOf(S
 const mensaje = (r) => r.motivo === 'falta_estructura' && r.detalle === '_reglas_project' ? 'Falta preparar la Sheet para la planificación: hay que ejecutar actualizarPlanificacion() en Apps Script.'
   : r.motivo === 'falta_estructura' && r.detalle === 'Fechas' ? 'Faltan las fechas en la Sheet: hay que ejecutar importarFechas() en Apps Script.'
   : r.motivo === 'falta_estructura' && r.detalle === '_reglas_project' ? 'Falta la pestaña _reglas_project en la Sheet: ejecuta actualizarPlanificacion() en Apps Script.'
+  : r.motivo === 'falta_estructura' && r.detalle === 'vinculo_project' ? 'Faltan las columnas del vínculo con Project en la Sheet: ejecuta crearEstructuraObras() en Apps Script.'
   : r.motivo === 'reglas_contradictorias' && r.detalle ? MENSAJES.reglas_contradictorias + ': ' + r.detalle + '.'
   : MENSAJES[r.motivo] ? MENSAJES[r.motivo] + ((r.motivo === 'cif_duplicado' || r.motivo === 'solo_planificados' || r.motivo === 'envio_fallido') && r.detalle ? ': ' + r.detalle + '.' : (r.motivo === 'solo_planificados' || r.motivo === 'envio_fallido') ? '.' : '')
   : ('No se ha podido guardar (' + (r.motivo || 'error') + (r.detalle ? ': ' + r.detalle : '') + ').');
@@ -2363,6 +2365,7 @@ function bloqueDatos(t) {
       ${esIso(soloFecha(t.fin_real)) ? fila('Terminó', esc(fechaLarga(t.fin_real))) : ''}
       ${desviacion(t).ini !== null || desviacion(t).fin !== null ? fila('Desviación', desvHtml(t)) : ''}
       ${t.origen === 'Project' ? fila('Planificación', 'Project' + (t.capitulo ? ' · ' + esc(t.capitulo) : '') + `<br><span class="meta">Importado ${esc(fechaDMA(t.creado))} · ${esc(t.creado_por)}</span>`) : ''}
+      ${t.vinculo_project ? fila('Se mueve con', esc(textoVinculo(t.vinculo_project)) + '<br><span class="meta">Al importar Project se mueve los mismos días laborables que esa tarea</span>') : ''}
       ${fila('Avisado', t.origen !== 'Project' ? esc(fechaDMA(t.creado)) + ' · ' + esc(t.creado_por)
         : ant !== null && isFinite(ant) ? 'Sí, con ' + esc(plural(ant, 'día', 'días')) + ' de antelación' : t.estado === 'Planificado' ? 'Todavía no' : 'No')}
       ${t.origen === 'Project' ? '' : fila('Antelación', ant === null || !isFinite(ant) ? '—' : esc(plural(ant, 'día', 'días')) + ` <span class="meta">(mínimo ${S.umbrales.antelacion})</span>`)}
@@ -2388,6 +2391,8 @@ function camposEdicion(t, pref) {
       ${campo('fecha_inicio', 'Fecha prevista de inicio', `<input class="ctrl" type="date" id="${pref}-fecha_inicio" value="${esc(soloFecha(t.fecha_inicio))}"${esOT || t.estado === 'Planificado' ? '' : ` min="${esc(soloFecha(t.fecha_inicio))}"`}>`)}
       ${!esOT && t.estado !== 'Planificado' && c.indexOf('fecha_inicio') !== -1 ? '<p class="ayuda">Ya está avisado: la fecha de inicio solo se puede retrasar. Si hay que adelantarla, avisa a oficina técnica.</p>' : ''}
       ${campo('fecha_fin', 'Fecha prevista de fin', `<input class="ctrl" type="date" id="${pref}-fecha_fin" value="${esc(soloFecha(t.fecha_fin))}">`)}
+      ${puedeVincular(t) && c.indexOf('vinculo_project') !== -1 ? campo('vinculo_project', 'Sale de la tarea de Project', `<select class="ctrl" id="${pref}-vinculo_project">${opcionesVinculo(t.zona, t.vinculo_project || '')}</select>`) +
+        '<p class="ayuda">Si eliges la tarea de la que sale, al importar Project este trabajo se mueve los mismos días laborables que ella.</p>' : ''}
       ${ESTADOS_OBRA.indexOf(t.estado) !== -1 ? campo('inicio_real', 'Empezó el', `<input class="ctrl" type="date" id="${pref}-inicio_real" value="${esc(soloFecha(t.inicio_real))}" max="${esc(D.hoy)}">`) : ''}
       ${t.estado === 'Terminado' ? campo('fin_real', 'Terminó el', `<input class="ctrl" type="date" id="${pref}-fin_real" value="${esc(soloFecha(t.fin_real))}" max="${esc(D.hoy)}">`) : ''}
       ${campo('id_proveedor', 'Proveedor', `<select class="ctrl" id="${pref}-id_proveedor">${opcionesProveedor(t.oficio, 'Sin decidir')}</select>`)}
@@ -2396,6 +2401,9 @@ function camposEdicion(t, pref) {
 // Controles que necesitan valores después de pintarse
 function rellenarEdicion(t, pref) {
   if ($(pref + '-zona')) { rellenarZonas(pref + '-zona', t.promocion); $(pref + '-zona').value = t.zona; }
+  // Al cambiar de zona, las tareas de Project son las de la zona nueva
+  const zs = $(pref + '-zona'), vs = $(pref + '-vinculo_project');
+  if (zs && vs) zs.addEventListener('change', () => { const v = vs.value; vs.innerHTML = opcionesVinculo(zs.value, v.indexOf(zs.value + '#') === 0 ? v : ''); });
   if ($(pref + '-oficio')) $(pref + '-oficio').value = t.oficio;
   const sel = $(pref + '-id_proveedor');
   if (sel) {
@@ -2405,6 +2413,21 @@ function rellenarEdicion(t, pref) {
     }
     sel.value = t.id_proveedor || '';
   }
+}
+// Vínculo con Project: solo para trabajos que no vienen de Project (esos ya se mueven solos)
+const esDeProject = (t) => /#\d+$/.test(String(t.id_project || '')) && String(t.id_project).charAt(0) !== '~';
+const puedeVincular = (t) => !esDeProject(t) && Array.isArray(D.tareas_project);
+function opcionesVinculo(zona, valor) {
+  const ts = (D.tareas_project || []).filter(x => x.zona === zona)
+    .sort((a, b) => String(a.inicio).localeCompare(String(b.inicio)) || String(a.descripcion).localeCompare(String(b.descripcion)));
+  let h = '<option value="">Ninguna (no se mueve con Project)</option>';
+  if (valor && !ts.some(x => x.clave === valor)) h += `<option value="${esc(valor)}" selected>${esc(valor)} (ya no está en Project)</option>`;
+  return h + ts.map(x => `<option value="${esc(x.clave)}"${x.clave === valor ? ' selected' : ''}>${esc(fechaDM(x.inicio))} · ${esc(x.descripcion)}` +
+    `${x.capitulo ? ' · ' + esc(x.capitulo) : ''}${x.borrado ? ' (borrado aquí)' : ''}</option>`).join('');
+}
+function textoVinculo(clave) {
+  const x = (D.tareas_project || []).find(y => y.clave === clave);
+  return x ? '«' + x.descripcion + '»' + (x.capitulo ? ' · ' + x.capitulo : '') + ' (Project, desde el ' + fechaDM(x.inicio) + ')' : clave + ' (ya no está en Project)';
 }
 function formEditar(t) {
   if (!(S.campos_editables || []).some(k => k !== 'fotos')) return '';
@@ -2973,8 +2996,10 @@ function marcaBloqueo(t) {
 // Oficio, detalle y proveedor de un trabajo en la planificación
 function subTrabajo(t) {
   const prov = t.id_proveedor ? contactoPorId(t.id_proveedor) : null;
+  const vin = t.vinculo_project ? (D.tareas_project || []).find(x => x.clave === t.vinculo_project) : null;
   return esc(t.oficio) + (t.detalle ? ' · ' + esc(t.detalle) : '') + ' · ' +
-    (prov ? esc(prov.empresa) : t.id_proveedor ? esc(t.id_proveedor) : '<span class="pl-sinprov">sin proveedor</span>');
+    (prov ? esc(prov.empresa) : t.id_proveedor ? esc(t.id_proveedor) : '<span class="pl-sinprov">sin proveedor</span>') +
+    (t.vinculo_project ? ` · <span title="Al importar Project se mueve con esta tarea">sigue a ${vin ? '«' + esc(vin.descripcion) + '»' : esc(t.vinculo_project)}</span>` : '');
 }
 const btnAnadir = (g) => puede('crear_trabajo') ? `<button type="button" class="btn-texto pl-anadir" data-accion="pl-nuevo" data-capitulo="${esc(g.k === SIN_CAPITULO ? '' : g.k)}">+ Añadir trabajo</button>` : '';
 const chkTrabajo = (t) => elegible(t) ? `<input type="checkbox" data-pl-sel="${esc(t.id)}" aria-label="Elegir ${esc(t.id)} · ${esc(t.descripcion)}"${PL_SEL.has(t.id) ? ' checked' : ''}>` : '';
@@ -3078,6 +3103,9 @@ function abrirNuevoPlan(capitulo) {
   abrirDlg(cabDlg(esc(nombrePromo(promo)), 'Añadir trabajo a la planificación') + `<form id="f-nuevo-pl" class="form-linea" novalidate>
     <p class="meta">Queda en la planificación sin avisar a oficina técnica. Se avisa después, desde aquí o desde Avisar.</p>
     <div class="campo"><label class="etq" for="np-zona">Zona</label><select class="ctrl" id="np-zona"></select></div>
+    ${(S.campos_editables || []).indexOf('vinculo_project') !== -1 && Array.isArray(D.tareas_project) ? `<div class="campo"><label class="etq" for="np-vinculo">Sale de la tarea de Project (opcional)</label>
+      <select class="ctrl" id="np-vinculo"></select>
+      <p class="ayuda">Si la eliges, al importar Project se mueve los mismos días laborables que esa tarea. Rellena lo que esté vacío.</p></div>` : ''}
     <div class="campo"><label class="etq" for="np-capitulo">Capítulo</label>${selectCapitulo('np-capitulo', capitulo, promo, 'Elige el capítulo…')}</div>
     <div class="campo"><label class="etq" for="np-oficio">Oficio</label><select class="ctrl" id="np-oficio">${opcionesOficio(capitulo || '', '')}</select></div>
     <div class="campo"><label class="etq" for="np-desc">Qué se va a hacer</label><input class="ctrl" id="np-desc" placeholder="Ej.: forjado planta 1"></div>
@@ -3092,6 +3120,29 @@ function abrirNuevoPlan(capitulo) {
   </form>`);
   rellenarZonas('np-zona', promo);
   $('np-zona').value = FILTRO_P.zona || '';
+  const vs = $('np-vinculo');
+  if (vs) {
+    vs.innerHTML = opcionesVinculo($('np-zona').value, '');
+    $('np-zona').addEventListener('change', () => { vs.innerHTML = opcionesVinculo($('np-zona').value, ''); });
+    // Elegir la tarea rellena lo que esté vacío: capítulo, oficio y fechas
+    vs.addEventListener('change', () => {
+      const x = (D.tareas_project || []).find(y => y.clave === vs.value);
+      if (!x) return;
+      const cap = $('np-capitulo');
+      if (!cap.value && x.capitulo && Array.from(cap.options).some(o => o.value === x.capitulo)) {
+        cap.value = x.capitulo;
+        $('np-oficio').innerHTML = opcionesOficio(x.capitulo, $('np-oficio').value);
+      }
+      if (!$('np-oficio').value && x.oficio && Array.from($('np-oficio').options).some(o => o.value === x.oficio)) {
+        $('np-oficio').value = x.oficio;
+        $('np-prov').innerHTML = opcionesProveedor(x.oficio, 'Sin decidir');
+      }
+      if (!$('np-ini').value && esIso(soloFecha(x.inicio)) && (S.rol === 'oficina_tecnica' || soloFecha(x.inicio) >= D.hoy)) {
+        $('np-ini').value = soloFecha(x.inicio); $('np-fin').min = soloFecha(x.inicio);
+        if (!$('np-fin').value && esIso(soloFecha(x.fin))) $('np-fin').value = soloFecha(x.fin);
+      }
+    });
+  }
   $('np-capitulo').addEventListener('change', () => { const o = $('np-oficio').value; $('np-oficio').innerHTML = opcionesOficio(valorCapitulo('np-capitulo'), o); });
   $('np-oficio').addEventListener('change', () => { const v = $('np-prov').value; $('np-prov').innerHTML = opcionesProveedor($('np-oficio').value, 'Sin decidir'); $('np-prov').value = v; });
   $('np-ini').addEventListener('input', () => { const i = $('np-ini').value; $('np-fin').min = i; if (i && (!$('np-fin').value || $('np-fin').value < i)) $('np-fin').value = i; });
@@ -3103,6 +3154,7 @@ async function guardarNuevoPlan() {
   const datos = { promocion: NUEVO_PL.promo, zona: $('np-zona').value, capitulo: valorCapitulo('np-capitulo'), oficio: $('np-oficio').value,
     descripcion: $('np-desc').value.trim(), detalle: $('np-detalle').value.trim(), fecha_inicio: $('np-ini').value, fecha_fin: $('np-fin').value,
     id_proveedor: $('np-prov').value, planificado: true };
+  if ($('np-vinculo') && $('np-vinculo').value) datos.vinculo_project = $('np-vinculo').value;
   const falta = !datos.zona ? 'Elige la zona.' : !datos.capitulo ? ($('np-capitulo').value === '__otro' ? 'Escribe el nombre del capítulo.' : 'Elige el capítulo.')
     : !datos.oficio ? 'Elige el oficio.' : !datos.descripcion ? MENSAJES.falta_descripcion : !datos.fecha_inicio ? 'Pon la fecha prevista de inicio.'
     : S.rol !== 'oficina_tecnica' && datos.fecha_inicio < D.hoy ? MENSAJES.fecha_pasada
@@ -3112,7 +3164,8 @@ async function guardarNuevoPlan() {
   if (!r.ok) { err.textContent = textoError(r); return; }
   FILTRO_P.zona = datos.zona; PL_ABIERTOS.add(datos.capitulo);
   cerrarDlg();
-  await recargar(`${r.id} · ${datos.descripcion} añadido a ${datos.capitulo} (${datos.zona}). Queda sin avisar a oficina técnica.`);
+  await recargar(`${r.id} · ${datos.descripcion} añadido a ${datos.capitulo} (${datos.zona}). Queda sin avisar a oficina técnica.` +
+    (datos.vinculo_project ? ' Se moverá con su tarea de Project al importar.' : ''));
 }
 
 // Editar un trabajo sin salir de la planificación (fechas, capítulo, proveedor…) y borrarlo si se puede
@@ -3671,7 +3724,10 @@ async function guardarHecho() {
 // El navegador lee el XML (Archivo › Guardar como › XML en Project) y manda
 // las tareas al Worker, que las clasifica y compara. Nada se escribe hasta
 // pulsar «Aplicar».
-let IMPORT = null;   // { archivo, tareas, promocion, zona, incluir, resolver, previa, error, cargando, reglas, recargar }
+let IMPORT = null;   // { archivo, tareas, promocion, zona, incluir, solo, soloTocado, resolver, previa, error, cargando, reglas, recargar }
+// «Solo fechas» viene marcado si la zona ya tiene trabajos de Project (lo normal es reimportar para mover fechas)
+const yaImportada = (promo, zona) => !!zona && (D.trabajos || []).some(t => t.promocion === promo && t.zona === zona && String(t.id_project || '').indexOf(zona + '#') === 0);
+const resolucionDe = (I, c) => I.resolver[c.id] || (c.movido ? 'desplazar' : 'herramienta');
 
 function leerProject(texto) {
   const doc = new DOMParser().parseFromString(texto, 'application/xml');
@@ -3730,7 +3786,9 @@ async function leerArchivoProject(e) {
     return;
   }
   const z = zonaDeArchivo(f.name, leido.nivel1);
-  IMPORT = { archivo: f.name, tareas: leido.tareas, promocion: z.promocion || FILTRO_P.promo, zona: z.zona, incluir: true, resolver: {}, previa: null, reglas: { cap: {}, t: {} } };
+  const promocion = z.promocion || FILTRO_P.promo;
+  IMPORT = { archivo: f.name, tareas: leido.tareas, promocion, zona: z.zona, incluir: true, solo: yaImportada(promocion, z.zona), soloTocado: false,
+    resolver: {}, previa: null, reglas: { cap: {}, t: {} } };
   await calcularPrevia();
 }
 
@@ -3742,7 +3800,8 @@ async function calcularPrevia() {
   pintarImport();
   if (!I.cargando) return;
   const recargar = !!I.recargar; I.recargar = false;
-  const r = await api('importar_project', { modo: 'previa', archivo: I.archivo, promocion: I.promocion, zona: I.zona, tareas: I.tareas, incluir_pasadas: I.incluir, recargar_reglas: recargar });
+  const r = await api('importar_project', { modo: 'previa', archivo: I.archivo, promocion: I.promocion, zona: I.zona, tareas: I.tareas, incluir_pasadas: I.incluir,
+    solo_fechas: !!I.solo, recargar_reglas: recargar });
   if (IMPORT !== I) return;
   I.cargando = false;
   if (!r.ok) I.error = textoError(r); else I.previa = r.previa;
@@ -3768,44 +3827,60 @@ function pintarImport() {
       <select class="ctrl" id="imp-promo"><option value="">Promoción…</option>${promos.map(x => `<option${x === I.promocion ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select>
       <label class="oculto-visual" for="imp-zona">Zona</label>
       <select class="ctrl" id="imp-zona"><option value="">Zona…</option>${zonas.map(x => `<option${x === I.zona ? ' selected' : ''}>${esc(x)}</option>`).join('')}</select>
-      <label class="chk"><input type="checkbox" id="imp-pasadas"${I.incluir ? ' checked' : ''}> Incluir tareas que ya han terminado según Project</label>
+      <label class="chk"><input type="checkbox" id="imp-solo"${I.solo ? ' checked' : ''}> Solo fechas: no crear ni quitar trabajos</label>
+      ${I.solo ? '' : `<label class="chk"><input type="checkbox" id="imp-pasadas"${I.incluir ? ' checked' : ''}> Incluir tareas que ya han terminado según Project</label>`}
     </div>`;
   if (!I.zona) h += '<div class="aviso">Elige la zona a la que corresponde este archivo.</div>';
   if (I.cargando) h += '<div class="meta" role="status">Comparando con lo que hay en la herramienta…</div>';
   if (I.error) h += `<div class="aviso tardio" role="alert">${esc(I.error)}</div>`;
   if (p) {
-    const hacer = r.nuevos + r.cambios + r.borrados + r.conflictos;
+    const solo = !!r.solo_fechas;
+    const vinc = r.vinculados || 0;
+    const hacer = r.cambios + r.conflictos + vinc + (solo ? 0 : r.nuevos + r.borrados);
+    const soloRef = !hacer && r.referencias > 0;
     const fuera = [r.inactivas ? plural(r.inactivas, 'tarea desactivada', 'tareas desactivadas') + ' en Project' : '',
       r.holguras ? plural(r.holguras, 'holgura', 'holguras') + ' (vacaciones, retrasos)' : '',
       r.pasadas_excluidas ? plural(r.pasadas_excluidas, 'tarea ya terminada', 'tareas ya terminadas') : '',
       r.borradas_aqui ? plural(r.borradas_aqui, 'tarea borrada', 'tareas borradas') + ' en la herramienta' : ''].filter(Boolean);
-    h += `<div class="dlg-resumen">${cont(r.nuevos, 'Nuevos')}${cont(r.cambios, 'Cambian de fecha')}${cont(r.conflictos, 'Conflictos', r.conflictos ? 'rojo' : '')}` +
-      `${cont(r.borrados, 'Se quitan')}${cont(r.sin_clasificar, 'Sin clasificar', r.sin_clasificar ? 'naranja' : '')}${cont(r.sin_cambios, 'Sin cambios')}</div>` +
-      `<p class="meta">${fuera.length ? 'No se importan ' + fuera.join(', ').replace(/, ([^,]*)$/, ' ni $1') + '.' : ''}` +
-      `${r.pasadas_incluidas ? ` ${plural(r.pasadas_incluidas, 'tarea nueva ya ha', 'tareas nuevas ya han')} terminado según Project: ${r.pasadas_incluidas === 1 ? 'entra como «sin confirmar» para marcarla hecha' : 'entran como «sin confirmar» para marcarlas hechas'}.` : ''}` +
-      ' Lo que entra nuevo queda Planificado: oficina técnica no lo ve hasta que lo aviséis.</p>';
+    h += solo
+      ? `<div class="dlg-resumen">${cont(r.cambios, 'Cambian de fecha')}${cont(vinc, 'Se mueven con su tarea')}${cont(r.conflictos, 'Conflictos', r.conflictos ? 'rojo' : '')}` +
+        `${cont(r.nuevos, 'Nuevos en Project · no se crean')}${cont(r.desaparecidas, 'Ya no están · no se quitan')}${cont(r.sin_cambios, 'Sin cambios')}</div>` +
+        '<p class="meta">Solo fechas: se mueven los trabajos que ya hay aquí. No se crea ni se quita ninguno; lo que sea nuevo en Project o ya no esté sale abajo para que lo revises.</p>'
+      : `<div class="dlg-resumen">${cont(r.nuevos, 'Nuevos')}${cont(r.cambios, 'Cambian de fecha')}${vinc ? cont(vinc, 'Se mueven con su tarea') : ''}${cont(r.conflictos, 'Conflictos', r.conflictos ? 'rojo' : '')}` +
+        `${cont(r.borrados, 'Se quitan')}${cont(r.sin_clasificar, 'Sin clasificar', r.sin_clasificar ? 'naranja' : '')}${cont(r.sin_cambios, 'Sin cambios')}</div>` +
+        `<p class="meta">${fuera.length ? 'No se importan ' + fuera.join(', ').replace(/, ([^,]*)$/, ' ni $1') + '.' : ''}` +
+        `${r.pasadas_incluidas ? ` ${plural(r.pasadas_incluidas, 'tarea nueva ya ha', 'tareas nuevas ya han')} terminado según Project: ${r.pasadas_incluidas === 1 ? 'entra como «sin confirmar» para marcarla hecha' : 'entran como «sin confirmar» para marcarlas hechas'}.` : ''}` +
+        ' Lo que entra nuevo queda Planificado: oficina técnica no lo ve hasta que lo aviséis.</p>';
+    if (r.vinculos_sin_tarea) h += `<p class="meta">${plural(r.vinculos_sin_tarea, 'trabajo sigue', 'trabajos siguen')} a una tarea que ya no está en este archivo: no se ${r.vinculos_sin_tarea === 1 ? 'mueve' : 'mueven'}. Están en «Vinculados a una tarea que ya no está».</p>`;
     if (p.conflictos.length) h += `<details open><summary>Conflictos · ${p.conflictos.length} · elige qué fecha vale</summary><div>${p.conflictos.map(c => `<div class="conflicto">
         <div><a href="#${esc(c.id)}" data-abrir="${esc(c.id)}">${esc(c.id)} · ${esc(c.nombre)}</a> <span class="meta">· cambiado aquí y en Project desde la última importación</span></div>
         <div class="opciones">
-          <label class="chk"><input type="radio" name="res-${esc(c.id)}" value="herramienta"${(I.resolver[c.id] || 'herramienta') === 'herramienta' ? ' checked' : ''}> Dejar la de aquí: ${fechas(c.herramienta)}</label>
-          <label class="chk"><input type="radio" name="res-${esc(c.id)}" value="project"${I.resolver[c.id] === 'project' ? ' checked' : ''}> Poner la de Project: ${fechas(c.project)}</label>
+          ${c.movido ? `<label class="chk"><input type="radio" name="res-${esc(c.id)}" value="desplazar"${resolucionDe(I, c) === 'desplazar' ? ' checked' : ''}> Mover la de aquí ${plural(Math.abs(c.dias), 'día laborable', 'días laborables')} ${c.dias > 0 ? 'más tarde' : 'antes'}, como Project: ${fechas(c.movido)}</label>` : ''}
+          <label class="chk"><input type="radio" name="res-${esc(c.id)}" value="herramienta"${resolucionDe(I, c) === 'herramienta' ? ' checked' : ''}> Dejar la de aquí: ${fechas(c.herramienta)}</label>
+          <label class="chk"><input type="radio" name="res-${esc(c.id)}" value="project"${resolucionDe(I, c) === 'project' ? ' checked' : ''}> Poner la de Project: ${fechas(c.project)}</label>
         </div></div>`).join('')}</div></details>`;
     // Los botones, antes de las listas: con muchas tareas no hay que bajar hasta el final
     h += `<div class="error" id="imp-error" role="alert"></div>
       <div class="botones"><button type="button" class="btn-sec" data-accion="dlg-cerrar">Cancelar</button>
-      <button type="button" class="btn-negro" id="imp-aplicar" data-accion="imp-aplicar"${hacer ? '' : ' disabled'}>${hacer ? 'Aplicar importación' : 'Nada que cambiar'}</button></div>`;
-    h += seccion('Nuevos', p.nuevos.length, tabla(['Tarea', 'Capítulo', 'Oficio', 'Inicio', 'Fin'],
+      <button type="button" class="btn-negro" id="imp-aplicar" data-accion="imp-aplicar"${hacer || soloRef ? '' : ' disabled'}>${hacer ? (solo ? 'Aplicar fechas' : 'Aplicar importación') : soloRef ? 'Actualizar referencias de Project' : 'Nada que cambiar'}</button></div>` +
+      (soloRef ? '<p class="meta">No cambia ninguna fecha aquí. Se guardan las fechas que tiene ahora Project, para comparar bien en la próxima importación.</p>' : '');
+    h += seccion('Se mueven con su tarea de Project', (p.vinculados || []).length, '<p class="meta">Trabajos creados aquí que salen de una tarea de Project: se mueven los mismos días laborables que ella.</p>' +
+      tabla(['Trabajo', 'Antes', 'Ahora', 'Días'], (p.vinculados || []).map(v => fila([`${esc(v.id)} · ${esc(v.nombre)}<br><span class="meta">sigue a «${esc(v.tarea)}»</span>`,
+        fechas(v.antes), fechas(v.despues), (v.dias > 0 ? '+' : '') + v.dias + (v.avisado ? ' <span class="marca borde-rojo">ya avisado: revisa planos</span>' : '')]))), true);
+    h += seccion(solo ? 'Nuevos en Project · no se crean' : 'Nuevos', p.nuevos.length, tabla(['Tarea', 'Capítulo', 'Oficio', 'Inicio', 'Fin'],
       p.nuevos.map(n => fila([esc(n.descripcion) + (n.detalle ? ` <span class="meta">· ${esc(n.detalle)}</span>` : '') + (n.pasada ? ' <span class="marca">ya terminada</span>' : ''),
-        esc(n.capitulo), esc(n.oficio), fechaDM(n.inicio), fechaDM(n.fin)]))), p.nuevos.length <= 15);
+        esc(n.capitulo), esc(n.oficio), fechaDM(n.inicio), fechaDM(n.fin)]))), !solo && p.nuevos.length <= 15);
     h += seccion('Cambian de fecha', p.cambios.length, tabla(['Trabajo', 'Antes', 'Ahora', ''],
       p.cambios.map(c => fila([`${esc(c.id)} · ${esc(c.nombre)}`, fechas(c.antes), fechas(c.despues), c.avisado ? '<span class="marca borde-rojo">ya avisado: revisa planos</span>' : '']))), true);
-    h += seccion('Se quitan (ya no están en Project)', p.desaparecidas.length, tabla(['Trabajo', 'Estado', ''],
-      p.desaparecidas.map(d => fila([`${esc(d.id)} · ${esc(d.nombre)}`, esc(d.estado), d.accion === 'borrar' ? 'Se borra' : '<span class="marca">Se queda: ya empezó</span>']))), true);
+    h += seccion(solo ? 'Ya no están en Project · no se quitan' : 'Se quitan (ya no están en Project)', p.desaparecidas.length, tabla(['Trabajo', 'Estado', ''],
+      p.desaparecidas.map(d => fila([`${esc(d.id)} · ${esc(d.nombre)}`, esc(d.estado), d.accion === 'borrar' ? 'Se borra' : d.accion === 'nada' ? 'No se toca' : '<span class="marca">Se queda: ya empezó</span>']))), !solo);
+    h += seccion('Vinculados a una tarea que ya no está', (p.vinculos_sin_tarea || []).length, '<p class="meta">No se mueven. Si salen de otra tarea, cámbialo en «Editar».</p>' +
+      tabla(['Trabajo', 'Tarea'], (p.vinculos_sin_tarea || []).map(v => fila([`<a href="#${esc(v.id)}" data-abrir="${esc(v.id)}">${esc(v.id)} · ${esc(v.nombre)}</a>`, esc(v.tarea)]))), false);
     h += seccion('Desactivadas en Project', p.desactivadas.length, '<p class="meta">Siguen aquí sin cambios. Si están terminadas, márcalas hechas.</p>' +
       tabla(['Trabajo', 'Estado'], p.desactivadas.map(d => fila([`${esc(d.id)} · ${esc(d.nombre)}`, esc(d.estado)]))), false);
     h += seccion('Ya empezados con otras fechas en Project', p.ya_empezados.length, '<p class="meta">No se tocan: lo previsto se queda como estaba para comparar con lo real.</p>' +
       tabla(['Trabajo', 'Aquí', 'En Project'], p.ya_empezados.map(c => fila([`${esc(c.id)} · ${esc(c.nombre)}`, fechas(c.herramienta), fechas(c.project)]))), false);
-    h += seccion('Sin clasificar', p.sin_clasificar.length, htmlSinClasificar(I), true);
+    if (!solo) h += seccion('Sin clasificar', p.sin_clasificar.length, htmlSinClasificar(I), true);
   }
   const abierto = !$('dlg').classList.contains('oculto');
   if (abierto) { $('dlg-caja').innerHTML = h; if (enfocado && $(enfocado)) $(enfocado).focus(); enviarAltura(); }
@@ -3884,14 +3959,20 @@ async function aplicarImport(btn) {
   const I = IMPORT;
   if (!I || !I.previa) return;
   const resolver = {};
-  I.previa.conflictos.forEach(c => { resolver[c.id] = I.resolver[c.id] || 'herramienta'; });
-  const r = await enviando(btn, 'Importando…', () => api('importar_project', { modo: 'aplicar', archivo: I.archivo, promocion: I.promocion, zona: I.zona, tareas: I.tareas, incluir_pasadas: I.incluir, resolver }));
+  I.previa.conflictos.forEach(c => { resolver[c.id] = resolucionDe(I, c); });
+  const r = await enviando(btn, 'Importando…', () => api('importar_project', { modo: 'aplicar', archivo: I.archivo, promocion: I.promocion, zona: I.zona, tareas: I.tareas, incluir_pasadas: I.incluir,
+    solo_fechas: !!I.solo, resolver }));
   if (!r.ok) { $('imp-error').textContent = textoError(r); return; }
   const a = r.aplicado;
   FILTRO_P.promo = I.promocion; FILTRO_P.zona = I.zona; PL_SEL.clear(); PL_ABIERTOS.clear();
   cerrarDlg();
   if (SECCION !== 'plan' || FICHA) mostrarSeccion('plan');
-  await recargar(`Importado ${I.archivo}: ${plural(a.nuevos, 'trabajo nuevo', 'trabajos nuevos')}, ${plural(a.cambios, 'cambio de fecha', 'cambios de fecha')}, ${plural(a.borrados, 'quitado', 'quitados')}.`);
+  const movidos = a.vinculados ? ', ' + plural(a.vinculados, 'movido con su tarea', 'movidos con su tarea') : '';
+  const resueltos = a.conflictos ? ', ' + plural(a.conflictos, 'conflicto resuelto', 'conflictos resueltos') : '';
+  await recargar(!a.cambios && !a.conflictos && !a.vinculados && !a.nuevos && !a.borrados ? `${I.archivo}: guardadas las fechas actuales de Project como referencia. No cambia ninguna fecha.`
+    : a.solo_fechas
+    ? `Fechas de ${I.archivo}: ${plural(a.cambios, 'cambio de fecha', 'cambios de fecha')}${movidos}${resueltos}. No se ha creado ni quitado ningún trabajo.`
+    : `Importado ${I.archivo}: ${plural(a.nuevos, 'trabajo nuevo', 'trabajos nuevos')}, ${plural(a.cambios, 'cambio de fecha', 'cambios de fecha')}${movidos}, ${plural(a.borrados, 'quitado', 'quitados')}.`);
 }
 
 $('dlg').addEventListener('input', (e) => { if (CONV) cambioConv(e.target); else if (IMPORT && e.target.dataset && e.target.dataset.rgPalabra !== undefined) cambioReglas(e.target); });
@@ -3902,8 +3983,9 @@ $('dlg').addEventListener('change', (e) => {
   if (!I) return;
   const c = e.target;
   if (cambioReglas(c)) return;
-  if (c.id === 'imp-promo') { I.promocion = c.value; I.zona = ''; I.resolver = {}; calcularPrevia(); }
-  else if (c.id === 'imp-zona') { I.zona = c.value; I.resolver = {}; calcularPrevia(); }
+  if (c.id === 'imp-promo') { I.promocion = c.value; I.zona = ''; I.resolver = {}; if (!I.soloTocado) I.solo = false; calcularPrevia(); }
+  else if (c.id === 'imp-zona') { I.zona = c.value; I.resolver = {}; if (!I.soloTocado) I.solo = yaImportada(I.promocion, I.zona); calcularPrevia(); }
+  else if (c.id === 'imp-solo') { I.solo = c.checked; I.soloTocado = true; I.resolver = {}; calcularPrevia(); }
   else if (c.id === 'imp-pasadas') { I.incluir = c.checked; calcularPrevia(); }
   else if (/^res-/.test(c.name || '')) I.resolver[c.name.slice(4)] = c.value;
 });
