@@ -621,7 +621,7 @@
       <div class="combo"><input class="ctrl" id="d-trabajo-buscar" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="d-trabajo-lista" autocomplete="off" placeholder="Escribe para buscar: número, qué se hace, zona…">
         <button type="button" class="combo-limpiar oculto" id="d-trabajo-limpiar" aria-label="Quitar el trabajo elegido">✕</button>
         <input type="hidden" id="d-trabajo"><ul class="combo-lista oculto" id="d-trabajo-lista" role="listbox" aria-label="Trabajos"></ul></div></div>
-    <p class="ayuda" style="margin-top: -8px">Salen los trabajos de la zona (y, en un apartamento, también los de su bloque). Si la duda no va con ninguno, déjalo vacío.</p>
+    <p class="ayuda" style="margin-top: -8px">Salen los trabajos de la zona y los comunes a ella: en un apartamento, los de su bloque; en una villa, los comunes a todas las villas (2SB0, 3SB0). Si la duda no va con ninguno, déjalo vacío.</p>
     <div class="campo"><label class="etq" for="d-pregunta">Pregunta</label><textarea class="ctrl" id="d-pregunta" rows="4" placeholder="Escribe la duda tal como la explicarías en obra"></textarea></div>
     <fieldset><legend>¿A quién va?</legend><div class="chips" id="d-para"></div></fieldset>
     <div class="campo oculto" id="d-proveedor-campo"><label class="etq" for="d-proveedor">Proveedor</label><select class="ctrl" id="d-proveedor"></select></div>
@@ -644,7 +644,7 @@
       <div class="combo"><input class="ctrl" id="a-trabajo-buscar" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="a-trabajo-lista" autocomplete="off" placeholder="Escribe para buscar: número, qué se hace, zona…">
         <button type="button" class="combo-limpiar oculto" id="a-trabajo-limpiar" aria-label="Quitar el trabajo elegido">✕</button>
         <input type="hidden" id="a-trabajo"><ul class="combo-lista oculto" id="a-trabajo-lista" role="listbox" aria-label="Trabajos"></ul></div></div>
-    <p class="ayuda" style="margin-top: -8px">Salen los trabajos de la zona (y, en un apartamento, también los de su bloque). Lo normal es que corresponda a uno; si no, déjalo vacío.</p>
+    <p class="ayuda" style="margin-top: -8px">Salen los trabajos de la zona y los comunes a ella: en un apartamento, los de su bloque; en una villa, los comunes a todas las villas (2SB0, 3SB0). Lo normal es que corresponda a uno; si no, déjalo vacío.</p>
     <div class="campo"><label class="etq" for="a-avance">Avance</label><input class="ctrl" id="a-avance" placeholder="Ej.: estructura terminada"></div>
     <div class="campo"><label class="etq" for="a-detalle">Detalle (opcional)</label><input class="ctrl" id="a-detalle"></div>
     <div class="campo"><label class="etq" for="a-fecha">Fecha</label><input class="ctrl" id="a-fecha" type="date"></div>
@@ -1246,15 +1246,18 @@ function rellenarZonas(idSelect, promo) {
   const bloque = new RegExp('^' + promo + '(\\d)00$');
   const apto = new RegExp('^' + promo + '(\\d)\\d\\d$');
   const villas = [], bloques = {}, otras = [];
+  let comunVillas = '';
   zonas.forEach(z => {
     let m;
-    if (villa.test(z)) villas.push(z);
+    if (z === promo + '0') comunVillas = z;
+    else if (villa.test(z)) villas.push(z);
     else if ((m = bloque.exec(z))) (bloques[m[1]] = bloques[m[1]] || { codigo: z, aptos: [] }).codigo = z;
     else if ((m = apto.exec(z))) (bloques[m[1]] = bloques[m[1]] || { codigo: '', aptos: [] }).aptos.push(z);
     else otras.push(z);
   });
   let html = '<option value="">Elige la zona…</option>';
-  if (villas.length) html += '<optgroup label="Villas">' + villas.map(z => `<option>${esc(z)}</option>`).join('') + '</optgroup>';
+  if (villas.length || comunVillas) html += '<optgroup label="Villas">' + (comunVillas ? `<option value="${esc(comunVillas)}">${esc(comunVillas)} · todas las villas</option>` : '') +
+    villas.map(z => `<option>${esc(z)}</option>`).join('') + '</optgroup>';
   Object.keys(bloques).sort().forEach(n => {
     const b = bloques[n];
     html += `<optgroup label="Bloque ${esc(b.codigo || n)}">` +
@@ -1335,11 +1338,19 @@ function prepararCombo(pref, opciones) {
   $(pref + '-limpiar').addEventListener('click', () => { ponerCombo(pref, ''); inp.focus(); });
 }
 // Un apartamento va con su bloque (3SB201 → 3SB2); una villa u otra zona, sola
+// Villas: 3SB1…3SB9. Lo común a todas las villas de una promoción va en su «villa 0» (2SB0, 3SB0),
+// igual que lo de todo un bloque va en su código 00 (3SB200)
+const esVilla = (z) => /^\d+SB[1-9]$/.test(String(z || ''));
+const esTodasVillas = (z) => /^\d+SB0$/.test(String(z || ''));
+const promoDeZona = (z) => { const m = /^(\d+SB)/.exec(String(z || '')); return m ? m[1] : ''; };
 const grupoZona = (z) => { const m = /^(\d+SB)(\d)\d\d$/.exec(String(z || '')); return m ? m[1] + m[2] : String(z || ''); };
-// ¿Sale lo de la zona z al elegir la zona f? Un bloque trae sus apartamentos; un apartamento, lo de todo su bloque
+// ¿Sale lo de la zona z al elegir la zona f? Un bloque trae sus apartamentos y un apartamento, lo de
+// todo su bloque. La villa 0 (3SB0) trae las villas de su promoción, y una villa, lo de su villa 0
 const zonaCoincide = (z, f) => {
   z = String(z || ''); f = String(f || '');
   if (!f || z === f) return true;
+  if (esTodasVillas(f)) return esVilla(z) && promoDeZona(z) === promoDeZona(f);
+  if (esVilla(f)) return z === promoDeZona(f) + '0';
   const m = /^(\d+SB)(\d)(\d\d)$/.exec(f);
   if (!m) return false;
   return m[3] === '00' ? grupoZona(z) === grupoZona(f) : z === m[1] + m[2] + '00';
@@ -1410,6 +1421,8 @@ function pintarCapituloAviso(valor) {
 }
 // Zona del aviso y las que la contienen o contiene: un apartamento y su bloque
 function zonasRelacionadas(promo, zona) {
+  if (esTodasVillas(zona)) return [zona].concat((S.listas['zonas_' + promo] || []).filter(z => esVilla(z) && promoDeZona(z) === promo));
+  if (esVilla(zona)) return [zona, promo + '0'];
   const m = new RegExp('^' + promo + '(\\d)(\\d\\d)$').exec(zona);
   if (!m) return [zona];
   const bloque = promo + m[1] + '00';
@@ -2013,12 +2026,13 @@ function resumenReunion(t) {
 function nombreContacto(c) { return c ? c.empresa + (c.persona ? ' · ' + c.persona : '') : ''; }
 function nombrePromo(p) { const m = /^(\d+)SB$/.exec(p); return m ? 'Serena Breeze ' + m[1] + ' · ' + p : p; }
 function tipoZona(z, promo) {
+  if (z === promo + '0') return 'Todas las villas';
   if (new RegExp('^' + promo + '\\d$').test(z)) return 'Villa';
   if (new RegExp('^' + promo + '\\d00$').test(z)) return 'Bloque completo';
   if (new RegExp('^' + promo + '\\d\\d\\d$').test(z)) return 'Apartamento';
   return '';
 }
-function ordenZona(promo, z) { const i = (S.listas['zonas_' + promo] || []).indexOf(z); return i === -1 ? 9999 : i; }
+function ordenZona(promo, z) { if (esTodasVillas(z)) return -1; const i = (S.listas['zonas_' + promo] || []).indexOf(z); return i === -1 ? 9999 : i; }
 
 // Fotos de Drive: se ven a través del Worker (la carpeta no es pública)
 function listaFotos(v) { return String(v || '').split('\n').map(s => s.trim()).filter(Boolean); }
@@ -2614,7 +2628,7 @@ function avancesFiltrados() {
   const q = FILTRO_A.q;
   return (D.avances || [])
     .filter(a => !FILTRO_A.promo || a.promocion === FILTRO_A.promo)
-    .filter(a => !FILTRO_A.zona || a.zona === FILTRO_A.zona)
+    .filter(a => zonaCoincide(a.zona, FILTRO_A.zona))
     .filter(a => !q || [a.avance, a.detalle, a.zona, a.id].some(v => String(v || '').toLowerCase().indexOf(q) !== -1))
     .sort((a, b) => (String(a.fecha) + String(a.creado) < String(b.fecha) + String(b.creado) ? 1 : -1));
 }
