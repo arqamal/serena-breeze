@@ -1,0 +1,18 @@
+{
+  "id": "./SB-obra.html",
+  "name": "Serena Breeze · Obra",
+  "short_name": "Obra SB",
+  "description": "Coordinación de obra y oficina técnica de Serena Breeze",
+  "lang": "es",
+  "start_url": "./SB-obra.html",
+  "scope": "./SB-obra.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FFFFFF",
+  "theme_color": "#111111",
+  "icons": [
+    { "src": "obra-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "obra-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "obra-icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
