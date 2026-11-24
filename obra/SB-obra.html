@@ -345,6 +345,20 @@
   .pl-acc { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
   .pl-acc:empty { display: none; }
   .pl-acc .btn-peq { min-height: 30px; padding: 0 8px; font-size: 10px; letter-spacing: 1px; }
+  /* Avances › En ejecución */
+  #av-ejec { margin: 0 20px; }
+  .ej-cuenta { margin: 0 0 10px; }
+  .pl.ej { margin: 0; min-width: 860px; }
+  .ej-fila { grid-template-columns: minmax(220px, 320px) 112px 112px 96px minmax(300px, 1fr); }
+  .ej-zona { padding: 9px 10px; background: var(--off-white); border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 500; color: var(--black); }
+  .ej-zona .sub { display: inline; margin-left: 8px; font-weight: 400; }
+  .ej .pl-nombre .sub { margin-top: 2px; }
+  #av-ejec .pl-leyenda { margin: 14px 0 0; }
+  .ej-movil h3.cal-dia-tit { margin: 16px 0 8px; }
+  .ej-movil .cal-dia-tit .sub { display: inline; margin-left: 8px; font-family: 'Roboto', sans-serif; font-size: 12px; letter-spacing: 0; text-transform: none; font-weight: 400; }
+  .ej-tj { border: 1px solid var(--border); background: var(--white); padding: 10px 12px 0; margin-bottom: 8px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; overflow: hidden; }
+  .ej-tj > a { color: var(--black); font-weight: 500; text-decoration: none; }
+  .ej-tj .pl-tl { margin: 6px -12px 0; border-left: none; border-top: 1px solid var(--border); }
   .pl-tl { position: relative; border-left: 1px solid var(--border); padding: 0 !important; min-height: 42px; overflow: hidden; }
   .tl-mes { position: absolute; top: 0; bottom: 0; border-left: 1px solid #EFEDE9; }
   .tl-mes.anio { border-left-color: #D5D1CB; }
@@ -355,6 +369,7 @@
   .tl-prev { position: absolute; top: 11px; height: 9px; border: 1px solid var(--slate); background: var(--white); min-width: 3px; }
   .tl-prev.sin-avisar { border-color: #E07B1F; background: #FDE7D3; }
   .tl-prev.tarde { border-color: var(--rojo); }
+  .tl-prev.corta { border-right: none; }
   .tl-real { position: absolute; top: 23px; height: 9px; background: var(--black); min-width: 3px; }
   .tl-real.sigue { background: linear-gradient(90deg, var(--black) 75%, var(--slate)); }
   .pl-grupo .tl-prev { top: 13px; height: 7px; }
@@ -762,6 +777,7 @@
   <section id="sec-avances" class="oculto">
     <div class="filtros">
       <div class="seg" role="group" aria-label="Promoción" id="av-promos"></div>
+      <div class="seg" role="group" aria-label="Vista" id="av-vista"><button type="button" data-av-vista="cal" aria-pressed="true">Calendario</button><button type="button" data-av-vista="ejec" aria-pressed="false">En ejecución</button></div>
       <label class="oculto-visual" for="av-zona">Zona</label>
       <select class="ctrl" id="av-zona"></select>
       <label class="oculto-visual" for="av-buscar">Buscar</label>
@@ -769,7 +785,7 @@
       <div class="hueco"></div>
       <button type="button" class="btn-negro oculto" id="av-nuevo">+ Nuevo avance</button>
     </div>
-    <div class="cal-barra">
+    <div class="cal-barra" id="av-barra">
       <button type="button" class="btn-peq" id="av-ant" aria-label="Mes anterior">‹</button>
       <h2 id="av-mes" aria-live="polite"></h2>
       <button type="button" class="btn-peq" id="av-sig" aria-label="Mes siguiente">›</button>
@@ -779,6 +795,7 @@
     <div id="av-cal"></div>
     <div class="vacio oculto" id="av-vacio"></div>
     <div id="av-dia" class="cal-lista oculto"></div>
+    <div id="av-ejec" class="oculto"></div>
   </section>
 
   <!-- Ventana para importar Project y marcar hecho -->
@@ -873,6 +890,7 @@ const MENSAJES = {
   tareas_invalidas: 'El archivo de Project tiene tareas sin fechas o repetidas.',
   faltan_resoluciones: 'Elige qué fecha vale en cada conflicto.',
   ids_invalidos: 'No hay trabajos elegidos.',
+  modo_invalido: 'Elige cuándo empezaron.',
   mes_invalido: 'Elige el mes y el año.',
   periodo_invalido: 'Revisa el periodo: el trimestre final no puede ser anterior al inicial.',
   nivel_invalido: 'No se ha podido guardar esa fecha.',
@@ -2082,6 +2100,12 @@ function prepararVistas() {
   $('s-zona').addEventListener('change', () => { FILTRO_S.zona = $('s-zona').value; pintarSemanas(); });
   $('av-zona').addEventListener('change', () => { FILTRO_A.zona = $('av-zona').value; pintarAvances(); });
   $('av-buscar').addEventListener('input', () => { FILTRO_A.q = $('av-buscar').value.trim().toLowerCase(); pintarAvances(); });
+  $('av-vista').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-av-vista]');
+    if (!b || b.dataset.avVista === AV_VISTA) return;
+    AV_VISTA = b.dataset.avVista;
+    pintarAvances();
+  });
   if (hayAvisar() && puede('crear_trabajo')) {
     $('s-nuevo').classList.remove('oculto');
     $('s-nuevo').addEventListener('click', () => { mostrarSeccion('avisar'); mostrarTab('trabajo'); });
@@ -2207,6 +2231,7 @@ function tarjeta(t, conZona) {
 // Botones bajo la tarjeta (fuera del enlace): avisar a oficina técnica y marcar hecho
 function accionesTarjeta(t) {
   const b = (puedeAvisar(t) ? `<button type="button" data-accion="avisar" data-id="${esc(t.id)}">Avisar</button>` : '') +
+    (ejecOTEnFila(t) ? `<button type="button" data-accion="ejec" data-id="${esc(t.id)}">En ejecución</button>` : '') +
     (hechoAMano(t) ? `<button type="button" data-accion="hecho" data-id="${esc(t.id)}">Hecho</button>` : '');
   return b ? `<div class="tarjeta-acc">${b}</div>` : '';
 }
@@ -2628,6 +2653,7 @@ function pendReunion(r) {
 // El detalle (fotos, quién, borrar) solo se ve al pinchar un avance.
 const MESES_LARGOS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const CAL = { mes: '', dia: '' };          // mes 'aaaa-mm' a la vista; día elegido en el móvil
+let AV_VISTA = 'cal';                       // 'cal' calendario de avances · 'ejec' trabajos en ejecución
 let AVANCE = null;                          // código del avance abierto
 let AVANCE_CON_HISTORIAL = false;           // se abrió con una entrada nueva en el historial del navegador
 let AVANCE_FOCO = null;                     // dónde devolver el foco al cerrar
@@ -2653,10 +2679,25 @@ function pintarAvances() {
   if (!D) return;
   if (!CAL.mes) CAL.mes = D.hoy.slice(0, 7);
   $('av-promos').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.promoFiltro === FILTRO_A.promo)));
-  const dePromo = (D.avances || []).filter(a => !FILTRO_A.promo || a.promocion === FILTRO_A.promo);
+  const ejec = AV_VISTA === 'ejec';
+  $('av-vista').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.avVista === AV_VISTA)));
+  $('av-buscar').placeholder = ejec ? 'Buscar trabajo…' : 'Buscar avance…';
+  // Las zonas del filtro salen de lo que se está viendo: avances o trabajos en ejecución
+  const fuente = ejec ? (D.trabajos || []).filter(t => t.estado === 'En ejecución') : (D.avances || []);
+  const dePromo = fuente.filter(a => !FILTRO_A.promo || a.promocion === FILTRO_A.promo);
   const zonas = conVilla0(Array.from(new Set(dePromo.map(a => a.zona))).sort((a, b) => String(a).localeCompare(String(b), 'es', { numeric: true })));
   if (FILTRO_A.zona && zonas.indexOf(FILTRO_A.zona) === -1) FILTRO_A.zona = '';
   $('av-zona').innerHTML = '<option value="">Todas las zonas</option>' + zonas.map(z => opcionZonaFiltro(z, FILTRO_A.zona)).join('');
+  $('av-barra').classList.toggle('oculto', ejec);
+  $('av-cal').classList.toggle('oculto', ejec);
+  $('av-ejec').classList.toggle('oculto', !ejec);
+  if (ejec) {
+    $('av-dia').classList.add('oculto');
+    $('av-vacio').classList.add('oculto');
+    pintarEjecucion();
+    return;
+  }
+  $('av-ejec').innerHTML = '';
 
   const todos = avancesFiltrados();
   const delMes = todos.filter(a => String(a.fecha).slice(0, 7) === CAL.mes);
@@ -2714,6 +2755,79 @@ function pintarAvances() {
   } else vacio.classList.add('oculto');
   // Al cerrar el detalle con «atrás» el calendario se repinta: el foco vuelve a su avance
   if (FOCO_PENDIENTE) { const el = document.querySelector(`#sec-avances [data-avance="${FOCO_PENDIENTE}"]`); if (el) el.focus(); FOCO_PENDIENTE = null; }
+  enviarAltura();
+}
+
+// ─── AVANCES › EN EJECUCIÓN ─────────────────────────────────────────
+// Lo que está en obra ahora: cada trabajo, desde que empezó hasta hoy, sobre lo previsto.
+const inicioEjec = (t) => esIso(soloFecha(t.inicio_real)) ? soloFecha(t.inicio_real) : esIso(soloFecha(t.fecha_estado)) ? soloFecha(t.fecha_estado) : '';
+function trabajosEnEjec() {
+  const q = FILTRO_A.q;
+  return (D.trabajos || []).filter(t => t.estado === 'En ejecución')
+    .filter(t => !FILTRO_A.promo || t.promocion === FILTRO_A.promo)
+    .filter(t => zonaCoincide(t.zona, FILTRO_A.zona))
+    .filter(t => !q || [t.id, t.descripcion, t.detalle, t.zona, t.oficio].some(v => String(v || '').toLowerCase().indexOf(q) !== -1));
+}
+function ejBarras(t, t0, t1) {
+  let h = tlMeses(t0, t1, false) + `<span class="tl-hoy" style="left:${tlPos(D.hoy, t0, t1)}"></span>`;
+  const pi = soloFecha(t.fecha_inicio), pf = soloFecha(t.fecha_fin) || pi;
+  const ultimo = sumarDias(t1, -1);
+  if (esIso(pi) && pi <= ultimo && pf >= t0) {
+    const a = pi < t0 ? t0 : pi, b = pf > ultimo ? ultimo : pf;
+    h += `<span class="tl-prev${atrasado(t) ? ' tarde' : ''}${pf > ultimo ? ' corta' : ''}" style="left:${tlPos(a, t0, t1)};width:${tlAncho(a, b, t0, t1)}" title="Previsto del ${fechaDMA(pi)} al ${fechaDMA(pf)}"></span>`;
+  }
+  const ri = inicioEjec(t);
+  if (ri) h += `<span class="tl-real sigue" style="left:${tlPos(ri, t0, t1)};width:${tlAncho(ri, D.hoy, t0, t1)}" title="En ejecución desde el ${fechaDMA(ri)}"></span>`;
+  return h;
+}
+const llevaDias = (ri) => { if (!ri) return ''; const n = diasEntre(ri, D.hoy); return n <= 0 ? 'desde hoy' : 'lleva ' + plural(n, 'día', 'días'); };
+function pintarEjecucion() {
+  const caja = $('av-ejec');
+  const ts = trabajosEnEjec();
+  if (!ts.length) {
+    const hayFiltro = !!(FILTRO_A.promo || FILTRO_A.zona || FILTRO_A.q);
+    caja.innerHTML = `<div class="vacio">No hay trabajos en ejecución${hayFiltro ? ' con ese filtro' : ''}.</div>`;
+    enviarAltura();
+    return;
+  }
+  // Escala centrada en lo ejecutado: del primer inicio (real o previsto, si fue antes) al final de este mes,
+  // y como poco dos meses. Lo previsto que sigue más allá se corta en el borde.
+  const primero = ts.flatMap(t => [inicioEjec(t), soloFecha(t.fecha_inicio)]).filter(f => esIso(f) && f <= D.hoy).sort()[0] || D.hoy;
+  const t0 = [primero.slice(0, 7), sumarMeses(D.hoy.slice(0, 7), -1)].sort()[0] + '-01', t1 = sumarMeses(D.hoy.slice(0, 7), 1) + '-01';
+  // Por promoción y zona, en el orden de siempre; dentro, por el día en que empezó
+  const grupos = [];
+  (S.listas.promociones || []).forEach(p => {
+    const deP = ts.filter(t => t.promocion === p);
+    Array.from(new Set(deP.map(t => t.zona)))
+      .sort((a, b) => ordenZona(p, a) - ordenZona(p, b) || String(a).localeCompare(String(b), 'es', { numeric: true }))
+      .forEach(z => grupos.push({ p, z, lista: deP.filter(t => t.zona === z).sort((a, b) => (inicioEjec(a) < inicioEjec(b) ? -1 : inicioEjec(a) > inicioEjec(b) ? 1 : 0)) }));
+  });
+  const cabZona = (g) => `${esc(zonaCorta({ zona: g.z, promocion: g.p }))}<span class="sub">${tipoZona(g.z, g.p) ? esc(tipoZona(g.z, g.p)) + ' · ' : ''}${plural(g.lista.length, 'trabajo', 'trabajos')}</span>`;
+  const enlace = (t) => `<a href="#${esc(t.id)}" data-abrir="${esc(t.id)}">${esc(t.id)} · ${esc(t.descripcion)}</a>`;
+  let h = `<p class="meta ej-cuenta">${plural(ts.length, 'trabajo en ejecución', 'trabajos en ejecución')}</p>`;
+  if (estrecho()) {
+    const meses = Math.round(diasEntre(t0, t1) / 30.4);
+    h += `<div class="ej-movil"><div class="pl-ejes">${tlMeses(t0, t1, true, meses > 4 ? 3 : 1).replace(/<span class="tl-mes[^"]*" style="[^"]*"><\/span>/g, '')}</div>` +
+      grupos.map(g => `<h3 class="cal-dia-tit">${cabZona(g)}</h3>` + g.lista.map(t => {
+        const ri = inicioEjec(t), d = desviacion(t);
+        return `<div class="ej-tj">${enlace(t)}<span class="sub">${subTrabajo(t)}</span>
+          <span>${ri ? 'Desde el ' + fechaDMA(ri) + ' · ' + llevaDias(ri) : 'Sin fecha de inicio'} · previsto hasta el ${fechaDM(t.fecha_fin || t.fecha_inicio)}</span>
+          ${d.fin !== null || d.ini !== null ? `<div class="marcas">${desvHtml(t)}</div>` : ''}
+          <div class="pl-tl">${ejBarras(t, t0, t1)}</div></div>`;
+      }).join('')).join('') + '</div>';
+  } else {
+    h += `<div class="caja-scroll"><div class="pl ej"><div class="pl-fila ej-fila pl-cab"><div>Trabajo</div><div>Empezó</div><div>Previsto</div><div>Desviación</div>` +
+      `<div class="pl-tl">${tlMeses(t0, t1, true, 1)}<span class="tl-hoy" style="left:${tlPos(D.hoy, t0, t1)}"></span><span class="tl-hoy-etq" style="left:${tlPos(D.hoy, t0, t1)}">Hoy</span></div></div>` +
+      grupos.map(g => `<div class="ej-zona">${cabZona(g)}</div>` + g.lista.map(t => {
+        const ri = inicioEjec(t);
+        return `<div class="pl-fila ej-fila"><div class="pl-nombre">${enlace(t)}<span class="sub">${subTrabajo(t)}</span></div>
+          <div>${ri ? `<div class="pl-f">${fechaDMA(ri)}</div><div class="pl-f sub">${llevaDias(ri)}</div>` : '<span class="pl-vacio">¿?</span>'}</div>
+          <div>${rangoPrevisto([t])}</div><div>${desvHtml(t)}</div><div class="pl-tl">${ejBarras(t, t0, t1)}</div></div>`;
+      }).join('')).join('') + '</div></div>';
+  }
+  h += '<div class="pl-leyenda"><span><i class="lg prev"></i>Previsto</span><span><i class="lg real"></i>En ejecución: desde que empezó hasta hoy</span><span><i class="lg hoy"></i>Hoy</span>' +
+    '<span>Desviación: días de más (+) o de menos (−) frente a lo previsto.</span></div>';
+  caja.innerHTML = h;
   enviarAltura();
 }
 
@@ -3007,18 +3121,22 @@ function desvHtml(t) {
   return h || '<span class="pl-vacio">—</span>';
 }
 
-const plPos = (iso) => (diasEntre(PL_T0, iso) / diasEntre(PL_T0, PL_T1) * 100).toFixed(3) + '%';
-const plAncho = (a, b) => (Math.max(1, diasEntre(a, b) + 1) / diasEntre(PL_T0, PL_T1) * 100).toFixed(3) + '%';
-function plMeses(etiquetas, cada) {
+// Línea de tiempo entre t0 (incluido) y t1 (excluido): Planificación y Avances › En ejecución
+const tlPos = (iso, t0, t1) => (diasEntre(t0, iso) / diasEntre(t0, t1) * 100).toFixed(3) + '%';
+const tlAncho = (a, b, t0, t1) => (Math.max(1, diasEntre(a, b) + 1) / diasEntre(t0, t1) * 100).toFixed(3) + '%';
+function tlMeses(t0, t1, etiquetas, cada) {
   let h = '';
-  for (let i = 0, m = PL_T0.slice(0, 7); m + '-01' < PL_T1; i++, m = sumarMeses(m, 1)) {
-    const ini = m + '-01', enero = m.slice(5) === '01';
-    if (i > 0) h += `<span class="tl-mes${enero ? ' anio' : ''}" style="left:${plPos(ini)}"></span>`;
-    if (etiquetas && i % (cada || 1) === 0) h += `<span class="tl-etq" style="left:${plPos(ini)}">${MESES[Number(m.slice(5)) - 1]}</span>`;
-    if (etiquetas && (i === 0 || enero)) h += `<span class="tl-anio" style="left:${plPos(ini)}">${m.slice(0, 4)}</span>`;
+  for (let i = 0, m = t0.slice(0, 7); m + '-01' < t1; i++, m = sumarMeses(m, 1)) {
+    const ini = m + '-01', enero = m.slice(5) === '01', x = tlPos(ini, t0, t1);
+    if (i > 0) h += `<span class="tl-mes${enero ? ' anio' : ''}" style="left:${x}"></span>`;
+    if (etiquetas && i % (cada || 1) === 0) h += `<span class="tl-etq" style="left:${x}">${MESES[Number(m.slice(5)) - 1]}</span>`;
+    if (etiquetas && (i === 0 || enero)) h += `<span class="tl-anio" style="left:${x}">${m.slice(0, 4)}</span>`;
   }
   return h;
 }
+const plPos = (iso) => tlPos(iso, PL_T0, PL_T1);
+const plAncho = (a, b) => tlAncho(a, b, PL_T0, PL_T1);
+const plMeses = (etiquetas, cada) => tlMeses(PL_T0, PL_T1, etiquetas, cada);
 function plBarras(lista, bloqueo) {
   let h = plMeses(false) + `<span class="tl-hoy" style="left:${plPos(D.hoy)}"></span>`;
   if (esIso(soloFecha(bloqueo))) h += `<span class="tl-bloqueo" style="left:${plPos(soloFecha(bloqueo))}" title="Bloqueo de extras ${fechaDMA(bloqueo)}"></span>`;
@@ -3066,6 +3184,10 @@ function maxDesvGrupo(lista) {
   return `<div class="pl-desv" title="El trabajo que más se desvía en su fin"><span class="marca ${m > 7 ? 'roja' : m > 0 ? 'borde-rojo' : 'verde'}">${signo(m)}</span><span class="sub">fin</span></div>`;
 }
 const hechoAMano = (t) => puedeHecho(t) && (t.estado !== 'Planificado' || soloFecha(t.fecha_inicio) <= D.hoy);
+// «En ejecución» desde fuera de la ficha: solo oficina técnica, para lo que obra no marcó
+const puedeEjecOT = (t) => !!t && puede('cambiar_estado_oficina') && ESTADOS_OBRA.indexOf(t.estado) === -1;
+// En Próximas 6 semanas, el botón solo sale cuando ya debería haber empezado
+const ejecOTEnFila = (t) => puedeEjecOT(t) && esIso(soloFecha(t.fecha_inicio)) && soloFecha(t.fecha_inicio) <= D.hoy;
 function accionesTrabajo(t, conEditar) {
   return (puedeAvisar(t) ? `<button type="button" class="btn-peq" data-accion="avisar" data-id="${esc(t.id)}">Avisar</button>` : '') +
     (hechoAMano(t) ? `<button type="button" class="btn-peq" data-accion="hecho" data-id="${esc(t.id)}">Hecho</button>` : '') +
@@ -3139,10 +3261,11 @@ function planMovil() {
 
 function pintarSeleccion() {
   const sel = Array.from(PL_SEL).map(trabajoPorId).filter(Boolean);
-  const av = sel.filter(puedeAvisar), he = sel.filter(puedeHecho), qu = sel.filter(puedeQuitar);
+  const av = sel.filter(puedeAvisar), he = sel.filter(puedeHecho), qu = sel.filter(puedeQuitar), ej = sel.filter(puedeEjecOT);
   $('pl-sel').classList.toggle('oculto', !sel.length);
   $('pl-sel').innerHTML = sel.length ? `<span>${plural(sel.length, 'trabajo elegido', 'trabajos elegidos')}</span>` +
     (av.length ? `<button type="button" class="btn-peq" data-accion="pl-avisar-sel">Avisar a oficina técnica · ${av.length}</button>` : '') +
+    (ej.length ? `<button type="button" class="btn-peq" data-accion="pl-ejec-sel">En ejecución · ${ej.length}</button>` : '') +
     (he.length ? `<button type="button" class="btn-peq" data-accion="pl-hecho-sel">Marcar hecho · ${he.length}</button>` : '') +
     (puedeProveedor() ? `<button type="button" class="btn-peq" data-accion="pl-proveedor-sel">Asignar proveedor · ${sel.length}</button>` : '') +
     (qu.length ? `<button type="button" class="btn-peq" data-accion="pl-borrar-sel">Borrar · ${qu.length}</button>` : '') +
@@ -3730,7 +3853,7 @@ function cerrarDlg() {
   if ($('dlg').classList.contains('oculto')) return;
   $('dlg').classList.add('oculto');
   $('dlg-caja').innerHTML = '';
-  IMPORT = null; HECHO = null; REVISAR = null; EDIT_PL = null; PROV_PL = null; NUEVO_PL = null; CONV = null;
+  IMPORT = null; HECHO = null; EJEC = null; REVISAR = null; EDIT_PL = null; PROV_PL = null; NUEVO_PL = null; CONV = null;
   if (FOTOS.hecho.length) limpiarFotosSin('hecho');
   if (DLG_FOCO && document.contains(DLG_FOCO)) DLG_FOCO.focus();
   DLG_FOCO = null;
@@ -3802,6 +3925,53 @@ async function guardarHecho() {
   cerrarDlg();
   await recargar(r.hechos.length === 1 ? `${r.hechos[0]} hecho. Avance ${r.avances[0]} creado.`
     : `${r.hechos.length} trabajos hechos y ${r.avances.length} avances creados.`);
+}
+
+// ─── EN EJECUCIÓN (oficina técnica, sin entrar en la ficha) ──────────
+// Para los trabajos que obra no marcó a tiempo. Pregunta cuándo empezaron:
+// marcar con la fecha de hoy falsearía el inicio real y las desviaciones.
+let EJEC = null;   // { ids }
+const previstaOHoy = (t) => { const f = soloFecha(t.fecha_inicio); return esIso(f) && f < D.hoy ? f : D.hoy; };
+function abrirEjec(ids) {
+  const ts = ids.map(trabajoPorId).filter(puedeEjecOT);
+  if (!ts.length) return;
+  const uno = ts.length === 1 ? ts[0] : null;
+  EJEC = { ids: ts.map(t => t.id) };
+  const conInicio = ts.filter(t => esIso(soloFecha(t.inicio_real))).length;
+  const fecha = `<div class="campo"><label class="etq" for="ej-fecha">Empezó el</label><input class="ctrl" type="date" id="ej-fecha" max="${D.hoy}" value="${uno ? previstaOHoy(uno) : D.hoy}"></div>`;
+  abrirDlg(cabDlg(uno ? esc(uno.id) + ' · ' + esc(uno.zona) + (uno.detalle ? ' · ' + esc(uno.detalle) : '') : plural(ts.length, 'trabajo', 'trabajos'), 'Marcar en ejecución') +
+    (uno ? `<p>${esc(uno.descripcion)}<br><span class="meta">${esc(uno.estado)} · previsto del ${fechaDMA(uno.fecha_inicio)} al ${fechaDMA(uno.fecha_fin || uno.fecha_inicio)}</span></p>`
+      : `<ul class="meta" style="padding-left: 18px">${ts.slice(0, 8).map(t => `<li>${esc(t.id)} · ${esc(t.descripcion)} <span>(previsto desde el ${fechaDM(t.fecha_inicio)})</span></li>`).join('')}${ts.length > 8 ? `<li>y ${ts.length - 8} más</li>` : ''}</ul>`) +
+    `<form id="f-ejec" class="form-linea" novalidate>
+      ${uno ? (esIso(soloFecha(uno.inicio_real)) ? `<p class="meta">Ya tiene inicio real: ${fechaDMA(uno.inicio_real)}. Se mantiene.</p>` : fecha)
+      : `<fieldset><legend class="etq">¿Cuándo empezaron?</legend>
+          <label class="chk"><input type="radio" name="ej-modo" value="prevista" checked> Cada uno en su fecha prevista (si aún no ha llegado, hoy)</label>
+          <label class="chk"><input type="radio" name="ej-modo" value="hoy"> Todos hoy</label>
+          <label class="chk"><input type="radio" name="ej-modo" value="fecha"> Todos el mismo día</label>
+        </fieldset><div id="ej-fecha-caja" class="oculto">${fecha}</div>`}
+      <p class="ayuda">${uno ? 'Pasa' : 'Pasan'} a «En ejecución» sin cambiar ${uno ? 'sus planos ni su reunión' : 'sus planos ni sus reuniones'}${conInicio && !uno ? `. ${plural(conInicio, 'trabajo ya tiene', 'trabajos ya tienen')} inicio real y se ${conInicio === 1 ? 'mantiene' : 'mantienen'}` : ''}. Queda en el historial que lo marcó oficina técnica.</p>
+      <div class="error" id="ej-error" role="alert"></div>
+      <div class="botones"><button type="button" class="btn-sec" data-accion="dlg-cerrar">Cancelar</button><button type="submit" class="btn-negro" id="ej-guardar">Marcar en ejecución</button></div>
+    </form>`);
+}
+
+async function guardarEjec() {
+  if (!EJEC) return;
+  const err = $('ej-error');
+  err.textContent = '';
+  const radio = document.querySelector('[name="ej-modo"]:checked');
+  const datos = { ids: EJEC.ids, modo: radio ? radio.value : ($('ej-fecha') ? 'fecha' : 'prevista') };
+  if (datos.modo === 'fecha') {
+    datos.fecha = $('ej-fecha').value;
+    if (!datos.fecha) { err.textContent = 'Pon el día en que empezó.'; return; }
+    if (datos.fecha > D.hoy) { err.textContent = MENSAJES.fecha_futura; return; }
+  }
+  const r = await enviando($('ej-guardar'), 'Guardando…', () => api('marcar_en_ejecucion', datos));
+  if (!r.ok) { err.textContent = textoError(r); return; }
+  r.en_ejecucion.forEach(id => PL_SEL.delete(id));
+  cerrarDlg();
+  await recargar(r.en_ejecucion.length === 1 ? `${r.en_ejecucion[0]} en ejecución desde el ${fechaDMA(r.inicios[0])}.`
+    : `${r.en_ejecucion.length} trabajos en ejecución.`);
 }
 
 // ─── IMPORTAR PROJECT ───────────────────────────────────────────────
@@ -4066,6 +4236,7 @@ $('dlg').addEventListener('input', (e) => { if (CONV) cambioConv(e.target); else
 $('dlg').addEventListener('change', (e) => {
   if (CONV && cambioConv(e.target)) return;
   if (e.target.name === 'h-modo') { $('h-fecha-caja').classList.toggle('oculto', e.target.value !== 'fecha'); enviarAltura(); return; }
+  if (e.target.name === 'ej-modo') { $('ej-fecha-caja').classList.toggle('oculto', e.target.value !== 'fecha'); enviarAltura(); return; }
   const I = IMPORT;
   if (!I) return;
   const c = e.target;
@@ -4433,10 +4604,12 @@ const ACCIONES = {
   'quitar-foto': quitarFotoFicha,
   avisar: (el) => avisarTrabajos([el.dataset.id], el),
   hecho: (el) => abrirHecho([el.dataset.id]),
+  ejec: (el) => abrirEjec([el.dataset.id]),
   'pl-grupo': (el) => { const g = PL_GRUPOS[Number(el.dataset.grupo)]; if (!g) return; if (PL_ABIERTOS.has(g.k)) PL_ABIERTOS.delete(g.k); else PL_ABIERTOS.add(g.k); pintarPlan(); },
   'pl-elegir': (el) => elegirPlan(el.dataset.tipo),
   'pl-avisar-sel': (el) => avisarTrabajos(Array.from(PL_SEL), el),
   'pl-hecho-sel': () => abrirHecho(Array.from(PL_SEL)),
+  'pl-ejec-sel': () => abrirEjec(Array.from(PL_SEL)),
   'pl-quitar-sel': () => { PL_SEL.clear(); pintarSeleccion(); },
   'dlg-cerrar': cerrarDlg,
   ir: (el) => mostrarSeccion(el.dataset.sec),
@@ -4484,6 +4657,7 @@ document.addEventListener('submit', (e) => {
   else if (f.id === 'fe') { e.preventDefault(); guardarEdicion('fe'); }
   else if (f.id === 'fp') { e.preventDefault(); guardarPlano(f); }
   else if (f.id === 'f-hecho') { e.preventDefault(); guardarHecho(); }
+  else if (f.id === 'f-ejec') { e.preventDefault(); guardarEjec(); }
   else if (f.id === 'pe') { e.preventDefault(); guardarEdicion('pe'); }
   else if (f.id === 'f-convocar') { e.preventDefault(); guardarConvocatoria(); }
   else if (f.dataset.form === 'punto') { e.preventDefault(); guardarPunto(f); }
