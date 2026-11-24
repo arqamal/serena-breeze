@@ -347,6 +347,34 @@
   .pl-acc { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
   .pl-acc:empty { display: none; }
   .pl-acc .btn-peq { min-height: 30px; padding: 0 8px; font-size: 10px; letter-spacing: 1px; }
+  /* Historial y deshacer */
+  #hi-intro { margin: 0 20px 12px; }
+  #hi-lista { margin: 0 20px; }
+  #hi-lista h3.cal-dia-tit { margin: 18px 0 4px; }
+  .hi-lote { display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--border); align-items: start; }
+  .hi-lote.deshecho .hi-cuerpo { opacity: .55; }
+  .hi-hora { font-size: 13px; color: var(--slate); padding-top: 1px; }
+  .hi-accion { font-size: 14px; color: var(--black); font-weight: 500; }
+  .hi-accion .sub { font-weight: 400; }
+  .hi-reg { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 13px; }
+  .hi-reg a { color: var(--black); }
+  .hi-det { margin: 4px 0 0; padding-left: 16px; font-size: 13px; color: var(--slate); }
+  .hi-det li { margin-top: 2px; }
+  .hi-acc { text-align: right; }
+  .hi-estado { font-size: 12px; color: var(--slate); white-space: nowrap; }
+  .desh-lista { margin: 8px 0 0; padding-left: 18px; font-size: 13px; line-height: 1.5; max-height: 46vh; overflow: auto; }
+  .desh-lista s { color: var(--slate); }
+  @media (max-width: 899px) {
+    .hi-lote { grid-template-columns: 44px minmax(0, 1fr); }
+    .hi-acc { grid-column: 2; text-align: left; }
+  }
+  .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 60; display: flex; align-items: center; gap: 14px;
+    max-width: calc(100vw - 32px); padding: 10px 10px 10px 18px; background: var(--black); color: var(--white); font-size: 13px; box-shadow: 0 6px 24px rgba(0,0,0,.25); }
+  .toast-btn { background: transparent; border: 1px solid var(--white); color: var(--white); font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; padding: 8px 14px; cursor: pointer; }
+  .toast-btn:hover, .toast-btn:focus-visible { background: var(--white); color: var(--black); }
+  .toast-cerrar { background: transparent; border: none; color: var(--white); font-size: 20px; line-height: 1; cursor: pointer; padding: 4px 8px; }
+  .toast-btn:empty { display: none; }
+
   /* Avances › En ejecución */
   #av-ejec { margin: 0 20px; }
   .ej-cuenta { margin: 0 0 10px; }
@@ -800,6 +828,29 @@
     <div id="av-ejec" class="oculto"></div>
   </section>
 
+  <!-- HISTORIAL: deshacer acciones (oficina técnica, todas; el resto, las suyas de hoy) -->
+  <section id="sec-historial" class="oculto">
+    <div class="filtros oculto" id="hi-filtros">
+      <label class="oculto-visual" for="hi-dias">Periodo</label>
+      <select class="ctrl" id="hi-dias"><option value="1">Hoy</option><option value="7" selected>Últimos 7 días</option><option value="30">Últimos 30 días</option></select>
+      <label class="oculto-visual" for="hi-usuario">Usuario</label>
+      <select class="ctrl" id="hi-usuario"></select>
+      <label class="oculto-visual" for="hi-accion">Acción</label>
+      <select class="ctrl" id="hi-accion"></select>
+      <label class="oculto-visual" for="hi-buscar">Buscar</label>
+      <input class="ctrl" id="hi-buscar" type="search" placeholder="Buscar código o texto…">
+    </div>
+    <p class="meta" id="hi-intro"></p>
+    <div id="hi-lista"></div>
+  </section>
+
+  <!-- Aviso tras cada acción: «Deshacer» (o «Rehacer») sin ir a ninguna pantalla -->
+  <div class="toast oculto" id="toast" role="status" aria-live="polite">
+    <span id="toast-texto"></span>
+    <button type="button" class="toast-btn" id="toast-btn"></button>
+    <button type="button" class="toast-cerrar" id="toast-cerrar" aria-label="Cerrar el aviso">×</button>
+  </div>
+
   <!-- Ventana para importar Project y marcar hecho -->
   <div id="dlg" class="modal oculto" role="dialog" aria-modal="true" aria-labelledby="dlg-titulo">
     <div class="modal-caja dlg" id="dlg-caja"></div>
@@ -893,6 +944,10 @@ const MENSAJES = {
   faltan_resoluciones: 'Elige qué fecha vale en cada conflicto.',
   ids_invalidos: 'No hay trabajos elegidos.',
   modo_invalido: 'Elige cuándo empezaron.',
+  ya_deshecho: 'Eso ya está deshecho.',
+  no_deshacible: 'Eso no se puede deshacer.',
+  demasiado_antiguo: 'Solo se puede deshacer lo de los últimos 30 días.',
+  conflicto: 'No se puede deshacer: se ha cambiado después.',
   mes_invalido: 'Elige el mes y el año.',
   periodo_invalido: 'Revisa el periodo: el trimestre final no puede ser anterior al inicial.',
   nivel_invalido: 'No se ha podido guardar esa fecha.',
@@ -954,6 +1009,7 @@ async function api(accion, extra) {
   } catch (e) {
     return { ok: false, motivo: 'red', detalle: 'Sin conexión con el servidor. Comprueba la cobertura y vuelve a intentarlo.' };
   }
+  if (r && r.ok && r.lote) avisoDeshacer(accion, r);
   if (!r.ok && accion !== 'login' && (r.motivo === 'token_invalido' || r.motivo === 'sin_acceso' || r.motivo === 'sin_rol')) {
     localStorage.removeItem(CLAVE_TOKEN);
     alert(r.motivo === 'token_invalido' ? 'La sesión ha caducado. Vuelve a entrar.' : (MENSAJES[r.motivo] || 'Sin acceso.'));
@@ -1018,6 +1074,9 @@ async function entrar(r) {
   if (puede('responder_duda') || puede('responder_duda_estudio')) secciones.push({ id: 'pendientes', texto: 'Pendientes' });
   if (puede('guardar_contacto')) secciones.push({ id: 'contactos', texto: 'Contactos' });
   if (puede('ver_fechas')) secciones.push({ id: 'bloqueos', texto: 'Bloqueo de extras' }, { id: 'admin', texto: 'Administración' });
+  // Historial (deshacer): quien puede cambiar algo
+  if (['crear_trabajo', 'cambiar_estado_obra', 'responder_duda_estudio', 'guardar_plano', 'deshacer_todo', 'fechas_edita_promocion', 'fechas_edita_fase', 'fechas_edita_vivienda'].some(puede))
+    secciones.push({ id: 'historial', texto: 'Historial' });
   SECCIONES = secciones.map(x => x.id);
 
   if (!secciones.length) { $('cargando').classList.add('oculto'); $('sin-permisos').classList.remove('oculto'); enviarAltura(); return; }
@@ -1041,6 +1100,7 @@ async function entrar(r) {
     prepararPlan();
   }
   if (puede('ver_fechas')) prepararFechas();
+  if (SECCIONES.indexOf('historial') !== -1) prepararHistorial();
   $('cargando').classList.add('oculto');
   $('actualizar').classList.remove('oculto');
   if (pestañas.length) mostrarTab(pestañas[0].id);
@@ -1052,8 +1112,8 @@ async function entrar(r) {
 
 // ─── SECCIONES Y NAVEGACIÓN ─────────────────────────────────────────
 const TITULOS = { avisar: 'Avisar', plan: 'Planificación', semanas: 'Próximas 6 semanas', pendientes: 'Pendientes', avances: 'Avances', contactos: 'Contactos',
-  bloqueos: 'Bloqueo de extras', admin: 'Administración' };
-const TODAS = ['avisar', 'plan', 'semanas', 'pendientes', 'avances', 'contactos', 'bloqueos', 'admin', 'ficha'];
+  bloqueos: 'Bloqueo de extras', admin: 'Administración', historial: 'Historial' };
+const TODAS = ['avisar', 'plan', 'semanas', 'pendientes', 'avances', 'contactos', 'bloqueos', 'admin', 'historial', 'ficha'];
 let SECCIONES = [];   // las que ve este usuario
 let SECCION = null;   // la sección de menú actual
 let ORIGEN = null;    // desde dónde se abrió la ficha
@@ -1077,6 +1137,7 @@ function mostrarSeccion(id, modo) {
   if (id === 'pendientes') pintarPendientes();
   if (id === 'avances') pintarAvances();
   if (id === 'bloqueos' || id === 'admin') mostrarFechas(id);
+  if (id === 'historial') cargarLotes();
   if (id !== 'ficha') ruta('#' + id, modo || 'push');
   enviarAltura();
 }
@@ -1152,6 +1213,7 @@ function refrescarVista() {
   else if (SECCION === 'contactos') pintarContactos();
   else if (SECCION === 'avisar') rellenarTrabajos();
   else if (SECCION === 'bloqueos' || SECCION === 'admin') pintarFechas();
+  else if (SECCION === 'historial') cargarLotes();
 }
 
 // ─── PESTAÑAS ───────────────────────────────────────────────────────
@@ -3853,7 +3915,7 @@ function cerrarDlg() {
   if ($('dlg').classList.contains('oculto')) return;
   $('dlg').classList.add('oculto');
   $('dlg-caja').innerHTML = '';
-  IMPORT = null; HECHO = null; EJEC = null; REVISAR = null; EDIT_PL = null; PROV_PL = null; NUEVO_PL = null; CONV = null;
+  IMPORT = null; HECHO = null; EJEC = null; DESH = null; REVISAR = null; EDIT_PL = null; PROV_PL = null; NUEVO_PL = null; CONV = null;
   if (FOTOS.hecho.length) limpiarFotosSin('hecho');
   if (DLG_FOCO && document.contains(DLG_FOCO)) DLG_FOCO.focus();
   DLG_FOCO = null;
@@ -3972,6 +4034,207 @@ async function guardarEjec() {
   cerrarDlg();
   await recargar(r.en_ejecucion.length === 1 ? `${r.en_ejecucion[0]} en ejecución desde el ${fechaDMA(r.inicios[0])}.`
     : `${r.en_ejecucion.length} trabajos en ejecución.`);
+}
+
+// ─── DESHACER ───────────────────────────────────────────────────────
+// Cada acción que escribe vuelve con su lote: el aviso de abajo ofrece deshacerla al momento.
+// La pestaña Historial lista los lotes: oficina técnica, los de todos (30 días); el resto, los suyos de hoy.
+const ETIQUETA_ACCION = { crear_trabajo: 'Añadir trabajo', editar_trabajo: 'Editar trabajo', cambiar_estado: 'Cambiar estado', avisar_trabajos: 'Avisar a oficina técnica',
+  marcar_hecho: 'Marcar hecho', marcar_en_ejecucion: 'Marcar en ejecución', importar_project: 'Importar Project', borrar_trabajos: 'Quitar trabajos',
+  guardar_reglas_project: 'Reglas de Project', asignar_proveedor: 'Asignar proveedor', crear_duda: 'Nueva duda', responder_duda: 'Responder duda',
+  crear_avance: 'Nuevo avance', subir_foto: 'Fotos', guardar_plano: 'Guardar plano', guardar_contacto: 'Guardar contacto', borrar: 'Borrar',
+  convocar_reunion: 'Convocar reunión', guardar_reunion: 'Editar reunión', guardar_punto: 'Punto de reunión', actualizar_acuerdo: 'Acuerdo',
+  anular_reunion: 'Anular reunión', cerrar_reunion: 'Cerrar reunión', subir_acta: 'Subir acta firmada', enviar_acta: 'Enviar acta',
+  guardar_fecha: 'Guardar fecha', aplicar_bloqueos: 'Aplicar bloqueos', deshacer: 'Deshacer' };
+const CAMPO_TEXTO = { estado: 'Estado', descripcion: 'Descripción', detalle: 'Detalle', capitulo: 'Capítulo', zona: 'Zona', oficio: 'Oficio', id_proveedor: 'Proveedor',
+  fecha_inicio: 'Inicio previsto', fecha_fin: 'Fin previsto', inicio_real: 'Empezó', fin_real: 'Terminó', borrado: 'Borrado', fotos: 'Fotos',
+  carpeta_synology: 'Carpeta de Synology', vinculo_project: 'Sigue a la tarea', inicio_vinculo: 'Inicio de esa tarea', antelacion_dias: 'Antelación (días)',
+  respuesta: 'Respuesta', respondida_por: 'Respondida por', fecha_respuesta: 'Respondida el', pregunta: 'Pregunta', para: 'Para', fecha_necesaria: 'Fecha necesaria',
+  avance: 'Avance', fecha: 'Fecha', nombre: 'Nombre', revision: 'Revisión', enlace_synology: 'Enlace de Synology', lugar: 'Lugar', hora: 'Hora',
+  lo_tratado: 'Lo tratado', resultado: 'Resultado', texto: 'Texto', responsable: 'Responsable', fecha_limite: 'Fecha límite', asistencia: 'Asistencia',
+  recibe_acta: 'Recibe el acta', obras: 'Obras', activo: 'Activo' };
+const TAB_TEXTO = { Trabajos: 'Trabajo', Avances: 'Avance', Dudas: 'Duda', Planos: 'Plano', Puntos: 'Punto de reunión', Asistentes: 'Asistente', Reuniones: 'Reunión',
+  Acuerdos: 'Acuerdo', Fechas: 'Fechas', Condiciones: 'Condiciones', Contactos: 'Contacto', _reglas_project: 'Regla de Project' };
+const etiquetaAccion = (a) => ETIQUETA_ACCION[a] || String(a || '').replace(/_/g, ' ');
+const campoTexto = (c) => CAMPO_TEXTO[c] || (String(c).charAt(0).toUpperCase() + String(c).slice(1)).replace(/_/g, ' ');
+// Código legible de un registro (las filas sin código llevan sus columnas clave: «Vivienda|2SB|Villas|2SB2»)
+function idTexto(tab, id) {
+  const partes = String(id || '').split('|').filter(Boolean);
+  if (tab === 'Fechas') return 'Fechas ' + (partes.slice(-1)[0] || '');
+  if (partes.length > 1) return (TAB_TEXTO[tab] || tab) + ' ' + partes.join(' · ');
+  return partes[0] || (TAB_TEXTO[tab] || tab);
+}
+function valorTexto(campo, v) {
+  const x = String(v ?? '');
+  if (x === '') return '(vacío)';
+  if (x === 'TRUE') return 'Sí';
+  if (x === 'FALSE') return 'No';
+  if (/^\d{4}-\d{2}-\d{2}$/.test(x)) return fechaDMA(x);
+  if (/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}/.test(x)) return fechaDMA(x.slice(0, 10)) + ' ' + x.slice(11, 16);
+  if (/^\d{4}-\d{2}$/.test(x)) return x.slice(5) + '/' + x.slice(0, 4);
+  if (campo === 'id_proveedor') { const c = contactoPorId(x); if (c) return c.empresa; }
+  return x.length > 80 ? x.slice(0, 77) + '…' : x;
+}
+const horaDe = (f) => String(f || '').slice(11, 16);
+
+// Aviso de abajo
+let TOAST = null;   // { lote, timer }
+function ocultarToast() { if (TOAST) clearTimeout(TOAST.timer); TOAST = null; $('toast').classList.add('oculto'); }
+function avisoDeshacer(accion, r) {
+  if (!r.deshacible) { ocultarToast(); return; }
+  if (TOAST) clearTimeout(TOAST.timer);
+  TOAST = { lote: r.lote, timer: setTimeout(ocultarToast, 20000) };
+  const esDeshacer = accion === 'deshacer';
+  $('toast-texto').textContent = esDeshacer ? (r.rehecho ? 'Rehecho.' : 'Deshecho.') : 'Guardado.';
+  $('toast-btn').textContent = esDeshacer && !r.rehecho ? 'Rehacer' : 'Deshacer';
+  $('toast').classList.remove('oculto');
+}
+function avisoError(texto) {
+  if (TOAST) clearTimeout(TOAST.timer);
+  TOAST = { lote: '', timer: setTimeout(ocultarToast, 12000) };
+  $('toast-texto').textContent = texto;
+  $('toast-btn').textContent = SECCIONES.indexOf('historial') !== -1 ? 'Ver historial' : '';
+  $('toast').classList.remove('oculto');
+}
+$('toast-cerrar').addEventListener('click', ocultarToast);
+$('toast-btn').addEventListener('click', async () => {
+  if (!TOAST) return;
+  const lote = TOAST.lote;
+  ocultarToast();
+  if (!lote) { mostrarSeccion('historial'); return; }
+  const r = await api('deshacer', { lote, modo: 'aplicar' });
+  if (!r.ok) { avisoError(r.motivo === 'conflicto' ? 'No se puede deshacer: ' + textoConflicto((r.previa.conflictos || [])[0]) : textoError(r)); return; }
+  await trasDeshacer(r.rehecho ? 'Rehecho.' : 'Deshecho.');
+});
+
+// Después de deshacer: datos de obra y fechas al día, y la vista repintada
+async function trasDeshacer(msg) {
+  try {
+    if (puede('ver')) await cargarDatos();
+    F = null;
+    if (SECCION === 'bloqueos' || SECCION === 'admin') await cargarFechas();
+  } catch (e) { /* se verá al pulsar «Actualizar» */ }
+  OK = (FICHA || SECCION === 'pendientes' || SECCION === 'plan') ? msg : '';
+  refrescarVista();
+}
+
+function textoConflicto(c) {
+  if (!c) return 'se ha cambiado después.';
+  const quien = idTexto(c.tab, c.id) + (c.campo ? ' · ' + campoTexto(c.campo) : '');
+  if (c.tipo === 'posterior') return `${quien}: lo cambió ${c.usuario} el ${fechaDM(c.fecha)} a las ${horaDe(c.fecha)} (${etiquetaAccion(c.accion)}).`;
+  if (c.tipo === 'valor') return `${quien}: ahora vale «${valorTexto(c.campo, c.actual)}»; se cambió fuera de la herramienta.`;
+  if (c.tipo === 'usado') return `${quien}: tiene ${c.detalle}.`;
+  return `${quien}: la fila de la Sheet ya no es la misma (se ha borrado o movido a mano).`;
+}
+
+// Pestaña Historial
+const HIST = { lotes: [], todo: false, cargando: false, error: '', sin_registro: false, hoy: '' };
+const FILTRO_H = { dias: 7, usuario: '', accion: '', q: '' };
+function prepararHistorial() {
+  $('hi-filtros').classList.toggle('oculto', !puede('deshacer_todo'));
+  $('hi-dias').addEventListener('change', () => { FILTRO_H.dias = Number($('hi-dias').value); cargarLotes(); });
+  $('hi-usuario').addEventListener('change', () => { FILTRO_H.usuario = $('hi-usuario').value; pintarLotes(); });
+  $('hi-accion').addEventListener('change', () => { FILTRO_H.accion = $('hi-accion').value; pintarLotes(); });
+  $('hi-buscar').addEventListener('input', () => { FILTRO_H.q = $('hi-buscar').value.trim().toLowerCase(); pintarLotes(); });
+}
+async function cargarLotes() {
+  HIST.cargando = true;
+  if (!HIST.lotes.length) pintarLotes();
+  const r = await api('cambios', { dias: FILTRO_H.dias });
+  HIST.cargando = false;
+  HIST.error = r.ok ? '' : textoError(r);
+  if (r.ok) { HIST.lotes = r.lotes; HIST.todo = r.todo; HIST.sin_registro = !!r.sin_registro; HIST.hoy = r.hoy || ''; }
+  if (SECCION === 'historial') pintarLotes();
+}
+function lotesFiltrados() {
+  const q = FILTRO_H.q;
+  return HIST.lotes.filter(l => (!FILTRO_H.usuario || l.usuario === FILTRO_H.usuario) && (!FILTRO_H.accion || l.accion === FILTRO_H.accion))
+    .filter(l => !q || [l.usuario, etiquetaAccion(l.accion)].concat(l.registros.map(r => r.id), l.detalles.map(d => d.detalle + ' ' + d.id))
+      .some(v => String(v || '').toLowerCase().indexOf(q) !== -1));
+}
+// nivel 0: acción normal · impar: su deshacer («Deshecho: …», se puede rehacer) · par: rehecho («Rehecho: …»)
+const esDeshecho = (l) => (l.nivel || 0) % 2 === 1;
+function tituloLote(l) {
+  if (!l.nivel) return etiquetaAccion(l.accion);
+  return (esDeshecho(l) ? 'Deshecho: ' : 'Rehecho: ') + etiquetaAccion(l.original);
+}
+function pintarLotes() {
+  const todo = puede('deshacer_todo');
+  $('hi-intro').textContent = todo
+    ? 'Todo lo que se ha hecho con la herramienta en los últimos días. «Deshacer» deja cada cosa como estaba antes de esa acción; solo se puede si nadie lo ha cambiado después.'
+    : 'Lo que has hecho hoy. «Deshacer» lo deja como estaba; solo se puede si nadie lo ha cambiado después. Para algo de otro día, pídeselo a oficina técnica.';
+  if (todo) {
+    const usuarios = Array.from(new Set(HIST.lotes.map(l => l.usuario))).sort();
+    if (FILTRO_H.usuario && usuarios.indexOf(FILTRO_H.usuario) === -1) FILTRO_H.usuario = '';
+    $('hi-usuario').innerHTML = '<option value="">Todos los usuarios</option>' + usuarios.map(u => `<option${u === FILTRO_H.usuario ? ' selected' : ''}>${esc(u)}</option>`).join('');
+    const acciones = Array.from(new Set(HIST.lotes.map(l => l.accion))).sort((a, b) => etiquetaAccion(a).localeCompare(etiquetaAccion(b), 'es'));
+    if (FILTRO_H.accion && acciones.indexOf(FILTRO_H.accion) === -1) FILTRO_H.accion = '';
+    $('hi-accion').innerHTML = '<option value="">Todas las acciones</option>' + acciones.map(a => `<option value="${esc(a)}"${a === FILTRO_H.accion ? ' selected' : ''}>${esc(etiquetaAccion(a))}</option>`).join('');
+  }
+  const caja = $('hi-lista');
+  if (HIST.sin_registro) { caja.innerHTML = `<div class="vacio">${todo ? 'Falta la pestaña Cambios en la Sheet: ejecuta crearEstructuraObras() en Apps Script.' : 'Todavía no se puede deshacer nada.'}</div>`; enviarAltura(); return; }
+  if (HIST.error) { caja.innerHTML = `<div class="vacio">${esc(HIST.error)}</div>`; enviarAltura(); return; }
+  if (HIST.cargando && !HIST.lotes.length) { caja.innerHTML = '<div class="meta">Cargando…</div>'; return; }
+  const lista = lotesFiltrados();
+  if (!lista.length) {
+    const hayFiltro = !!(FILTRO_H.usuario || FILTRO_H.accion || FILTRO_H.q);
+    caja.innerHTML = `<div class="vacio">${hayFiltro ? 'No hay acciones con ese filtro.' : todo ? 'No hay acciones en ese periodo.' : 'Hoy todavía no has hecho nada que se pueda deshacer.'}</div>`;
+    enviarAltura();
+    return;
+  }
+  const hoy = HIST.hoy || (D && D.hoy) || '';
+  const ayer = hoy ? sumarDias(hoy, -1) : '';
+  let dia = '', h = '';
+  lista.forEach(l => {
+    const d = String(l.fecha).slice(0, 10);
+    if (d !== dia) { dia = d; h += `<h3 class="cal-dia-tit">${d === hoy ? 'Hoy' : d === ayer ? 'Ayer' : esc(fechaLarga(d))}</h3>`; }
+    const regs = l.registros.slice(0, 6).map(r => r.tab === 'Trabajos' && trabajoPorId(r.id) ? `<a href="#${esc(r.id)}" data-abrir="${esc(r.id)}">${esc(r.id)}</a>` : `<span>${esc(idTexto(r.tab, r.id))}</span>`).join('') +
+      (l.registros.length > 6 ? `<span class="sub">y ${l.registros.length - 6} más</span>` : '');
+    const dets = l.detalles.filter(x => x.tipo !== 'lote');
+    const resto = dets.length - 3 + (l.mas_detalles || 0);
+    const det = dets.slice(0, 3).map(x => `<li>${esc(x.id)} · ${esc(x.detalle)}</li>`).join('') + (resto > 0 ? `<li>y ${resto} más</li>` : '');
+    const accion = l.deshecho ? `<span class="hi-estado">${esDeshecho(l) ? 'Rehecho' : 'Deshecho'} por ${esc(l.deshecho.usuario)} · ${esc(horaDe(l.deshecho.fecha))}</span>`
+      : l.no_deshacer ? `<span class="hi-estado" title="${esc(l.no_deshacer)}">No se puede deshacer</span>`
+      : `<button type="button" class="btn-peq" data-accion="hi-deshacer" data-lote="${esc(l.lote)}">${esDeshecho(l) ? 'Rehacer' : 'Deshacer'}</button>`;
+    h += `<div class="hi-lote${l.deshecho ? ' deshecho' : ''}"><div class="hi-hora">${esc(horaDe(l.fecha))}</div>
+      <div class="hi-cuerpo"><div class="hi-accion">${esc(tituloLote(l))}${todo ? ` <span class="sub">· ${esc(l.usuario)}</span>` : ''}</div>
+        ${regs ? `<div class="hi-reg">${regs}</div>` : ''}${det ? `<ul class="hi-det">${det}</ul>` : ''}${l.no_deshacer && !l.deshecho ? `<div class="sub" style="margin-top: 4px">${esc(l.no_deshacer)}</div>` : ''}</div>
+      <div class="hi-acc">${accion}</div></div>`;
+  });
+  caja.innerHTML = h;
+  enviarAltura();
+}
+
+// Ventana: qué se va a deshacer (o por qué no se puede)
+let DESH = null;   // { lote }
+async function abrirDeshacer(lote, btn) {
+  const r = await enviando(btn, 'Mirando…', () => api('deshacer', { lote, modo: 'previa' }));
+  if (!r.ok) { alert(textoError(r) + (r.detalle && r.motivo === 'no_deshacible' ? ' ' + r.detalle : '')); cargarLotes(); return; }
+  const p = r.previa;
+  DESH = { lote };
+  const rehacer = !!p.rehacer;
+  const linea = (c) => `<li><b>${esc(idTexto(c.tab, c.id))}</b> · ${esc(campoTexto(c.campo))}: <s>${esc(valorTexto(c.campo, c.ahora))}</s> → ${esc(valorTexto(c.campo, c.queda))}</li>`;
+  const cambios = p.cambios.filter(c => c.campo !== 'fecha_estado');
+  const lineas = cambios.slice(0, 40).map(linea).join('') +
+    p.quitar.slice(0, 40).map(q => `<li><b>${esc(idTexto(q.tab, q.id))}</b> · ${q.modo === 'borrar' ? 'se borra' : 'se quita'}</li>`).join('') +
+    (cambios.length + p.quitar.length > 80 ? `<li>y ${cambios.length + p.quitar.length - 80} más</li>` : '');
+  const conflictos = p.conflictos.length
+    ? `<div class="aviso naranja" role="alert"><div><b>No se puede ${rehacer ? 'rehacer' : 'deshacer'}:</b><ul class="desh-lista">${p.conflictos.slice(0, 20).map(c => `<li>${esc(textoConflicto(c))}</li>`).join('')}</ul></div></div>
+       <p class="ayuda">Deshaz antes lo que vino después (en la lista del Historial) o corrígelo a mano.</p>`
+    : '';
+  abrirDlg(cabDlg(esc(tituloLote(p)) + ' · ' + esc(p.usuario) + ' · ' + esc(fechaDM(p.fecha)) + ' ' + esc(horaDe(p.fecha)), rehacer ? 'Rehacer' : 'Deshacer') +
+    (conflictos || `<p>${lineas ? 'Quedará así:' : 'Ya está todo como antes de esa acción.'}</p>${lineas ? `<ul class="desh-lista">${lineas}</ul>` : ''}`) +
+    `<form id="f-desh" class="form-linea" novalidate>
+      <div class="error" id="desh-error" role="alert"></div>
+      <div class="botones"><button type="button" class="btn-sec" data-accion="dlg-cerrar">Cancelar</button>${p.conflictos.length ? '' : `<button type="submit" class="btn-negro" id="desh-guardar">${rehacer ? 'Rehacer' : 'Deshacer'}</button>`}</div>
+    </form>`);
+}
+async function guardarDeshacer() {
+  if (!DESH) return;
+  const r = await enviando($('desh-guardar'), 'Deshaciendo…', () => api('deshacer', { lote: DESH.lote, modo: 'aplicar' }));
+  if (!r.ok) { $('desh-error').textContent = r.motivo === 'conflicto' ? textoConflicto((r.previa.conflictos || [])[0]) : textoError(r); return; }
+  cerrarDlg();
+  await trasDeshacer(r.rehecho ? 'Rehecho.' : 'Deshecho.');
 }
 
 // ─── IMPORTAR PROJECT ───────────────────────────────────────────────
@@ -4610,6 +4873,7 @@ const ACCIONES = {
   'pl-avisar-sel': (el) => avisarTrabajos(Array.from(PL_SEL), el),
   'pl-hecho-sel': () => abrirHecho(Array.from(PL_SEL)),
   'pl-ejec-sel': () => abrirEjec(Array.from(PL_SEL)),
+  'hi-deshacer': (el) => abrirDeshacer(el.dataset.lote, el),
   'pl-quitar-sel': () => { PL_SEL.clear(); pintarSeleccion(); },
   'dlg-cerrar': cerrarDlg,
   ir: (el) => mostrarSeccion(el.dataset.sec),
@@ -4658,6 +4922,7 @@ document.addEventListener('submit', (e) => {
   else if (f.id === 'fp') { e.preventDefault(); guardarPlano(f); }
   else if (f.id === 'f-hecho') { e.preventDefault(); guardarHecho(); }
   else if (f.id === 'f-ejec') { e.preventDefault(); guardarEjec(); }
+  else if (f.id === 'f-desh') { e.preventDefault(); guardarDeshacer(); }
   else if (f.id === 'pe') { e.preventDefault(); guardarEdicion('pe'); }
   else if (f.id === 'f-convocar') { e.preventDefault(); guardarConvocatoria(); }
   else if (f.dataset.form === 'punto') { e.preventDefault(); guardarPunto(f); }
