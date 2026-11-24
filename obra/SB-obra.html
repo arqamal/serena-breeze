@@ -799,6 +799,15 @@
 
   <!-- PENDIENTES (oficina técnica y estudio) -->
   <section id="sec-pendientes" class="oculto">
+    <div class="filtros" id="p-filtros">
+      <div class="seg" role="group" aria-label="Promoción" id="p-promos"></div>
+      <label class="oculto-visual" for="p-zona">Zona</label>
+      <select class="ctrl" id="p-zona"></select>
+      <label class="oculto-visual" for="p-oficio">Oficio</label>
+      <select class="ctrl" id="p-oficio"></select>
+      <label class="oculto-visual" for="p-buscar">Buscar</label>
+      <input class="ctrl" id="p-buscar" type="search" placeholder="Buscar código o texto…">
+    </div>
     <p class="ayuda" style="margin: 0 20px 16px" id="p-ayuda"></p>
     <div id="p-cont"></div>
   </section>
@@ -2158,6 +2167,10 @@ function prepararVistas() {
   };
   segmentos($('s-promos'), FILTRO_S, () => { FILTRO_S.zona = ''; pintarSemanas(); });
   segmentos($('av-promos'), FILTRO_A, () => { FILTRO_A.zona = ''; pintarAvances(); });
+  segmentos($('p-promos'), FILTRO_PD, () => { FILTRO_PD.zona = ''; pintarPendientes(); });
+  $('p-zona').addEventListener('change', () => { FILTRO_PD.zona = $('p-zona').value; pintarPendientes(); });
+  $('p-oficio').addEventListener('change', () => { FILTRO_PD.oficio = $('p-oficio').value; pintarPendientes(); });
+  $('p-buscar').addEventListener('input', () => { FILTRO_PD.q = $('p-buscar').value.trim().toLowerCase(); pintarPendientes(); });
   $('s-oficio').innerHTML = '<option value="">Todos los oficios</option>' + (S.listas.oficios || []).map(o => `<option>${esc(o)}</option>`).join('');
   $('s-oficio').addEventListener('change', () => { FILTRO_S.oficio = $('s-oficio').value; pintarSemanas(); });
   $('s-estado').addEventListener('change', () => { FILTRO_S.estado = $('s-estado').value; pintarSemanas(); });
@@ -2640,23 +2653,63 @@ async function cargarHistorial(id) {
 }
 
 // ─── PENDIENTES ─────────────────────────────────────────────────────
+// Filtros de Pendientes: promoción, zona (con la villa 0), oficio y texto
+const FILTRO_PD = { promo: '', zona: '', oficio: '', q: '' };
+const hayFiltroPD = () => !!(FILTRO_PD.promo || FILTRO_PD.zona || FILTRO_PD.oficio || FILTRO_PD.q);
+const textoEnFiltroP = (vals) => !FILTRO_PD.q || vals.some(v => String(v || '').toLowerCase().indexOf(FILTRO_PD.q) !== -1);
+const trabajoEnFiltroP = (t) => (!FILTRO_PD.promo || t.promocion === FILTRO_PD.promo) && zonaCoincide(t.zona, FILTRO_PD.zona)
+  && (!FILTRO_PD.oficio || t.oficio === FILTRO_PD.oficio) && textoEnFiltroP([t.id, t.descripcion, t.detalle, t.zona, t.oficio]);
+const zonaDeDuda = (d) => { const t = trabajoPorId(d.id_trabajo); return d.zona || (t ? t.zona : ''); };
+function dudaEnFiltroP(d) {
+  const t = trabajoPorId(d.id_trabajo);
+  const promo = d.promocion || (t ? t.promocion : '');
+  return (!FILTRO_PD.promo || promo === FILTRO_PD.promo) && zonaCoincide(zonaDeDuda(d), FILTRO_PD.zona)
+    && (!FILTRO_PD.oficio || (!!t && t.oficio === FILTRO_PD.oficio)) && textoEnFiltroP([d.id, d.pregunta, d.id_trabajo, zonaDeDuda(d), t && t.descripcion]);
+}
+// Una reunión entra si alguno de sus trabajos entra (o, buscando solo texto, por su código o lugar)
+function reunionEnFiltroP(r) {
+  if (!hayFiltroPD()) return true;
+  const ts = (D.puntos || []).filter(p => p.id_reunion === r.id).map(p => trabajoPorId(p.id_trabajo)).filter(Boolean);
+  return ts.some(trabajoEnFiltroP) || (!FILTRO_PD.promo && !FILTRO_PD.zona && !FILTRO_PD.oficio && textoEnFiltroP([r.id, r.lugar]));
+}
+function pintarFiltrosP(trabajos, dudas) {
+  $('p-promos').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.promoFiltro === FILTRO_PD.promo)));
+  const zonas = [];
+  (S.listas.promociones || []).filter(p => !FILTRO_PD.promo || p === FILTRO_PD.promo).forEach(p => {
+    const deP = trabajos.filter(t => t.promocion === p).map(t => t.zona)
+      .concat(dudas.filter(d => (d.promocion || (trabajoPorId(d.id_trabajo) || {}).promocion) === p).map(zonaDeDuda)).filter(Boolean);
+    Array.from(new Set(deP)).sort((a, b) => ordenZona(p, a) - ordenZona(p, b) || String(a).localeCompare(String(b), 'es', { numeric: true }))
+      .forEach(z => { if (zonas.indexOf(z) === -1) zonas.push(z); });
+  });
+  const ops = conVilla0(zonas);
+  if (FILTRO_PD.zona && ops.indexOf(FILTRO_PD.zona) === -1) FILTRO_PD.zona = '';
+  $('p-zona').innerHTML = '<option value="">Todas las zonas</option>' + ops.map(z => opcionZonaFiltro(z, FILTRO_PD.zona)).join('');
+  const oficios = Array.from(new Set(trabajos.map(t => t.oficio).filter(Boolean))).sort((a, b) => a.localeCompare(b, 'es'));
+  if (FILTRO_PD.oficio && oficios.indexOf(FILTRO_PD.oficio) === -1) FILTRO_PD.oficio = '';
+  $('p-oficio').innerHTML = '<option value="">Todos los oficios</option>' + oficios.map(o => `<option${o === FILTRO_PD.oficio ? ' selected' : ''}>${esc(o)}</option>`).join('');
+}
+
 function pintarPendientes() {
   if (!D) return;
   const aviso = OK; OK = '';
   const ok = aviso ? `<div class="ok-linea" role="status" style="margin: 0 20px 16px">${esc(aviso)}</div>` : '';
-  const abiertas = (D.dudas || []).filter(d => d.estado === 'Abierta');
+  const abiertasTodas = (D.dudas || []).filter(d => d.estado === 'Abierta');
+  const conFiltro = hayFiltroPD() ? ' con ese filtro' : '';
   const nada = (t) => `<div class="nada">${t}</div>`;
   const dudas = (lista) => lista.map(d => htmlDuda(d, true, 'p')).join('');
 
   // Estudio: solo las dudas que van para él
   if (!puede('responder_duda')) {
     $('p-ayuda').textContent = 'Dudas que obra ha enviado al estudio. Las que vencen antes, arriba.';
+    const paraEstudio = (D.dudas || []).filter(d => d.para === 'Estudio');
+    pintarFiltrosP(paraEstudio.map(d => trabajoPorId(d.id_trabajo)).filter(Boolean), paraEstudio);
+    const abiertas = abiertasTodas.filter(dudaEnFiltroP);
     const mias = abiertas.filter(d => d.para === 'Estudio').sort(porVencimiento);
-    const hechas = (D.dudas || []).filter(d => d.estado === 'Respondida' && d.para === 'Estudio')
+    const hechas = paraEstudio.filter(dudaEnFiltroP).filter(d => d.estado === 'Respondida')
       .sort((a, b) => (String(a.fecha_respuesta) < String(b.fecha_respuesta) ? 1 : -1)).slice(0, 10);
     $('p-cont').innerHTML = ok + `<div class="columnas una"><section class="columna">
       <h2>Dudas para el estudio <span class="num">${mias.length}</span></h2>
-      ${mias.length ? dudas(mias) : nada('No hay dudas pendientes para el estudio.')}
+      ${mias.length ? dudas(mias) : nada('No hay dudas pendientes para el estudio' + conFiltro + '.')}
       ${hechas.length ? '<h3>Respondidas hace poco</h3>' + dudas(hechas) : ''}
     </section></div>`;
     enviarAltura();
@@ -2664,27 +2717,36 @@ function pintarPendientes() {
   }
 
   $('p-ayuda').textContent = 'Lo que empieza antes, arriba.';
-  const vivos = (D.trabajos || []).filter(t => t.estado !== 'Terminado' && t.estado !== 'Planificado').sort(porInicio);
+  const vivosTodos = (D.trabajos || []).filter(t => t.estado !== 'Terminado' && t.estado !== 'Planificado').sort(porInicio);
+  pintarFiltrosP(vivosTodos, abiertasTodas);
+  const vivos = vivosTodos.filter(trabajoEnFiltroP);
+  const abiertas = abiertasTodas.filter(dudaEnFiltroP);
   const planos = vivos.filter(t => t.estado === 'Anunciado' || t.estado === 'Planos en preparación');
-  const sinReunion = trabajosSinReunion();
-  const actas = (D.reuniones || []).filter(r => r.estado === 'Celebrada').sort((a, b) => Number(b.numero_acta) - Number(a.numero_acta)).slice(0, 5);
+  // Ya preparados: los que tienen los planos listos y esperan la reunión, por fecha de inicio
+  const listos = vivos.filter(t => t.estado === 'Planos listos');
+  const sinReunion = trabajosSinReunion().filter(trabajoEnFiltroP);
+  const actas = (D.reuniones || []).filter(r => r.estado === 'Celebrada' && reunionEnFiltroP(r)).sort((a, b) => Number(b.numero_acta) - Number(a.numero_acta)).slice(0, 5);
   const gestiona = puede('gestionar_reuniones');
-  const convocadas = (D.reuniones || []).filter(r => r.estado === 'Convocada').sort((a, b) => (String(a.fecha) < String(b.fecha) ? -1 : 1));
+  const convocadas = (D.reuniones || []).filter(r => r.estado === 'Convocada' && reunionEnFiltroP(r)).sort((a, b) => (String(a.fecha) + String(a.hora) < String(b.fecha) + String(b.hora) ? -1 : 1));
   const dOT = abiertas.filter(d => d.para === 'Oficina técnica').sort(porVencimiento);
   const dEst = abiertas.filter(d => d.para === 'Estudio').sort(porVencimiento);
   const dProv = abiertas.filter(d => d.para === 'Proveedor').sort(porVencimiento);
-  const col = (id, titulo, n, cuerpo) => `<section class="columna" id="${id}"><h2>${titulo} <span class="num">${n}</span></h2>${cuerpo}</section>`;
+  const col = (id, titulo, n, cuerpo) => `<section class="columna" id="${id}"><h2>${titulo}${n === null ? '' : ` <span class="num">${n}</span>`}</h2>${cuerpo}</section>`;
 
   $('p-cont').innerHTML = ok + '<div class="columnas">' +
-    col('p-planos', 'Planos por preparar', planos.length, planos.length ? planos.map(t => pendTrabajo(t, true)).join('') : nada('No hay planos pendientes.')) +
+    col('p-planos', 'Planos por preparar', planos.length,
+      (planos.length ? planos.map(t => pendTrabajo(t, true)).join('') : nada('No hay planos pendientes' + conFiltro + '.')) +
+      `<h3 id="p-listos">Planos listos · ${listos.length}</h3>` + (listos.length ? listos.map(t => pendTrabajo(t, false)).join('') : nada('Ninguno esperando reunión' + conFiltro + '.'))) +
     col('p-dudas', 'Dudas por responder', dOT.length,
-      (dOT.length ? dudas(dOT) : nada('Ninguna duda para oficina técnica.')) +
+      (dOT.length ? dudas(dOT) : nada('Ninguna duda para oficina técnica' + conFiltro + '.')) +
       `<h3>Esperando al estudio · ${dEst.length}</h3>` + (dEst.length ? dudas(dEst) : nada('Nada pendiente.')) +
       `<h3>Esperando al proveedor · ${dProv.length}</h3>` + (dProv.length ? dudas(dProv) : nada('Nada pendiente.'))) +
-    col('p-reuniones', 'Sin reunión', sinReunion.length,
+    // Reuniones: primero las convocadas (por fecha), luego lo que aún no tiene reunión y las últimas actas
+    col('p-reuniones', 'Reuniones', null,
+      `<h3 id="p-convocadas">Convocadas · ${convocadas.length}</h3>` + (convocadas.length ? convocadas.map(pendReunion).join('') : nada('No hay reuniones convocadas' + conFiltro + '.')) +
+      `<h3 id="p-sin-reunion">Sin reunión · ${sinReunion.length}</h3>` +
       (gestiona && sinReunion.length ? '<button type="button" class="btn-peq negro p-convocar" data-accion="convocar">Convocar reunión</button>' : '') +
-      (sinReunion.length ? sinReunion.map(t => pendTrabajo(t, false)).join('') : nada('Todos los trabajos en marcha tienen reunión.')) +
-      `<h3>Convocadas · ${convocadas.length}</h3>` + (convocadas.length ? convocadas.map(pendReunion).join('') : nada('No hay reuniones convocadas.')) +
+      (sinReunion.length ? sinReunion.map(t => pendTrabajo(t, false)).join('') : nada('Todos los trabajos en marcha tienen reunión' + conFiltro + '.')) +
       (actas.length ? `<h3>Últimas actas</h3>` + actas.map(pendReunion).join('') : '')) +
     '</div>';
   enviarAltura();
