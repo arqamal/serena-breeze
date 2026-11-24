@@ -309,6 +309,8 @@
   .tarjeta-acc { display: flex; border: 1px solid var(--border); border-top: 1px dashed var(--border); }
   .tarjeta-acc button { flex: 1; min-height: 36px; border: none; background: var(--white); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; color: var(--black); }
   .tarjeta-acc button + button { border-left: 1px solid var(--border); }
+  /* Tres botones (Avisar · En ejec. · Hecho): un poco más juntos para que respiren */
+  .tarjeta-acc button:first-child:nth-last-child(3), .tarjeta-acc button:first-child:nth-last-child(3) ~ button { letter-spacing: .5px; padding: 0 2px; }
   .tarjeta-acc button:hover, .tarjeta-acc button:focus-visible { background: var(--off-white); }
 
   /* Planificación */
@@ -2231,7 +2233,7 @@ function tarjeta(t, conZona) {
 // Botones bajo la tarjeta (fuera del enlace): avisar a oficina técnica y marcar hecho
 function accionesTarjeta(t) {
   const b = (puedeAvisar(t) ? `<button type="button" data-accion="avisar" data-id="${esc(t.id)}">Avisar</button>` : '') +
-    (ejecOTEnFila(t) ? `<button type="button" data-accion="ejec" data-id="${esc(t.id)}">En ejecución</button>` : '') +
+    (puedeEjecOT(t) ? `<button type="button" data-accion="ejec" data-id="${esc(t.id)}" aria-label="Marcar ${esc(t.id)} en ejecución" title="Marcar en ejecución">En ejec.</button>` : '') +
     (hechoAMano(t) ? `<button type="button" data-accion="hecho" data-id="${esc(t.id)}">Hecho</button>` : '');
   return b ? `<div class="tarjeta-acc">${b}</div>` : '';
 }
@@ -3186,8 +3188,6 @@ function maxDesvGrupo(lista) {
 const hechoAMano = (t) => puedeHecho(t) && (t.estado !== 'Planificado' || soloFecha(t.fecha_inicio) <= D.hoy);
 // «En ejecución» desde fuera de la ficha: solo oficina técnica, para lo que obra no marcó
 const puedeEjecOT = (t) => !!t && puede('cambiar_estado_oficina') && ESTADOS_OBRA.indexOf(t.estado) === -1;
-// En Próximas 6 semanas, el botón solo sale cuando ya debería haber empezado
-const ejecOTEnFila = (t) => puedeEjecOT(t) && esIso(soloFecha(t.fecha_inicio)) && soloFecha(t.fecha_inicio) <= D.hoy;
 function accionesTrabajo(t, conEditar) {
   return (puedeAvisar(t) ? `<button type="button" class="btn-peq" data-accion="avisar" data-id="${esc(t.id)}">Avisar</button>` : '') +
     (hechoAMano(t) ? `<button type="button" class="btn-peq" data-accion="hecho" data-id="${esc(t.id)}">Hecho</button>` : '') +
