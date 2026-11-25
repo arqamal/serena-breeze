@@ -348,7 +348,9 @@
   .pl-acc:empty { display: none; }
   .pl-acc .btn-peq { min-height: 30px; padding: 0 8px; font-size: 10px; letter-spacing: 1px; }
   .p-seg { display: flex; margin: 12px 0 4px; }
-  .p-seg button { flex: 1 1 0; min-height: 38px; padding: 0 10px; font-size: 12px; letter-spacing: 1.5px; }
+  .p-seg button { flex: 1 1 auto; min-height: 38px; padding: 6px 8px; font-size: 12px; letter-spacing: 1.2px; line-height: 1.3; }
+  .p-seg .n { opacity: .7; }
+  @media (max-width: 1279px) { .p-seg button { font-size: 11px; letter-spacing: .8px; padding: 6px 6px; } }
   .pend-acc { display: flex; flex-wrap: wrap; gap: 8px; }
   /* Historial y deshacer */
   #hi-intro { margin: 0 20px 12px; }
@@ -2676,7 +2678,7 @@ async function cargarHistorial(id) {
 // ─── PENDIENTES ─────────────────────────────────────────────────────
 // Filtros de Pendientes: promoción, zona (con la villa 0), oficio y texto
 const FILTRO_PD = { promo: '', zona: '', oficio: '', q: '' };
-let PD_PLANOS = 'preparar';   // columna de planos: 'preparar' | 'listos'
+let PD_PLANOS = 'preparar';   // columna de planos: 'preparar' (anunciados) | 'preparacion' (planos en preparación) | 'listos'
 const hayFiltroPD = () => !!(FILTRO_PD.promo || FILTRO_PD.zona || FILTRO_PD.oficio || FILTRO_PD.q);
 const textoEnFiltroP = (vals) => !FILTRO_PD.q || vals.some(v => String(v || '').toLowerCase().indexOf(FILTRO_PD.q) !== -1);
 const trabajoEnFiltroP = (t) => (!FILTRO_PD.promo || t.promocion === FILTRO_PD.promo) && zonaCoincide(t.zona, FILTRO_PD.zona)
@@ -2743,7 +2745,8 @@ function pintarPendientes() {
   pintarFiltrosP(vivosTodos, abiertasTodas);
   const vivos = vivosTodos.filter(trabajoEnFiltroP);
   const abiertas = abiertasTodas.filter(dudaEnFiltroP);
-  const planos = vivos.filter(t => t.estado === 'Anunciado' || t.estado === 'Planos en preparación');
+  const porPreparar = vivos.filter(t => t.estado === 'Anunciado');
+  const enPreparacion = vivos.filter(t => t.estado === 'Planos en preparación');
   // Planos preparados: esperando reunión, con reunión hecha y en obra (con todos sus planos listos)
   const listos = vivos.filter(planosPreparados);
   const esperan = listos.filter(t => t.estado === 'Planos listos'), conReu = listos.filter(t => t.estado === 'Reunión hecha'), enObra = listos.filter(t => t.estado === 'En ejecución');
@@ -2754,13 +2757,18 @@ function pintarPendientes() {
   const dOT = abiertas.filter(d => d.para === 'Oficina técnica').sort(porVencimiento);
   const dEst = abiertas.filter(d => d.para === 'Estudio').sort(porVencimiento);
   const dProv = abiertas.filter(d => d.para === 'Proveedor').sort(porVencimiento);
-  const col = (id, titulo, n, cuerpo) => `<section class="columna" id="${id}"><h2>${titulo}${n === null ? '' : ` <span class="num">${n}</span>`}</h2>${cuerpo}</section>`;
+  // Sin número, un hueco del mismo tamaño: así todas las cabeceras miden lo mismo y las columnas empiezan a la par
+  const col = (id, titulo, n, cuerpo) => `<section class="columna" id="${id}"><h2>${titulo} ${n === null ? '<span class="num" aria-hidden="true">&nbsp;</span>' : `<span class="num">${n}</span>`}</h2>${cuerpo}</section>`;
 
   $('p-cont').innerHTML = ok + '<div class="columnas">' +
-    col('p-planos', 'Planos', PD_PLANOS === 'listos' ? listos.length : planos.length,
-      `<div class="seg p-seg" role="group" aria-label="Planos"><button type="button" data-p-planos="preparar" aria-pressed="${PD_PLANOS !== 'listos'}">Por preparar · ${planos.length}</button><button type="button" data-p-planos="listos" aria-pressed="${PD_PLANOS === 'listos'}">Listos · ${listos.length}</button></div>` +
-      (PD_PLANOS !== 'listos'
-        ? (planos.length ? planos.map(t => pendTrabajo(t, true)).join('') : nada('No hay planos pendientes' + conFiltro + '.'))
+    col('p-planos', 'Planos', PD_PLANOS === 'listos' ? listos.length : PD_PLANOS === 'preparacion' ? enPreparacion.length : porPreparar.length,
+      `<div class="seg p-seg" role="group" aria-label="Planos">` +
+        [['preparar', 'Por preparar', porPreparar], ['preparacion', 'En preparación', enPreparacion], ['listos', 'Listos', listos]]
+          .map(([k, txt, l]) => `<button type="button" data-p-planos="${k}" aria-pressed="${PD_PLANOS === k}">${txt}&nbsp;<span class="n">${l.length}</span></button>`).join('') + '</div>' +
+      (PD_PLANOS === 'preparar'
+        ? (porPreparar.length ? porPreparar.map(t => pendTrabajo(t, true)).join('') : nada('No hay trabajos esperando planos' + conFiltro + '.'))
+        : PD_PLANOS === 'preparacion'
+        ? (enPreparacion.length ? enPreparacion.map(t => pendTrabajo(t, true)).join('') : nada('No hay planos en preparación' + conFiltro + '.'))
         : (listos.length ? '' : nada('Ningún trabajo con los planos listos' + conFiltro + '.')) +
           (esperan.length ? `<h3 id="p-listos">Esperando reunión · ${esperan.length}</h3>` + esperan.map(t => pendTrabajo(t, false, true)).join('') : '') +
           (conReu.length ? `<h3>Con reunión hecha · ${conReu.length}</h3>` + conReu.map(t => pendTrabajo(t, false, true)).join('') : '') +
@@ -2782,12 +2790,14 @@ function pintarPendientes() {
 
 function pendTrabajo(t, conAccion, conReunion) {
   const sig = SIGUIENTE_OFICINA[t.estado];
+  // Anunciado: también directo a «Planos listos», sin pasar por «Planos en preparación»
+  const directo = t.estado === 'Anunciado' ? `<button type="button" class="btn-peq" data-accion="estado" data-id="${esc(t.id)}" data-estado="Planos listos">Planos listos</button>` : '';
   return `<article class="pend">
     <div class="marcas"><span class="nv nv-${esc(t.nivel)}">${esc(NIVELES[t.nivel] || t.estado)}</span><span class="meta">Inicio ${fechaDM(t.fecha_inicio)} · ${esc(textoDias(t.dias_para_inicio))}</span></div>
     <a class="enlace-fila" href="#${esc(t.id)}" data-abrir="${esc(t.id)}">${esc(t.id)} · ${esc(t.descripcion)}</a>
     <div class="meta">${esc(t.promocion)} · ${esc(t.zona)} · ${esc(t.oficio)}</div>
     <div class="marcas"><span class="marca">${esc(t.estado)}</span><span class="marca">${esc(resumenPlanos(t))}</span>${conReunion ? `<span class="marca">${esc(resumenReunion(t))}</span>` : ''}${t.dudas_abiertas ? `<span class="marca${t.dudas_vencidas ? ' roja' : ''}">${plural(t.dudas_abiertas, 'duda abierta', 'dudas abiertas')}</span>` : ''}${t.tardio === true ? '<span class="marca borde-rojo">Aviso tardío</span>' : ''}</div>
-    ${conAccion && (sig || puedeSinPlanos(t)) && puede('cambiar_estado_oficina') ? `<div class="pend-acc">${sig ? `<button type="button" class="btn-peq" data-accion="estado" data-id="${esc(t.id)}" data-estado="${esc(sig[0])}">${sig[1]}</button>` : ''}${puedeSinPlanos(t) ? `<button type="button" class="btn-peq claro" data-accion="sin-planos" data-id="${esc(t.id)}">No necesita planos</button>` : ''}</div>` : ''}
+    ${conAccion && (sig || puedeSinPlanos(t)) && puede('cambiar_estado_oficina') ? `<div class="pend-acc">${sig ? `<button type="button" class="btn-peq" data-accion="estado" data-id="${esc(t.id)}" data-estado="${esc(sig[0])}">${sig[1]}</button>` : ''}${directo}${puedeSinPlanos(t) ? `<button type="button" class="btn-peq claro" data-accion="sin-planos" data-id="${esc(t.id)}">No necesita planos</button>` : ''}</div>` : ''}
   </article>`;
 }
 
@@ -5142,6 +5152,9 @@ async function cambiarEstado(id, estado, btn) {
   const t = trabajoPorId(id);
   if (!t || !estado || estado === t.estado) return;
   if (estado === 'Terminado') { abrirHecho([id]); return; }   // pide la fecha y crea el avance
+  // Planos listos con planos dados de alta sin terminar: que no se pase por error
+  const sinTerminar = estado === 'Planos listos' ? planosDe(id).filter(p => p.estado !== 'Listo').length : 0;
+  if (sinTerminar && !confirm(`${id} tiene ${plural(sinTerminar, 'plano', 'planos')} sin marcar como listo. ¿Pasarlo a «Planos listos» igualmente?`)) return;
   const r = await enviando(btn, 'Guardando…', () => api('cambiar_estado', { id, estado }));
   if (!r.ok) { alert(textoError(r)); return; }
   await recargar(`${id} · ${estado}.`);
