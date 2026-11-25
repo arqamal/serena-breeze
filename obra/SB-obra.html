@@ -418,6 +418,12 @@
   .tl-prev.corta { border-right: none; }
   .tl-real { position: absolute; top: 23px; height: 9px; background: var(--black); min-width: 3px; }
   /* Lo planificado al avisar, cuando la fecha probable es otra: contorno discontinuo encima */
+  /* Ventana de avisar: fechas probables en dos columnas; con varios trabajos, uno debajo de otro */
+  .av-fechas { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; align-items: end; }
+  @media (max-width: 560px) { .av-fechas { grid-template-columns: 1fr; } }
+  .av-trabajo { border-top: 1px solid var(--border); padding-top: 10px; margin-top: 10px; }
+  .av-tit { margin: 0 0 6px; }
+  .av-nota:empty { display: none; }
   .tl-base { position: absolute; top: 3px; height: 5px; border: 1px dashed var(--slate); border-bottom: none; min-width: 3px; }
   .pl-grupo .tl-base { top: 5px; }
   .lg.base { width: 28px; height: 5px; border: 1px dashed var(--slate); border-bottom: none; }
@@ -3509,16 +3515,85 @@ function elegirPlan(tipo) {
   pintarPlan();
 }
 
-async function avisarTrabajos(ids, btn) {
-  const ts = ids.map(trabajoPorId).filter(puedeAvisar);
+// Avisar desde Planificación o Próximas 6 semanas: una ventana con la fecha probable de cada trabajo.
+// Si cambia, se avisa con la nueva y lo planificado queda guardado para contar las desviaciones.
+let AVISO = null;   // { ids }
+function abrirAvisar(ids) {
+  const ts = ids.map(trabajoPorId).filter(t => t && puedeAvisar(t));
   if (!ts.length) return;
-  if (!confirm(ts.length === 1 ? `¿Avisar ${ts[0].id} · ${ts[0].descripcion} a oficina técnica? Aparecerá en sus pendientes para preparar planos.`
-    : `¿Avisar ${ts.length} trabajos a oficina técnica? Aparecerán en sus pendientes para preparar planos.`)) return;
-  const r = await enviando(btn, 'Avisando…', () => api('avisar_trabajos', { ids: ts.map(t => t.id) }));
-  if (!r.ok) { alert(textoError(r)); return; }
+  AVISO = { ids: ts.map(t => t.id) };
+  const uno = ts.length === 1 ? ts[0] : null;
+  const conFechas = (S.campos_editables || []).indexOf('fecha_inicio') !== -1;
+  const ini = (t) => soloFecha(t.fecha_inicio), fin = (t) => soloFecha(t.fecha_fin) || soloFecha(t.fecha_inicio);
+  const campos = (t, i) => conFechas
+    ? `<div class="av-fechas">
+        <div class="campo"><label class="etq" for="av-ini-${i}">${uno ? 'Fecha probable de inicio' : 'Inicio probable'}</label><input class="ctrl" type="date" id="av-ini-${i}" data-av="${i}" value="${esc(ini(t))}"></div>
+        <div class="campo"><label class="etq" for="av-fin-${i}">${uno ? 'Fecha probable de fin' : 'Fin probable'}</label><input class="ctrl" type="date" id="av-fin-${i}" data-av="${i}" value="${esc(fin(t))}" min="${esc(ini(t))}"></div>
+      </div>`
+    : `<p class="meta">Previsto del ${fechaDMA(t.fecha_inicio)} al ${fechaDMA(fin(t))}.</p>`;
+  const nota = (t, i) => `<p class="ayuda av-nota" id="av-nota-${i}">${esc(notaAviso(t, ini(t), fin(t)))}</p>`;
+  abrirDlg(cabDlg(uno ? esc(uno.id) + ' · ' + esc(uno.zona) + (uno.detalle ? ' · ' + esc(uno.detalle) : '') : plural(ts.length, 'trabajo', 'trabajos'), 'Avisar a oficina técnica') +
+    `<form id="f-avisar" class="form-linea" novalidate>
+      ${uno ? `<p>${esc(uno.descripcion)}<br><span class="meta">${esc(uno.oficio)}${uno.capitulo ? ' · ' + esc(uno.capitulo) : ''}</span></p>${campos(uno, 0)}${nota(uno, 0)}`
+        : ts.map((t, i) => `<div class="av-trabajo"><p class="av-tit"><b>${esc(t.id)}</b> · ${esc(t.descripcion)} <span class="meta">${esc(t.zona)}${t.detalle ? ' · ' + esc(t.detalle) : ''}</span></p>${campos(t, i)}${nota(t, i)}</div>`).join('')}
+      <p class="ayuda">${uno ? 'Aparecerá' : 'Aparecerán'} en los pendientes de oficina técnica para preparar planos.${conFechas ? ` Si la fecha real va a ser otra, cámbiala: lo planificado se guarda aparte para contar las desviaciones; la probable es la que usan planos y Próximas 6 semanas.` : ''}</p>
+      <div class="error" id="av-error" role="alert"></div>
+      <div class="botones"><button type="button" class="btn-sec" data-accion="dlg-cerrar">Cancelar</button><button type="submit" class="btn-negro" id="av-guardar">${uno ? 'Avisar' : 'Avisar ' + ts.length}</button></div>
+    </form>`);
+  // Al mover el inicio, el fin se mueve igual (misma duración) hasta que se toque el fin a mano
+  ts.forEach((t, i) => {
+    const eIni = $('av-ini-' + i), eFin = $('av-fin-' + i);
+    if (!eIni) return;
+    const dur = esIso(ini(t)) && esIso(fin(t)) ? diasEntre(ini(t), fin(t)) : 0;
+    eIni.addEventListener('input', () => {
+      if (esIso(eIni.value)) {
+        if (!eFin.dataset.tocado) eFin.value = sumarDias(eIni.value, dur);
+        else if (eFin.value < eIni.value) eFin.value = eIni.value;
+        eFin.min = eIni.value;
+      }
+      $('av-nota-' + i).textContent = notaAviso(t, eIni.value, eFin.value);
+    });
+    eFin.addEventListener('input', () => { eFin.dataset.tocado = '1'; $('av-nota-' + i).textContent = notaAviso(t, eIni.value, eFin.value); });
+  });
+}
+// Qué pasa con las fechas de un trabajo al avisarlo: lo planificado (si cambia) y la antelación
+function notaAviso(t, ini, fin) {
+  const pi = inicioPlan(t), pf = finPlan(t) || pi;
+  const partes = [];
+  if ((ini && ini !== soloFecha(t.fecha_inicio)) || (fin && fin !== (soloFecha(t.fecha_fin) || soloFecha(t.fecha_inicio)))) {
+    const d = esIso(ini) && esIso(pi) ? diasEntre(pi, ini) : 0;
+    partes.push(`Planificado: ${fechaDM(pi)} – ${fechaDM(pf)}${d ? ` (inicio ${signo(d)})` : ''}; se guarda para las desviaciones.`);
+  }
+  const ant = esIso(ini) ? diasEntre(D.hoy, ini) : null;
+  if (ant !== null) partes.push(ant < S.umbrales.antelacion ? `Con ${ant} días de antelación: menos de ${S.umbrales.antelacion}, queda como aviso tardío.` : `Avisas con ${ant} días de antelación.`);
+  return partes.join(' ');
+}
+async function guardarAvisar() {
+  if (!AVISO) return;
+  const err = $('av-error');
+  err.textContent = '';
+  const fechas = {};
+  for (let i = 0; i < AVISO.ids.length; i++) {
+    const eIni = $('av-ini-' + i);
+    if (!eIni) continue;
+    const id = AVISO.ids[i], t = trabajoPorId(id);
+    const ini = eIni.value, fin = $('av-fin-' + i).value;
+    const quien = AVISO.ids.length > 1 ? id + ': ' : '';
+    if (!esIso(ini)) { err.textContent = quien + 'pon la fecha probable de inicio.'; eIni.focus(); return; }
+    if (fin && fin < ini) { err.textContent = quien + MENSAJES.fin_antes_inicio; return; }
+    const c = {};
+    if (ini !== soloFecha(t.fecha_inicio)) c.fecha_inicio = ini;
+    if (fin && fin !== soloFecha(t.fecha_fin)) c.fecha_fin = fin;
+    if (Object.keys(c).length) fechas[id] = c;
+  }
+  const r = await enviando($('av-guardar'), 'Avisando…', () => api('avisar_trabajos', Object.assign({ ids: AVISO.ids }, Object.keys(fechas).length ? { fechas } : {})));
+  if (!r.ok) { err.textContent = (r.id ? r.id + ': ' : '') + textoError(r); return; }
   r.avisados.forEach(id => PL_SEL.delete(id));
+  cerrarDlg();
+  const movidos = (r.movidos || []).length;
   await recargar(plural(r.avisados.length, 'trabajo avisado', 'trabajos avisados') + ' a oficina técnica' +
-    (r.tardios.length ? ` (${r.tardios.length === 1 ? 'uno' : r.tardios.length} con menos de ${S.umbrales.antelacion} días: ${r.tardios.length === 1 ? 'queda marcado' : 'quedan marcados'} como aviso tardío).` : '.'));
+    (movidos ? (r.avisados.length === 1 ? ', con fecha probable nueva (lo planificado queda para las desviaciones)' : ` (${movidos} con fecha probable nueva; lo planificado queda para las desviaciones)`) : '') +
+    (r.tardios.length ? `. ${r.tardios.length === 1 ? 'Uno' : r.tardios.length} con menos de ${S.umbrales.antelacion} días: ${r.tardios.length === 1 ? 'queda marcado' : 'quedan marcados'} como aviso tardío.` : '.'));
 }
 
 // ─── PLANIFICACIÓN: AÑADIR, EDITAR, PROVEEDOR Y BORRAR ──────────────
@@ -4061,6 +4136,7 @@ async function pdfActa(a) {
 let DLG_FOCO = null;
 function abrirDlg(html) {
   if ($('dlg').classList.contains('oculto')) DLG_FOCO = document.activeElement;
+  ocultarToast();   // al abrir otra cosa, el aviso de deshacer ya no viene a cuento (y taparía los botones)
   $('dlg-caja').innerHTML = html;
   $('dlg').classList.toggle('en-iframe', window.parent !== window);
   const nueva = $('dlg').classList.contains('oculto');
@@ -5119,12 +5195,12 @@ const ACCIONES = {
   'nueva-duda': () => nuevaDudaDe(FICHA),
   'foto-ficha': (el) => { fotoDestino = 'ficha'; $(el.dataset.origen === 'camara' ? 'input-camara' : 'input-galeria').click(); },
   'quitar-foto': quitarFotoFicha,
-  avisar: (el) => avisarTrabajos([el.dataset.id], el),
+  avisar: (el) => abrirAvisar([el.dataset.id]),
   hecho: (el) => abrirHecho([el.dataset.id]),
   ejec: (el) => abrirEjec([el.dataset.id]),
   'pl-grupo': (el) => { const g = PL_GRUPOS[Number(el.dataset.grupo)]; if (!g) return; if (PL_ABIERTOS.has(g.k)) PL_ABIERTOS.delete(g.k); else PL_ABIERTOS.add(g.k); pintarPlan(); },
   'pl-elegir': (el) => elegirPlan(el.dataset.tipo),
-  'pl-avisar-sel': (el) => avisarTrabajos(Array.from(PL_SEL), el),
+  'pl-avisar-sel': () => abrirAvisar(Array.from(PL_SEL)),
   'pl-hecho-sel': () => abrirHecho(Array.from(PL_SEL)),
   'pl-ejec-sel': () => abrirEjec(Array.from(PL_SEL)),
   'pl-sin-planos-sel': (el) => marcarSinPlanos(Array.from(PL_SEL).filter(id => puedeSinPlanos(trabajoPorId(id))), el),
@@ -5178,6 +5254,7 @@ document.addEventListener('submit', (e) => {
   else if (f.id === 'fp') { e.preventDefault(); guardarPlano(f); }
   else if (f.id === 'f-hecho') { e.preventDefault(); guardarHecho(); }
   else if (f.id === 'f-ejec') { e.preventDefault(); guardarEjec(); }
+  else if (f.id === 'f-avisar') { e.preventDefault(); guardarAvisar(); }
   else if (f.id === 'f-desh') { e.preventDefault(); guardarDeshacer(); }
   else if (f.id === 'pe') { e.preventDefault(); guardarEdicion('pe'); }
   else if (f.id === 'f-convocar') { e.preventDefault(); guardarConvocatoria(); }
