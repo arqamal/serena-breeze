@@ -347,6 +347,9 @@
   .pl-acc { display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap; }
   .pl-acc:empty { display: none; }
   .pl-acc .btn-peq { min-height: 30px; padding: 0 8px; font-size: 10px; letter-spacing: 1px; }
+  .p-seg { display: flex; margin: 12px 0 4px; }
+  .p-seg button { flex: 1 1 0; min-height: 38px; padding: 0 10px; font-size: 12px; letter-spacing: 1.5px; }
+  .pend-acc { display: flex; flex-wrap: wrap; gap: 8px; }
   /* Historial y deshacer */
   #hi-intro { margin: 0 20px 12px; }
   #hi-lista { margin: 0 20px; }
@@ -367,6 +370,9 @@
   @media (max-width: 899px) {
     .hi-lote { grid-template-columns: 44px minmax(0, 1fr); }
     .hi-acc { grid-column: 2; text-align: left; }
+    .hi-partes { margin-left: 44px; }
+    .hi-partes .hi-lote { grid-template-columns: minmax(0, 1fr); }
+    .hi-partes .hi-acc { grid-column: 1; }
   }
   .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); z-index: 60; display: flex; align-items: center; gap: 14px;
     max-width: calc(100vw - 32px); padding: 10px 10px 10px 18px; background: var(--black); color: var(--white); font-size: 13px; box-shadow: 0 6px 24px rgba(0,0,0,.25); }
@@ -374,6 +380,14 @@
   .toast-btn:hover, .toast-btn:focus-visible { background: var(--white); color: var(--black); }
   .toast-cerrar { background: transparent; border: none; color: var(--white); font-size: 20px; line-height: 1; cursor: pointer; padding: 4px 8px; }
   .toast-btn:empty { display: none; }
+  /* En un iframe que crece con el contenido, «fixed» se pega al final de la página: se coloca a mano en la parte visible */
+  .toast.en-iframe { position: absolute; bottom: auto; }
+  .hi-bloque { border-bottom: 1px solid var(--border); }
+  .hi-bloque > .hi-lote { border-bottom: none; }
+  .hi-partes { margin: 0 0 12px 70px; }
+  .hi-partes > summary { cursor: pointer; font-size: 12px; letter-spacing: 1px; color: var(--slate); min-height: 32px; display: flex; align-items: center; }
+  .hi-partes .hi-lote { grid-template-columns: minmax(0, 1fr) auto; padding: 8px 0 8px 12px; border-bottom: none; border-left: 2px solid var(--border); }
+  .hi-partes .hi-lote + .hi-lote { border-top: 1px dashed var(--border); }
 
   /* Avances › En ejecución */
   #av-ejec { margin: 0 20px; }
@@ -1092,7 +1106,7 @@ async function entrar(r) {
 
   if (secciones.length > 1) {
     $('menu').innerHTML = secciones.map(x => `<button type="button" data-sec="${x.id}">${x.texto}</button>`).join('');
-    $('menu').querySelectorAll('button').forEach(b => b.addEventListener('click', () => mostrarSeccion(b.dataset.sec)));
+    $('menu').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { ocultarToast(); mostrarSeccion(b.dataset.sec); }));
     $('menu').classList.remove('oculto');
   }
   if (pestañas.length) {
@@ -2117,7 +2131,7 @@ function reunionesDe(id) {
 }
 function resumenPlanos(t) {
   const p = planosDe(t.id);
-  if (!p.length) return 'Sin planos';
+  if (!p.length) return verdadero(t.sin_planos) ? 'No necesita planos' : 'Sin planos';
   const listos = p.filter(x => x.estado === 'Listo').length;
   if (listos === p.length) return p.length === 1 ? 'Plano listo' : p.length + ' planos listos';
   return listos + '/' + p.length + ' planos listos';
@@ -2171,6 +2185,12 @@ function prepararVistas() {
   $('p-zona').addEventListener('change', () => { FILTRO_PD.zona = $('p-zona').value; pintarPendientes(); });
   $('p-oficio').addEventListener('change', () => { FILTRO_PD.oficio = $('p-oficio').value; pintarPendientes(); });
   $('p-buscar').addEventListener('input', () => { FILTRO_PD.q = $('p-buscar').value.trim().toLowerCase(); pintarPendientes(); });
+  $('p-cont').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-p-planos]');
+    if (!b || b.dataset.pPlanos === PD_PLANOS) return;
+    PD_PLANOS = b.dataset.pPlanos;
+    pintarPendientes();
+  });
   $('s-oficio').innerHTML = '<option value="">Todos los oficios</option>' + (S.listas.oficios || []).map(o => `<option>${esc(o)}</option>`).join('');
   $('s-oficio').addEventListener('change', () => { FILTRO_S.oficio = $('s-oficio').value; pintarSemanas(); });
   $('s-estado').addEventListener('change', () => { FILTRO_S.estado = $('s-estado').value; pintarSemanas(); });
@@ -2352,6 +2372,7 @@ function pintarFicha() {
   if (puede('cambiar_estado_oficina')) {
     const sig = SIGUIENTE_OFICINA[t.estado];
     if (sig) acciones += boton(sig[0], sig[1], true);
+    if (puedeSinPlanos(t)) acciones += `<button type="button" class="btn-peq" data-accion="sin-planos" data-id="${esc(t.id)}">No necesita planos</button>`;
     const opciones = (t.estado === 'Planificado' ? ['Planificado'] : []).concat(PASOS);
     acciones += `<label class="oculto-visual" for="fi-estado-sel">Estado</label><select class="ctrl" id="fi-estado-sel">${opciones.map(p => `<option${p === t.estado ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>` +
       '<button type="button" class="btn-peq" data-accion="estado-sel">Cambiar estado</button>';
@@ -2655,6 +2676,7 @@ async function cargarHistorial(id) {
 // ─── PENDIENTES ─────────────────────────────────────────────────────
 // Filtros de Pendientes: promoción, zona (con la villa 0), oficio y texto
 const FILTRO_PD = { promo: '', zona: '', oficio: '', q: '' };
+let PD_PLANOS = 'preparar';   // columna de planos: 'preparar' | 'listos'
 const hayFiltroPD = () => !!(FILTRO_PD.promo || FILTRO_PD.zona || FILTRO_PD.oficio || FILTRO_PD.q);
 const textoEnFiltroP = (vals) => !FILTRO_PD.q || vals.some(v => String(v || '').toLowerCase().indexOf(FILTRO_PD.q) !== -1);
 const trabajoEnFiltroP = (t) => (!FILTRO_PD.promo || t.promocion === FILTRO_PD.promo) && zonaCoincide(t.zona, FILTRO_PD.zona)
@@ -2722,8 +2744,9 @@ function pintarPendientes() {
   const vivos = vivosTodos.filter(trabajoEnFiltroP);
   const abiertas = abiertasTodas.filter(dudaEnFiltroP);
   const planos = vivos.filter(t => t.estado === 'Anunciado' || t.estado === 'Planos en preparación');
-  // Ya preparados: los que tienen los planos listos y esperan la reunión, por fecha de inicio
-  const listos = vivos.filter(t => t.estado === 'Planos listos');
+  // Planos preparados: esperando reunión, con reunión hecha y en obra (con todos sus planos listos)
+  const listos = vivos.filter(planosPreparados);
+  const esperan = listos.filter(t => t.estado === 'Planos listos'), conReu = listos.filter(t => t.estado === 'Reunión hecha'), enObra = listos.filter(t => t.estado === 'En ejecución');
   const sinReunion = trabajosSinReunion().filter(trabajoEnFiltroP);
   const actas = (D.reuniones || []).filter(r => r.estado === 'Celebrada' && reunionEnFiltroP(r)).sort((a, b) => Number(b.numero_acta) - Number(a.numero_acta)).slice(0, 5);
   const gestiona = puede('gestionar_reuniones');
@@ -2734,9 +2757,14 @@ function pintarPendientes() {
   const col = (id, titulo, n, cuerpo) => `<section class="columna" id="${id}"><h2>${titulo}${n === null ? '' : ` <span class="num">${n}</span>`}</h2>${cuerpo}</section>`;
 
   $('p-cont').innerHTML = ok + '<div class="columnas">' +
-    col('p-planos', 'Planos por preparar', planos.length,
-      (planos.length ? planos.map(t => pendTrabajo(t, true)).join('') : nada('No hay planos pendientes' + conFiltro + '.')) +
-      `<h3 id="p-listos">Planos listos · ${listos.length}</h3>` + (listos.length ? listos.map(t => pendTrabajo(t, false)).join('') : nada('Ninguno esperando reunión' + conFiltro + '.'))) +
+    col('p-planos', 'Planos', PD_PLANOS === 'listos' ? listos.length : planos.length,
+      `<div class="seg p-seg" role="group" aria-label="Planos"><button type="button" data-p-planos="preparar" aria-pressed="${PD_PLANOS !== 'listos'}">Por preparar · ${planos.length}</button><button type="button" data-p-planos="listos" aria-pressed="${PD_PLANOS === 'listos'}">Listos · ${listos.length}</button></div>` +
+      (PD_PLANOS !== 'listos'
+        ? (planos.length ? planos.map(t => pendTrabajo(t, true)).join('') : nada('No hay planos pendientes' + conFiltro + '.'))
+        : (listos.length ? '' : nada('Ningún trabajo con los planos listos' + conFiltro + '.')) +
+          (esperan.length ? `<h3 id="p-listos">Esperando reunión · ${esperan.length}</h3>` + esperan.map(t => pendTrabajo(t, false, true)).join('') : '') +
+          (conReu.length ? `<h3>Con reunión hecha · ${conReu.length}</h3>` + conReu.map(t => pendTrabajo(t, false, true)).join('') : '') +
+          (enObra.length ? `<h3>En obra · ${enObra.length}</h3>` + enObra.map(t => pendTrabajo(t, false, true)).join('') : ''))) +
     col('p-dudas', 'Dudas por responder', dOT.length,
       (dOT.length ? dudas(dOT) : nada('Ninguna duda para oficina técnica' + conFiltro + '.')) +
       `<h3>Esperando al estudio · ${dEst.length}</h3>` + (dEst.length ? dudas(dEst) : nada('Nada pendiente.')) +
@@ -2752,14 +2780,14 @@ function pintarPendientes() {
   enviarAltura();
 }
 
-function pendTrabajo(t, conAccion) {
+function pendTrabajo(t, conAccion, conReunion) {
   const sig = SIGUIENTE_OFICINA[t.estado];
   return `<article class="pend">
     <div class="marcas"><span class="nv nv-${esc(t.nivel)}">${esc(NIVELES[t.nivel] || t.estado)}</span><span class="meta">Inicio ${fechaDM(t.fecha_inicio)} · ${esc(textoDias(t.dias_para_inicio))}</span></div>
     <a class="enlace-fila" href="#${esc(t.id)}" data-abrir="${esc(t.id)}">${esc(t.id)} · ${esc(t.descripcion)}</a>
     <div class="meta">${esc(t.promocion)} · ${esc(t.zona)} · ${esc(t.oficio)}</div>
-    <div class="marcas"><span class="marca">${esc(t.estado)}</span><span class="marca">${esc(resumenPlanos(t))}</span>${t.dudas_abiertas ? `<span class="marca${t.dudas_vencidas ? ' roja' : ''}">${plural(t.dudas_abiertas, 'duda abierta', 'dudas abiertas')}</span>` : ''}${t.tardio === true ? '<span class="marca borde-rojo">Aviso tardío</span>' : ''}</div>
-    ${conAccion && sig && puede('cambiar_estado_oficina') ? `<button type="button" class="btn-peq" data-accion="estado" data-id="${esc(t.id)}" data-estado="${esc(sig[0])}">${sig[1]}</button>` : ''}
+    <div class="marcas"><span class="marca">${esc(t.estado)}</span><span class="marca">${esc(resumenPlanos(t))}</span>${conReunion ? `<span class="marca">${esc(resumenReunion(t))}</span>` : ''}${t.dudas_abiertas ? `<span class="marca${t.dudas_vencidas ? ' roja' : ''}">${plural(t.dudas_abiertas, 'duda abierta', 'dudas abiertas')}</span>` : ''}${t.tardio === true ? '<span class="marca borde-rojo">Aviso tardío</span>' : ''}</div>
+    ${conAccion && (sig || puedeSinPlanos(t)) && puede('cambiar_estado_oficina') ? `<div class="pend-acc">${sig ? `<button type="button" class="btn-peq" data-accion="estado" data-id="${esc(t.id)}" data-estado="${esc(sig[0])}">${sig[1]}</button>` : ''}${puedeSinPlanos(t) ? `<button type="button" class="btn-peq claro" data-accion="sin-planos" data-id="${esc(t.id)}">No necesita planos</button>` : ''}</div>` : ''}
   </article>`;
 }
 
@@ -3312,7 +3340,17 @@ function maxDesvGrupo(lista) {
 const hechoAMano = (t) => puedeHecho(t) && (t.estado !== 'Planificado' || soloFecha(t.fecha_inicio) <= D.hoy);
 // «En ejecución» desde fuera de la ficha: solo oficina técnica, para lo que obra no marcó
 const puedeEjecOT = (t) => !!t && puede('cambiar_estado_oficina') && ESTADOS_OBRA.indexOf(t.estado) === -1;
-function accionesTrabajo(t, conEditar) {
+// «No necesita planos»: oficina técnica, trabajos que aún no tienen los planos (pasan a Planos listos)
+const ANTES_DE_PLANOS = ['Planificado', 'Anunciado', 'Planos en preparación'];
+// (si ya tiene planos dados de alta, no: entonces sí los necesita)
+const puedeSinPlanos = (t) => !!t && puede('cambiar_estado_oficina') && ANTES_DE_PLANOS.indexOf(t.estado) !== -1 && !planosDe(t.id).length;
+// Planos preparados: los que esperan reunión, los que ya la tuvieron y los que están en obra con todos sus planos listos
+function planosPreparados(t) {
+  if (t.estado === 'Planos listos' || t.estado === 'Reunión hecha') return true;
+  if (t.estado !== 'En ejecución') return false;
+  const p = planosDe(t.id);
+  return p.length > 0 && p.every(x => x.estado === 'Listo');
+}function accionesTrabajo(t, conEditar) {
   return (puedeAvisar(t) ? `<button type="button" class="btn-peq" data-accion="avisar" data-id="${esc(t.id)}">Avisar</button>` : '') +
     (hechoAMano(t) ? `<button type="button" class="btn-peq" data-accion="hecho" data-id="${esc(t.id)}">Hecho</button>` : '') +
     (conEditar ? btnEditar(t, 'btn-peq') : '');
@@ -3385,10 +3423,11 @@ function planMovil() {
 
 function pintarSeleccion() {
   const sel = Array.from(PL_SEL).map(trabajoPorId).filter(Boolean);
-  const av = sel.filter(puedeAvisar), he = sel.filter(puedeHecho), qu = sel.filter(puedeQuitar), ej = sel.filter(puedeEjecOT);
+  const av = sel.filter(puedeAvisar), he = sel.filter(puedeHecho), qu = sel.filter(puedeQuitar), ej = sel.filter(puedeEjecOT), sp = sel.filter(puedeSinPlanos);
   $('pl-sel').classList.toggle('oculto', !sel.length);
   $('pl-sel').innerHTML = sel.length ? `<span>${plural(sel.length, 'trabajo elegido', 'trabajos elegidos')}</span>` +
     (av.length ? `<button type="button" class="btn-peq" data-accion="pl-avisar-sel">Avisar a oficina técnica · ${av.length}</button>` : '') +
+    (sp.length ? `<button type="button" class="btn-peq" data-accion="pl-sin-planos-sel">No necesitan planos · ${sp.length}</button>` : '') +
     (ej.length ? `<button type="button" class="btn-peq" data-accion="pl-ejec-sel">En ejecución · ${ej.length}</button>` : '') +
     (he.length ? `<button type="button" class="btn-peq" data-accion="pl-hecho-sel">Marcar hecho · ${he.length}</button>` : '') +
     (puedeProveedor() ? `<button type="button" class="btn-peq" data-accion="pl-proveedor-sel">Asignar proveedor · ${sel.length}</button>` : '') +
@@ -4098,6 +4137,17 @@ async function guardarEjec() {
     : `${r.en_ejecucion.length} trabajos en ejecución.`);
 }
 
+// ─── NO NECESITA PLANOS ─────────────────────────────────────────────
+// Oficina técnica se salta el paso de planos: pasa a Planos listos (sigue esperando su reunión)
+async function marcarSinPlanos(ids, btn) {
+  if (!ids.length) return;
+  const r = await enviando(btn, 'Guardando…', () => api('sin_planos', { ids }));
+  if (!r.ok) { alert(textoError(r)); return; }
+  r.sin_planos.forEach(id => PL_SEL.delete(id));
+  const ya = r.con_planos && r.con_planos.length ? ` ${plural(r.con_planos.length, 'trabajo tiene', 'trabajos tienen')} planos dados de alta y no se ha${r.con_planos.length === 1 ? '' : 'n'} tocado.` : '';
+  await recargar((r.sin_planos.length === 1 ? `${r.sin_planos[0]}: no necesita planos; pasa a «Planos listos».` : `${r.sin_planos.length} trabajos sin planos; pasan a «Planos listos».`) + ya);
+}
+
 // ─── DESHACER ───────────────────────────────────────────────────────
 // Cada acción que escribe vuelve con su lote: el aviso de abajo ofrece deshacerla al momento.
 // La pestaña Historial lista los lotes: oficina técnica, los de todos (30 días); el resto, los suyos de hoy.
@@ -4107,14 +4157,14 @@ const ETIQUETA_ACCION = { crear_trabajo: 'Añadir trabajo', editar_trabajo: 'Edi
   crear_avance: 'Nuevo avance', subir_foto: 'Fotos', guardar_plano: 'Guardar plano', guardar_contacto: 'Guardar contacto', borrar: 'Borrar',
   convocar_reunion: 'Convocar reunión', guardar_reunion: 'Editar reunión', guardar_punto: 'Punto de reunión', actualizar_acuerdo: 'Acuerdo',
   anular_reunion: 'Anular reunión', cerrar_reunion: 'Cerrar reunión', subir_acta: 'Subir acta firmada', enviar_acta: 'Enviar acta',
-  guardar_fecha: 'Guardar fecha', aplicar_bloqueos: 'Aplicar bloqueos', deshacer: 'Deshacer' };
+  guardar_fecha: 'Guardar fecha', aplicar_bloqueos: 'Aplicar bloqueos', sin_planos: 'No necesita planos', deshacer: 'Deshacer' };
 const CAMPO_TEXTO = { estado: 'Estado', descripcion: 'Descripción', detalle: 'Detalle', capitulo: 'Capítulo', zona: 'Zona', oficio: 'Oficio', id_proveedor: 'Proveedor',
   fecha_inicio: 'Inicio previsto', fecha_fin: 'Fin previsto', inicio_real: 'Empezó', fin_real: 'Terminó', borrado: 'Borrado', fotos: 'Fotos',
   carpeta_synology: 'Carpeta de Synology', vinculo_project: 'Sigue a la tarea', inicio_vinculo: 'Inicio de esa tarea', antelacion_dias: 'Antelación (días)',
   respuesta: 'Respuesta', respondida_por: 'Respondida por', fecha_respuesta: 'Respondida el', pregunta: 'Pregunta', para: 'Para', fecha_necesaria: 'Fecha necesaria',
   avance: 'Avance', fecha: 'Fecha', nombre: 'Nombre', revision: 'Revisión', enlace_synology: 'Enlace de Synology', lugar: 'Lugar', hora: 'Hora',
   lo_tratado: 'Lo tratado', resultado: 'Resultado', texto: 'Texto', responsable: 'Responsable', fecha_limite: 'Fecha límite', asistencia: 'Asistencia',
-  recibe_acta: 'Recibe el acta', obras: 'Obras', activo: 'Activo' };
+  recibe_acta: 'Recibe el acta', obras: 'Obras', activo: 'Activo', sin_planos: 'No necesita planos' };
 const TAB_TEXTO = { Trabajos: 'Trabajo', Avances: 'Avance', Dudas: 'Duda', Planos: 'Plano', Puntos: 'Punto de reunión', Asistentes: 'Asistente', Reuniones: 'Reunión',
   Acuerdos: 'Acuerdo', Fechas: 'Fechas', Condiciones: 'Condiciones', Contactos: 'Contacto', _reglas_project: 'Regla de Project' };
 const etiquetaAccion = (a) => ETIQUETA_ACCION[a] || String(a || '').replace(/_/g, ' ');
@@ -4141,7 +4191,45 @@ const horaDe = (f) => String(f || '').slice(11, 16);
 
 // Aviso de abajo
 let TOAST = null;   // { lote, timer }
-function ocultarToast() { if (TOAST) clearTimeout(TOAST.timer); TOAST = null; $('toast').classList.add('oculto'); }
+// Incrustada en un iframe que crece con su contenido, la ventana del iframe es toda la página: el aviso «fijo»
+// quedaría al final, fuera de la vista. Se coloca en el trozo que se ve: un IntersectionObserver nuevo da en su
+// primera llamada qué parte del iframe está en pantalla (también si la página de fuera es de otro dominio);
+// mientras el aviso está abierto se vuelve a medir, por si se desplaza la página de fuera. Sin medida, bajo el último clic.
+const EN_IFRAME = window.parent !== window;
+let ULTIMO_Y = 0, VISIBLE = null, MEDIDOR = null;
+document.addEventListener('pointerdown', e => { ULTIMO_Y = e.pageY; }, true);
+function medirVisible() {
+  if (!('IntersectionObserver' in window)) return Promise.resolve(null);
+  return new Promise(fin => {
+    const io = new IntersectionObserver(es => {
+      io.disconnect();
+      const r = es[es.length - 1].intersectionRect;
+      fin(r && r.height > 0 ? { top: r.top + window.scrollY, bottom: r.bottom + window.scrollY } : null);
+    });
+    io.observe(document.body);
+  });
+}
+function colocarToast() {
+  const t = $('toast');
+  t.classList.add('en-iframe');
+  const alto = t.offsetHeight || 52;
+  const y = VISIBLE ? VISIBLE.bottom - alto - 20 : ULTIMO_Y + 36;
+  const max = Math.max(10, document.body.scrollHeight - alto - 10);
+  t.style.top = Math.round(Math.max(VISIBLE ? VISIBLE.top + 10 : 10, Math.min(y, max))) + 'px';
+}
+async function seguirToast() {
+  VISIBLE = await medirVisible();
+  if (TOAST) colocarToast();
+}
+function mostrarToast() {
+  $('toast').classList.remove('oculto');
+  if (!EN_IFRAME) return;
+  colocarToast();
+  seguirToast();
+  clearInterval(MEDIDOR);
+  MEDIDOR = setInterval(seguirToast, 300);
+}
+function ocultarToast() { if (TOAST) clearTimeout(TOAST.timer); TOAST = null; clearInterval(MEDIDOR); $('toast').classList.add('oculto'); }
 function avisoDeshacer(accion, r) {
   if (!r.deshacible) { ocultarToast(); return; }
   if (TOAST) clearTimeout(TOAST.timer);
@@ -4149,14 +4237,14 @@ function avisoDeshacer(accion, r) {
   const esDeshacer = accion === 'deshacer';
   $('toast-texto').textContent = esDeshacer ? (r.rehecho ? 'Rehecho.' : 'Deshecho.') : 'Guardado.';
   $('toast-btn').textContent = esDeshacer && !r.rehecho ? 'Rehacer' : 'Deshacer';
-  $('toast').classList.remove('oculto');
+  mostrarToast();
 }
 function avisoError(texto) {
   if (TOAST) clearTimeout(TOAST.timer);
   TOAST = { lote: '', timer: setTimeout(ocultarToast, 12000) };
   $('toast-texto').textContent = texto;
   $('toast-btn').textContent = SECCIONES.indexOf('historial') !== -1 ? 'Ver historial' : '';
-  $('toast').classList.remove('oculto');
+  mostrarToast();
 }
 $('toast-cerrar').addEventListener('click', ocultarToast);
 $('toast-btn').addEventListener('click', async () => {
@@ -4246,25 +4334,70 @@ function pintarLotes() {
   }
   const hoy = HIST.hoy || (D && D.hoy) || '';
   const ayer = hoy ? sumarDias(hoy, -1) : '';
-  let dia = '', h = '';
+  // Las acciones en bloque llegan por partes (una por trabajo o fase): seguidas, con el mismo grupo
+  const bloques = [];
   lista.forEach(l => {
+    const ult = bloques[bloques.length - 1];
+    if (l.grupo && ult && ult.grupo === l.grupo) ult.partes.push(l); else bloques.push({ grupo: l.grupo, partes: [l] });
+  });
+  let dia = '', h = '';
+  bloques.forEach(b => {
+    const l = b.partes[0];
     const d = String(l.fecha).slice(0, 10);
     if (d !== dia) { dia = d; h += `<h3 class="cal-dia-tit">${d === hoy ? 'Hoy' : d === ayer ? 'Ayer' : esc(fechaLarga(d))}</h3>`; }
-    const regs = l.registros.slice(0, 6).map(r => r.tab === 'Trabajos' && trabajoPorId(r.id) ? `<a href="#${esc(r.id)}" data-abrir="${esc(r.id)}">${esc(r.id)}</a>` : `<span>${esc(idTexto(r.tab, r.id))}</span>`).join('') +
-      (l.registros.length > 6 ? `<span class="sub">y ${l.registros.length - 6} más</span>` : '');
-    const dets = l.detalles.filter(x => x.tipo !== 'lote');
-    const resto = dets.length - 3 + (l.mas_detalles || 0);
-    const det = dets.slice(0, 3).map(x => `<li>${esc(x.id)} · ${esc(x.detalle)}</li>`).join('') + (resto > 0 ? `<li>y ${resto} más</li>` : '');
-    const accion = l.deshecho ? `<span class="hi-estado">${esDeshecho(l) ? 'Rehecho' : 'Deshecho'} por ${esc(l.deshecho.usuario)} · ${esc(horaDe(l.deshecho.fecha))}</span>`
-      : l.no_deshacer ? `<span class="hi-estado" title="${esc(l.no_deshacer)}">No se puede deshacer</span>`
-      : `<button type="button" class="btn-peq" data-accion="hi-deshacer" data-lote="${esc(l.lote)}">${esDeshecho(l) ? 'Rehacer' : 'Deshacer'}</button>`;
-    h += `<div class="hi-lote${l.deshecho ? ' deshecho' : ''}"><div class="hi-hora">${esc(horaDe(l.fecha))}</div>
-      <div class="hi-cuerpo"><div class="hi-accion">${esc(tituloLote(l))}${todo ? ` <span class="sub">· ${esc(l.usuario)}</span>` : ''}</div>
-        ${regs ? `<div class="hi-reg">${regs}</div>` : ''}${det ? `<ul class="hi-det">${det}</ul>` : ''}${l.no_deshacer && !l.deshecho ? `<div class="sub" style="margin-top: 4px">${esc(l.no_deshacer)}</div>` : ''}</div>
-      <div class="hi-acc">${accion}</div></div>`;
+    // Dentro del bloque, en el orden en que se hicieron
+    if (b.partes.length > 1) b.partes.sort((x, y) => x.orden - y.orden);
+    h += b.partes.length > 1 ? bloqueLotes(b, todo) : filaLote(l, todo, false);
   });
   caja.innerHTML = h;
   enviarAltura();
+}
+
+// Una acción (o una parte de una acción en bloque)
+function filaLote(l, todo, parte) {
+  const regs = l.registros.slice(0, 6).map(r => r.tab === 'Trabajos' && trabajoPorId(r.id) ? `<a href="#${esc(r.id)}" data-abrir="${esc(r.id)}">${esc(r.id)}</a>` : `<span>${esc(idTexto(r.tab, r.id))}</span>`).join('') +
+    (l.registros.length > 6 ? `<span class="sub">y ${l.registros.length - 6} más</span>` : '');
+  const dets = l.detalles.filter(x => x.tipo !== 'lote');
+  const resto = dets.length - 3 + (l.mas_detalles || 0);
+  // En una parte de un bloque, el código ya va enlazado encima: no se repite en cada línea
+  const det = dets.slice(0, 3).map(x => `<li>${parte && x.id === unidadLote(l) ? '' : esc(x.id) + ' · '}${esc(x.detalle)}</li>`).join('') + (resto > 0 ? `<li>y ${resto} más</li>` : '');
+  const accion = l.deshecho ? `<span class="hi-estado">${esDeshecho(l) ? 'Rehecho' : 'Deshecho'} por ${esc(l.deshecho.usuario)} · ${esc(horaDe(l.deshecho.fecha))}</span>`
+    : l.no_deshacer ? `<span class="hi-estado" title="${esc(l.no_deshacer)}">No se puede deshacer</span>`
+    : `<button type="button" class="btn-peq" data-accion="hi-deshacer" data-lote="${esc(l.lote)}">${esDeshecho(l) ? 'Rehacer' : 'Deshacer'}</button>`;
+  const cabeza = parte ? '' : `<div class="hi-hora">${esc(horaDe(l.fecha))}</div>`;
+  const titulo = parte ? '' : `<div class="hi-accion">${esc(tituloLote(l))}${todo ? ` <span class="sub">· ${esc(l.usuario)}</span>` : ''}</div>`;
+  return `<div class="hi-lote${l.deshecho ? ' deshecho' : ''}">${cabeza}
+    <div class="hi-cuerpo">${titulo}
+      ${regs ? `<div class="hi-reg">${regs}</div>` : ''}${det ? `<ul class="hi-det">${det}</ul>` : ''}${l.no_deshacer && !l.deshecho ? `<div class="sub" style="margin-top: 4px">${esc(l.no_deshacer)}</div>` : ''}</div>
+    <div class="hi-acc">${accion}</div></div>`;
+}
+// Qué es cada parte: un trabajo (base/T-012) o una fase (base/fase:Villas); la base sola, «otros cambios»
+const unidadLote = (l) => (l.lote.indexOf('/') === -1 ? '' : l.lote.slice(l.lote.indexOf('/') + 1));
+function textoPartes(partes) {
+  const u = partes.map(unidadLote).filter(Boolean);
+  const fases = u.length && u.every(x => x.indexOf('fase:') === 0);
+  return plural(u.length, fases ? 'fase' : 'trabajo', fases ? 'fases' : 'trabajos');
+}
+// Acción en bloque: una cabecera para deshacer todo lo que quede y, debajo, cada parte con su botón
+function bloqueLotes(b, todo) {
+  const l = b.partes[0];
+  const vivas = b.partes.filter(p => !p.deshecho && !p.no_deshacer);
+  const deshechas = b.partes.filter(p => p.deshecho).length;
+  const verbo = esDeshecho(l) ? 'Rehacer' : 'Deshacer';
+  const sinDeshacer = b.partes.find(p => p.no_deshacer && !p.deshecho);
+  const accion = !vivas.length
+    ? `<span class="hi-estado">${sinDeshacer ? 'No se puede deshacer' : (esDeshecho(l) ? 'Rehecho' : 'Deshecho')}</span>`
+    : `<button type="button" class="btn-peq" data-accion="hi-deshacer" data-lote="${esc(b.grupo)}">${verbo} ${deshechas ? (vivas.length === 1 ? 'el que queda' : 'los ' + vivas.length + ' que quedan') : 'todo'}</button>`;
+  const regs = b.partes.map(unidadLote).filter(u => u && u.indexOf('fase:') !== 0).slice(0, 10)
+    .map(id => trabajoPorId(id) ? `<a href="#${esc(id)}" data-abrir="${esc(id)}">${esc(id)}</a>` : `<span>${esc(id)}</span>`).join('');
+  const fases = b.partes.map(unidadLote).filter(u => u.indexOf('fase:') === 0).map(u => `<span>${esc(u.slice(5))}</span>`).join('');
+  const n = b.partes.length;
+  return `<div class="hi-bloque"><div class="hi-lote${!vivas.length ? ' deshecho' : ''}"><div class="hi-hora">${esc(horaDe(l.fecha))}</div>
+      <div class="hi-cuerpo"><div class="hi-accion">${esc(tituloLote(l))} <span class="sub">· ${esc(textoPartes(b.partes))}${todo ? ' · ' + esc(l.usuario) : ''}</span></div>
+        ${regs || fases ? `<div class="hi-reg">${regs}${fases}${n > 10 && regs ? `<span class="sub">y más</span>` : ''}</div>` : ''}
+        ${deshechas ? `<div class="sub" style="margin-top: 4px">${deshechas === n ? 'Todo deshecho' : plural(deshechas, 'parte ya deshecha', 'partes ya deshechas')}</div>` : ''}</div>
+      <div class="hi-acc">${accion}</div></div>
+    <details class="hi-partes"${n <= 6 ? ' open' : ''}><summary>Uno a uno (${n})</summary>${b.partes.map(p => filaLote(p, todo, true)).join('')}</details></div>`;
 }
 
 // Ventana: qué se va a deshacer (o por qué no se puede)
@@ -4284,7 +4417,8 @@ async function abrirDeshacer(lote, btn) {
     ? `<div class="aviso naranja" role="alert"><div><b>No se puede ${rehacer ? 'rehacer' : 'deshacer'}:</b><ul class="desh-lista">${p.conflictos.slice(0, 20).map(c => `<li>${esc(textoConflicto(c))}</li>`).join('')}</ul></div></div>
        <p class="ayuda">Deshaz antes lo que vino después (en la lista del Historial) o corrígelo a mano.</p>`
     : '';
-  abrirDlg(cabDlg(esc(tituloLote(p)) + ' · ' + esc(p.usuario) + ' · ' + esc(fechaDM(p.fecha)) + ' ' + esc(horaDe(p.fecha)), rehacer ? 'Rehacer' : 'Deshacer') +
+  const partes = p.grupo ? HIST.lotes.filter(l => l.grupo === lote && !l.deshecho) : [];
+  abrirDlg(cabDlg(esc(tituloLote(p)) + (partes.length > 1 ? ' · ' + esc(textoPartes(partes)) : '') + ' · ' + esc(p.usuario) + ' · ' + esc(fechaDM(p.fecha)) + ' ' + esc(horaDe(p.fecha)), rehacer ? 'Rehacer' : 'Deshacer') +
     (conflictos || `<p>${lineas ? 'Quedará así:' : 'Ya está todo como antes de esa acción.'}</p>${lineas ? `<ul class="desh-lista">${lineas}</ul>` : ''}`) +
     `<form id="f-desh" class="form-linea" novalidate>
       <div class="error" id="desh-error" role="alert"></div>
@@ -4935,6 +5069,8 @@ const ACCIONES = {
   'pl-avisar-sel': (el) => avisarTrabajos(Array.from(PL_SEL), el),
   'pl-hecho-sel': () => abrirHecho(Array.from(PL_SEL)),
   'pl-ejec-sel': () => abrirEjec(Array.from(PL_SEL)),
+  'pl-sin-planos-sel': (el) => marcarSinPlanos(Array.from(PL_SEL).filter(id => puedeSinPlanos(trabajoPorId(id))), el),
+  'sin-planos': (el) => marcarSinPlanos([el.dataset.id], el),
   'hi-deshacer': (el) => abrirDeshacer(el.dataset.lote, el),
   'pl-quitar-sel': () => { PL_SEL.clear(); pintarSeleccion(); },
   'dlg-cerrar': cerrarDlg,
