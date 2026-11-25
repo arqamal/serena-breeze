@@ -417,6 +417,10 @@
   .tl-prev.tarde { border-color: var(--rojo); }
   .tl-prev.corta { border-right: none; }
   .tl-real { position: absolute; top: 23px; height: 9px; background: var(--black); min-width: 3px; }
+  /* Lo planificado al avisar, cuando la fecha probable es otra: contorno discontinuo encima */
+  .tl-base { position: absolute; top: 3px; height: 5px; border: 1px dashed var(--slate); border-bottom: none; min-width: 3px; }
+  .pl-grupo .tl-base { top: 5px; }
+  .lg.base { width: 28px; height: 5px; border: 1px dashed var(--slate); border-bottom: none; }
   .tl-real.sigue { background: linear-gradient(90deg, var(--black) 75%, var(--slate)); }
   .pl-grupo .tl-prev { top: 13px; height: 7px; }
   .pl-grupo .tl-real { top: 23px; height: 7px; }
@@ -663,9 +667,10 @@
     <div class="campo"><label class="etq" for="t-oficio">Oficio</label><select class="ctrl" id="t-oficio"></select></div>
     <div class="campo"><label class="etq" for="t-detalle">Detalle (opcional)</label><input class="ctrl" id="t-detalle" placeholder="Planta, cubierta, fachada norte…"></div>
     <div class="campo"><label class="etq" for="t-proveedor">Proveedor (opcional)</label><select class="ctrl" id="t-proveedor"></select></div>
-    <div class="campo"><label class="etq" for="t-fecha">Fecha prevista de inicio</label><input class="ctrl" id="t-fecha" type="date"></div>
+    <div class="campo"><label class="etq" for="t-fecha" id="t-fecha-etq">Fecha prevista de inicio</label><input class="ctrl" id="t-fecha" type="date"></div>
     <div class="aviso oculto" id="t-antelacion" role="status"></div>
-    <div class="campo"><label class="etq" for="t-fin">Fecha prevista de fin</label><input class="ctrl" id="t-fin" type="date"></div>
+    <div class="campo"><label class="etq" for="t-fin" id="t-fin-etq">Fecha prevista de fin</label><input class="ctrl" id="t-fin" type="date"></div>
+    <p class="ayuda oculto" id="t-planificado" role="status"></p>
     <div class="campo"><label class="etq" for="t-desc">Qué se va a hacer</label><textarea class="ctrl" id="t-desc" rows="3"></textarea></div>
     <div class="campo">
       <span class="etq">Fotos (opcional)</span>
@@ -1309,7 +1314,9 @@ function prepararFormularios() {
     const ini = $('t-fecha').value;
     $('t-fin').min = ini || D.hoy;
     if (ini && (!$('t-fin').value || $('t-fin').value < ini)) $('t-fin').value = ini;
+    pintarPlanificadoAviso();
   });
+  $('t-fin').addEventListener('input', pintarPlanificadoAviso);
 
   $('d-para').innerHTML = (S.listas.para_duda || []).map(p => `<button type="button" class="chip" data-para="${esc(p)}" aria-pressed="false">${esc(p)}</button>`).join('');
   $('d-para').querySelectorAll('button').forEach(b => b.addEventListener('click', () => elegirPara(b.dataset.para)));
@@ -1608,6 +1615,26 @@ function elegirPlanAviso(id) {
   }
   $('f-trabajo').querySelector('.enviar').textContent = t ? `Avisar ${t.id} a oficina técnica` : 'Avisar a oficina técnica';
   mostrarAntelacion();
+  pintarPlanificadoAviso();
+}
+// Al avisar uno planificado, sus fechas se pueden cambiar por las probables: la planificada se guarda aparte
+// (desde ella se cuentan las desviaciones) y la nueva es la que usan planos y Próximas 6 semanas
+function pintarPlanificadoAviso() {
+  const t = trabajoPorId(AVISO_PLAN);
+  $('t-fecha-etq').textContent = t ? 'Fecha probable de inicio' : 'Fecha prevista de inicio';
+  $('t-fin-etq').textContent = t ? 'Fecha probable de fin' : 'Fecha prevista de fin';
+  const caja = $('t-planificado');
+  if (!t) { caja.classList.add('oculto'); caja.textContent = ''; return; }
+  const pi = inicioPlan(t), pf = finPlan(t);
+  const ini = $('t-fecha').value, fin = $('t-fin').value;
+  const cambia = (ini && ini !== pi) || (fin && fin !== pf);
+  const d = ini && esIso(pi) ? diasEntre(pi, ini) : 0;
+  caja.innerHTML = `Planificado: del <strong>${esc(fechaDM(pi))}</strong> al <strong>${esc(fechaDM(pf))}</strong>. ` +
+    (cambia ? (d ? `El inicio probable va <strong>${esc(signo(d).replace(' d', ''))} ${Math.abs(d) === 1 ? 'día' : 'días'}</strong> frente a lo planificado. ` : '') +
+      'Se guardan las dos: la planificada, para contar las desviaciones; la probable, para planos y Próximas 6 semanas.'
+      : 'Si la fecha real va a ser otra, cámbiala: la planificada se guarda aparte para contar las desviaciones.');
+  caja.classList.remove('oculto');
+  enviarAltura();
 }
 
 function elegirPara(p) {
@@ -1672,7 +1699,8 @@ $('f-trabajo').addEventListener('submit', async (e) => {
     });
     if (fotos.urls.length) cambios.fotos = listaFotos(plan.fotos).concat(fotos.urls).join('\n');
     if (Object.keys(cambios).length) {
-      const ed = await api('editar_trabajo', { id: plan.id, cambios });
+      // al_avisar: si cambian las fechas, el Worker guarda las planificadas (inicio_plan / fin_plan)
+      const ed = await api('editar_trabajo', { id: plan.id, cambios, al_avisar: true });
       if (!ed.ok) return ed;
     }
     const av = await api('avisar_trabajos', { ids: [plan.id] });
@@ -1687,9 +1715,11 @@ $('f-trabajo').addEventListener('submit', async (e) => {
   $('t-antelacion').classList.add('oculto');
   AVISO_PLAN = ''; $('t-plan').dataset.nuevo = ''; $('t-oficio').disabled = false;
   $('f-trabajo').querySelector('.enviar').textContent = 'Avisar a oficina técnica';
-  pintarCapituloAviso(''); $('t-oficio').innerHTML = opcionesOficio('', ''); pintarPlanAviso();
+  pintarCapituloAviso(''); $('t-oficio').innerHTML = opcionesOficio('', ''); pintarPlanAviso(); pintarPlanificadoAviso();
   rellenarProveedores();
+  const movida = plan && (datos.fecha_inicio !== inicioPlan(plan) || datos.fecha_fin !== finPlan(plan));
   hecho('Aviso enviado', `${r.id} · ${esc(datos.descripcion)} · ${esc(datos.zona)}${plan ? ' (era uno de los planificados)' : ''}. Oficina técnica ya lo tiene.` +
+    (movida ? `<br>Fecha probable del ${esc(fechaDM(datos.fecha_inicio))} al ${esc(fechaDM(datos.fecha_fin))}; lo planificado (${esc(fechaDM(inicioPlan(plan)))} – ${esc(fechaDM(finPlan(plan)))}) queda para las desviaciones.` : '') +
     (r.tardio ? `<br><span class="tardio">Avisado con ${r.antelacion_dias} días: queda marcado como aviso tardío.</span>` : ''));
   recargarEnSegundoPlano();
 });
@@ -2312,7 +2342,7 @@ function pintarSemanas() {
 
 function tarjeta(t, conZona) {
   const empezado = t.estado === 'En ejecución' || t.estado === 'Terminado';
-  const inicio = (empezado && t.fecha_inicio <= D.hoy ? 'Desde ' : 'Inicio ') + fechaDM(t.fecha_inicio) + (t.fecha_fin ? ' · fin ' + fechaDM(t.fecha_fin) : '');
+  const inicio = (empezado && t.fecha_inicio <= D.hoy ? 'Desde ' : 'Inicio ') + fechaDM(t.fecha_inicio) + (empezado ? '' : textoPlanificado(t)) + (t.fecha_fin ? ' · fin ' + fechaDM(t.fecha_fin) : '');
   const segunda = t.nivel === 'plazo' ? t.estado : (t.nivel === 'urgente' || t.nivel === 'atencion' || t.nivel === 'sin_avisar') ? String(t.motivo).replace(/^Empieza en /, 'en ').replace(/^Empieza /, '')
     : t.nivel === 'sin_confirmar' ? 'debía terminar el ' + fechaDM(t.fecha_fin) : '';
   const acciones = accionesTarjeta(t);
@@ -2568,11 +2598,12 @@ function bloqueDatos(t) {
       ${fila('Zona', esc(t.zona) + (tipo ? ' · ' + tipo : '') + (t.detalle ? '<br>' + esc(t.detalle) : ''))}
       ${fila('Oficio', esc(t.oficio))}
       ${fila('Proveedor', prov ? esc(nombreContacto(prov)) + (vias ? '<br>' + vias : '') : esc(t.id_proveedor || 'Sin decidir'))}
-      ${fila('Inicio previsto', esc(fechaLarga(t.fecha_inicio)) + (!empezado && t.dias_para_inicio !== null ? `<br><span class="meta">${esc(textoDias(t.dias_para_inicio))}</span>` : ''))}
-      ${fila('Fin previsto', t.fecha_fin ? esc(fechaLarga(t.fecha_fin)) : '—')}
+      ${fila(movidoIni(t) ? 'Inicio probable' : 'Inicio previsto', esc(fechaLarga(t.fecha_inicio)) + (!empezado && t.dias_para_inicio !== null ? `<br><span class="meta">${esc(textoDias(t.dias_para_inicio))}</span>` : '') +
+        (movidoIni(t) ? `<br><span class="meta">Planificado: ${esc(fechaLarga(t.inicio_plan))}</span>` : ''))}
+      ${fila(movidoFin(t) ? 'Fin probable' : 'Fin previsto', (t.fecha_fin ? esc(fechaLarga(t.fecha_fin)) : '—') + (movidoFin(t) ? `<br><span class="meta">Planificado: ${esc(fechaLarga(t.fin_plan))}</span>` : ''))}
       ${esIso(soloFecha(t.inicio_real)) ? fila('Empezó', esc(fechaLarga(t.inicio_real))) : ''}
       ${esIso(soloFecha(t.fin_real)) ? fila('Terminó', esc(fechaLarga(t.fin_real))) : ''}
-      ${desviacion(t).ini !== null || desviacion(t).fin !== null ? fila('Desviación', desvHtml(t)) : ''}
+      ${hayDesviacion(t) ? fila('Desviación', desvHtml(t)) : ''}
       ${t.origen === 'Project' ? fila('Planificación', 'Project' + (t.capitulo ? ' · ' + esc(t.capitulo) : '') + `<br><span class="meta">Importado ${esc(fechaDMA(t.creado))} · ${esc(t.creado_por)}</span>`) : ''}
       ${t.vinculo_project ? fila('Se mueve con', esc(textoVinculo(t.vinculo_project)) + '<br><span class="meta">Al importar Project se mueve los mismos días laborables que esa tarea</span>') : ''}
       ${fila('Avisado', t.origen !== 'Project' ? esc(fechaDMA(t.creado)) + ' · ' + esc(t.creado_por)
@@ -2599,6 +2630,7 @@ function camposEdicion(t, pref) {
       ${campo('oficio', 'Oficio', `<select class="ctrl" id="${pref}-oficio">${(S.listas.oficios || []).map(o => `<option>${esc(o)}</option>`).join('')}</select>`)}
       ${campo('fecha_inicio', 'Fecha prevista de inicio', `<input class="ctrl" type="date" id="${pref}-fecha_inicio" value="${esc(soloFecha(t.fecha_inicio))}"${esOT || t.estado === 'Planificado' ? '' : ` min="${esc(soloFecha(t.fecha_inicio))}"`}>`)}
       ${!esOT && t.estado !== 'Planificado' && c.indexOf('fecha_inicio') !== -1 ? '<p class="ayuda">Ya está avisado: la fecha de inicio solo se puede retrasar. Si hay que adelantarla, avisa a oficina técnica.</p>' : ''}
+      ${t.estado !== 'Planificado' && c.indexOf('fecha_inicio') !== -1 ? `<p class="ayuda">Planificado: del ${esc(fechaDM(inicioPlan(t)))} al ${esc(fechaDM(finPlan(t)))}. Si cambias las fechas, eso se mantiene para contar las desviaciones.</p>` : ''}
       ${campo('fecha_fin', 'Fecha prevista de fin', `<input class="ctrl" type="date" id="${pref}-fecha_fin" value="${esc(soloFecha(t.fecha_fin))}">`)}
       ${puedeVincular(t) && c.indexOf('vinculo_project') !== -1 ? campo('vinculo_project', 'Sale de la tarea de Project', `<select class="ctrl" id="${pref}-vinculo_project">${opcionesVinculo(t.zona, t.vinculo_project || '')}</select>`) +
         '<p class="ayuda">Si eliges la tarea de la que sale, al importar Project este trabajo se mueve los mismos días laborables que ella.</p>' : ''}
@@ -2793,7 +2825,7 @@ function pendTrabajo(t, conAccion, conReunion) {
   // Anunciado: también directo a «Planos listos», sin pasar por «Planos en preparación»
   const directo = t.estado === 'Anunciado' ? `<button type="button" class="btn-peq" data-accion="estado" data-id="${esc(t.id)}" data-estado="Planos listos">Planos listos</button>` : '';
   return `<article class="pend">
-    <div class="marcas"><span class="nv nv-${esc(t.nivel)}">${esc(NIVELES[t.nivel] || t.estado)}</span><span class="meta">Inicio ${fechaDM(t.fecha_inicio)} · ${esc(textoDias(t.dias_para_inicio))}</span></div>
+    <div class="marcas"><span class="nv nv-${esc(t.nivel)}">${esc(NIVELES[t.nivel] || t.estado)}</span><span class="meta">Inicio ${fechaDM(t.fecha_inicio)}${esc(textoPlanificado(t))} · ${esc(textoDias(t.dias_para_inicio))}</span></div>
     <a class="enlace-fila" href="#${esc(t.id)}" data-abrir="${esc(t.id)}">${esc(t.id)} · ${esc(t.descripcion)}</a>
     <div class="meta">${esc(t.promocion)} · ${esc(t.zona)} · ${esc(t.oficio)}</div>
     <div class="marcas"><span class="marca">${esc(t.estado)}</span><span class="marca">${esc(resumenPlanos(t))}</span>${conReunion ? `<span class="marca">${esc(resumenReunion(t))}</span>` : ''}${t.dudas_abiertas ? `<span class="marca${t.dudas_vencidas ? ' roja' : ''}">${plural(t.dudas_abiertas, 'duda abierta', 'dudas abiertas')}</span>` : ''}${t.tardio === true ? '<span class="marca borde-rojo">Aviso tardío</span>' : ''}</div>
@@ -3264,24 +3296,36 @@ function pintarPlan() {
   $('pl-cuerpo').innerHTML = estrecho() ? planMovil() : planEscritorio();
   $('pl-leyenda').innerHTML = '<span><i class="lg prev"></i>Previsto</span><span><i class="lg prev sin-avisar"></i>Sin avisar a oficina técnica</span>' +
     '<span><i class="lg real"></i>Real (en ejecución / hecho)</span><span><i class="lg hoy"></i>Hoy</span><span><i class="lg bloqueo"></i>Bloqueo de extras</span>' +
-    `<span>Desviación: días de más (+) o de menos (−) frente a lo previsto.</span>`;
+    '<span><i class="lg base"></i>Planificado, si la fecha probable es otra</span>' +
+    `<span>Desviación: días de más (+) o de menos (−) frente a lo planificado.</span>`;
   pintarSeleccion();
   enviarAltura();
 }
 
-// Desviación en días: inicio real frente al previsto y fin real (o hoy, si va tarde) frente al previsto
+// Fechas: fecha_inicio / fecha_fin son las probables (mandan en planos, Próximas 6 semanas…). Si cambiaron
+// después de avisar, inicio_plan / fin_plan guardan las planificadas: de ahí se cuentan las desviaciones.
+const inicioPlan = (t) => soloFecha(t.inicio_plan) || soloFecha(t.fecha_inicio);
+const finPlan = (t) => soloFecha(t.fin_plan) || soloFecha(t.fecha_fin);
+const movidoIni = (t) => esIso(soloFecha(t.inicio_plan)) && soloFecha(t.inicio_plan) !== soloFecha(t.fecha_inicio);
+const movidoFin = (t) => esIso(soloFecha(t.fin_plan)) && soloFecha(t.fin_plan) !== soloFecha(t.fecha_fin);
+const textoPlanificado = (t) => (movidoIni(t) ? ` (planificado ${fechaDM(t.inicio_plan)})` : '');
+// Desviación en días frente a lo planificado: inicio real, fin real (o hoy, si va tarde) y, antes de
+// empezar, cuánto se ha movido el inicio probable
 function desviacion(t) {
-  const ini = esIso(soloFecha(t.inicio_real)) && esIso(soloFecha(t.fecha_inicio)) ? diasEntre(soloFecha(t.fecha_inicio), soloFecha(t.inicio_real)) : null;
-  if (esIso(soloFecha(t.fin_real)) && esIso(soloFecha(t.fecha_fin))) return { ini, fin: diasEntre(soloFecha(t.fecha_fin), soloFecha(t.fin_real)), sigue: false };
-  if (atrasado(t) && esIso(soloFecha(t.fecha_fin))) return { ini, fin: diasEntre(soloFecha(t.fecha_fin), D.hoy), sigue: true };
-  return { ini, fin: null, sigue: false };
+  const pi = inicioPlan(t), pf = finPlan(t);
+  const ini = esIso(soloFecha(t.inicio_real)) && esIso(pi) ? diasEntre(pi, soloFecha(t.inicio_real)) : null;
+  const prev = ini === null && movidoIni(t) && esIso(soloFecha(t.fecha_inicio)) ? diasEntre(soloFecha(t.inicio_plan), soloFecha(t.fecha_inicio)) : null;
+  if (esIso(soloFecha(t.fin_real)) && esIso(pf)) return { ini, prev, fin: diasEntre(pf, soloFecha(t.fin_real)), sigue: false };
+  if (atrasado(t) && esIso(pf)) return { ini, prev, fin: diasEntre(pf, D.hoy), sigue: true };
+  return { ini, prev, fin: null, sigue: false };
 }
+const hayDesviacion = (t) => { const d = desviacion(t); return d.ini !== null || d.fin !== null || d.prev !== null; };
 const signo = (n) => (n > 0 ? '+' : n < 0 ? '−' : '±') + Math.abs(n) + ' d';
 function desvHtml(t) {
   const d = desviacion(t);
   const cls = (n) => n > 7 ? 'roja' : n > 0 ? 'borde-rojo' : 'verde';
   const linea = (n, txt) => `<div class="pl-desv"><span class="marca ${cls(n)}">${signo(n)}</span><span class="sub">${txt}</span></div>`;
-  const h = (d.ini !== null ? linea(d.ini, 'inicio') : '') + (d.fin !== null ? linea(d.fin, d.sigue ? 'y sigue' : 'fin') : '');
+  const h = (d.prev !== null ? linea(d.prev, 'inicio probable') : '') + (d.ini !== null ? linea(d.ini, 'inicio') : '') + (d.fin !== null ? linea(d.fin, d.sigue ? 'y sigue' : 'fin') : '');
   return h || '<span class="pl-vacio">—</span>';
 }
 
@@ -3306,6 +3350,10 @@ function plBarras(lista, bloqueo) {
   if (esIso(soloFecha(bloqueo))) h += `<span class="tl-bloqueo" style="left:${plPos(soloFecha(bloqueo))}" title="Bloqueo de extras ${fechaDMA(bloqueo)}"></span>`;
   lista.forEach(t => {
     const ini = soloFecha(t.fecha_inicio), fin = soloFecha(t.fecha_fin) || ini;
+    if (movidoIni(t) || movidoFin(t)) {
+      const pi = inicioPlan(t), pf = finPlan(t) || pi;
+      if (esIso(pi)) h += `<span class="tl-base" style="left:${plPos(pi)};width:${plAncho(pi, pf)}" title="${esc(t.descripcion)}: planificado ${fechaDM(pi)}–${fechaDM(pf)}"></span>`;
+    }
     if (esIso(ini)) h += `<span class="tl-prev${t.nivel === 'sin_avisar' ? ' sin-avisar' : atrasado(t) ? ' tarde' : ''}" style="left:${plPos(ini)};width:${plAncho(ini, fin)}" title="${esc(t.descripcion)}: previsto ${fechaDM(ini)}–${fechaDM(fin)}"></span>`;
     const ri = soloFecha(t.inicio_real), rf = soloFecha(t.fin_real);
     const desde = esIso(ri) ? ri : esIso(rf) ? rf : '';
@@ -3423,7 +3471,7 @@ function planMovil() {
             <a href="#${esc(t.id)}" data-abrir="${esc(t.id)}" style="color: var(--black); font-weight: 500">${esc(t.id)} · ${esc(t.descripcion)}</a>
             <span class="sub">${subTrabajo(t)}</span>
             <span>Previsto ${fechaDM(t.fecha_inicio)} → ${fechaDM(t.fecha_fin || t.fecha_inicio)}${esIso(soloFecha(t.inicio_real)) || esIso(soloFecha(t.fin_real)) ? ` · Real ${esIso(soloFecha(t.inicio_real)) ? fechaDM(t.inicio_real) : '¿?'} → ${esIso(soloFecha(t.fin_real)) ? fechaDM(t.fin_real) : 'en curso'}` : ''}</span>
-            <div class="marcas"><span class="nv nv-${esc(t.nivel)}">${esc(NIVELES[t.nivel] || t.estado)}</span>${desviacion(t).fin !== null || desviacion(t).ini !== null ? desvHtml(t) : ''}${marcaBloqueo(t)}</div>
+            <div class="marcas"><span class="nv nv-${esc(t.nivel)}">${esc(NIVELES[t.nivel] || t.estado)}</span>${hayDesviacion(t) ? desvHtml(t) : ''}${marcaBloqueo(t)}</div>
             <div class="pl-acc">${accionesTrabajo(t, true)}</div>
           </div></div>`).join('')}</div>` : ''}
     </div>`;
@@ -4169,7 +4217,7 @@ const ETIQUETA_ACCION = { crear_trabajo: 'Añadir trabajo', editar_trabajo: 'Edi
   anular_reunion: 'Anular reunión', cerrar_reunion: 'Cerrar reunión', subir_acta: 'Subir acta firmada', enviar_acta: 'Enviar acta',
   guardar_fecha: 'Guardar fecha', aplicar_bloqueos: 'Aplicar bloqueos', sin_planos: 'No necesita planos', deshacer: 'Deshacer' };
 const CAMPO_TEXTO = { estado: 'Estado', descripcion: 'Descripción', detalle: 'Detalle', capitulo: 'Capítulo', zona: 'Zona', oficio: 'Oficio', id_proveedor: 'Proveedor',
-  fecha_inicio: 'Inicio previsto', fecha_fin: 'Fin previsto', inicio_real: 'Empezó', fin_real: 'Terminó', borrado: 'Borrado', fotos: 'Fotos',
+  fecha_inicio: 'Inicio previsto', fecha_fin: 'Fin previsto', inicio_plan: 'Inicio planificado', fin_plan: 'Fin planificado', inicio_real: 'Empezó', fin_real: 'Terminó', borrado: 'Borrado', fotos: 'Fotos',
   carpeta_synology: 'Carpeta de Synology', vinculo_project: 'Sigue a la tarea', inicio_vinculo: 'Inicio de esa tarea', antelacion_dias: 'Antelación (días)',
   respuesta: 'Respuesta', respondida_por: 'Respondida por', fecha_respuesta: 'Respondida el', pregunta: 'Pregunta', para: 'Para', fecha_necesaria: 'Fecha necesaria',
   avance: 'Avance', fecha: 'Fecha', nombre: 'Nombre', revision: 'Revisión', enlace_synology: 'Enlace de Synology', lugar: 'Lugar', hora: 'Hora',
