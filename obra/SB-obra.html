@@ -2414,7 +2414,8 @@ function pintarFicha() {
     const sig = SIGUIENTE_OFICINA[t.estado];
     if (sig) acciones += boton(sig[0], sig[1], true);
     if (puedeSinPlanos(t)) acciones += `<button type="button" class="btn-peq" data-accion="sin-planos" data-id="${esc(t.id)}">No necesita planos</button>`;
-    const opciones = (t.estado === 'Planificado' ? ['Planificado'] : []).concat(PASOS);
+    // Planificado también: vuelve a la planificación como si no se hubiera avisado
+    const opciones = ['Planificado'].concat(PASOS);
     acciones += `<label class="oculto-visual" for="fi-estado-sel">Estado</label><select class="ctrl" id="fi-estado-sel">${opciones.map(p => `<option${p === t.estado ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>` +
       '<button type="button" class="btn-peq" data-accion="estado-sel">Cambiar estado</button>';
   } else if (puede('cambiar_estado_obra')) {
