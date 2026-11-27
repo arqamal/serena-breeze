@@ -760,7 +760,7 @@
       <div class="aviso bien oculto" id="c-ok" role="status" style="margin: 0 20px 12px"></div>
       <div class="caja-tabla">
         <table class="contactos">
-          <thead><tr><th scope="col">Empresa</th><th scope="col">Tipo</th><th scope="col">Oficio</th><th scope="col">Obras y pago</th><th scope="col">Contacto</th><th scope="col">Email</th><th scope="col">Documentación</th></tr></thead>
+          <thead><tr><th scope="col">Empresa</th><th scope="col">Tipo</th><th scope="col">Oficio</th><th scope="col" id="c-th-obras">Obras y pago</th><th scope="col">Contacto</th><th scope="col">Email</th><th scope="col" id="c-th-docs">Documentación</th></tr></thead>
           <tbody id="c-filas"></tbody>
         </table>
       </div>
@@ -1111,7 +1111,7 @@ async function entrar(r) {
   if (puede('ver')) secciones.push({ id: 'semanas', texto: 'Próximas 6 semanas' });
   if (puede('ver')) secciones.push({ id: 'avances', texto: 'Avances' });
   if (puede('responder_duda') || puede('responder_duda_estudio')) secciones.push({ id: 'pendientes', texto: 'Pendientes' });
-  if (puede('guardar_contacto')) secciones.push({ id: 'contactos', texto: 'Contactos' });
+  if (puede('ver_contactos')) secciones.push({ id: 'contactos', texto: 'Contactos' });
   if (puede('ver_fechas')) secciones.push({ id: 'bloqueos', texto: 'Bloqueo de extras' }, { id: 'admin', texto: 'Administración' });
   // Historial (deshacer): quien puede cambiar algo
   if (['crear_trabajo', 'cambiar_estado_obra', 'responder_duda_estudio', 'guardar_plano', 'deshacer_todo', 'fechas_edita_promocion', 'fechas_edita_fase', 'fechas_edita_vivienda'].some(puede))
@@ -1134,7 +1134,7 @@ async function entrar(r) {
   if (puede('ver')) {
     await cargarDatos();
     if (pestañas.length) prepararFormularios();
-    if (puede('guardar_contacto')) prepararContactos();
+    if (puede('ver_contactos')) prepararContactos();
     prepararVistas();
     prepararPlan();
   }
@@ -1962,9 +1962,11 @@ function prepararContactos() {
   $('c-buscar').addEventListener('input', pintarContactos);
   $('c-tipo').addEventListener('change', pintarContactos);
   $('c-inactivos').addEventListener('change', pintarContactos);
-  $('c-nuevo').addEventListener('click', () => abrirContacto(null));
   $('c-volver').addEventListener('click', verListaContactos);
   $('c-cancelar').addEventListener('click', verListaContactos);
+  // Solo consulta (lectura): ve todo, pero sin alta ni cambios
+  if (!puede('guardar_contacto')) { $('c-nuevo').classList.add('oculto'); return; }
+  $('c-nuevo').addEventListener('click', () => abrirContacto(null));
   $('c-ficha').addEventListener('submit', guardarContacto);
 }
 
@@ -2099,10 +2101,18 @@ function abrirContacto(id) {
     else el.value = c ? (c[f.k] ?? '') : '';
   }));
   if (hayCondiciones()) $('cf-condiciones').innerHTML = c ? condicionesDe(c.id).map(filaCondicion).join('') : '';
+  // Lectura: la misma ficha, sin poder cambiar nada
+  const soloVer = !puede('guardar_contacto');
+  if (soloVer) {
+    $('c-ficha-titulo').textContent = c ? c.empresa : '';
+    $('c-ficha').querySelectorAll('input, select, textarea').forEach(el => { el.disabled = true; });
+    $('c-ficha').querySelectorAll('[data-quitar-obra], #cf-anadir-obra, #c-guardar').forEach(el => el.classList.add('oculto'));
+    $('c-cancelar').textContent = 'Volver';
+  }
   $('c-lista').classList.add('oculto');
   $('c-ficha').classList.remove('oculto');
   window.scrollTo({ top: 0 });
-  $('cf-empresa').focus();
+  (soloVer ? $('c-volver') : $('cf-empresa')).focus();
   enviarAltura();
 }
 
