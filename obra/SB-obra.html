@@ -334,7 +334,8 @@
   .pl-grupo .pl-nombre { font-weight: 500; color: var(--black); }
   .pl-trab .pl-nombre { padding-left: 26px !important; }
   .pl-nombre .sub { font-weight: 400; display: block; }
-  .pl-nombre a { color: var(--black); text-decoration: none; }
+  /* El trabajo (código y nombre) en negrita y negro: es lo primero que se lee de la fila */
+  .pl-nombre a { color: var(--black); text-decoration: none; font-weight: 700; }
   .pl-nombre a:hover { text-decoration: underline; }
   .pl-flecha { display: inline-block; width: 14px; color: var(--slate); }
   .pl-chk { display: flex; align-items: flex-start; justify-content: center; padding-top: 11px !important; }
@@ -403,7 +404,7 @@
   .ej-movil h3.cal-dia-tit { margin: 16px 0 8px; }
   .ej-movil .cal-dia-tit .sub { display: inline; margin-left: 8px; font-family: 'Roboto', sans-serif; font-size: 12px; letter-spacing: 0; text-transform: none; font-weight: 400; }
   .ej-tj { border: 1px solid var(--border); background: var(--white); padding: 10px 12px 0; margin-bottom: 8px; display: flex; flex-direction: column; gap: 4px; font-size: 13px; overflow: hidden; }
-  .ej-tj > a { color: var(--black); font-weight: 500; text-decoration: none; }
+  .ej-tj > a { color: var(--black); font-weight: 700; text-decoration: none; }
   .ej-tj .pl-tl { margin: 6px -12px 0; border-left: none; border-top: 1px solid var(--border); }
   .pl-tl { position: relative; border-left: 1px solid var(--border); padding: 0 !important; min-height: 42px; overflow: hidden; }
   .tl-mes { position: absolute; top: 0; bottom: 0; border-left: 1px solid #EFEDE9; }
@@ -471,8 +472,8 @@
   .dos-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   @media (max-width: 520px) { .dos-campos { grid-template-columns: minmax(0, 1fr); } }
   .filtros .btn-sec { min-height: 44px; padding: 0 18px; }
-  /* Proveedor: línea propia, en cursiva y negrita; sin proveedor, solo cursiva y en gris */
-  .pl-prov { display: block; font-style: italic; font-weight: 600; color: var(--black); letter-spacing: 0; text-transform: none; }
+  /* Proveedor: línea propia, en cursiva y negrita, en gris (el trabajo es lo que destaca); sin proveedor, sin negrita */
+  .pl-prov { display: block; font-style: italic; font-weight: 600; color: var(--slate); letter-spacing: 0; text-transform: none; }
   .pl-prov.pl-sinprov { font-weight: 400; color: var(--slate); }
   .pl-nombre .pl-editar { min-height: 0; font-size: 12px; margin-left: 4px; display: inline; }
   .pl-nombre .pl-anadir { display: block; margin-top: 4px; min-height: 28px; }
@@ -3478,7 +3479,7 @@ function planMovil() {
       ${abierto ? `<div class="pl-tj-lista">${btnAnadir(g) ? `<div class="pl-tj-anadir">${btnAnadir(g)}</div>` : ''}${g.lista.map(t => `<div class="pl-tj-trab">
           ${chkTrabajo(t)}
           <div class="cuerpo">
-            <a href="#${esc(t.id)}" data-abrir="${esc(t.id)}" style="color: var(--black); font-weight: 500">${esc(t.id)} · ${esc(t.descripcion)}</a>
+            <a href="#${esc(t.id)}" data-abrir="${esc(t.id)}" style="color: var(--black); font-weight: 700">${esc(t.id)} · ${esc(t.descripcion)}</a>
             <span class="sub">${subTrabajo(t)}</span>
             <span>Previsto ${fechaDM(t.fecha_inicio)} → ${fechaDM(t.fecha_fin || t.fecha_inicio)}${esIso(soloFecha(t.inicio_real)) || esIso(soloFecha(t.fin_real)) ? ` · Real ${esIso(soloFecha(t.inicio_real)) ? fechaDM(t.inicio_real) : '¿?'} → ${esIso(soloFecha(t.fin_real)) ? fechaDM(t.fin_real) : 'en curso'}` : ''}</span>
             <div class="marcas"><span class="nv nv-${esc(t.nivel)}">${esc(NIVELES[t.nivel] || t.estado)}</span>${hayDesviacion(t) ? desvHtml(t) : ''}${marcaBloqueo(t)}</div>
