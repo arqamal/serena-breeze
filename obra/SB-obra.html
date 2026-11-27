@@ -471,7 +471,9 @@
   .dos-campos { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
   @media (max-width: 520px) { .dos-campos { grid-template-columns: minmax(0, 1fr); } }
   .filtros .btn-sec { min-height: 44px; padding: 0 18px; }
-  .pl-sinprov { font-style: italic; }
+  /* Proveedor: línea propia, en cursiva y negrita; sin proveedor, solo cursiva y en gris */
+  .pl-prov { display: block; font-style: italic; font-weight: 600; color: var(--black); letter-spacing: 0; text-transform: none; }
+  .pl-prov.pl-sinprov { font-weight: 400; color: var(--slate); }
   .pl-nombre .pl-editar { min-height: 0; font-size: 12px; margin-left: 4px; display: inline; }
   .pl-nombre .pl-anadir { display: block; margin-top: 4px; min-height: 28px; }
   .pl-tj-anadir { padding: 6px 0 2px; }
@@ -3425,13 +3427,15 @@ function marcaBloqueo(t) {
   if (t.bloqueo_aviso === 'margen') return `<span class="marca borde-rojo" title="Bloqueo de extras: ${fechaDMA(t.bloqueo)}">${plural(diasEntre(soloFecha(t.bloqueo), soloFecha(t.fecha_inicio)), 'día', 'días')} tras el bloqueo</span>`;
   return '';
 }
-// Oficio, detalle y proveedor de un trabajo en la planificación
-function subTrabajo(t) {
+// Oficio y detalle de un trabajo (planificación y avances) y, en su propia línea, el proveedor.
+// extra: lo que va al final de la primera línea (el botón Editar)
+function subTrabajo(t, extra) {
   const prov = t.id_proveedor ? contactoPorId(t.id_proveedor) : null;
   const vin = t.vinculo_project ? (D.tareas_project || []).find(x => x.clave === t.vinculo_project) : null;
-  return esc(t.oficio) + (t.detalle ? ' · ' + esc(t.detalle) : '') + ' · ' +
-    (prov ? esc(prov.empresa) : t.id_proveedor ? esc(t.id_proveedor) : '<span class="pl-sinprov">sin proveedor</span>') +
-    (t.vinculo_project ? ` · <span title="Al importar Project se mueve con esta tarea">sigue a ${vin ? '«' + esc(vin.descripcion) + '»' : esc(t.vinculo_project)}</span>` : '');
+  return esc(t.oficio) + (t.detalle ? ' · ' + esc(t.detalle) : '') +
+    (t.vinculo_project ? ` · <span title="Al importar Project se mueve con esta tarea">sigue a ${vin ? '«' + esc(vin.descripcion) + '»' : esc(t.vinculo_project)}</span>` : '') +
+    (extra ? ' ' + extra : '') +
+    (prov || t.id_proveedor ? `<span class="pl-prov">${esc(prov ? prov.empresa : t.id_proveedor)}</span>` : '<span class="pl-prov pl-sinprov">sin proveedor</span>');
 }
 const btnAnadir = (g) => puede('crear_trabajo') ? `<button type="button" class="btn-texto pl-anadir" data-accion="pl-nuevo" data-capitulo="${esc(g.k === SIN_CAPITULO ? '' : g.k)}">+ Añadir trabajo</button>` : '';
 const chkTrabajo = (t) => elegible(t) ? `<input type="checkbox" data-pl-sel="${esc(t.id)}" aria-label="Elegir ${esc(t.id)} · ${esc(t.descripcion)}"${PL_SEL.has(t.id) ? ' checked' : ''}>` : '';
@@ -3452,7 +3456,7 @@ function planEscritorio() {
     g.lista.forEach(t => {
       h += `<div class="pl-fila pl-trab">
         <div class="pl-chk">${chkTrabajo(t)}</div>
-        <div class="pl-nombre"><a href="#${esc(t.id)}" data-abrir="${esc(t.id)}">${esc(t.id)} · ${esc(t.descripcion)}</a><span class="sub">${subTrabajo(t)} ${btnEditar(t, 'btn-texto pl-editar')}</span>${marcaBloqueo(t) ? `<div class="marcas">${marcaBloqueo(t)}</div>` : ''}</div>
+        <div class="pl-nombre"><a href="#${esc(t.id)}" data-abrir="${esc(t.id)}">${esc(t.id)} · ${esc(t.descripcion)}</a><span class="sub">${subTrabajo(t, btnEditar(t, 'btn-texto pl-editar'))}</span>${marcaBloqueo(t) ? `<div class="marcas">${marcaBloqueo(t)}</div>` : ''}</div>
         <div>${rangoPrevisto([t])}</div><div>${rangoReal(t)}</div><div>${desvHtml(t)}</div>
         <div><span class="nv nv-${esc(t.nivel)}">${esc(NIVELES[t.nivel] || t.estado)}</span><div class="pl-acc">${accionesTrabajo(t)}</div></div>
         <div class="pl-tl">${plBarras([t], t.bloqueo)}</div></div>`;
